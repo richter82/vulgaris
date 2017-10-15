@@ -1,0 +1,33 @@
+#---MAX LINE 150 --MAX LINE 150------------------------------------------------------------------------------------------------------------------#
+
+#SOME DEFINE...
+
+@define	MYVALUE						5
+@define	ANOTH_DEFINE				10
+@define	BLZ_CLASS_SAMPLE_A_ID		1001
+
+#AN ENUM
+
+enum SIMPLE_ENUM_A
+{
+	SIMPLE_ENUM_A_Zero				"Zero"
+	SIMPLE_ENUM_A_One				"One"
+	SIMPLE_ENUM_A_Two
+	SIMPLE_ENUM_A_OneHundred 		= 100	"OneHundred"
+	SIMPLE_ENUM_A_TwoHundredAndOne 	= 201
+}
+
+#ANOTHER ENUM
+
+enum SIMPLE_ENUM_B
+{
+	SIMPLE_ENUM_B_ONE = -12
+	SIMPLE_ENUM_B_TWO
+	SIMPLE_ENUM_B_THREE = 43
+	SIMPLE_ENUM_B_FOUR
+	SIMPLE_ENUM_B_FIVE
+}
+
+
+
+#---MAX LINE 150 --MAX LINE 150------------------------------------------------------------------------------------------------------------------#

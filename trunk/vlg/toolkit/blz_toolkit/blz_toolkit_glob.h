@@ -1,0 +1,85 @@
+/*
+ *
+ * (C) 2015 - giuseppe.baccini@gmail.com
+ *
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
+
+#ifndef BLZ_TOOLKIT_GLOB_H
+#define BLZ_TOOLKIT_GLOB_H
+
+#include <QtCore>
+#include <QVector>
+
+#include "blz_peer_int.h"
+#include "blz_connection_int.h"
+#include "blz_transaction_int.h"
+#include "blz_subscription_int.h"
+
+#include <QMainWindow>
+#include <QtGui>
+#include <QtWidgets>
+
+#define KEY_WINDOW      "blz_toolkit_window"
+#define KEY_POSITION    "position"
+#define KEY_SIZE        "size"
+
+#define HEAP_TEST_DBG                                        \
+{                                                            \
+    ascii_string stack_str;                                     \
+    stack_str.assign("");                                    \
+    HeapDebug(stack_str);                                    \
+    qDebug() << "heap test passed";                          \
+}
+
+#define GEN_HDR_VAL_BUFF 256
+#define GEN_HDR_FIDX_BUFF 16
+
+#define ASSERT_SPRNTF_DBG                                \
+if(sprintf_dbg >= GEN_HDR_FIDX_BUFF){                    \
+    qDebug() << "sprintf violation:" << sprintf_dbg;     \
+}
+
+//-----------------------------------------------------------------------------
+// INTERNAL TIMEOUT VALUE FOR AWAIT OPERATIONS (SECONDS)
+//-----------------------------------------------------------------------------
+#define BLZ_TKT_INT_AWT_TIMEOUT 4
+#define BLZ_TKT_INT_REPT_SHOT_TIMER_CAPTMSG_FLAS_MSEC 150
+#define BLZ_TKT_INT_SINGL_SHOT_TIMER_CAPTMSG_RST_MSEC 4000
+
+void FillQstring_FldValue(const char *fld_ptr,
+                          const blaze::member_desc *mdesc,
+                          QString &out);
+
+void FillFldValue_Qstring(const QVariant &value,
+                          const blaze::member_desc *mdesc,
+                          char *fld_ptr);
+
+//-----------------------------------------------------------------------------
+// entity_desc_impl, partial
+//-----------------------------------------------------------------------------
+namespace blaze {
+class entity_desc_impl {
+    public:
+        const blaze::hash_map &GetMap_NM_MMBRDSC() const;
+        const blaze::hash_map &GetMap_KEYID_KDESC() const;
+};
+}
+
+struct BLZ_SBS_COL_DATA_ENTRY;
+
+#endif // BLZ_TOOLKIT_GLOB_H

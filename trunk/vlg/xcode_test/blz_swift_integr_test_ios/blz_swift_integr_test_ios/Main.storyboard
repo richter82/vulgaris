@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12120" systemVersion="16E195" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="AFn-ox-QON">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12088"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Blaze Peer View Controller-->
+        <scene sceneID="w4m-sm-ul9">
+            <objects>
+                <viewController id="AFn-ox-QON" customClass="BlazePeerViewController" customModule="blz_peer_app" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="uzW-Ym-Ozg"/>
+                        <viewControllerLayoutGuide type="bottom" id="TTY-Ms-oKm"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="8Ko-1u-xp1">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="peer status" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="K8l-Tj-RPE">
+                                <rect key="frame" x="16" y="312" width="568" height="280"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="32"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cha-65-4Ff">
+                                <rect key="frame" x="300" y="28" width="276" height="276"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="20"/>
+                                <state key="normal" title="Stop">
+                                    <color key="titleColor" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="startStopAction:" destination="AFn-ox-QON" eventType="touchUpInside" id="FCw-zu-SYD"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dQA-uT-8lh">
+                                <rect key="frame" x="16" y="28" width="276" height="276"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="20"/>
+                                <state key="normal" title="Start">
+                                    <color key="titleColor" red="0.25098040699958801" green="0.50196081399917603" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="startStopAction:" destination="AFn-ox-QON" eventType="touchUpInside" id="WtG-D1-Dav"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="cha-65-4Ff" firstAttribute="top" secondItem="uzW-Ym-Ozg" secondAttribute="bottom" constant="8" id="2cQ-AY-fii"/>
+                            <constraint firstItem="K8l-Tj-RPE" firstAttribute="top" secondItem="uzW-Ym-Ozg" secondAttribute="bottom" constant="292" id="5OZ-Dq-IWB"/>
+                            <constraint firstItem="cha-65-4Ff" firstAttribute="leading" secondItem="dQA-uT-8lh" secondAttribute="trailing" constant="8" id="C5x-pz-MqN"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="cha-65-4Ff" secondAttribute="trailing" constant="8" id="CGc-u5-mIh"/>
+                            <constraint firstItem="K8l-Tj-RPE" firstAttribute="trailing" secondItem="8Ko-1u-xp1" secondAttribute="trailingMargin" id="FgU-mE-elU"/>
+                            <constraint firstItem="K8l-Tj-RPE" firstAttribute="top" secondItem="dQA-uT-8lh" secondAttribute="bottom" constant="8" id="Gkv-23-FcM"/>
+                            <constraint firstItem="K8l-Tj-RPE" firstAttribute="top" secondItem="cha-65-4Ff" secondAttribute="bottom" constant="8" id="ORd-JY-0rr"/>
+                            <constraint firstItem="dQA-uT-8lh" firstAttribute="leading" secondItem="8Ko-1u-xp1" secondAttribute="leadingMargin" id="Q9s-Bz-qoU"/>
+                            <constraint firstItem="K8l-Tj-RPE" firstAttribute="leading" secondItem="8Ko-1u-xp1" secondAttribute="leadingMargin" id="Rrx-pb-lch"/>
+                            <constraint firstItem="dQA-uT-8lh" firstAttribute="top" secondItem="uzW-Ym-Ozg" secondAttribute="bottom" constant="8" id="dYA-GT-pxP"/>
+                            <constraint firstItem="dQA-uT-8lh" firstAttribute="height" secondItem="cha-65-4Ff" secondAttribute="height" id="gUH-kW-qnZ"/>
+                            <constraint firstItem="TTY-Ms-oKm" firstAttribute="top" secondItem="K8l-Tj-RPE" secondAttribute="bottom" constant="8" symbolic="YES" id="nab-52-erc"/>
+                            <constraint firstItem="dQA-uT-8lh" firstAttribute="width" secondItem="cha-65-4Ff" secondAttribute="width" id="x3j-MN-fTx"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="peerStatus" destination="K8l-Tj-RPE" id="A0L-Q9-qSV"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="fkm-uj-3dl" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="905" y="446"/>
+        </scene>
+    </scenes>
+</document>

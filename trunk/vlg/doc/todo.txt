@@ -1,0 +1,23 @@
+@protocol
+
+
+
+
+@compiler
+
+for 1.0
+
+1) define id class                                             ok
+2) implement all getters and setters
+3) gen zeroed object classes
+4) method to check if a field is zero
+5) copy method (all / partial - only applicative rep)
+6) new instance method
+7) compare method (all / partial - only applicative rep)
+8) clone method (all / partial - only applicative rep)
+9) serialize method
+10) restore method
+
+
+
+@model

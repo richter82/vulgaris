@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>064FACE9-F8F3-4545-9BEC-61228102F005</string>
+	<key>IDESourceControlProjectName</key>
+	<string>blz_system</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>40dd6f65-a42a-46d8-bba6-cb01b91ecccf++505</key>
+		<string>svn://10.67.82.82/blz_system/trunk</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>blz_system/xcode/blz_system.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>40dd6f65-a42a-46d8-bba6-cb01b91ecccf++505</key>
+		<string>../../..</string>
+	</dict>
+	<key>IDESourceControlProjectRepositoryRootDictionary</key>
+	<dict>
+		<key>40dd6f65-a42a-46d8-bba6-cb01b91ecccf++505</key>
+		<string>svn://10.67.82.82/blz_system</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>svn://10.67.82.82/blz_system/trunk/blz_system/xcode/blz_system.xcworkspace</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>40dd6f65-a42a-46d8-bba6-cb01b91ecccf++505</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.subversion</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>40dd6f65-a42a-46d8-bba6-cb01b91ecccf++505</string>
+			<key>IDESourceControlWCCName</key>
+			<string>blz_system</string>
+		</dict>
+	</array>
+</dict>
+</plist>

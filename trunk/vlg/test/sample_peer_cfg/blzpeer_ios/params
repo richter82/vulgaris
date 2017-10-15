@@ -1,0 +1,5 @@
+-srv_sin_port		12347
+-srv_exectrs		1
+-srv_sbs_exectrs	1
+-cli_exectrs		1
+

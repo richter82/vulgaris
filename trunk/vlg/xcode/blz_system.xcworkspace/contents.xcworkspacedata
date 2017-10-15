@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "group:blz_os_support/blz_os_support.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:blz_cpp_interface/blz_cpp_interface.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:blz_c_interface/blz_c_interface.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:blzdrisqlite/blzdrisqlite.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:blz_persistence/blz_persistence.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:blz_model/blz_model.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:blz_peer_lib/blz_peer_lib.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:crlib/crlib.xcodeproj">
+   </FileRef>
+</Workspace>

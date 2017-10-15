@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="h">
+      <UniqueIdentifier>{17f31c3d-dc08-496c-a88c-99bb7440ee9b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cpp">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\crlib\cr_time.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\crlib\cr_bbuf.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\crlib\cr_cfg.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\crlib\cr_concurrent.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\crlib\cr_core.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\crlib\cr_dl.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\crlib\cr_logger.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\crlib\cr_obj_coll.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\crlib\cr_parse.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\crlib\cr_strings.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\crlib\cr_structs.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\crlib\cr_structs_mt.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\crlib\cr_structs_rep.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\crlib\cr_dl.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\crlib\cr_concurrent.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\crlib\cr_cfg.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\crlib\cr_time.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\crlib\cr_structs_mt.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\crlib\cr_structs.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\crlib\cr_parse.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\crlib\cr.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\crlib\cr_structs_rep.h">
+      <Filter>h</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

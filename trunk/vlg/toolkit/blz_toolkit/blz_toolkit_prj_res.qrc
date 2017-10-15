@@ -1,0 +1,20 @@
+<RCC>
+    <qresource prefix="/icon">
+        <file>icons/flash.png</file>
+        <file>icons/flash_green.png</file>
+        <file>icons/flash_grey.png</file>
+        <file>icons/flash_red.png</file>
+        <file>icons/flash-off.png</file>
+        <file>icons/folder.png</file>
+        <file>icons/forward.png</file>
+        <file>icons/gear-b.png</file>
+        <file>icons/log-out.png</file>
+        <file>icons/social-rss.png</file>
+        <file>icons/play.png</file>
+        <file>icons/stop.png</file>
+        <file>icons/settings.png</file>
+        <file>icons/social-buffer.png</file>
+        <file>icons/loop.png</file>
+        <file>icons/trash-b.png</file>
+    </qresource>
+</RCC>

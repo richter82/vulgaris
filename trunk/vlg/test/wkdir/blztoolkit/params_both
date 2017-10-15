@@ -1,0 +1,15 @@
+-Xpure_server
+-Xpure_client
+-Xsrv_sin_addr		127.0.0.1
+-srv_sin_port		12345
+-srv_pkt_q_len		100
+-srv_exectrs		3
+-cli_pkt_q_len		50
+-cli_exectrs		2
+-Xsel_tmout_sec		3600
+-Xsel_tmout_usec	0
+-load_model			blz_model_sample
+-load_pers_driv		sqlite
+-pers_enabled
+-pers_schema_create
+-drop_existing_schema

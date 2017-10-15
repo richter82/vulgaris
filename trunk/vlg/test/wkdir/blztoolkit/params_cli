@@ -1,0 +1,7 @@
+-pure_client
+-cli_pkt_q_len		101
+-cli_exectrs		1
+-load_model			blz_model_sample
+-load_pers_driv		sqlite
+-pers_enabled
+-pers_schema_create

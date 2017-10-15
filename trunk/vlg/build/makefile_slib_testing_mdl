@@ -1,0 +1,26 @@
+SRC = ../test/sample_blz_model/blz_model_sample.cpp
+OBJ = $(SRC:.cpp=.o)
+OUTDIR = ../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/libso
+INCLUDES = 	-I../public/cpp\
+			-I../src\
+			-I../src/crlib
+			
+CCFLAGS = -std=c++11 -Wall -fPIC $(CC_DBG_REL_OPT)
+CCC = g++
+LDFLAGS = -shared
+LDFLAGS_1 = -Wl,-no-whole-archive,-error-unresolved-symbols
+LDLIBS= -L../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/lib -lblzmodel -lcr -lpthread $(LD_ARCH_LIB)
+LDFLAGS_2 = -Wl,-no-whole-archive
+
+default: libblz_model_sample
+
+all: clean libblz_model_sample
+
+.cpp.o:
+	$(CCC) $(INCLUDES) $(CCFLAGS) -c $< -o $@
+
+libblz_model_sample: 	$(OBJ)
+	$(CCC) $(LD_DBG_REL_OPT) $(LDFLAGS) -o $(OUTDIR)/libblz_model_sample.so $(OBJ) $(LDFLAGS_1) $(LDLIBS) $(LDFLAGS_2)
+
+clean:
+	rm -f $(OBJ) $(OUTDIR)/libblz_model_sample.so

@@ -1,0 +1,742 @@
+/*
+ *
+ * (C) 2015 - giuseppe.baccini@gmail.com
+ *
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
+
+#include "blz_toolkit_mainwindow.h"
+#include "ui_blz_toolkit_mainwindow.h"
+
+void blz_toolkit_peer_lfcyc_status_change_hndlr(blaze::peer_automa &peer,
+                                                blaze::PeerStatus status,
+                                                void *ud)
+{
+    blz_toolkit_MainWindow *btmw = (blz_toolkit_MainWindow *)ud;
+    qDebug() << "peer status:" << status;
+    btmw->EmitPeerStatus(status);
+}
+
+
+blz_toolkit_MainWindow::blz_toolkit_MainWindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::blz_toolkit_MainWindow),
+    peer_(77),
+    view_model_loaded_(false),
+    blzmodel_load_list_model_(this),
+    pers_dri_file_load_list_model_(this),
+    blz_model_loaded_model_(peer_.get_em_m(), this),
+    pte_apnd_(this),
+    flash_info_msg_val_(0)
+{
+    ui->setupUi(this);
+    InitGuiConfig();
+
+    //peer_ logger cfg bgn
+    blaze::logger::add_appender_to_all_loggers(&pte_apnd_);
+    //peer_ logger cfg end
+
+    //cfg peer models-view connection
+    ui->peer_cfg_view_list_blzmodel->setModel(&blzmodel_load_list_model_);
+    ui->peer_cfg_view_list_blzpersdriv->setModel(&pers_dri_file_load_list_model_);
+
+    //settings bgn
+    QSettings settings;
+    settings.beginGroup(KEY_WINDOW);
+    if(settings.contains(KEY_SIZE)) {
+        resize(settings.value(KEY_SIZE).toSize());
+    }
+    if(settings.contains(KEY_POSITION)) {
+        move(settings.value(KEY_POSITION).toPoint());
+    }
+    settings.endGroup();
+    //settings end
+
+    //peer_ e_init bgn
+    blaze::RetCode res = blaze::RetCode_OK;
+    peer_.set_peer_status_change_hndlr(blz_toolkit_peer_lfcyc_status_change_hndlr,
+                                       this);
+    if(res = peer_.early_init()) {
+        qDebug() << "peer EarlyInit FAILED res:" << res;
+    } else {
+        qDebug() << "peer EarlyInit OK res:" << res;
+    }
+    //peer_ e_init end
+
+    LoadDefPeerCfgFile();
+}
+
+blz_toolkit_MainWindow::~blz_toolkit_MainWindow()
+{
+    blaze::logger::remove_last_appender_from_all_loggers();
+    delete ui;
+}
+
+void blz_toolkit_MainWindow::InitGuiConfig()
+{
+    qRegisterMetaType<blaze::TraceLVL>("blaze::TraceLVL");
+    qRegisterMetaType<QTextCursor>("QTextCursor");
+    qRegisterMetaType<blaze::PeerStatus>("blaze::PeerStatus");
+    qRegisterMetaType<blaze::ConnectionStatus>("blaze::ConnectionStatus");
+    qRegisterMetaType<blaze::TransactionStatus>("blaze::TransactionStatus");
+    qRegisterMetaType<blaze::SubscriptionStatus>("blaze::SubscriptionStatus");
+    qRegisterMetaType<blaze::subscription_event_int *>("blaze::subscription_event_int");
+    qRegisterMetaType<BLZ_SBS_COL_DATA_ENTRY *>("BLZ_SBS_COL_DATA_ENTRY");
+
+    ui->action_Start_Peer->setDisabled(true);
+    ui->action_Stop_Peer->setDisabled(true);
+    ui->actionConnect->setDisabled(true);
+
+    connect(&pte_apnd_,
+            SIGNAL(messageReady(blaze::TraceLVL, const QString &)),
+            this,
+            SLOT(OnLogEvent(blaze::TraceLVL, const QString &)));
+
+    connect(this,
+            SIGNAL(Peer_status_change(blaze::PeerStatus)),
+            this,
+            SLOT(OnPeer_status_change(blaze::PeerStatus)));
+
+    //timout
+    connect(this,
+            SIGNAL(SignalNewConnectionTimeout(const QString &)),
+            this,
+            SLOT(OnSetInfoMsg(const QString &)));
+
+    connect(&flash_info_msg_tim_, SIGNAL(timeout()), this, SLOT(OnFlashInfoMsg()));
+    connect(&reset_info_msg_tim_, SIGNAL(timeout()), this, SLOT(OnResetInfoMsg()));
+
+    //set cfg all button
+    connect(ui->set_peer_cfg_all_button, SIGNAL(clicked()), this,
+            SLOT(on_set_peer_params_button_clicked()));
+    connect(ui->set_peer_cfg_all_button, SIGNAL(clicked()), this,
+            SLOT(on_update_peer_model_button_clicked()));
+    connect(ui->set_peer_cfg_all_button, SIGNAL(clicked()), this,
+            SLOT(on_set_pers_driver_button_clicked()));
+
+    //blz_model
+    connect(this, SIGNAL(BLZ_MODEL_Update_event()), this,
+            SLOT(On_BLZ_MODEL_Update()));
+    connect(this, SIGNAL(BLZ_MODEL_Update_event()), &blz_model_loaded_model_,
+            SLOT(OnModelUpdate_event()));
+}
+
+void blz_toolkit_MainWindow::closeEvent(QCloseEvent *event)
+{
+    QString appName = qApp->applicationName();
+    QString text = "<p>Confirm Exit?</p>";
+    int res = QMessageBox::question(this, appName, text, QMessageBox::Ok,
+                                    QMessageBox::Cancel);
+    if(res == QMessageBox::Cancel) {
+        event->ignore();
+        return;
+    }
+    peer_.stop_peer(true);
+    blaze::PeerStatus current = blaze::PeerStatus_ZERO;
+    peer_.await_for_peer_status_reached_or_outdated(blaze::PeerStatus_STOPPED,
+                                                    current);
+    QSettings settings;
+    settings.beginGroup(KEY_WINDOW);
+    settings.setValue(KEY_SIZE, size());
+    settings.setValue(KEY_POSITION, pos());
+    settings.endGroup();
+    event->accept();
+}
+
+void blz_toolkit_MainWindow::on_action_Exit_triggered()
+{
+    close();
+}
+
+void blz_toolkit_MainWindow::peer_params_clbk_ud(int pnum, const char *param,
+                                                 const char *value, void *ud)
+{
+    blz_toolkit_MainWindow *mw = (blz_toolkit_MainWindow *)ud;
+    mw->PeerLoadCfgHndl(pnum, param, value);
+}
+
+//------------------------------------------------------------------------------
+// blz_toolkit_MainWindow::PeerLoadCfgHndl
+//------------------------------------------------------------------------------
+
+blaze::RetCode blz_toolkit_MainWindow::PeerLoadCfgHndl(int pnum,
+                                                       const char *param,
+                                                       const char *value)
+{
+    if(!strcmp(param, "pure_server")) {
+        ui->pp_cfg_peer_personality->setCurrentIndex(1);
+    }
+
+    if(!strcmp(param, "pure_client")) {
+        ui->pp_cfg_peer_personality->setCurrentIndex(0);
+    }
+
+    if(!strcmp(param, "load_model")) {
+        if(value) {
+            if(blzmodel_load_list_model_.stringList().contains(tr(value))) {
+                qDebug() << "[load_model] model already specified:" << value;
+                return blaze::RetCode_BADCFG;
+            } else {
+                int rowc = blzmodel_load_list_model_.rowCount();
+                blzmodel_load_list_model_.insertRow(rowc);
+                QModelIndex index = blzmodel_load_list_model_.index(rowc, 0);
+                blzmodel_load_list_model_.setData(index, tr(value));
+            }
+        } else {
+            qDebug() << "[load_model] requires argument.";
+            return blaze::RetCode_BADCFG;
+        }
+    }
+
+    if(!strcmp(param, "srv_sin_addr")) {
+        if(value) {
+            ui->pp_cfg_srv_sin_addr->setText(tr(value));
+        } else {
+            qDebug() << "[srv_sin_addr] requires argument.";
+            return blaze::RetCode_BADCFG;
+        }
+    }
+
+    if(!strcmp(param, "srv_sin_port")) {
+        if(value) {
+            ui->pp_cfg_srv_sin_port->setText(tr(value));
+        } else {
+            qDebug() << "[srv_sin_port] requires argument.";
+            return blaze::RetCode_BADCFG;
+        }
+    }
+
+    if(!strcmp(param, "srv_pkt_q_len")) {
+        if(value) {
+            ui->pp_cfg_srv_pkt_q_len->setText(tr(value));
+        } else {
+            qDebug() << "[srv_pkt_q_len] requires argument.";
+            return blaze::RetCode_BADCFG;
+        }
+    }
+
+    if(!strcmp(param, "srv_exectrs")) {
+        if(value) {
+            ui->pp_cfg_srv_exectrs->setText(tr(value));
+        } else {
+            qDebug() << "[srv_exectrs] requires argument.";
+            return blaze::RetCode_BADCFG;
+        }
+    }
+
+    if(!strcmp(param, "cli_pkt_q_len")) {
+        if(value) {
+            ui->pp_cfg_cli_pkt_q_len->setText(tr(value));
+        } else {
+            qDebug() << "[cli_pkt_q_len] requires argument.";
+            return blaze::RetCode_BADCFG;
+        }
+    }
+
+    if(!strcmp(param, "cli_exectrs")) {
+        if(value) {
+            ui->pp_cfg_cli_exectrs->setText(tr(value));
+        } else {
+            qDebug() << "[cli_exectrs] requires argument.";
+            return blaze::RetCode_BADCFG;
+        }
+    }
+
+    if(!strcmp(param, "srv_sbs_evt_q_len")) {
+        if(value) {
+            ui->pp_cfg_srv_sbs_evt_q_len->setText(tr(value));
+        } else {
+            qDebug() << "[srv_sbs_evt_q_len] requires argument.";
+            return blaze::RetCode_BADCFG;
+        }
+    }
+
+    if(!strcmp(param, "srv_sbs_exectrs")) {
+        if(value) {
+            ui->pp_cfg_srv_sbs_exectrs->setText(tr(value));
+        } else {
+            qDebug() << "[srv_sbs_exectrs] requires argument.";
+            return blaze::RetCode_BADCFG;
+        }
+    }
+
+    if(!strcmp(param, "pers_enabled")) {
+        ui->pp_cfg_pers_enabled->setChecked(true);
+    }
+
+    if(!strcmp(param, "pers_schema_create")) {
+        ui->pp_cfg_pers_schema_create->setChecked(true);
+    }
+
+    if(!strcmp(param, "drop_existing_schema")) {
+        ui->pp_cfg_drop_existing_schema->setChecked(true);
+    }
+
+    if(!strcmp(param, "load_pers_driv")) {
+        if(value) {
+            if(pers_dri_file_load_list_model_.stringList().contains(tr(value))) {
+                qDebug() << "[load_pers_driv] driver already specified:" << value;
+                return blaze::RetCode_BADCFG;
+            } else {
+                int rowc = pers_dri_file_load_list_model_.rowCount();
+                pers_dri_file_load_list_model_.insertRow(rowc);
+                QModelIndex index = pers_dri_file_load_list_model_.index(rowc, 0);
+                pers_dri_file_load_list_model_.setData(index, tr(value));
+            }
+        } else {
+            qDebug() << "[load_pers_driv] requires argument.";
+            return blaze::RetCode_BADCFG;
+        }
+    }
+
+    return blaze::RetCode_OK;
+}
+
+void blz_toolkit_MainWindow::on_action_Load_Config_triggered()
+{
+    blaze::RetCode res = blaze::RetCode_OK;
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Load Config"),
+                                                    QDir::currentPath(), tr("Blaze config (*.*)"));
+    if(fileName.isEmpty()) {
+        qDebug() << "fileName empty.";
+        return;
+    }
+    QByteArray ba = fileName.toLocal8Bit();
+    const char *fileName_cstr = ba.data();
+    blaze::config_loader peer_conf_ldr;
+    if((res = peer_conf_ldr.init(fileName_cstr))) {
+        qDebug() << "peer_conf_ldr.Init() failed." << res;
+        return;
+    }
+    if((res = peer_conf_ldr.load_config())) {
+        qDebug() << "peer_conf_ldr.LoadCfg() failed." << res;
+        return;
+    }
+    peer_conf_ldr.enum_params(peer_params_clbk_ud, this);
+}
+
+void blz_toolkit_MainWindow::on_set_peer_params_button_clicked()
+{
+    switch(ui->pp_cfg_peer_personality->currentIndex()) {
+        case 0:
+            peer_.set_cfg_personality(blaze::PeerPersonality_PURE_CLIENT);
+            break;
+        case 1:
+            peer_.set_cfg_personality(blaze::PeerPersonality_PURE_SERVER);
+            break;
+        case 2:
+            peer_.set_cfg_personality(blaze::PeerPersonality_BOTH);
+            break;
+        default:
+            break;
+    }
+
+    if(ui->pp_cfg_srv_sin_addr->text() != "") {
+        peer_.set_cfg_srv_sin_addr(
+            ui->pp_cfg_srv_sin_addr->text().toLocal8Bit().data());
+    }
+    peer_.set_cfg_srv_sin_port(atoi(
+                                   ui->pp_cfg_srv_sin_port->text().toLocal8Bit().data()));
+    peer_.set_cfg_srv_pkt_q_len(atoi(
+                                    ui->pp_cfg_srv_pkt_q_len->text().toLocal8Bit().data()));
+    peer_.set_cfg_srv_exectrs(atoi(
+                                  ui->pp_cfg_srv_exectrs->text().toLocal8Bit().data()));
+    peer_.set_cfg_cli_pkt_q_len(atoi(
+                                    ui->pp_cfg_cli_pkt_q_len->text().toLocal8Bit().data()));
+    peer_.set_cfg_cli_exectrs(atoi(
+                                  ui->pp_cfg_cli_exectrs->text().toLocal8Bit().data()));
+    peer_.set_cfg_srv_sbs_evt_q_len(atoi(
+                                        ui->pp_cfg_srv_sbs_evt_q_len->text().toLocal8Bit().data()));
+    peer_.set_cfg_srv_sbs_exectrs(atoi(
+                                      ui->pp_cfg_srv_sbs_exectrs->text().toLocal8Bit().data()));
+    peer_.set_cfg_pers_enabled(ui->pp_cfg_pers_enabled->isChecked());
+    peer_.set_cfg_pers_schema_create(ui->pp_cfg_pers_schema_create->isChecked());
+    peer_.set_cfg_drop_existing_schema(
+        ui->pp_cfg_drop_existing_schema->isChecked());
+    peer_.set_configured(true);
+    ui->peer_cfg_status_label->setText(tr("Set"));
+    ui->peer_cfg_status_label->setStyleSheet(
+        tr("background-color : LightGreen; color : black;"));
+    ui->action_Start_Peer->setEnabled(true);
+}
+
+void blz_toolkit_MainWindow::on_update_peer_model_button_clicked()
+{
+    int numRows = blzmodel_load_list_model_.rowCount();
+    for(int row = 0; row < numRows; ++row) {
+        QModelIndex index = blzmodel_load_list_model_.index(row, 0);
+        peer_.set_cfg_load_model(blzmodel_load_list_model_.data(index,
+                                                                Qt::DisplayRole).toString().toLocal8Bit().data());
+    }
+    ui->peer_model_label_status->setText(tr("Set"));
+    ui->peer_model_label_status->setStyleSheet(
+        tr("background-color : LightGreen; color : black;"));
+}
+
+void blz_toolkit_MainWindow::on_set_pers_driver_button_clicked()
+{
+    int numRows = pers_dri_file_load_list_model_.rowCount();
+    for(int row = 0; row < numRows; ++row) {
+        QModelIndex index = pers_dri_file_load_list_model_.index(row, 0);
+        peer_.set_cfg_load_pers_driv(pers_dri_file_load_list_model_.data(index,
+                                                                         Qt::DisplayRole).toString().toLocal8Bit().data());
+    }
+    ui->peer_pers_driv_status_label->setText(tr("Set"));
+    ui->peer_pers_driv_status_label->setStyleSheet(
+        tr("background-color : LightGreen; color : black;"));
+}
+
+void blz_toolkit_MainWindow::on_action_Start_Peer_triggered()
+{
+    ui->peer_Tab->widget(0)->setEnabled(false);
+    peer_.start_peer(0, 0, true);
+}
+
+void blz_toolkit_MainWindow::OnPeer_status_change(blaze::PeerStatus status)
+{
+    switch(status) {
+        case blaze::PeerStatus_ZERO:
+            ui->peer_status_label_display->setText(QObject::tr("ZERO"));
+            break;
+        case blaze::PeerStatus_EARLY:
+            ui->peer_status_label_display->setText(QObject::tr("EARLY"));
+            ui->peer_status_label_display->setStyleSheet(
+                QObject::tr("background-color : Beige; color : black;"));
+            break;
+        case blaze::PeerStatus_WELCOMED:
+            ui->peer_status_label_display->setText(QObject::tr("WELCOMED"));
+            ui->peer_status_label_display->setStyleSheet(
+                QObject::tr("background-color : Cornsilk; color : black;"));
+            break;
+        case blaze::PeerStatus_INITIALIZING:
+            ui->peer_status_label_display->setText(QObject::tr("INITIALIZING"));
+            ui->peer_status_label_display->setStyleSheet(
+                QObject::tr("background-color : PowderBlue; color : black;"));
+            break;
+        case blaze::PeerStatus_INITIALIZED:
+            ui->peer_status_label_display->setText(QObject::tr("INITIALIZED"));
+            ui->peer_status_label_display->setStyleSheet(
+                QObject::tr("background-color : Aquamarine; color : black;"));
+            break;
+        case blaze::PeerStatus_STARTING:
+            ui->peer_status_label_display->setText(QObject::tr("STARTING"));
+            ui->peer_status_label_display->setStyleSheet(
+                QObject::tr("background-color : Coral; color : black;"));
+            break;
+        case blaze::PeerStatus_STARTED:
+            ui->peer_status_label_display->setText(QObject::tr("STARTED"));
+            ui->peer_status_label_display->setStyleSheet(
+                QObject::tr("background-color : DarkOrange; color : black;"));
+            break;
+        case blaze::PeerStatus_RUNNING:
+            Status_RUNNING_Actions();
+            break;
+        case blaze::PeerStatus_STOP_REQUESTED:
+            ui->peer_status_label_display->setText(QObject::tr("STOP REQUESTED"));
+            ui->peer_status_label_display->setStyleSheet(
+                QObject::tr("background-color : Indigo; color : white;"));
+            ui->action_Stop_Peer->setEnabled(false);
+            ui->actionConnect->setEnabled(false);
+            break;
+        case blaze::PeerStatus_STOPPING:
+            ui->peer_status_label_display->setText(QObject::tr("STOPPING"));
+            ui->peer_status_label_display->setStyleSheet(
+                QObject::tr("background-color : IndianRed; color : black;"));
+            break;
+        case blaze::PeerStatus_STOPPED:
+            Status_STOPPED_Actions();
+            break;
+        case blaze::PeerStatus_DIED:
+            ui->peer_status_label_display->setText(QObject::tr("DIED"));
+            ui->peer_status_label_display->setStyleSheet(
+                QObject::tr("background-color : Black; color : white;"));
+            break;
+        case blaze::PeerStatus_ERROR:
+            ui->peer_status_label_display->setText(QObject::tr("ERROR"));
+            ui->peer_status_label_display->setStyleSheet(
+                QObject::tr("background-color : Red; color : black;"));
+            break;
+        default:
+            break;
+    }
+}
+
+void blz_toolkit_MainWindow::On_BLZ_MODEL_Update()
+{
+
+}
+
+void blz_toolkit_MainWindow::OnSetInfoMsg(const QString &msg)
+{
+    ui->main_info_label->setText(QObject::tr("TIMEOUT: [%1]").arg(msg));
+    ui->main_info_label->setStyleSheet(
+        QObject::tr("background-color : Red; color : black; font-weight: bold;"));
+    reset_info_msg_tim_.start(BLZ_TKT_INT_SINGL_SHOT_TIMER_CAPTMSG_RST_MSEC);
+    flash_info_msg_tim_.start(BLZ_TKT_INT_REPT_SHOT_TIMER_CAPTMSG_FLAS_MSEC);
+}
+
+void blz_toolkit_MainWindow::OnFlashInfoMsg()
+{
+    if(reset_info_msg_tim_.isActive()) {
+        if(++flash_info_msg_val_ % 2) {
+            ui->main_info_label->setStyleSheet(
+                QObject::tr("background-color : black; color : Red; font-weight: bold;"));
+        } else {
+            ui->main_info_label->setStyleSheet(
+                QObject::tr("background-color : Red; color : black; font-weight: bold;"));
+        }
+    } else {
+        flash_info_msg_val_ = 0;
+        flash_info_msg_tim_.stop();
+    }
+}
+
+void blz_toolkit_MainWindow::OnResetInfoMsg()
+{
+    reset_info_msg_tim_.stop();
+    ui->main_info_label->setText("");
+    ui->main_info_label->setStyleSheet(
+        QObject::tr("background-color : Azure; color : black;"));
+}
+
+void blz_toolkit_MainWindow::EmitPeerStatus(blaze::PeerStatus status)
+{
+    emit Peer_status_change(status);
+}
+
+void blz_toolkit_MainWindow::on_action_Stop_Peer_triggered()
+{
+    peer_.stop_peer(true);
+    //ui->peer_Tab->widget(0)->setEnabled(true);
+}
+
+void blz_toolkit_MainWindow::Status_RUNNING_Actions()
+{
+    ui->peer_status_label_display->setText(QObject::tr("RUNNING"));
+    ui->peer_status_label_display->setStyleSheet(
+        QObject::tr("background-color : LawnGreen; color : black;"));
+    ui->action_Start_Peer->setEnabled(false);
+    ui->action_Stop_Peer->setEnabled(true);
+    ui->actionConnect->setEnabled(true);
+    if(!view_model_loaded_) {
+        view_model_loaded_ = true;
+        AddNewModelTab();
+        emit BLZ_MODEL_Update_event();
+    }
+}
+
+void blz_toolkit_MainWindow::Status_STOPPED_Actions()
+{
+    ui->peer_status_label_display->setText(QObject::tr("STOPPED"));
+    ui->peer_status_label_display->setStyleSheet(
+        QObject::tr("background-color : Silver; color : black;"));
+    ui->action_Start_Peer->setEnabled(true);
+}
+
+void blz_toolkit_MainWindow::AddNewModelTab()
+{
+    blz_toolkit_model_tab *mt = new blz_toolkit_model_tab(blz_model_loaded_model_,
+                                                          ui->peer_Tab);
+    QIcon icon_model;
+    icon_model.addFile(QStringLiteral(":/icon/icons/social-buffer.png"), QSize(),
+                       QIcon::Normal, QIcon::Off);
+    QString tab_name = QString("Peer Model");
+    ui->peer_Tab->addTab(mt, icon_model, tab_name);
+    connect(this, SIGNAL(BLZ_MODEL_Update_event()), mt,
+            SLOT(On_BLZ_MODEL_Update()));
+    QSortFilterProxyModel &mt_mod = mt->b_mdl();
+    connect(this, SIGNAL(BLZ_MODEL_Update_event()), &mt_mod, SLOT(invalidate()));
+}
+
+void blz_toolkit_MainWindow::AddNewConnectionTab(blaze::connection_int
+                                                 &new_conn,
+                                                 const QString &host,
+                                                 const QString &port,
+                                                 const QString &usr,
+                                                 const QString &psswd)
+{
+    blz_toolkit_Connection *ct = new blz_toolkit_Connection(new_conn,
+                                                            host,
+                                                            port,
+                                                            usr,
+                                                            psswd,
+                                                            blz_model_loaded_model_,
+                                                            *this,
+                                                            ui->peer_Tab);
+    QIcon icon_flash;
+    blaze::ConnectivityEventResult con_evt_res =
+        blaze::ConnectivityEventResult_UNDEFINED;
+    blaze::ConnectivityEventType connectivity_evt_type =
+        blaze::ConnectivityEventType_UNDEFINED;
+    if(new_conn.await_for_connection_result(con_evt_res, connectivity_evt_type,
+                                            BLZ_TKT_INT_AWT_TIMEOUT,
+                                            0) == blaze::RetCode_TIMEOUT) {
+        emit SignalNewConnectionTimeout(QString("establishing new connection"));
+    }
+    if(con_evt_res == blaze::ConnectivityEventResult_OK) {
+        icon_flash.addFile(QStringLiteral(":/icon/icons/flash_green.png"), QSize(),
+                           QIcon::Normal, QIcon::Off);
+    } else {
+        icon_flash.addFile(QStringLiteral(":/icon/icons/flash_red.png"), QSize(),
+                           QIcon::Normal, QIcon::Off);
+    }
+    QString tab_name = QString("[%1][%2][%3]").arg(ct->tab_id()).arg(host, port);
+    int tab_idx = ui->peer_Tab->addTab(ct, icon_flash, tab_name);
+    ct->setTab_idx(tab_idx);
+}
+
+void blz_toolkit_MainWindow::LoadDefPeerCfgFile()
+{
+    blaze::RetCode res = blaze::RetCode_OK;
+    const char *fileName_cstr = "params";
+    blaze::config_loader peer_conf_ldr;
+    if((res = peer_conf_ldr.init(fileName_cstr))) {
+        qDebug() << "peer_conf_ldr.Init() failed." << res;
+        return;
+    }
+    if((res = peer_conf_ldr.load_config())) {
+        qDebug() << "peer_conf_ldr.LoadCfg() failed." << res;
+        return;
+    }
+    peer_conf_ldr.enum_params(peer_params_clbk_ud, this);
+}
+
+
+void blz_toolkit_MainWindow::on_actionConnect_triggered()
+{
+    blz_toolkit_NewConnDlg conn_dlg(this);
+    conn_dlg.exec();
+    if(conn_dlg.result() == QDialog::Accepted) {
+        sockaddr_in conn_params;
+        memset(&conn_params, 0, sizeof(conn_params));
+        conn_params.sin_family = AF_INET;
+        conn_params.sin_addr.s_addr = inet_addr(
+                                          conn_dlg.ui->ln_edt_host->text().toLatin1().data());
+        conn_params.sin_port = htons(atoi(
+                                         conn_dlg.ui->ln_edt_port->text().toLatin1().data()));
+        blaze::connection_int *new_conn = NULL;
+        peer_.new_connection(&new_conn);
+        new_conn->client_connect(conn_params);
+        AddNewConnectionTab(*new_conn,
+                            conn_dlg.ui->ln_edt_host->text(),
+                            conn_dlg.ui->ln_edt_port->text(),
+                            conn_dlg.ui->ln_edt_usr->text(),
+                            conn_dlg.ui->ln_edt_psswd->text());
+    } else {
+
+    }
+}
+
+void blz_toolkit_MainWindow::OnLogEvent(blaze::TraceLVL tlvl,
+                                        const QString &msg)
+{
+    QString beginHtml;
+    switch(tlvl) {
+        case blaze::TL_PLN:
+            beginHtml = "<p style=\"color: Black; background-color: White\">";
+            break;
+        case blaze::TL_LOW:
+            beginHtml = "<p style=\"color: Beige; background-color: Black\">";
+            break;
+        case blaze::TL_TRC:
+            beginHtml = "<p style=\"color: Beige; background-color: Black\">";
+            break;
+        case blaze::TL_DBG:
+            beginHtml = "<p style=\"color: Khaki; background-color: Black\">";
+            break;
+        case blaze::TL_INF:
+            beginHtml = "<p style=\"color: Lime; background-color: Black\">";
+            break;
+        case blaze::TL_WRN:
+            beginHtml = "<p style=\"color: Orange; background-color: Black\">";
+            break;
+        case blaze::TL_ERR:
+            beginHtml = "<p style=\"color: Red; background-color: Black\">";
+            break;
+        case blaze::TL_CRI:
+            beginHtml = "<p style=\"color: White; background-color: Red\">";
+            break;
+        case blaze::TL_FAT:
+            beginHtml = "<p style=\"color: Black; background-color: Red\">";
+            break;
+        default:
+            break;
+    }
+    QString endHtml = "</p>";
+    QString escp_msg = msg.toHtmlEscaped();
+    QString line = beginHtml % escp_msg % endHtml;
+    QTextCursor cursor = ui->logr_apnd_plainTextEdit->textCursor();
+    ui->logr_apnd_plainTextEdit->appendHtml(line);
+    cursor.movePosition(QTextCursor::End);
+    ui->logr_apnd_plainTextEdit->setTextCursor(cursor);
+}
+
+void blz_toolkit_MainWindow::on_peer_Tab_tabCloseRequested(int index)
+{
+    if(index == 0 || index == 1) {
+        return;
+    }
+    blz_toolkit_Connection *connwidg = static_cast<blz_toolkit_Connection *>
+                                       (ui->peer_Tab->widget(index));
+    ui->peer_Tab->removeTab(index);
+    delete connwidg;
+}
+
+void blz_toolkit_MainWindow::on_actionLow_triggered()
+{
+    blaze::logger::set_level_for_all_loggers(blaze::TL_LOW);
+}
+
+void blz_toolkit_MainWindow::on_actionTrace_triggered()
+{
+    blaze::logger::set_level_for_all_loggers(blaze::TL_TRC);
+}
+
+void blz_toolkit_MainWindow::on_actionDebug_triggered()
+{
+    blaze::logger::set_level_for_all_loggers(blaze::TL_DBG);
+}
+
+void blz_toolkit_MainWindow::on_actionInfo_triggered()
+{
+    blaze::logger::set_level_for_all_loggers(blaze::TL_INF);
+}
+
+void blz_toolkit_MainWindow::on_actionWarning_triggered()
+{
+    blaze::logger::set_level_for_all_loggers(blaze::TL_WRN);
+}
+
+void blz_toolkit_MainWindow::on_actionError_triggered()
+{
+    blaze::logger::set_level_for_all_loggers(blaze::TL_ERR);
+}
+
+void blz_toolkit_MainWindow::on_actionCritical_triggered()
+{
+    blaze::logger::set_level_for_all_loggers(blaze::TL_CRI);
+}
+
+void blz_toolkit_MainWindow::on_actionFatal_triggered()
+{
+    blaze::logger::set_level_for_all_loggers(blaze::TL_FAT);
+}
+
+void blz_toolkit_MainWindow::on_actionClean_Console_triggered()
+{
+    ui->logr_apnd_plainTextEdit->clear();
+}

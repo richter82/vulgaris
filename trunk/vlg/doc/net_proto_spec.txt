@@ -1,0 +1,1289 @@
+/******************************************************************************
+Blaze protocol specification
+
+STATUS:		alpha
+VER:		0.5
+REV. DATE:	04-10-2017
+
+author:		Giuseppe Baccini 
+mail:		giuseppe.baccini@gmail.com
+*******************************************************************************
+
+-----------------------------------------------------------------------------
+GENERAL PROTOCOL DESCRIPTION
+-----------------------------------------------------------------------------
+
+Blaze protocol is a networking application level protocol, designed to handle 
+transactional and subscription requests over a TCP/IP network. 
+Blaze protocol relies on TCP transportation protocol.
+Protocol header is formed by a sequence of 32 bit words.
+All integer fields in the header are always represented in big-endian format. 
+All integer and float fields in the body are always represented in 
+little-endian format.
+
+Byte order in the header: big-endian
+
+<--
+most significant byte
+
+-->
+least significant byte
+
+--------------------------------
+1......4.......6.......8.......0
+|4byte  |3byte  |2byte  |1byte |
+76543210765432107654321076543210
+--------------------------------
+
+Byte order in the body: little-endian
+
+<--
+least significant byte
+
+-->
+most significant byte
+
+--------------------------------
+.......0.......8.......6.......1
+|1byte  |2byte  |3byte  |4byte |
+76543210765432107654321076543210
+--------------------------------
+
+
+*****************************************************************************
+PACKET LIST
+*****************************************************************************
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+CONNECTIVITY
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+*****************************************************************************
+PACKET NAME TSTREQ - TEST REQUEST
+*****************************************************************************
+
+- WORDS
+	- PKTHDR
+	- TMSTMP
+	- CONNID (client only)
+
+- LENGTH
+	- HEADER / 2 WORD SERVER / 3 WORD CLIENT
+
+- STRUCTURE
+
++-----------------------------------------------------------------+
+|.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.|
++-----------------------------------------------------------------+
+|VERSION     |HLEN   |PACKTTYPE  |UNUSED (ZERO FILLED)            |
++-----------------------------------------------------------------+
+| V V V V V V|H H H H|0 0 0 0 0 1|0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|TIMESTAMP                                                        |
++-----------------------------------------------------------------+
+| T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|CONNECTION ID  (client)                                          |
++-----------------------------------------------------------------+
+| C C C C C C C C C C C C C C C C C C C C C C C C C C C C C C C C |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+
+*****************************************************************************
+PACKET NAME HRTBET - HEARTBEAT
+*****************************************************************************
+
+- WORDS
+	- PKTHDR
+	- TMSTMP
+	- CONNID (client only)
+
+- LENGTH
+	- HEADER / 2 WORD SERVER / 3 WORD CLIENT
+
+- STRUCTURE
+
++-----------------------------------------------------------------+
+|.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.|
++-----------------------------------------------------------------+
+|VERSION     |HLEN   |PACKTTYPE  |UNUSED (ZERO FILLED)            |
++-----------------------------------------------------------------+
+| V V V V V V|H H H H|0 0 0 0 1 0|0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|TIMESTAMP                                                        |
++-----------------------------------------------------------------+
+| T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|CONNECTION ID  (client)                                          |
++-----------------------------------------------------------------+
+| C C C C C C C C C C C C C C C C C C C C C C C C C C C C C C C C |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+
+*****************************************************************************
+PACKET NAME CONREQ - CONNECTION REQUEST
+*****************************************************************************
+
+- WORDS
+	- PKTHDR
+	- CLIHBT
+
+- LENGTH
+	- HEADER 2 WORD
+
+- STRUCTURE
+
++-----------------------------------------------------------------+
+|.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.|
++-----------------------------------------------------------------+
+|VERSION     |HLEN   |PACKTTYPE  |UNUSED (ZERO FILLED)            |
++-----------------------------------------------------------------+
+| V V V V V V|H H H H|0 0 0 0 1 1|0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|HEARTBEAT SEC   |UNUSED (ZERO FILLED)                            |
++-----------------------------------------------------------------+
+| H H H H H H H H 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+
+*****************************************************************************
+PACKET NAME CONRES - CONNECTION RESPONSE
+*****************************************************************************
+
+- WORDS
+	- PKTHDR
+	- SRVCRS
+	- CONNID (cond.)
+
+- LENGTH
+	- HEADER 2/3 WORD
+
+- STRUCTURE
+
++-----------------------------------------------------------------+
+|.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.|
++-----------------------------------------------------------------+
+|VERSION     |HLEN   |PACKTTYPE  |UNUSED (ZERO FILLED)            |
++-----------------------------------------------------------------+
+| V V V V V V|H H H H|0 0 0 1 0 0|0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|CONRS |ERRCD    |AGREED HB      |UNUSED (ZERO FILLED)            |
++-----------------------------------------------------------------+
+| R R R|E E E E|U|A A A A A A A A|0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|CONNECTION ID  (cond.)                                           |
++-----------------------------------------------------------------+
+| C C C C C C C C C C C C C C C C C C C C C C C C C C C C C C C C |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+
+*****************************************************************************
+PACKET NAME DSCOND - DISCONNECTED
+*****************************************************************************
+
+- WORDS
+	- PKTHDR
+	- DISWRD
+	- CONNID (client only)
+
+- LENGTH
+	- HEADER / 2 WORD SERVER / 3 WORD CLIENT
+
+- STRUCTURE
+
++-----------------------------------------------------------------+
+|.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.|
++-----------------------------------------------------------------+
+|VERSION     |HLEN   |PACKTTYPE  |UNUSED (ZERO FILLED)            |
++-----------------------------------------------------------------+
+| V V V V V V|H H H H|0 0 0 1 0 1|0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|DISRES  |UNUSED (ZERO FILLED)                                    |
++-----------------------------------------------------------------+
+| R R R R|0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|CONNECTION ID  (client)                                          |
++-----------------------------------------------------------------+
+| C C C C C C C C C C C C C C C C C C C C C C C C C C C C C C C C |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TRANSACTIONAL
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+*****************************************************************************
+PACKET NAME TXRQST - TRANSACTION REQUEST
+*****************************************************************************
+
+- WORDS
+	- PKTHDR
+	- TXREQW
+	- TXPLID [txid0]
+	- TXSVID [txid1]
+	- TXCNID [txid2]
+	- TXPRID [txid3]
+	- PKTLEN (cond.)
+	- CLSENC (cond.)
+	- CONNID
+
+- LENGTH
+	- HEADER 7/9 WORD
+	- BODY vary
+
+- STRUCTURE
+
++-----------------------------------------------------------------+
+|.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.|
++-----------------------------------------------------------------+
+|VERSION     |HLEN   |PACKTTYPE  |UNUSED (ZERO FILLED)            |
++-----------------------------------------------------------------+
+| V V V V V V|H H H H|0 0 0 1 1 0|0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|TXTYPE  |ACT  |1|UNUSED (ZERO FILLED)                            |
++-----------------------------------------------------------------+
+| T T T T|A A A|b|0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|TXID0 PLATFORM ID                                                |
++-----------------------------------------------------------------+
+| P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|TXID1 SERVICE ID                                                 |
++-----------------------------------------------------------------+
+| S S S S S S S S S S S S S S S S S S S S S S S S S S S S S S S S |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|TXID2 CONNECTION ID                                              |
++-----------------------------------------------------------------+
+| C C C C C C C C C C C C C C C C C C C C C C C C C C C C C C C C |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|TXID3 PROGRESSIVE ID                                             |
++-----------------------------------------------------------------+
+| P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|PACKET LEN                                                       |
++-----------------------------------------------------------------+
+| L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|ENCTYPE |UNUSED (ZERO)  |NCLASS ID                                |
++-----------------------------------------------------------------+
+| E E E E|0 0 0 0 0 0 0 0|D D D D D D D D D D D D D D D D D D D D |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|CONNECTION ID                                                    |
++-----------------------------------------------------------------+
+| C C C C C C C C C C C C C C C C C C C C C C C C C C C C C C C C |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\|
+|BODY BODY BODY BODY BODY BODY BODY BODY BODY BODY BODY BODY BODY |
+|\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\|
++-----------------------------------------------------------------+
+
+*1 : RSCLRQ bit
+
+*****************************************************************************
+PACKET NAME TXRESP - TRANSACTION RESPONSE
+*****************************************************************************
+
+- WORDS
+	- PKTHDR
+	- TXRESW
+	- TXPLID [txid0]
+	- TXSVID [txid1]
+	- TXCNID [txid2]
+	- TXPRID [txid3]
+	- PKTLEN (cond.)
+	- CLSENC (cond.)
+
+- LENGTH
+	- HEADER 6/8 WORD
+	- BODY vary
+
+- STRUCTURE
+
++-----------------------------------------------------------------+
+|.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.|
++-----------------------------------------------------------------+
+|VERSION     |HLEN   |PACKTTYPE  |UNUSED (ZERO FILLED)            |
++-----------------------------------------------------------------+
+| V V V V V V|H H H H|0 0 0 1 1 1|0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|TXRES |B|UNUSED (ZERO)        |BLAZE PROTO RESULT CODE           |
++-----------------------------------------------------------------+
+| X X X|b|0 0 0 0 0 0 0 0 0 0 0|R R R R R R R R R R R R R R R R R |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|TXID0 PLATFORM ID                                                |
++-----------------------------------------------------------------+
+| P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|TXID1 SERVICE ID                                                 |
++-----------------------------------------------------------------+
+| S S S S S S S S S S S S S S S S S S S S S S S S S S S S S S S S |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|TXID2 CONNECTION ID                                              |
++-----------------------------------------------------------------+
+| C C C C C C C C C C C C C C C C C C C C C C C C C C C C C C C C |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|TXID3 PROGRESSIVE ID                                             |
++-----------------------------------------------------------------+
+| P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|PACKET LEN                                                       |
++-----------------------------------------------------------------+
+| L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|ENCTYPE |UNUSED (ZERO)  |NCLASS ID                                |
++-----------------------------------------------------------------+
+| E E E E|0 0 0 0 0 0 0 0|D D D D D D D D D D D D D D D D D D D D |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\|
+|BODY BODY BODY BODY BODY BODY BODY BODY BODY BODY BODY BODY BODY |
+|\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\|
++-----------------------------------------------------------------+
+
+*1 : RESCLS bit
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+SUBSCRIPTION
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+*****************************************************************************
+PACKET NAME SBSREQ - SUBSCRIPTION REQUEST
+*****************************************************************************
+
+- WORDS
+	-0 PKTHDR
+	-1 SBREQW
+	-2 CLSENC
+	-3 CONNID
+	-4 RQSTID
+	-5 TMSTMP[0] (cond.)
+	-6 TMSTMP[1] (cond.)
+
+- LENGTH
+	- HEADER 5/7 WORD
+
+- STRUCTURE
+
++-----------------------------------------------------------------+
+|.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.|
++-----------------------------------------------------------------+
+|VERSION     |HLEN   |PACKTTYPE  |UNUSED (ZERO FILLED)            |
++-----------------------------------------------------------------+
+| V V V V V V|H H H H|0 0 1 0 0 0|0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|SBTYPE  |SBMODE |U|FTYPE|U|DTYPE|UNUSED (ZERO FILLED)            |
++-----------------------------------------------------------------+
+| 0 0 S S|M M M M|0|F F F|0|D D D|0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|ENCTYPE |UNUSED (ZERO)  |NCLASS ID                                |
++-----------------------------------------------------------------+
+| E E E E|0 0 0 0 0 0 0 0|D D D D D D D D D D D D D D D D D D D D |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|CONNECTION ID                                                    |
++-----------------------------------------------------------------+
+| C C C C C C C C C C C C C C C C C C C C C C C C C C C C C C C C |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|REQUEST ID                                                       |
++-----------------------------------------------------------------+
+| R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|TIMESTAMP[0]  (OPT)                                              |
++-----------------------------------------------------------------+
+| T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|TIMESTAMP[1]  (OPT)                                              |
++-----------------------------------------------------------------+
+| T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+
+
+*****************************************************************************
+PACKET NAME SBSRES - SUBSCRIPTION RESPONSE
+*****************************************************************************
+
+- WORDS
+	- PKTHDR
+	- SBRESW
+	- RQSTID
+	- SBSRID (cond.)
+
+- LENGTH
+	- HEADER 3/4 WORD
+
+- STRUCTURE
+
++-----------------------------------------------------------------+
+|.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.|
++-----------------------------------------------------------------+
+|VERSION     |HLEN   |PACKTTYPE  |UNUSED (ZERO FILLED)            |
++-----------------------------------------------------------------+
+| V V V V V V|H H H H|0 0 1 0 0 1|0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|SBSRES|UNUSED (ZERO)          |BLAZE PROTO RESULT CODE           |
++-----------------------------------------------------------------+
+| X X X|0 0 0 0 0 0 0 0 0 0 0 0|R R R R R R R R R R R R R R R R R |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|REQUEST ID                                                       |
++-----------------------------------------------------------------+
+| R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|SBSRID  (cond)                                                   |
++-----------------------------------------------------------------+
+| S S S S S S S S S S S S S S S S S S S S S S S S S S S S S S S S |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+
+*****************************************************************************
+PACKET NAME SBSEVT - SUBSCRIPTION EVENT
+*****************************************************************************
+
+- WORDS
+	-0 PKTHDR
+	-1 SBSRID
+	-2 SEVTTP
+	-3 SEVTID
+	-4 TMSTMP[0]
+	-5 TMSTMP[1]
+	-6 PKTLEN (cond.)
+- LENGTH
+	- HEADER 6/7 WORD
+	- BODY vary
+	
+- STRUCTURE
+
++-----------------------------------------------------------------+
+|.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.|
++-----------------------------------------------------------------+
+|VERSION     |HLEN   |PACKTTYPE  |UNUSED (ZERO FILLED)            |
++-----------------------------------------------------------------+
+| V V V V V V|H H H H|0 0 1 0 1 0|0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|SBSRID                                                           |
++-----------------------------------------------------------------+
+| S S S S S S S S S S S S S S S S S S S S S S S S S S S S S S S S |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|SBEVT   |ACT  |UNUSED (ZERO)  |BLAZE PROTO RESULT CODE           |
++-----------------------------------------------------------------+
+| T T T T|A A A|0 0 0 0 0 0 0 0|R R R R R R R R R R R R R R R R R |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|SEVTID                                                           |
++-----------------------------------------------------------------+
+| E E E E E E E E E E E E E E E E E E E E E E E E E E E E E E E E |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|TIMESTAMP[0]                                                     |
++-----------------------------------------------------------------+
+| T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|TIMESTAMP[1]                                                     |
++-----------------------------------------------------------------+
+| T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|PACKET LEN (COND)                                                |
++-----------------------------------------------------------------+
+| L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L L |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\|
+|BODY BODY BODY BODY BODY BODY BODY BODY BODY BODY BODY BODY BODY |
+|\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\|
++-----------------------------------------------------------------+
+
+
+*****************************************************************************
+PACKET NAME SBSACK - SUBSCRIPTION EVENT ACK
+*****************************************************************************
+
+- WORDS
+	-0 PKTHDR
+	-1 SBSRID
+	-2 SEVTID
+
+- LENGTH
+	- HEADER 3 WORD
+
+- STRUCTURE
+
++-----------------------------------------------------------------+
+|.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.|
++-----------------------------------------------------------------+
+|VERSION     |HLEN   |PACKTTYPE  |UNUSED (ZERO FILLED)            |
++-----------------------------------------------------------------+
+| V V V V V V|H H H H|0 0 1 0 1 1|0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|SBSRID                                                           |
++-----------------------------------------------------------------+
+| S S S S S S S S S S S S S S S S S S S S S S S S S S S S S S S S |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|SEVTID                                                           |
++-----------------------------------------------------------------+
+| E E E E E E E E E E E E E E E E E E E E E E E E E E E E E E E E |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+
+*****************************************************************************
+PACKET NAME SBSTOP - SUBSCRIPTION STOP REQUEST
+*****************************************************************************
+
+- WORDS
+	-0 PKTHDR
+	-1 SBSRID
+	
+- LENGTH
+	- HEADER 2 WORD
+	
+- STRUCTURE
+
++-----------------------------------------------------------------+
+|.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.|
++-----------------------------------------------------------------+
+|VERSION     |HLEN   |PACKTTYPE  |UNUSED (ZERO FILLED)            |
++-----------------------------------------------------------------+
+| V V V V V V|H H H H|0 0 1 1 0 0|0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|SBSRID                                                           |
++-----------------------------------------------------------------+
+| S S S S S S S S S S S S S S S S S S S S S S S S S S S S S S S S |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+
+
+*****************************************************************************
+PACKET NAME SBSSPR - SUBSCRIPTION STOP RESPONSE
+*****************************************************************************
+
+- WORDS
+	- PKTHDR
+	- SBRESW
+	- SBSRID (cond.)
+
+- LENGTH
+	- HEADER 2/3 WORD
+
+- STRUCTURE
+
++-----------------------------------------------------------------+
+|.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.7.6.5.4.3.2.1.0.|
++-----------------------------------------------------------------+
+|VERSION     |HLEN   |PACKTTYPE  |UNUSED (ZERO FILLED)            |
++-----------------------------------------------------------------+
+| V V V V V V|H H H H|0 0 1 1 0 1|0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|SBSRES|UNUSED (ZERO)          |BLAZE PROTO RESULT CODE           |
++-----------------------------------------------------------------+
+| X X X|0 0 0 0 0 0 0 0 0 0 0 0|R R R R R R R R R R R R R R R R R |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+|SBSRID  (cond)                                                   |
++-----------------------------------------------------------------+
+| S S S S S S S S S S S S S S S S S S S S S S S S S S S S S S S S |
++-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-+
+
+
+*****************************************************************************
+PROTOCOL HEADER WORDS DESCRIPTION
+*****************************************************************************
+
+*****************************************************************************
+WORD NAME PKTHDR
+*****************************************************************************
+
++--------------------------------+
+|1......4.......6.......8.......0|
+||4byte  |3byte  |2byte  |1byte ||
+|76543210765432107654321076543210|
+|--------------------------------|
+|VVVVVVHHHHRRRRRRUUUUUUUUUUUUUUUU|
++--------------------------------+
+
+V:	- NAME PROVER
+	- SEM PROTOCOL VERSION
+	- FROM 26..31
+	- LEN 6 bits
+	- VALUES up to 63 values (0x0 to 0x3F) (0x0 excluded)
+
+H:	- NAME HDRLEN
+	- SEM PACKET HEADER LENGTH IN WORDS
+	- FROM 22..25
+	- LEN 4 bits
+	- VALUES up to 15 values (words) (0x0 to 0xF) (0x0 excluded)
+	- MAX HDR LEN: (60 bytes) 
+
+R:	- NAME PKTTYP
+	- SEM PACKET TYPE
+	- FROM 16..21
+	- LEN 6 bits
+	- VALUES up to 63 values (0x0 to 0x3F) (0x0 excluded)
+	
+	- 0	0x0:		ILLEGAL
+	- 1	0x1:		TEST REQUEST			(alive request)
+	- 2	0x2:		HEARTBEAT			(alive response)
+	- 3	0x3:		CONNECTION REQUEST		(protocol level conn. req.)
+	- 4	0x4:		CONNECTION RESPONSE		(protocol level conn. res.)
+	- 5	0x5:		DISCONNECTED			(sent by peer to inf. discn.)
+	- 6	0x6:		TRANSACTION REQUEST
+	- 7	0x7:		TRANSACTION RESPONSE
+	- 8	0x8:		SUBSCRIPTION START REQUEST
+	- 9	0x9:		SUBSCRIPTION START RESPONSE  
+	- 10	0xA:		SUBSCRIPTION EVENT
+	- 11	0xB:		SUBSCRIPTION EVENT ACK
+	- 12	0xC:		SUBSCRIPTION STOP REQUEST
+	- 13	0xD:		SUBSCRIPTION STOP RESPONSE
+
+U:	- UNUSED - (ZERO FILLED)
+	- FROM bit 0 to 15
+
+
+*****************************************************************************
+WORD NAME PKTLEN
+*****************************************************************************
+
++--------------------------------+
+|1......4.......6.......8.......0|
+||4byte  |3byte  |2byte  |1byte ||
+|76543210765432107654321076543210|
+|--------------------------------|
+|LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL|
++--------------------------------+
+
+L:	- NAME PKTLEN
+	- SEM TOTAL PACKET LENGTH IN BYTES (header + data)
+	- FROM 0..31
+	- LEN 32 bits
+	- VALUES 0..2^32-1 bytes
+
+*****************************************************************************
+WORD NAME TMSTMP
+*****************************************************************************
+
++--------------------------------+
+|1......4.......6.......8.......0|
+||4byte  |3byte  |2byte  |1byte ||
+|76543210765432107654321076543210|
+|--------------------------------|
+|TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT|
++--------------------------------+
+
+T:	- NAME TMSTMP
+	- SEM TIMESTAMP
+	- FROM 0..31
+	- LEN 32 bits
+
+TIMESTAMP REPRESENTATION:
+Number of seconds from Unix time (aka POSIX time or Epoch time).
+
+*****************************************************************************
+WORD NAME CLIHBT
+*****************************************************************************
+
++--------------------------------+
+|1......4.......6.......8.......0|
+||4byte  |3byte  |2byte  |1byte ||
+|76543210765432107654321076543210|
+|--------------------------------|
+|HHHHHHHHUUUUUUUUUUUUUUUUUUUUUUUU|
++--------------------------------+
+
+H:	- NAME HBTSEC
+	- SEM CLIENT REQUESTED HEARTBEAT INTERVAL:
+		This field is used by connecting clients to agree
+		the heartbeat interval expressed in seconds.
+		When connected, a client is required to honor this
+		agreed value sending HEARTBEAT packets inside the
+		sliding window defined by the last time a packet has
+		sent by the client and the HBTSEC value.
+		If a client fails to honor this requirement, it can be
+		disconnected by the server.
+		A peer can even send an explicit TEST REQUEST packet
+		in witch case the counterpart must send an HEARTBEAT
+		packet. Failing to respond to a TEST REQUEST packet
+		can lead into the peer disconnection.
+
+	- FROM 24..31
+	- LEN 8 bits
+	- VALUES 0x0..0xFF (0x0 MEANS NO HEARTBEAT REQUIREMENT)
+
+U:	- UNUSED - (ZERO FILLED)
+	- FROM bit 0 to 23
+
+*****************************************************************************
+WORD NAME SRVCRS
+*****************************************************************************
+
++--------------------------------+
+|1......4.......6.......8.......0|
+||4byte  |3byte  |2byte  |1byte ||
+|76543210765432107654321076543210|
+|--------------------------------|
+|RRREEEEUAAAAAAAAUUUUUUUUUUUUUUUU|
++--------------------------------+
+
+R:	- NAME CONRES
+	- SEM CONNECTION ATTEMPT RESPONSE CODE
+	- FROM 29..31
+	- LEN 3 bits 
+	- VALUES up to 7 values (0x0 to 0x7) (0x0 excluded)
+
+	- 0	0x0 :	ILLEGAL
+	- 1	0x1 :	CONNECTION ACCEPTED WITH NO RESERVE
+	- 2	0x2 :	CONNECTION ACCEPTED WITH RESERVE (*)
+	- 3	0x3 :	CONNECTION REFUSED (**)
+
+(*) 	This indicate that client must read corrections given by the server.
+	For example server could indicate a new value for HBTSEC field.
+	Failing to follow server recommendations can lead into the 
+	client disconnection.
+
+(**) 	Connection has been refused by the server for some reason.
+	Details on this can be found by reading ERRCOD field.
+
+E:	- NAME ERRCOD
+	- SEM ERROR CODE USED WHEN CONRES IS NOT 0x1
+	- FROM 28..25
+	- LEN 4 bits, up to 16 values (0x0 to 0xF) (0x0 means no error) :
+
+	- 0	0x0:	NO ERROR
+	- 1	0x1:	UNSPECIFIED REASON
+	- 2	0x2:	SERVER ERROR
+	- 3	0x3:	SERVER STATUS INVALID
+	- 4	0x4:	SERVER IS GOING DOWN
+	- 5	0x5:	TOO MANY CONNECTIONS 
+	- 6	0x6:	PROTOCOL VERSION TOO OLD
+	- 7	0x7:	ALREADY CONNECTED
+	- 8	0x8:	SERVER HAS CHANGED HEARTBEAT INTERVAL
+	- 9	0x9:	INVALID CONNECTION STATUS 
+
+A:	- NAME AGRHBT
+	- SEM AGREED HEARTBEAT INTERVAL:
+	If the server accepted connection with no reserve, this value
+	is set to the same value sent by the client.
+	If the server accepted connection with reserve and ERRCOD is set
+	to 0x8, the client must read new value that is set to this field
+	and act consequently.
+	If the server refuse connection, this value is undefined.
+
+	- FROM 16..23
+	- LEN 8 bits
+
+U:	- UNUSED - (ZERO FILLED)
+	- bit 24
+	- FROM bit 0 to 15
+
+*****************************************************************************
+WORD NAME DISWRD
+*****************************************************************************
+
++--------------------------------+
+|1......4.......6.......8.......0|
+||4byte  |3byte  |2byte  |1byte ||
+|76543210765432107654321076543210|
+|--------------------------------|
+|RRRRUUUUUUUUUUUUUUUUUUUUUUUUUUUU|
++--------------------------------+
+
+R:	- NAME DISRES
+	- SEM DISCONNECTION REASON
+	- FROM 28..31
+	- LEN 4 bits, up to 15 values (0x0 to 0xF) (0x0 excluded) :
+
+	- 0	0x0:	ILLEGAL
+	- 1	0x1:	UNSPECIFIED REASON
+	- 2	0x2:	SERVER ERROR
+	- 3	0x3:	SERVER STATUS INVALID
+	- 4	0x4:	SERVER IS GOING DOWN
+	- 5	0x5:	TOO MANY CONNECTIONS
+	- 6	0x6:	PEER INACTIVITY
+	- 7	0x7:	APPLICATION REQUEST
+	- 8	0x8:	INVALID CONNECTION STATUS 
+
+*****************************************************************************
+WORD NAME TXREQW
+*****************************************************************************
+
++--------------------------------+
+|1......4.......6.......8.......0|
+||4byte  |3byte  |2byte  |1byte ||
+|76543210765432107654321076543210|
+|--------------------------------|
+|TTTTAAAbUUUUUUUUUUUUUUUUUUUUUUUU|
++--------------------------------+
+
+T:	- NAME TXTYPE
+	- SEM TRANSACTION TYPE
+	- FROM 28..31
+	- LEN 4 bits, up to 15 values (0x0 to 0xF) (0x0 excluded) :
+
+	- 0	0x0:	ILLEGAL
+	- 1	0x1:	RESERVED
+	- 2	0x2:	SYSTEM
+	- 3	0x3:	SPECIAL
+	- 4	0x4:	NCLASS
+
+A:	- NAME TXACTN
+	- SEM TRANSACTION ACTION
+	- FROM 25..27
+	- LEN 3 bits, up to 7 values (0x0 to 0x7) (0x0 excluded)
+
+	- 0	0x0:	ILLEGAL
+	- 1	0x1:	INS (insert)
+	- 2	0x2:	UPD (update)
+	- 3	0x3:	DLT (delta)
+	- 4	0x4:	DEL (delete)
+	- 5	0x5:	RST (reset)
+
+b1:	- NAME RSCLRQ
+	- SEM CLIENT REQUIRE RESULT NCLASS 
+	- FROM [24]
+	- LEN 1 bit
+
+U:	- UNUSED - (ZERO FILLED)
+	- FROM bit 0 to 23
+
+
+*****************************************************************************
+WORD NAME CLSENC
+*****************************************************************************
+
++--------------------------------+
+|1......4.......6.......8.......0|
+||4byte  |3byte  |2byte  |1byte ||
+|76543210765432107654321076543210|
+|--------------------------------|
+|EEEEUUUUUUUUDDDDDDDDDDDDDDDDDDDD|
++--------------------------------+
+
+E:	- NAME ENCTYP
+	- SEM ENCODING TYPE
+	- FROM 28..31
+	- LEN 4 bits, up to 15 values (0x0 to 0xF) (0x0 excluded) :
+	- VALUES
+
+	- 0	0x0:	ILLEGAL
+	- 1	0x1:	ALL
+	- 2	0x2:	INDEXNOTZERO
+	- 3	0x3:	INDEXDELTA
+
+D:	- NAME NCLSID
+	- SEM NCLASS ID
+	- FROM 0..19
+	- LEN 20 bits 
+	- VALUES [0..1048575] (0x0 to 0xFFFFF) (0x0 excluded)
+
+U:	- UNUSED - (ZERO FILLED)
+	- FROM bit 20 to 27
+
+
+*****************************************************************************
+WORD NAME TXRESW
+*****************************************************************************
+
++--------------------------------+
+|1......4.......6.......8.......0|
+||4byte  |3byte  |2byte  |1byte ||
+|76543210765432107654321076543210|
+|--------------------------------|
+|XXXbUUUUUUUUUUUURRRRRRRRRRRRRRRR|
++--------------------------------+
+
+X:	- NAME TXRESL
+	- SEM TRANSACTION RESULT
+	- FROM 29..31
+	- LEN 3 bits, up to 7 values (0x0 to 0x7) (0x0 excluded)
+	- VALUES
+	
+	- 0	0x0:	ILLEGAL
+	- 1	0x1:	TXOK
+	- 2	0x2:	TXKO
+	
+R:	- NAME BLZCOD
+	- SEM BLAZE PROTO RESULT CODE
+	- FROM 0..15
+	- LEN 16 bits, up to 2^16 values
+	- VALUES (RESERVED)
+	
+	-- GENERIC ERROR CODES (0-199) (0x0-0xC7)
+	
+	- 0	0x0:	NO ERROR
+	- 1	0x1:	UNKNOWN ERROR
+	- 2	0x2:	PROTOCOL ERROR
+	- 3	0x3:	SERVER ERROR
+	- 4	0x4:	APPLICATION ERROR
+	- 5	0x5:	REQUEST MALFORMED
+	- 6	0x6:	REQUEST UNSUPPORTED
+	- 7	0x7:	REASON IN RESULT NCLASS
+	- 8	0x8:	SECURITY ERROR
+	- 9	0x9:	UNAUTHENTICATED
+	- 10	0xA:	UNAUTHORIZED
+		
+	-- TRANSACTIONAL ERROR CODES (200-399) (0xC8-0x18F)
+	
+	- 200	0xC8:	INVALID TRANSACTION ID
+	- 201	0xC9:	DUPLICATED TRANSACTION ID
+	- 202	0xCA:	TRANSACTION ALREADY FLYING
+	- 203	0xCB:	TRANSACTION TIMEOUT
+	- 204	0xCC:	TRANSACTION LOST
+	- 205	0xCD:	CLIENT ABORTED
+	- 206	0xCE:	SERVER ABORTED
+
+
+b1:	- NAME RESCLS
+	- SEM RESULT NCLASS IS PRESENT
+	- FROM [28]
+	- LEN 1 bit
+
+U:	- UNUSED - (ZERO FILLED)
+	- FROM bit 16 to 27
+	
+*****************************************************************************
+WORD NAME TXPLID
+*****************************************************************************
+
++--------------------------------+
+|1......4.......6.......8.......0|
+||4byte  |3byte  |2byte  |1byte ||
+|76543210765432107654321076543210|
+|--------------------------------|
+|PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP|
++--------------------------------+
+
+P:	- NAME TXPLID
+	- SEM TXID[0] PLATFORM ID
+	- FROM 0..31
+	- LEN 32 bits, 
+	- VALUES 1..2^32-1 (zeroed excluded)
+
+*****************************************************************************
+WORD NAME TXSVID
+*****************************************************************************
+
++--------------------------------+
+|1......4.......6.......8.......0|
+||4byte  |3byte  |2byte  |1byte ||
+|76543210765432107654321076543210|
+|--------------------------------|
+|SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS|
++--------------------------------+
+
+S:	- NAME TXSVID
+	- SEM TXID[1] SERVICE ID
+	- FROM 0..31
+	- LEN 32 bits, 
+	- VALUES 1..2^32-1 (zeroed excluded)
+
+*****************************************************************************
+WORD NAME TXCNID
+*****************************************************************************
+
++--------------------------------+
+|1......4.......6.......8.......0|
+||4byte  |3byte  |2byte  |1byte ||
+|76543210765432107654321076543210|
+|--------------------------------|
+|CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC|
++--------------------------------+
+
+C:	- NAME TXCNID
+	- SEM TXID[2] CONNECTION ID
+	- FROM 0..31
+	- LEN 32 bits, 
+	- VALUES 1..2^32-1 (zeroed excluded)
+
+*****************************************************************************
+WORD NAME TXPRID
+*****************************************************************************
+
++--------------------------------+
+|1......4.......6.......8.......0|
+||4byte  |3byte  |2byte  |1byte ||
+|76543210765432107654321076543210|
+|--------------------------------|
+|PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP|
++--------------------------------+
+
+C:	- NAME TXPRID
+	- SEM TXID[3] PROGRESSIVE ID
+	- FROM 0..31
+	- LEN 32 bits, 
+	- VALUES 1..2^32-1 (zeroed excluded)
+
+*****************************************************************************
+WORD NAME SBREQW
+*****************************************************************************
+
++--------------------------------+
+|1......4.......6.......8.......0|
+||4byte  |3byte  |2byte  |1byte ||
+|76543210765432107654321076543210|
+|--------------------------------|
+|UUSSMMMMUFFFUDDDUUUUUUUUUUUUUUUU|
++--------------------------------+
+
+S:	- NAME SBSTYP
+	- SEM SUBSCRIPTION TYPE
+	- FROM 28..29
+	- LEN 2 bits, up to 3 values (0x0 excluded)
+
+	- 0	0x0:	ILLEGAL
+	- 1	0x1:	SNAPSHOT
+	- 2	0x2:	INCREMENTAL
+
+M:	- NAME SBSMOD
+	- SEM SUBSCRIPTION MODE
+	- FROM 24..27
+	- LEN 4 bits, up to 15 values (0x0 to 0xF) (0x0 excluded) :
+	- VALUES
+
+	- 0	0x0:	ILLEGAL
+	- 1	0x1:	ALL
+	- 2	0x2:	PAST
+	- 3	0x3:	LIVE
+	
+F:	- NAME FLOTYP
+	- SEM FLOW TYPE
+	- FROM 20..22
+	- LEN 3 bits, up to 7 values (0x0 excluded)
+
+	- 0	0x0:	ILLEGAL
+	- 1	0x1:	ALL
+	- 2	0x2:	LAST
+	
+D:	- NAME DWLTYP
+	- SEM DOWNLOAD TYPE
+	- FROM 16..18
+	- LEN 3 bits, up to 7 values (0x0 excluded)
+
+	- 0	0x0:	ILLEGAL
+	- 1	0x1:	ALL
+	- 2	0x2:	PARTIAL
+
+U:	- UNUSED - (ZERO FILLED)
+	- bit 23,30,31 and FROM bit 0 to 15
+
+*****************************************************************************
+WORD NAME SBRESW
+*****************************************************************************
+
++--------------------------------+
+|1......4.......6.......8.......0|
+||4byte  |3byte  |2byte  |1byte ||
+|76543210765432107654321076543210|
+|--------------------------------|
+|XXXUUUUUUUUUUUUURRRRRRRRRRRRRRRR|
++--------------------------------+
+
+X:	- NAME SBRESL
+	- SEM SUBSCRIPTION RESULT
+	- FROM 29..31
+	- LEN 3 bits, up to 7 values (0x0 to 0x7) (0x0 excluded)
+	- VALUES
+	
+	- 0	0x0:	ILLEGAL
+	- 1	0x1:	SBSOK		(ok)
+	- 2	0x2:	SBSPART		(partial)
+	- 2	0x3:	SBSKO		(ko)
+	
+R:	- NAME BLZCOD
+	- SEM BLAZE PROTO RESULT CODE
+	- FROM 0..15
+	- LEN 16 bits, up to 2^16 values
+	- VALUES (RESERVED)
+	
+	-- GENERIC ERROR CODES (0-199) (0x0-0xC7)
+	
+	- 0	0x0:	NO ERROR
+	- 1	0x1:	UNKNOWN ERROR
+	- 2	0x2:	PROTOCOL ERROR
+	- 3	0x3:	SERVER ERROR
+	- 4	0x4:	APPLICATION ERROR
+	- 5	0x5:	REQUEST MALFORMED
+	- 6	0x6:	REQUEST UNSUPPORTED
+	- 7	0x7:	REASON IN RESULT NCLASS
+	- 8	0x8:	SECURITY ERROR
+	- 9	0x9:	UNAUTHENTICATED
+	- 10	0xA:	UNAUTHORIZED
+		
+	-- SUBSCRIPTION ERROR CODES (400-599) (0x190-0x257)
+	
+	- 400	0x190:	SBS ALREADY STARTED
+	- 401	0x191:	SBS NOT FOUND
+
+U:	- UNUSED - (ZERO FILLED)
+	- FROM bit 16 to 28
+
+*****************************************************************************
+WORD NAME SBSRID
+*****************************************************************************
+
++--------------------------------+
+|1......4.......6.......8.......0|
+||4byte  |3byte  |2byte  |1byte ||
+|76543210765432107654321076543210|
+|--------------------------------|
+|SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS|
++--------------------------------+
+
+S:	- NAME SBSRID
+	- SEM SUBSCRIPTION ID
+	- FROM 0..31
+	- LEN 32 bits, 
+	- VALUES 1..2^32-1 (zeroed excluded)
+
+
+*****************************************************************************
+WORD NAME SEVTTP
+*****************************************************************************
+
++--------------------------------+
+|1......4.......6.......8.......0|
+||4byte  |3byte  |2byte  |1byte ||
+|76543210765432107654321076543210|
+|--------------------------------|
+|TTTTAAAUUUUUUUUURRRRRRRRRRRRRRRR|
++--------------------------------+
+
+T:	- NAME SEVTTP
+	- SEM SUBSCRIPTION EVENT TYPE
+	- FROM 28..31
+	- LEN 4 bits, up to 15 values (0x0 to 0xF) (0x0 excluded) :
+	- VALUES
+
+	- 0	0x0:	ILLEGAL
+	- 1	0x1:	DATALIVE
+	- 2	0x2:	DATADWNL
+	- 3	0x3:	DWNLEND
+	- 4	0x4:	STOP
+	
+A:	- NAME SBEACT
+	- SEM SUBSCRIPTION EVENT ACTION
+	- FROM 25..27
+	- LEN 3 bits, up to 7 values (0x0 excluded)
+
+	- 0	0x0:	ILLEGAL
+	- 1	0x1:	INS (insert)
+	- 2	0x2:	UPD (update)
+	- 3	0x3:	DLT (delta*)
+	- 4	0x4:	DEL (delete)
+	- 5	0x5:	RST (reset)
+
+R:	- NAME BLZCOD
+	- SEM BLAZE PROTO RESULT CODE - used to indicate the cause,
+					when server sends unsolicited STOP.
+	- FROM 0..15
+	- LEN 16 bits, up to 2^16 values
+	- VALUES (RESERVED)
+	
+	-- GENERIC ERROR CODES (0-199) (0x0-0xC7)
+	
+	- 0	0x0:	NO ERROR
+	- 1	0x1:	UNKNOWN ERROR
+	- 2	0x2:	PROTOCOL ERROR
+	- 3	0x3:	SERVER ERROR
+	- 4	0x4:	APPLICATION ERROR
+	- 5	0x5:	REQUEST MALFORMED
+	- 6	0x6:	REQUEST UNSUPPORTED
+	- 7	0x7:	REASON IN RESULT NCLASS
+	- 8	0x8:	SECURITY ERROR
+	- 9	0x9:	UNAUTHENTICATED
+	- 10	0xA:	UNAUTHORIZED
+		
+	-- SUBSCRIPTION ERROR CODES (400-599) (0x190-0x257)
+	
+	- 400	0x190:	SBS ALREADY STARTED
+	- 401	0x191:	SBS NOT FOUND
+
+
+U:	- UNUSED - (ZERO FILLED)
+	- FROM bit 16 to 24
+
+
+*****************************************************************************
+WORD NAME SEVTID
+*****************************************************************************
+
++--------------------------------+
+|1......4.......6.......8.......0|
+||4byte  |3byte  |2byte  |1byte ||
+|76543210765432107654321076543210|
+|--------------------------------|
+|EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE|
++--------------------------------+
+
+E:	- NAME SEVTID
+	- SEM SUBSCRIPTION EVENT ID
+	- FROM 0..31
+	- LEN 32 bits, 
+	- VALUES 1..2^32-1 (zeroed excluded)
+
+
+*****************************************************************************
+WORD NAME CONNID 
+    
+client: in ALL packets, when it is connected to the server.
+server: in CONNECTION RESPONSE packet, when server accept connection.
+*****************************************************************************
+
++--------------------------------+
+|1......4.......6.......8.......0|
+||4byte  |3byte  |2byte  |1byte ||
+|76543210765432107654321076543210|
+|--------------------------------|
+|CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC|
++--------------------------------+
+
+
+C:	- NAME CONNID
+	- SEM SERVER GENERATED CONNECTION ID
+		This ID is generated by the server and it is aimed to uniquely 
+		identify a peer (connection) into the server.
+		This ID can be used as session ID when the client decide to
+		authenticate itself on the system.
+
+	- FROM bit 0 TO 31
+	- LEN 32 bits
+	- VALUES from 1 to 2^32-1
+
+
+*****************************************************************************
+WORD NAME RQSTID 
+*****************************************************************************
+
++--------------------------------+
+|1......4.......6.......8.......0|
+||4byte  |3byte  |2byte  |1byte ||
+|76543210765432107654321076543210|
+|--------------------------------|
+|RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR|
++--------------------------------+
+
+
+C:	- NAME RQSTID
+	- SEM CLIENT GENERATED REQUEST ID
+
+	- FROM bit 0 TO 31
+	- LEN 32 bits
+	- VALUES from 1 to 2^32-1
+
+
+*****************************************************************************
+NCLASS ENCODING 
+INDEXED_NETWORK_OPTIMIZED
+*****************************************************************************
+
+DESC
+	This encoding is used to send a nclass over the network with the purpose
+	to better limit the amount of data transmitted between peers.
+	this coding relies on the fact that if the field of a nclass is entirely
+	set to zero or unmodified respect the last vaule, there is no need to 
+	send that field on the network, because receiving peer can assume 
+	that field set to zero (in case of ADD or RWT actions) 
+	or unmodified (in case of DLT action).	
+
+INDEX
+	It represents the logic index of a field (or substructure) in the nclass we 
+	are sending.
+
+DATA
+	The value of the field denoted by its index.
+
+FORMAL GRAMMAR
+
+	<FIELD_SEQ>		->	<INDEX> <FIELD> | <INDEX> <FIELD> <FIELD_SEQ>
+	<FIELD>			->	<PRIM_FIELD> | <STR_FIELD> | <CPLX_FIELD> | <ARRAY_FIELD>
+	<PRIM_FIELD>	->	<BYTE_SEQ>
+	<STR_FIELD>		->	<LEN> <BYTE_SEQ>
+	<CPLX_FIELD>	->	<NCLASS> | <STRUCT>
+	<STRUCT>		->	<LEN> <FIELD_SEQ>
+	<NCLASS>		->	<LEN> <FIELD_SEQ>
+	<ARRAY_FIELD>	->	<LEN> <FIELD_SEQ>
+	<INDEX>			->	16BIT
+	<LEN>			->	32BIT
+	<BYTE_SEQ>		->	n-bytes
+	
