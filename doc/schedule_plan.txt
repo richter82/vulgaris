@@ -1,0 +1,71 @@
+###############################################################################
+BLAZE FRAMEWORK RELEASE SCHEDULE
+###############################################################################
+
+
+
+###############################################################################
+V.1.0.0
+
+- Everything
+
+- Compiler supported languages
+
+	1) C++:			32bit, MSVC9
+	2) Java:		javac 1.7
+
+
+- BlaZZ protocol implementation
+	
+	1) Full BLAZE object serialization / restoration including wchar support.
+	2) Basic proto Connection
+	3) Basic proto Transaction
+
+- Persistence
+	
+	1) Basic SQLITE ORM for BLAZE objects for all supported languages.
+
+
+- Artifacts
+
+	1) Basic Abstract BLAZE Client		C++ / Java
+	2) Basic Abstract BLAZE Server		C++
+	
+- Quality
+	
+	1) Same log consistency / quality for all artifacts for all languages.
+	2) Programmative equivalence for all languages (patterns / strategies / conventions).
+	3) svn repository reorganization / cleaning.
+	4) c++ static check tool.
+	
+	
+	
+###############################################################################
+V.1.1.0
+
+- Compiler supported languages
+
+	Objective C:	
+
+- BlaZZ protocol Definition / implementation
+	
+	1) Basic proto Query 
+
+- Persistence
+
+	1) Basic SQLITE ORM for BLAZE objects for Objective C
+	
+- Artifacts
+
+	1) Basic Abstract BLAZE Client		Objective C
+	
+	
+	
+	
+	
+	
+	
+	
+	
+###############################################################################
+V.2.0.0

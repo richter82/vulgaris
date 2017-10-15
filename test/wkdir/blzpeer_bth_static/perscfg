@@ -1,0 +1,26 @@
+# connection-pool configuration
+# <connection-pool-name> <type>	uri:[url:<string> usr:<string> psswd:<string>] pool_size:<int> th_size:<int>
+#
+# pool_size: how many phisical connection will be opened.
+#
+# th_size: how many (max) *optionally* thread will be spawned 
+#          to perform dbms operations above the phisical connection.
+#          This will depend on dbms <type> and the current driver implementation.
+
+connection_pool_config_begin
+
+anag	sqlite	uri:[url:"anag.db"	usr:"" psswd:""]	pool_size:3 th_size:1
+items	sqlite	uri:[url:"items.db" usr:"" psswd:""]	pool_size:2 th_size:1
+
+connection_pool_config_end
+
+# classid mapping
+# <class-id> <connection-pool-name>
+
+map_config_begin
+
+800		anag
+10021	items
+10022	items
+
+map_config_end

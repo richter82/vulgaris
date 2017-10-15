@@ -1,0 +1,19 @@
+SRC =	../contrib/sqlite/sqlite3.c
+OBJ = $(SRC:.c=.o)
+OUTDIR = ../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/contrib/lib
+CCFLAGS = -Wall -fPIC $(CC_DBG_REL_OPT)
+CCC = gcc
+
+.c.o:
+	$(CCC) $(INCLUDES) $(CCFLAGS) -c $< -o $@
+
+default: libsqlite
+	
+all: clean libsqlite
+	
+libsqlite:	$(OBJ)
+	ar rcs $(OUTDIR)/libsqlite.a $(OBJ)
+
+clean:
+	rm -f $(OBJ) $(OUTDIR)/libsqlite.a
+	

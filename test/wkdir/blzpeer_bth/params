@@ -1,0 +1,10 @@
+-srv_sin_port		20002
+-srv_exectrs		2
+-cli_exectrs		2
+-srv_sbs_exectrs	2
+-load_model			blz_model_sample
+-load_pers_driv		sqlite
+-pers_enabled
+-pers_schema_create
+-drop_existing_schema
+-mirror

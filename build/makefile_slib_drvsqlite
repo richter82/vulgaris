@@ -1,0 +1,29 @@
+SRC =	../src/blzdrisqlitelib/blz_drv_sqlite.cpp
+OBJ = $(SRC:.cpp=.o)
+OUTDIR = ../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/libso
+INCLUDES = 	-I../public/cpp\
+			-I../src\
+			-I../src/crlib\
+			-I../contrib/sqlite
+			
+CCFLAGS = -std=c++11 -Wall -fPIC $(CC_DBG_REL_OPT)
+CCC = g++
+LDFLAGS = -shared
+LDFLAGS_1 = -Wl,-no-whole-archive,-error-unresolved-symbols
+LDLIBS= -L../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/lib -L../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/contrib/lib -lsqlite -lblzmodel -lblzpers -lcr -lpthread $(LD_ARCH_LIB)
+LDFLAGS_2 = -Wl,-no-whole-archive
+
+default: libblzdrisqlite
+
+all: clean libblzdrisqlite
+
+.cpp.o:
+	$(CCC) $(INCLUDES) $(CCFLAGS) -c $< -o $@
+
+libblzdrisqlite: 	$(OBJ)
+	$(CCC) $(LD_DBG_REL_OPT) $(LDFLAGS) -o $(OUTDIR)/libblzdrisqlite.so $(OBJ) $(LDFLAGS_1) $(LDLIBS) $(LDFLAGS_2)
+
+clean:
+	rm -f $(OBJ) $(OUTDIR)/libblzdrisqlite.so
+
+	

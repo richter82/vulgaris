@@ -1,0 +1,24 @@
+SRC = ../test/src/blz_test_peer_both.cpp
+OBJ = $(SRC:.cpp=.o)
+OUTDIR = ../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/test/blzpeer_dyna
+INCLUDES = 	-I../public/cpp\
+			-I../src\
+			-I../src/crlib\
+			-I../test/sample_blz_model
+			
+CCFLAGS = -std=c++11 -Wall -fPIC $(CC_DBG_REL_OPT)
+CCC = g++
+LDLIBS= -L../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/libso -lblz_model_sample -lblzdrisqlite -L../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/lib -lblzcppinterf -lblzpeer -lblzmodel -lblzpers -lcr -lpthread $(LD_ARCH_LIB)
+
+default: blzdynapeer
+
+all: clean blzdynapeer
+
+.cpp.o:
+	$(CCC) $(INCLUDES) $(CCFLAGS) -c $< -o $@
+
+blzdynapeer: $(OBJ)
+	$(CCC) $(LD_DBG_REL_OPT) -o $(OUTDIR)/blzdynapeer $(OBJ) $(LDLIBS)
+
+clean:
+	rm -f $(OBJ) $(OUTDIR)/blzdynapeer

@@ -1,0 +1,24 @@
+#---MAX LINE 150 --MAX LINE 150------------------------------------------------------------------------------------------------------------------#
+
+#SOME DEFINE...
+
+@define	MID_MYVALUE						57
+@define	MID_ANOTH_DEFINE				107
+@define	MID_BLZ_CLASS_SAMPLE_A_ID		10017
+
+#AN ENUM
+
+enum SIMPLE_ENUM_MID
+{
+	SIMPLE_ENUM_MID_Zero			"Zero"
+	SIMPLE_ENUM_MID_One				"One"
+	SIMPLE_ENUM_MID_Two
+	SIMPLE_ENUM_MID_OneHundred 			= 100 "OneHundred"
+	SIMPLE_ENUM_MID_TwoHundredAndOne 	= 201
+}
+
+
+@include "blz_model_sample_glob.blz"
+
+
+#---MAX LINE 150 --MAX LINE 150------------------------------------------------------------------------------------------------------------------#

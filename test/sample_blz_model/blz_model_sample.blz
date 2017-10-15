@@ -1,0 +1,60 @@
+@include "blz_model_sample_glob_mid.blz"
+
+@model_name		"blz_model_sample"
+@namespace 		"blz_model_sample"
+@model_version	"0.0.0"
+
+@define NAME_LEN 128
+@define EXTRA_ROLE_PER_USER 3
+
+enum SEX
+{
+	SEX_Undef 			"Undef"
+	SEX_Male			"Male"
+	SEX_Female			"Female"
+}
+
+#---DOG
+nclass ROLE 
+{
+	@id			700
+	uint_64 	role_id 		
+	ascii[32+1]	role_name
+	bool		can_act_as_admin	"can be admin"
+}
+
+#---USER
+nclass USER
+{
+	@id							800
+	
+	uint_32						user_id				"id"
+	ascii[NAME_LEN+1]			name				"name"
+	ascii[NAME_LEN+1]			surname				"surname"
+	SEX							sex					"sex"
+	ascii[64]					email				"surname"
+	float_32					height				"height"
+	float_32					weight				"weight"
+	bool						active				"active"
+	int_16						cap					"CAP"
+	ascii						type				"type"
+	ROLE						main_role			"main_role"
+	ROLE[EXTRA_ROLE_PER_USER]	extra_roles			"extra_roles"
+
+	@persistent
+
+	@key		primary
+	@id			1
+	@fldset 	{user_id}
+	@key_end
+	
+	@key
+	@id			2
+	@fldset 	{name, surname}
+	@key_end
+
+	@key
+	@id			3
+	@fldset 	{email}
+	@key_end
+}

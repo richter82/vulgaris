@@ -1,0 +1,4 @@
+-lang CPP
+-I "../../sample_blz_model"
+-O "../../sample_blz_model"
+-F "blz_model_sample.blz"
