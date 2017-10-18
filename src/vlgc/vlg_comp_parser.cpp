@@ -21,19 +21,19 @@
 
 #include "blz_compiler.h"
 
-namespace blaze {
+namespace vlg {
 
 /***********************************
 glob
 ***********************************/
-blaze::ascii_string unit_nmspace;
+vlg::ascii_string unit_nmspace;
 
 /***********************************
 HMAP: tcomp_packing_map
 ***********************************/
-static blaze::hash_map *tcomp_packing_map = NULL;
+static vlg::hash_map *tcomp_packing_map = NULL;
 
-blaze::RetCode LoadTCompPackingMap(blaze::hash_map &map)
+vlg::RetCode LoadTCompPackingMap(vlg::hash_map &map)
 {
     size_t packing_value = 8;
     unsigned int key = 0;
@@ -49,13 +49,13 @@ blaze::RetCode LoadTCompPackingMap(blaze::hash_map &map)
                             BLZ_COMP_LANG_CPP,
                             BLZ_COMP_TCOMP_GCC);
     RETURN_IF_NOT_OK(map.put(&key, &packing_value))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::hash_map &GetTCompPackingMap()
+vlg::hash_map &GetTCompPackingMap()
 {
     if(!tcomp_packing_map) {
-        tcomp_packing_map = new blaze::hash_map(sizeof(size_t),
+        tcomp_packing_map = new vlg::hash_map(sizeof(size_t),
                                                 sizeof(unsigned int));
         if(!tcomp_packing_map) {
             EXIT_ACTION("failed creating tcomp_packing_map")
@@ -73,9 +73,9 @@ blaze::hash_map &GetTCompPackingMap()
 HMAP: rword_map
 ***********************************/
 
-static blaze::hash_map *rword_map = NULL;
+static vlg::hash_map *rword_map = NULL;
 
-blaze::RetCode LoadResWordsMap(blaze::hash_map &map)
+vlg::RetCode LoadResWordsMap(vlg::hash_map &map)
 {
     RETURN_IF_NOT_OK(map.put(BLZ_RWRD_PFX BLZ_RWRD_ENUM, ""))
     RETURN_IF_NOT_OK(map.put(BLZ_RWRD_PFX BLZ_RWRD_NCLASS, ""))
@@ -89,14 +89,14 @@ blaze::RetCode LoadResWordsMap(blaze::hash_map &map)
     RETURN_IF_NOT_OK(map.put(BLZ_RWRD_PFX BLZ_RWRD_NAMESPACE_END, ""))
     RETURN_IF_NOT_OK(map.put(BLZ_RWRD_PFX BLZ_RWRD_MODLNAME, ""))
     RETURN_IF_NOT_OK(map.put(BLZ_RWRD_PFX BLZ_RWRD_MODLVER, ""))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::hash_map &GetResWordsMap()
+vlg::hash_map &GetResWordsMap()
 {
     if(!rword_map) {
-        rword_map = new blaze::hash_map(blaze::sngl_cstr_obj_mng(),
-                                        blaze::sngl_cstr_obj_mng());
+        rword_map = new vlg::hash_map(vlg::sngl_cstr_obj_mng(),
+                                        vlg::sngl_cstr_obj_mng());
         if(!rword_map) {
             EXIT_ACTION_STDOUT("failed creating rword_map")
         }
@@ -110,9 +110,9 @@ blaze::hash_map &GetResWordsMap()
 HMAP: types_map
 ***********************************/
 
-static blaze::hash_map *types_map = NULL;
+static vlg::hash_map *types_map = NULL;
 
-blaze::RetCode LoadTypesMap(blaze::hash_map &map)
+vlg::RetCode LoadTypesMap(vlg::hash_map &map)
 {
     RETURN_IF_NOT_OK(map.put(BLZ_RWORD_T_BOOL, ""))
     RETURN_IF_NOT_OK(map.put(BLZ_RWORD_T_INT_16, ""))
@@ -124,14 +124,14 @@ blaze::RetCode LoadTypesMap(blaze::hash_map &map)
     RETURN_IF_NOT_OK(map.put(BLZ_RWORD_T_FLOAT_32, ""))
     RETURN_IF_NOT_OK(map.put(BLZ_RWORD_T_FLOAT_64, ""))
     RETURN_IF_NOT_OK(map.put(BLZ_RWORD_T_ASCII, ""))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::hash_map &GetTypesMap()
+vlg::hash_map &GetTypesMap()
 {
     if(!types_map) {
-        types_map = new blaze::hash_map(blaze::sngl_cstr_obj_mng(),
-                                        blaze::sngl_cstr_obj_mng());
+        types_map = new vlg::hash_map(vlg::sngl_cstr_obj_mng(),
+                                        vlg::sngl_cstr_obj_mng());
         if(!types_map) {
             EXIT_ACTION_STDOUT("failed creating types_map")
         }
@@ -141,7 +141,7 @@ blaze::hash_map &GetTypesMap()
     return *types_map;
 }
 
-Type BLZ_COMP_StrToTYPE(const blaze::ascii_string &str)
+Type BLZ_COMP_StrToTYPE(const vlg::ascii_string &str)
 {
     if(str == BLZ_RWORD_T_BOOL) {
         return  Type_BOOL;
@@ -249,11 +249,11 @@ CONSISTENCY- BLZ_COMP_CheckSymbol
 ***********************************/
 
 //@fixme: add separator check (,)
-blaze::RetCode BLZ_COMP_CheckSymbol(unsigned long &lnum,
-                                    blaze::ascii_string &tkn,
-                                    blaze::hash_map *definemap,
-                                    blaze::hash_map *entitymap,
-                                    blaze::hash_map *mmbrmap,
+vlg::RetCode BLZ_COMP_CheckSymbol(unsigned long &lnum,
+                                    vlg::ascii_string &tkn,
+                                    vlg::hash_map *definemap,
+                                    vlg::hash_map *entitymap,
+                                    vlg::hash_map *mmbrmap,
                                     const char *FND_CGT,    //found category
                                     const char *EXP_CTG     //expected category
                                    )
@@ -261,150 +261,150 @@ blaze::RetCode BLZ_COMP_CheckSymbol(unsigned long &lnum,
     //we expect symb name, so we return with error if newline found.
     if(is_new_line(tkn)) {
         BLZ_COMP_PARSE_EXP(lnum, EXP_CTG);
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
     //check if this is a reserved word
     if(!GetResWordsMap().contains_key(tkn.internal_buff())) {
         BLZ_COMP_PARSE_FND_EXP(lnum, tkn.internal_buff(), EXP_CTG);
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
     //check if this is a built-in compiler type
     if(!GetTypesMap().contains_key(tkn.internal_buff())) {
         BLZ_COMP_PARSE_FND_EXP(lnum, tkn.internal_buff(), EXP_CTG);
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
     //if we have already seen this symbol (define), we return with error
     if(definemap && !definemap->contains_key(tkn.internal_buff())) {
         BLZ_COMP_PARSE_SYMB_ALRDY_DECL(lnum, tkn.internal_buff());
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
     //if we have already seen this symbol (entity), we return with error
     if(entitymap && !entitymap->contains_key(tkn.internal_buff())) {
         BLZ_COMP_PARSE_SYMB_ALRDY_DECL(lnum, tkn.internal_buff());
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
     //if we have already seen this symbol (member), we return with error
     if(mmbrmap && !mmbrmap->contains_key(tkn.internal_buff())) {
         BLZ_COMP_PARSE_SYMB_ALRDY_DECL(lnum, tkn.internal_buff());
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 CONSISTENCY- BLZ_COMP_CheckKeySymbol
 ***********************************/
 //@fixme: add separator check (,)
-blaze::RetCode BLZ_COMP_CheckKeySymbol(unsigned long &lnum,
-                                       blaze::ascii_string &tkn,
-                                       blaze::hash_map *mmbrmap,
+vlg::RetCode BLZ_COMP_CheckKeySymbol(unsigned long &lnum,
+                                       vlg::ascii_string &tkn,
+                                       vlg::hash_map *mmbrmap,
                                        const char *FND_CGT,    //found category
                                        const char *EXP_CTG     //expected category
                                       )
 {
-    blaze::ascii_string hint;
+    vlg::ascii_string hint;
     COMMAND_IF_NOT_OK(hint.assign(FND_CGT), exit(1))
     COMMAND_IF_NOT_OK(hint.append(CR_TK_SP), exit(1))
     COMMAND_IF_NOT_OK(hint.append(EXP_CTG), exit(1))
     //we expect symb name, so we return with error if newline found.
     if(is_new_line(tkn)) {
         BLZ_COMP_PARSE_EXP(lnum, EXP_CTG);
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
     //check if this is a reserved word
     if(!GetResWordsMap().contains_key(tkn.internal_buff())) {
         BLZ_COMP_PARSE_FND_EXP(lnum, tkn.internal_buff(), hint.internal_buff());
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
     //check if this is a built-in compiler type
     if(!GetTypesMap().contains_key(tkn.internal_buff())) {
         BLZ_COMP_PARSE_FND_EXP(lnum, tkn.internal_buff(), hint.internal_buff());
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
     //this must be a member field
     if(mmbrmap->contains_key(tkn.internal_buff())) {
         BLZ_COMP_PARSE_FND_EXP(lnum, tkn.internal_buff(), hint.internal_buff());
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 READ- BLZ_COMP_ReadOpeningCurlyBrace
 ***********************************/
-blaze::RetCode BLZ_COMP_ReadOpeningCurlyBrace(unsigned long &lnum,
-                                              blaze::ascii_string_tok &tknz)
+vlg::RetCode BLZ_COMP_ReadOpeningCurlyBrace(unsigned long &lnum,
+                                              vlg::ascii_string_tok &tknz)
 {
-    blaze::ascii_string tkn;
+    vlg::ascii_string tkn;
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_TK_CBL, true)) {
         CR_SKIP_SP_TABS(tkn)
         CR_SKIP_NEWLINE(tkn)
         if(tkn != CR_TK_CBL) {
             BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
-            return blaze::RetCode_KO;
+            return vlg::RetCode_KO;
         }
         break;
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 READ- BLZ_COMP_ReadInteger
 ***********************************/
-blaze::RetCode BLZ_COMP_ReadInteger(unsigned long &lnum,
-                                    blaze::ascii_string_tok &tknz,
+vlg::RetCode BLZ_COMP_ReadInteger(unsigned long &lnum,
+                                    vlg::ascii_string_tok &tknz,
                                     long &along)
 {
-    blaze::ascii_string tkn;
+    vlg::ascii_string tkn;
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_TK_COMA, true)) {
         CR_SKIP_SP_TABS(tkn)
         //we expect an int, so we return with error if newline found.
         CR_DO_CMD_ON_NEWLINE(tkn,
                              BLZ_COMP_PARSE_EXP(lnum, BLZ_COMP_SYMB_NAME);
-                             return blaze::RetCode_KO)
-        if(blaze::string_is_int_number(tkn.internal_buff())) {
+                             return vlg::RetCode_KO)
+        if(vlg::string_is_int_number(tkn.internal_buff())) {
             along = atol(tkn.internal_buff());
         } else {
             BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
-            return blaze::RetCode_KO;
+            return vlg::RetCode_KO;
         }
         break;
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 READ- BLZ_COMP_ReadString
 ***********************************/
-blaze::RetCode BLZ_COMP_ReadString(unsigned long &lnum,
-                                   blaze::ascii_string_tok &tknz,
+vlg::RetCode BLZ_COMP_ReadString(unsigned long &lnum,
+                                   vlg::ascii_string_tok &tknz,
                                    char **newstr, bool begin_quote_read = false,
                                    bool opt = false)
 {
-    blaze::ascii_string tkn;
+    vlg::ascii_string tkn;
     if(!begin_quote_read) {
         while(!tknz.next_token(tkn, CR_DF_DLMT CR_TK_QT CR_TK_COMA, true)) {
             CR_SKIP_SP_TABS(tkn)
             //we expect a string, so we return with error if newline found.
             if(opt) {
-                CR_DO_CMD_ON_NEWLINE(tkn, lnum++; return blaze::RetCode_OK)
+                CR_DO_CMD_ON_NEWLINE(tkn, lnum++; return vlg::RetCode_OK)
             } else {
                 CR_DO_CMD_ON_NEWLINE(tkn, BLZ_COMP_PARSE_EXP(lnum, BLZ_COMP_STRING);
-                                     return blaze::RetCode_KO)
+                                     return vlg::RetCode_KO)
             }
             if(tkn == CR_TK_QT) {
                 //ok we have read the beginning quote of the string
                 break;
             } else {
                 BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
-                return blaze::RetCode_KO;
+                return vlg::RetCode_KO;
             }
         }
     }
     while(!tknz.next_token(tkn, CR_NL_DLMT CR_TK_QT, true)) {
         //we expect a string, so we return with error if newline found.
         CR_DO_CMD_ON_NEWLINE(tkn, BLZ_COMP_PARSE_EXP(lnum, BLZ_COMP_STRING);
-                             return blaze::RetCode_KO)
+                             return vlg::RetCode_KO)
         if(!*newstr) {
             COMMAND_IF_NULL(*newstr = tkn.new_buffer(), exit(1))
         } else {
@@ -413,24 +413,24 @@ blaze::RetCode BLZ_COMP_ReadString(unsigned long &lnum,
                 break;
             } else {
                 BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
-                return blaze::RetCode_KO;
+                return vlg::RetCode_KO;
             }
         }
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 PARSE- BLZ_COMP_ParseVal
 ***********************************/
-blaze::RetCode BLZ_COMP_ParseVal(unsigned long &lnum,
+vlg::RetCode BLZ_COMP_ParseVal(unsigned long &lnum,
                                  unsigned short &mmbrid,
-                                 blaze::ascii_string &symb_name,
+                                 vlg::ascii_string &symb_name,
                                  long &last_enum_val,
-                                 blaze::ascii_string_tok &tknz,
-                                 blaze::hash_map &definemap,
-                                 blaze::hash_map &entitymap,
-                                 blaze::hash_map &mmbrmap)
+                                 vlg::ascii_string_tok &tknz,
+                                 vlg::hash_map &definemap,
+                                 vlg::hash_map &entitymap,
+                                 vlg::hash_map &mmbrmap)
 {
     RETURN_IF_NOT_OK(BLZ_COMP_CheckSymbol(lnum,
                                           symb_name,
@@ -441,7 +441,7 @@ blaze::RetCode BLZ_COMP_ParseVal(unsigned long &lnum,
                                           BLZ_COMP_SYMB_NAME))
     mmbrid++;
 
-    blaze::ascii_string tkn;
+    vlg::ascii_string tkn;
     long enum_val = last_enum_val + 1;
     bool enum_val_read = false;
     char *desc = NULL;
@@ -452,7 +452,7 @@ blaze::RetCode BLZ_COMP_ParseVal(unsigned long &lnum,
             if(enum_val_read) {
                 //we have already read it..
                 BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
-                return blaze::RetCode_KO;
+                return vlg::RetCode_KO;
             }
             RETURN_IF_NOT_OK(BLZ_COMP_ReadInteger(lnum, tknz, enum_val))
             enum_val_read = true;
@@ -507,7 +507,7 @@ blaze::RetCode BLZ_COMP_ParseVal(unsigned long &lnum,
                                   BLZ_COMP_LANG_CPP,
                                   BLZ_COMP_TCOMP_GCC);
     COMMAND_IF_NOT_OK(mmbrmap.put(symb_name.internal_buff(), &mmbrdesc), exit(1))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
@@ -515,12 +515,12 @@ PARSE- BLZ_COMP_ParseNMemb
 we expect an integer value or an expression (a + b + c ..)
 or a combination of (a + DEFINE_0 + b + DEFINE_1...)
 ***********************************/
-blaze::RetCode BLZ_COMP_ParseNMemb(unsigned long &lnum,
-                                   blaze::ascii_string_tok &tknz,
-                                   blaze::hash_map &definemap,
+vlg::RetCode BLZ_COMP_ParseNMemb(unsigned long &lnum,
+                                   vlg::ascii_string_tok &tknz,
+                                   vlg::hash_map &definemap,
                                    size_t &nmemb)
 {
-    blaze::ascii_string tkn;
+    vlg::ascii_string tkn;
     const char *define_val = NULL;
     bool exp_valid = false, plus_allwd = false;
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_TK_PLUS CR_TK_RBR, true)) {
@@ -530,7 +530,7 @@ blaze::RetCode BLZ_COMP_ParseNMemb(unsigned long &lnum,
                 exp_valid = plus_allwd = false;
             } else {
                 BLZ_COMP_PARSE_EXP_INVALID(lnum);
-                return blaze::RetCode_KO;
+                return vlg::RetCode_KO;
             }
         } else if(tkn == CR_TK_RBR) {
             //expression end
@@ -539,43 +539,43 @@ blaze::RetCode BLZ_COMP_ParseNMemb(unsigned long &lnum,
                 break;
             } else {
                 BLZ_COMP_PARSE_EXP_INVALID(lnum);
-                return blaze::RetCode_KO;
+                return vlg::RetCode_KO;
             }
-        } else if(blaze::string_is_int_number(tkn.internal_buff())) {
+        } else if(vlg::string_is_int_number(tkn.internal_buff())) {
             //this is a number
             nmemb += atol(tkn.internal_buff());
             exp_valid = plus_allwd = true;
         } else if((define_val = (const char *)definemap.get(tkn.internal_buff()))) {
             //this is a @define
-            if(blaze::string_is_int_number(define_val)) {
+            if(vlg::string_is_int_number(define_val)) {
                 nmemb += atol(define_val);
                 exp_valid = plus_allwd = true;
             } else {
                 //unexpected token
                 BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
-                return blaze::RetCode_KO;
+                return vlg::RetCode_KO;
             }
         } else {
             //unexpected token
             BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
-            return blaze::RetCode_KO;
+            return vlg::RetCode_KO;
         }
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 PARSE- BLZ_COMP_ParseType
 ***********************************/
-blaze::RetCode BLZ_COMP_ParseType(unsigned long &lnum,
-                                  blaze::ascii_string &str_blz_type,
-                                  blaze::ascii_string_tok &tknz,
-                                  blaze::hash_map &definemap,
-                                  blaze::hash_map &entitymap,
+vlg::RetCode BLZ_COMP_ParseType(unsigned long &lnum,
+                                  vlg::ascii_string &str_blz_type,
+                                  vlg::ascii_string_tok &tknz,
+                                  vlg::hash_map &definemap,
+                                  vlg::hash_map &entitymap,
                                   Type &blz_type,
                                   size_t &nmemb,
                                   entity_desc_comp **desc,
-                                  blaze::ascii_string &symb_name)
+                                  vlg::ascii_string &symb_name)
 {
     entity_desc_comp *tmpdesc = NULL;
     if(!GetTypesMap().contains_key(str_blz_type.internal_buff())) {
@@ -589,15 +589,15 @@ blaze::RetCode BLZ_COMP_ParseType(unsigned long &lnum,
         //ok we have type
     } else {
         BLZ_COMP_PARSE_TYPE_UNRECOGN(lnum, str_blz_type.internal_buff());
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
 
-    blaze::ascii_string tkn;
+    vlg::ascii_string tkn;
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_TK_COMA CR_RB_DLMT, true)) {
         CR_SKIP_SP_TABS(tkn)
         //we expect to read nmemb or symbol, so we return with error if newline found.
         CR_DO_CMD_ON_NEWLINE(tkn, BLZ_COMP_PARSE_EXP(lnum, BLZ_COMP_SYMB_NAME);
-                             return blaze::RetCode_KO)
+                             return vlg::RetCode_KO)
         if(tkn == CR_TK_RBL) {
             RETURN_IF_NOT_OK(BLZ_COMP_ParseNMemb(lnum, tknz, definemap, nmemb))
             break;
@@ -607,16 +607,16 @@ blaze::RetCode BLZ_COMP_ParseType(unsigned long &lnum,
             break;
         }
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 CALC- BLZ_COMP_CalcFieldOffset
 ***********************************/
-blaze::RetCode BLZ_COMP_CalcFieldOffset(size_t max_align,
+vlg::RetCode BLZ_COMP_CalcFieldOffset(size_t max_align,
                                         size_t &mmbr_offset,
-                                        blaze::hash_map &entitymap,
-                                        blaze::hash_map &mmbrmap,
+                                        vlg::hash_map &entitymap,
+                                        vlg::hash_map &mmbrmap,
                                         BLZ_COMP_ARCH arch,
                                         BLZ_COMP_OS os,
                                         BLZ_COMP_LANG lang,
@@ -644,7 +644,7 @@ blaze::RetCode BLZ_COMP_CalcFieldOffset(size_t max_align,
             //we get max align if it is a struct/class
             entity_desc_comp *edesc = NULL;
             if(entitymap.get(mdesc->get_field_usr_str_type(), &edesc)) {
-                return blaze::RetCode_KO;
+                return vlg::RetCode_KO;
             }
             type_align = edesc->get_entity_max_align(arch, os, lang, tcomp);
         } else if(mdesc->get_field_entity_type() == EntityType_ENUM) {
@@ -671,15 +671,15 @@ blaze::RetCode BLZ_COMP_CalcFieldOffset(size_t max_align,
         mdesc->set_field_offset(cur_offst, arch, os, lang, tcomp);
         cur_offst = mmbr_offset;
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 CALC- BLZ_COMP_CalcFieldsSizeAndEntityMaxAlign
 ***********************************/
-blaze::RetCode BLZ_COMP_CalcFieldsSizeAndEntityMaxAlign(size_t &max_align,
-                                                        blaze::hash_map &entitymap,
-                                                        blaze::hash_map &mmbrmap,
+vlg::RetCode BLZ_COMP_CalcFieldsSizeAndEntityMaxAlign(size_t &max_align,
+                                                        vlg::hash_map &entitymap,
+                                                        vlg::hash_map &mmbrmap,
                                                         BLZ_COMP_ARCH arch,
                                                         BLZ_COMP_OS os,
                                                         BLZ_COMP_LANG lang,
@@ -707,7 +707,7 @@ blaze::RetCode BLZ_COMP_CalcFieldsSizeAndEntityMaxAlign(size_t &max_align,
                                                                   lang,
                                                                   tcomp) : max_align;
             } else {
-                return blaze::RetCode_KO;
+                return vlg::RetCode_KO;
             }
         } else {
             //built-in type
@@ -720,18 +720,18 @@ blaze::RetCode BLZ_COMP_CalcFieldsSizeAndEntityMaxAlign(size_t &max_align,
         }
         mdesc->set_field_type_size(type_size, arch, os, lang, tcomp);
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 
 /***********************************
 CALC- BLZ_COMP_CalcTCompDependantValues
 ***********************************/
-blaze::RetCode BLZ_COMP_CalcTCompDependantValues(size_t max_align,
+vlg::RetCode BLZ_COMP_CalcTCompDependantValues(size_t max_align,
                                                  size_t field_offset,
                                                  entity_desc_comp &entitydesc,
-                                                 blaze::hash_map &entitymap,
-                                                 blaze::hash_map &mmbrmap,
+                                                 vlg::hash_map &entitymap,
+                                                 vlg::hash_map &mmbrmap,
                                                  BLZ_COMP_ARCH arch,
                                                  BLZ_COMP_OS os,
                                                  BLZ_COMP_LANG lang,
@@ -778,22 +778,22 @@ blaze::RetCode BLZ_COMP_CalcTCompDependantValues(size_t max_align,
                                os,
                                lang,
                                tcomp);
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 
 /***********************************
 PARSE- BLZ_COMP_ParseFild
 ***********************************/
-blaze::RetCode BLZ_COMP_ParseFild(unsigned long &lnum,
+vlg::RetCode BLZ_COMP_ParseFild(unsigned long &lnum,
                                   unsigned short &mmbrid,
-                                  blaze::ascii_string &str_blz_type,
-                                  blaze::ascii_string_tok &tknz,
-                                  blaze::hash_map &definemap,
-                                  blaze::hash_map &entitymap,
-                                  blaze::hash_map &mmbrmap)
+                                  vlg::ascii_string &str_blz_type,
+                                  vlg::ascii_string_tok &tknz,
+                                  vlg::hash_map &definemap,
+                                  vlg::hash_map &entitymap,
+                                  vlg::hash_map &mmbrmap)
 {
-    blaze::ascii_string tkn, symb_name;
+    vlg::ascii_string tkn, symb_name;
     Type fld_type = Type_UNDEFINED;
     size_t fld_nmemb = 0;
     entity_desc_comp *fld_entity_desc = NULL;
@@ -862,56 +862,56 @@ blaze::RetCode BLZ_COMP_ParseFild(unsigned long &lnum,
                                                    ), exit(1))
     COMMAND_IF_NOT_OK(mmbrdesc->init(), exit(1))
     COMMAND_IF_NOT_OK(mmbrmap.put(symb_name.internal_buff(), &mmbrdesc), exit(1))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 PARSE- BLZ_COMP_ParseId
 ***********************************/
-blaze::RetCode BLZ_COMP_ParseId(unsigned long &lnum,
-                                blaze::ascii_string_tok &tknz,
-                                blaze::hash_map &definemap,
+vlg::RetCode BLZ_COMP_ParseId(unsigned long &lnum,
+                                vlg::ascii_string_tok &tknz,
+                                vlg::hash_map &definemap,
                                 unsigned int &id)
 {
-    blaze::ascii_string tkn;
+    vlg::ascii_string tkn;
     const char *define_val = NULL;
     while(!tknz.next_token(tkn, CR_DF_DLMT, true)) {
         CR_SKIP_SP_TABS(tkn)
-        if(blaze::string_is_int_number(tkn.internal_buff())) {
+        if(vlg::string_is_int_number(tkn.internal_buff())) {
             //this is a number
             id = atoi(tkn.internal_buff());
             break;
         } else if((define_val = (const char *)definemap.get(tkn.internal_buff()))) {
             //this is a @define
-            if(blaze::string_is_int_number(define_val)) {
+            if(vlg::string_is_int_number(define_val)) {
                 id = atoi(define_val);
                 break;
             } else {
                 //unexpected token
                 BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
-                return blaze::RetCode_KO;
+                return vlg::RetCode_KO;
             }
         } else {
             //unexpected token
             BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
-            return blaze::RetCode_KO;
+            return vlg::RetCode_KO;
         }
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 PARSE- BLZ_COMP_ParseFildSet
 ***********************************/
-blaze::RetCode BLZ_COMP_ParseFildSet(unsigned long &lnum,
-                                     blaze::ascii_string_tok &tknz,
-                                     blaze::hash_map &definemap,
-                                     blaze::hash_map &entitymap,
-                                     blaze::hash_map &mmbrmap,
-                                     blaze::hash_map &keymap,
-                                     blaze::linked_list  &mmbrset)
+vlg::RetCode BLZ_COMP_ParseFildSet(unsigned long &lnum,
+                                     vlg::ascii_string_tok &tknz,
+                                     vlg::hash_map &definemap,
+                                     vlg::hash_map &entitymap,
+                                     vlg::hash_map &mmbrmap,
+                                     vlg::hash_map &keymap,
+                                     vlg::linked_list  &mmbrset)
 {
-    blaze::ascii_string tkn;
+    vlg::ascii_string tkn;
     bool    fildset_valid = false,
             cbl_read = false,
             fild_reading_allwd = false;
@@ -922,7 +922,7 @@ blaze::RetCode BLZ_COMP_ParseFildSet(unsigned long &lnum,
             if(cbl_read) {
                 //unexpected token
                 BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
-                return blaze::RetCode_KO;
+                return vlg::RetCode_KO;
             }
             fild_reading_allwd = true;
             cbl_read = true;
@@ -931,13 +931,13 @@ blaze::RetCode BLZ_COMP_ParseFildSet(unsigned long &lnum,
                 break;
             } else {
                 BLZ_COMP_PARSE_KEYSET_INVALID(lnum);
-                return blaze::RetCode_KO;
+                return vlg::RetCode_KO;
             }
         } else if(tkn == CR_TK_COMA) {
             if(fild_reading_allwd) {
                 //unexpected token
                 BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
-                return blaze::RetCode_KO;
+                return vlg::RetCode_KO;
             } else {
                 fild_reading_allwd = true;
                 fildset_valid = false;
@@ -958,27 +958,27 @@ blaze::RetCode BLZ_COMP_ParseFildSet(unsigned long &lnum,
             } else {
                 //unexpected token
                 BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
-                return blaze::RetCode_KO;
+                return vlg::RetCode_KO;
             }
         }
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 PARSE- BLZ_COMP_ParseKey
 ***********************************/
-blaze::RetCode BLZ_COMP_ParseKey(unsigned long &lnum,
-                                 blaze::ascii_string_tok &tknz,
-                                 blaze::hash_map &definemap,
-                                 blaze::hash_map &entitymap,
-                                 blaze::hash_map &mmbrmap,
-                                 blaze::hash_map &keymap)
+vlg::RetCode BLZ_COMP_ParseKey(unsigned long &lnum,
+                                 vlg::ascii_string_tok &tknz,
+                                 vlg::hash_map &definemap,
+                                 vlg::hash_map &entitymap,
+                                 vlg::hash_map &mmbrmap,
+                                 vlg::hash_map &keymap)
 {
-    blaze::ascii_string tkn;
+    vlg::ascii_string tkn;
     unsigned int k_id = 0;
     bool primary = false, mmbrset_read = false, id_read = false;
-    blaze::linked_list mmbrset(blaze::sngl_ptr_obj_mng());
+    vlg::linked_list mmbrset(vlg::sngl_ptr_obj_mng());
     COMMAND_IF_NOT_OK(mmbrset.init(), exit(1))
     //check if primary
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_TK_COMA, true)) {
@@ -990,7 +990,7 @@ blaze::RetCode BLZ_COMP_ParseKey(unsigned long &lnum,
         } else {
             //unexpected token
             BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
-            return blaze::RetCode_KO;
+            return vlg::RetCode_KO;
         }
     }
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_TK_COMA, true)) {
@@ -1020,12 +1020,12 @@ blaze::RetCode BLZ_COMP_ParseKey(unsigned long &lnum,
             if(id_read && mmbrset_read) {
                 break;
             } else {
-                return blaze::RetCode_KO;
+                return vlg::RetCode_KO;
             }
         } else {
             //unexpected token
             BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
-            return blaze::RetCode_KO;
+            return vlg::RetCode_KO;
         }
     }
     //at this point we can create a BLZ_KEY_DESC for this key
@@ -1034,18 +1034,18 @@ blaze::RetCode BLZ_COMP_ParseKey(unsigned long &lnum,
                                                 primary), exit(1))
     COMMAND_IF_NOT_OK(keydesc->init(&mmbrset), exit(1))
     COMMAND_IF_NOT_OK(keymap.put(&k_id, &keydesc), exit(1))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 PARSE- BLZ_COMP_ParseEnum
 ***********************************/
-blaze::RetCode BLZ_COMP_ParseEnum(unsigned long &lnum,
-                                  blaze::ascii_string_tok &tknz,
-                                  blaze::hash_map &definemap,
-                                  blaze::hash_map &entitymap)
+vlg::RetCode BLZ_COMP_ParseEnum(unsigned long &lnum,
+                                  vlg::ascii_string_tok &tknz,
+                                  vlg::hash_map &definemap,
+                                  vlg::hash_map &entitymap)
 {
-    blaze::ascii_string tkn, symb_name;
+    vlg::ascii_string tkn, symb_name;
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_CB_DLMT, true)) {
         CR_SKIP_SP_TABS(tkn)
         RETURN_IF_NOT_OK(BLZ_COMP_CheckSymbol(lnum,
@@ -1064,8 +1064,8 @@ blaze::RetCode BLZ_COMP_ParseEnum(unsigned long &lnum,
     RETURN_IF_NOT_OK(BLZ_COMP_ReadOpeningCurlyBrace(lnum, tknz))
 
     long last_enum_val = -1;             //last value of enum
-    blaze::hash_map mmbrmap(blaze::sngl_ptr_obj_mng(),
-                            blaze::sngl_cstr_obj_mng());  //map symb -> mmbrdesc
+    vlg::hash_map mmbrmap(vlg::sngl_ptr_obj_mng(),
+                            vlg::sngl_cstr_obj_mng());  //map symb -> mmbrdesc
     COMMAND_IF_NOT_OK(mmbrmap.init(HM_SIZE_NORM), exit(1))
     unsigned short mmbrid = 0;
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_CB_DLMT, true)) {
@@ -1129,19 +1129,19 @@ blaze::RetCode BLZ_COMP_ParseEnum(unsigned long &lnum,
     COMMAND_IF_NOT_OK(entitydesc->extend(&mmbrmap, NULL), exit(1))
     COMMAND_IF_NOT_OK(entitymap.put(entitydesc->get_entity_name(), &entitydesc),
                       exit(1))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 PARSE- BLZ_COMP_ParseClass
 ***********************************/
-blaze::RetCode BLZ_COMP_ParseEntity(unsigned long &lnum,
-                                    blaze::ascii_string_tok &tknz,
-                                    blaze::hash_map &definemap,
-                                    blaze::hash_map &entitymap)
+vlg::RetCode BLZ_COMP_ParseEntity(unsigned long &lnum,
+                                    vlg::ascii_string_tok &tknz,
+                                    vlg::hash_map &definemap,
+                                    vlg::hash_map &entitymap)
 {
     bool id_decl = false;
-    blaze::ascii_string tkn, symb_name;
+    vlg::ascii_string tkn, symb_name;
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_CB_DLMT, true)) {
         CR_SKIP_SP_TABS(tkn)
         RETURN_IF_NOT_OK(BLZ_COMP_CheckSymbol(lnum,
@@ -1159,9 +1159,9 @@ blaze::RetCode BLZ_COMP_ParseEntity(unsigned long &lnum,
 
     RETURN_IF_NOT_OK(BLZ_COMP_ReadOpeningCurlyBrace(lnum, tknz))
 
-    blaze::hash_map mmbrmap(blaze::sngl_ptr_obj_mng(),
-                            blaze::sngl_cstr_obj_mng());  //map symb -> mmbrdesc
-    blaze::hash_map keymap(blaze::sngl_ptr_obj_mng(),
+    vlg::hash_map mmbrmap(vlg::sngl_ptr_obj_mng(),
+                            vlg::sngl_cstr_obj_mng());  //map symb -> mmbrdesc
+    vlg::hash_map keymap(vlg::sngl_ptr_obj_mng(),
                            sizeof(unsigned short));  //keyid -> keydesc
     COMMAND_IF_NOT_OK(mmbrmap.init(HM_SIZE_NORM),exit(1))
     COMMAND_IF_NOT_OK(keymap.init(HM_SIZE_NORM),exit(1))
@@ -1181,20 +1181,20 @@ blaze::RetCode BLZ_COMP_ParseEntity(unsigned long &lnum,
                 id_decl = true;
             } else {
                 BLZ_COMP_PARSE_CLASS_ID_ALRDY_DECL(lnum, symb_name.internal_buff());
-                return blaze::RetCode_KO;
+                return vlg::RetCode_KO;
             }
         } else if(tkn == BLZ_RWRD_PFX BLZ_RWRD_PERSISTENT) {
             //parse @persistent
             if(persistent) {
                 BLZ_COMP_PARSE_CLASS_ALRDY_PERSISTENT(lnum, tkn.internal_buff());
-                return blaze::RetCode_KO;
+                return vlg::RetCode_KO;
             }
             persistent = true;
         } else if(tkn == BLZ_RWRD_PFX BLZ_RWRD_KEY) {
             //parse @key
             if(!persistent) {
                 BLZ_COMP_PARSE_CLASS_NOT_PERSISTENT(lnum, tkn.internal_buff());
-                return blaze::RetCode_KO;
+                return vlg::RetCode_KO;
             }
             RETURN_IF_NOT_OK(BLZ_COMP_ParseKey(lnum,
                                                tknz,
@@ -1220,7 +1220,7 @@ blaze::RetCode BLZ_COMP_ParseEntity(unsigned long &lnum,
 
     if(!id_decl) {
         BLZ_COMP_PARSE_CLASS_ID_NOT_DECL(lnum, symb_name.internal_buff());
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
 
     uint32_t field_num = 0;
@@ -1272,18 +1272,18 @@ blaze::RetCode BLZ_COMP_ParseEntity(unsigned long &lnum,
     COMMAND_IF_NOT_OK(entitydesc->extend(&mmbrmap, &keymap),exit(1))
     COMMAND_IF_NOT_OK(entitymap.put(entitydesc->get_entity_name(), &entitydesc),
                       exit(1))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 PARSE- BLZ_COMP_ParseDefine
 ***********************************/
-blaze::RetCode BLZ_COMP_ParseDefine(unsigned long &lnum,
-                                    blaze::ascii_string_tok &tknz,
-                                    blaze::hash_map &definemap,
-                                    blaze::hash_map &entitymap)
+vlg::RetCode BLZ_COMP_ParseDefine(unsigned long &lnum,
+                                    vlg::ascii_string_tok &tknz,
+                                    vlg::hash_map &definemap,
+                                    vlg::hash_map &entitymap)
 {
-    blaze::ascii_string tkn, define_name, define_val;
+    vlg::ascii_string tkn, define_name, define_val;
     //@fixme add separators and special chars
     while(!tknz.next_token(tkn, CR_DF_DLMT, true)) {
         CR_SKIP_SP_TABS(tkn)
@@ -1304,31 +1304,31 @@ blaze::RetCode BLZ_COMP_ParseDefine(unsigned long &lnum,
         CR_SKIP_SP_TABS(tkn)
         //we expect a define name, so we return with error if newline found.
         CR_DO_CMD_ON_NEWLINE(tkn, BLZ_COMP_PARSE_EXP(lnum, BLZ_COMP_SYMB_NAME);
-                             return blaze::RetCode_KO)
+                             return vlg::RetCode_KO)
         RETURN_IF_NOT_OK(define_val.assign(tkn))
         // ok we got define val.
         break;
     }
     COMMAND_IF_NOT_OK(definemap.put(define_name.internal_buff(),
                                     define_val.internal_buff()),exit(1))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 PARSE- BLZ_COMP_ParseInclude
 ***********************************/
 
-blaze::RetCode BLZ_COMP_ParseInclude(unsigned long &lnum,
-                                     blaze::ascii_string_tok &tknz,
-                                     blaze::hash_map &definemap,
-                                     blaze::hash_map &entitymap,
+vlg::RetCode BLZ_COMP_ParseInclude(unsigned long &lnum,
+                                     vlg::ascii_string_tok &tknz,
+                                     vlg::hash_map &definemap,
+                                     vlg::hash_map &entitymap,
                                      char **modname,
                                      char **modver)
 {
     char *incl_fname = NULL;
     RETURN_IF_NOT_OK(BLZ_COMP_ReadString(lnum, tknz, &incl_fname))
     FILE *fdesc = NULL;
-    blaze::ascii_string data; //file content loaded on data
+    vlg::ascii_string data; //file content loaded on data
     RETURN_IF_NOT_OK(open_input_file(incl_fname, &fdesc))
     RETURN_IF_NOT_OK(load_file(fdesc, data))
     printf(STG_FMT_0,
@@ -1345,75 +1345,75 @@ blaze::RetCode BLZ_COMP_ParseInclude(unsigned long &lnum,
            BLZ_COMP_INF_END,
            BLZ_COMP_INF_PARS_FILE,
            incl_fname);
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 PARSE- BLZ_COMP_ParseNamespace
 ***********************************/
-blaze::RetCode BLZ_COMP_ParseNamespace(unsigned long &lnum,
-                                       blaze::ascii_string_tok &tknz,
-                                       blaze::hash_map &definemap,
-                                       blaze::hash_map &entitymap)
+vlg::RetCode BLZ_COMP_ParseNamespace(unsigned long &lnum,
+                                       vlg::ascii_string_tok &tknz,
+                                       vlg::hash_map &definemap,
+                                       vlg::hash_map &entitymap)
 {
     char *n_space = NULL;
     RETURN_IF_NOT_OK(BLZ_COMP_ReadString(lnum, tknz, &n_space))
     RETURN_IF_NOT_OK(unit_nmspace.assign(n_space))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 PARSE- BLZ_COMP_ParseNamespace_end
 ***********************************/
-blaze::RetCode BLZ_COMP_ParseNamespace_end(unsigned long &lnum,
-                                           blaze::ascii_string_tok &tknz,
-                                           blaze::hash_map &definemap,
-                                           blaze::hash_map &entitymap)
+vlg::RetCode BLZ_COMP_ParseNamespace_end(unsigned long &lnum,
+                                           vlg::ascii_string_tok &tknz,
+                                           vlg::hash_map &definemap,
+                                           vlg::hash_map &entitymap)
 {
     RETURN_IF_NOT_OK(unit_nmspace.assign(""))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 PARSE- BLZ_COMP_ParseModelName
 ***********************************/
-blaze::RetCode BLZ_COMP_ParseModelName(unsigned long &lnum,
-                                       blaze::ascii_string_tok &tknz,
-                                       blaze::hash_map &definemap,
-                                       blaze::hash_map &entitymap,
+vlg::RetCode BLZ_COMP_ParseModelName(unsigned long &lnum,
+                                       vlg::ascii_string_tok &tknz,
+                                       vlg::hash_map &definemap,
+                                       vlg::hash_map &entitymap,
                                        char **modname)
 {
     RETURN_IF_NOT_OK(BLZ_COMP_ReadString(lnum, tknz, modname))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 PARSE- BLZ_COMP_ParseModelName
 ***********************************/
-blaze::RetCode BLZ_COMP_ParseModelVer(unsigned long &lnum,
-                                      blaze::ascii_string_tok &tknz,
-                                      blaze::hash_map &definemap,
-                                      blaze::hash_map &entitymap,
+vlg::RetCode BLZ_COMP_ParseModelVer(unsigned long &lnum,
+                                      vlg::ascii_string_tok &tknz,
+                                      vlg::hash_map &definemap,
+                                      vlg::hash_map &entitymap,
                                       char **modver)
 {
     RETURN_IF_NOT_OK(BLZ_COMP_ReadString(lnum, tknz, modver))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 PARSE- BLZ_COMP_ParseData
 ***********************************/
-blaze::RetCode parse_data(const char *fname,
-                          blaze::ascii_string &data,
-                          blaze::hash_map &definemap,
-                          blaze::hash_map &entitymap,
+vlg::RetCode parse_data(const char *fname,
+                          vlg::ascii_string &data,
+                          vlg::hash_map &definemap,
+                          vlg::hash_map &entitymap,
                           char **modname,
                           char **modver)
 {
     unsigned long lnum = 1;
     bool parsing_comment = false;
-    blaze::ascii_string tkn;
-    blaze::ascii_string_tok tknz;
+    vlg::ascii_string tkn;
+    vlg::ascii_string_tok tknz;
     RETURN_IF_NOT_OK(tknz.init(data))
     RETURN_IF_NOT_OK(unit_nmspace.assign(""))
     while(!tknz.next_token(tkn, CR_DF_DLMT BLZ_TK_COMMENT, true)) {
@@ -1433,7 +1433,7 @@ blaze::RetCode parse_data(const char *fname,
                 //parse @model_name
                 if(*modname) {
                     BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
-                    return blaze::RetCode_KO;
+                    return vlg::RetCode_KO;
                 } else {
                     RETURN_IF_NOT_OK(BLZ_COMP_ParseModelName(lnum,
                                                              tknz,
@@ -1445,7 +1445,7 @@ blaze::RetCode parse_data(const char *fname,
                 //parse @model_version
                 if(*modver) {
                     BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
-                    return blaze::RetCode_KO;
+                    return vlg::RetCode_KO;
                 } else {
                     RETURN_IF_NOT_OK(BLZ_COMP_ParseModelVer(lnum,
                                                             tknz,
@@ -1489,11 +1489,11 @@ blaze::RetCode parse_data(const char *fname,
             } else {
                 //unexpected token
                 BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
-                return blaze::RetCode_KO;
+                return vlg::RetCode_KO;
             }
         }
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 }

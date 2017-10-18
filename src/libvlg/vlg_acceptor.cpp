@@ -26,34 +26,34 @@
 #include "blz_peer_int.h"
 #include "blz_connection_int.h"
 
-namespace blaze {
+namespace vlg {
 
 #ifdef WIN32
 static bool init_WSA = false;
-blaze::RetCode WSA_init(blaze::logger *log_)
+vlg::RetCode WSA_init(vlg::logger *log_)
 {
     if(init_WSA) {
-        return blaze::RetCode_OK;
+        return vlg::RetCode_OK;
     }
     WSAData wsaData;
     int nCode;
     if((nCode = WSAStartup(MAKEWORD(2,2), &wsaData)) != 0) {
         IFLOG(cri(TH_ID, LS_WSA"[WSADATA error code:%d]", nCode))
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
     IFLOG(inf(TH_ID, LS_WSA"[WSADATA loaded]"))
     init_WSA = true;
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode WSA_destroy(blaze::logger *log_)
+vlg::RetCode WSA_destroy(vlg::logger *log_)
 {
     if(!init_WSA) {
-        return blaze::RetCode_OK;
+        return vlg::RetCode_OK;
     }
     WSACleanup();
     IFLOG(inf(TH_ID, LS_WSA"%s() - [WSADATA cleaned up]"))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 #endif
@@ -62,13 +62,13 @@ blaze::RetCode WSA_destroy(blaze::logger *log_)
  BLZ_ACCEPTOR
 ******************************************/
 
-blaze::logger *acceptor::log_ = NULL;
+vlg::logger *acceptor::log_ = NULL;
 
 acceptor::acceptor(peer_int &peer) :
     peer_(peer),
     serv_socket_(INVALID_SOCKET)
 {
-    log_ = blaze::logger::get_logger("acceptor");
+    log_ = vlg::logger::get_logger("acceptor");
     IFLOG(trc(TH_ID, LS_CTR "%s", __func__))
     memset(&serv_sockaddr_in_, 0, sizeof(serv_sockaddr_in_));
 }
@@ -96,12 +96,12 @@ peer_int &acceptor::peer() {
     return peer_;
 }
 
-blaze::RetCode acceptor::set_sockaddr_in(sockaddr_in &serv_sockaddr_in) {
+vlg::RetCode acceptor::set_sockaddr_in(sockaddr_in &serv_sockaddr_in) {
     serv_sockaddr_in_ = serv_sockaddr_in;
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode acceptor::create_server_socket(SOCKET &serv_socket) {
+vlg::RetCode acceptor::create_server_socket(SOCKET &serv_socket) {
     IFLOG(trc(TH_ID, LS_OPN "%s(srv_intrf:%s, srv_port:%d)", __func__,
               inet_ntoa(serv_sockaddr_in_.sin_addr),
               ntohs(serv_sockaddr_in_.sin_port)))
@@ -115,7 +115,7 @@ blaze::RetCode acceptor::create_server_socket(SOCKET &serv_socket) {
             } else {
                 IFLOG(err(TH_ID, LS_CLO "%s(srv_sockid:%d) -listen KO-", __func__,
                           serv_socket_))
-                return blaze::RetCode_SYSERR;
+                return vlg::RetCode_SYSERR;
             }
         } else {
             int err = 0;
@@ -126,19 +126,19 @@ blaze::RetCode acceptor::create_server_socket(SOCKET &serv_socket) {
 #endif
             IFLOG(err(TH_ID, LS_CLO "%s(srv_sockid:%d, err:%d) -bind KO-", __func__,
                       serv_socket_, err))
-            return blaze::RetCode_SYSERR;
+            return vlg::RetCode_SYSERR;
         }
     } else {
         IFLOG(err(TH_ID, LS_CLO "%s() -socket KO-", __func__))
-        return blaze::RetCode_SYSERR;
+        return vlg::RetCode_SYSERR;
     }
     IFLOG(inf(TH_ID, LS_CLO "%s(srv_intrf:%s, srv_port:%d)", __func__,
               inet_ntoa(serv_sockaddr_in_.sin_addr),
               ntohs(serv_sockaddr_in_.sin_port)))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode acceptor::accept(unsigned int new_connid,
+vlg::RetCode acceptor::accept(unsigned int new_connid,
                                 connection_int **new_conn) {
     IFLOG(trc(TH_ID, LS_OPN "%s(newconnid:%d, new_conn:%p)", __func__, new_connid,
               new_conn))
@@ -159,7 +159,7 @@ blaze::RetCode acceptor::accept(unsigned int new_connid,
         err = errno;
 #endif
         IFLOG(err(TH_ID, LS_CLO "%s(err:%d) -accept KO-", __func__, err))
-        return blaze::RetCode_SYSERR;
+        return vlg::RetCode_SYSERR;
     } else {
         IFLOG(dbg(TH_ID, LS_TRL
                   "%s(sockid:%d, host:%s, port:%d) -accept OK- [new socket connection accepted - candidate connid:%d]",
@@ -176,9 +176,9 @@ blaze::RetCode acceptor::accept(unsigned int new_connid,
     /************************
      RETAIN_ID: CONN_SRV_01
     ************************/
-    blaze::collector &c = (*new_conn)->get_collector();
+    vlg::collector &c = (*new_conn)->get_collector();
     c.retain(*new_conn);
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     if((cdrs_res = (*new_conn)->set_connection_established(socket))) {
         IFLOG(err(TH_ID, LS_CLO
                   "%s(new_conn:%p) - setting connection established fail with res:%d", __func__,

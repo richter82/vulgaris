@@ -29,7 +29,7 @@ namespace blz_tlkt {
 //------------------------------------------------------------------------------
 // ****BLZ_TOOLKIT_PEER****
 //------------------------------------------------------------------------------
-class toolkit_peer : public blaze::peer_int {
+class toolkit_peer : public vlg::peer_int {
     public:
         //---ctors
         toolkit_peer(unsigned int id);
@@ -38,11 +38,11 @@ class toolkit_peer : public blaze::peer_int {
         // BLZ_PEER_LFCYC ABS METHS
         //------------------------------------------------------------------------------
     private:
-        virtual blaze::RetCode peer_load_cfg_usr(int pnum, const char *param,
+        virtual vlg::RetCode peer_load_cfg_usr(int pnum, const char *param,
                                                  const char *value);
-        virtual blaze::RetCode peer_init_usr();
-        virtual blaze::RetCode peer_start_usr();
-        virtual blaze::RetCode peer_dying_breath_handler();
+        virtual vlg::RetCode peer_init_usr();
+        virtual vlg::RetCode peer_start_usr();
+        virtual vlg::RetCode peer_dying_breath_handler();
         virtual const char *peer_name_usr();
         virtual const unsigned int *peer_ver_usr();
 

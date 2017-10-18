@@ -23,15 +23,15 @@
 #include "blz_connection_int.h"
 #include "blz_subscription_int.h"
 
-namespace blaze {
+namespace vlg {
 
-class sbs_event_inst_collector : public blaze::collector {
+class sbs_event_inst_collector : public vlg::collector {
     public:
-        sbs_event_inst_collector() : blaze::collector("subscription_event_int") {}
+        sbs_event_inst_collector() : vlg::collector("subscription_event_int") {}
 };
 
-blaze::collector *sbs_event_int_inst_coll_ = NULL;
-blaze::collector &sbs_event_int_inst_collector()
+vlg::collector *sbs_event_int_inst_coll_ = NULL;
+vlg::collector &sbs_event_int_inst_collector()
 {
     if(sbs_event_int_inst_coll_) {
         return *sbs_event_int_inst_coll_;
@@ -42,23 +42,23 @@ blaze::collector &sbs_event_int_inst_collector()
     return *sbs_event_int_inst_coll_;
 }
 
-blaze::collector &subscription_event_int::get_collector()
+vlg::collector &subscription_event_int::get_collector()
 {
     return sbs_event_int_inst_collector();
 }
 
 // BLZ_SBS_EVENT CTORS - INIT - DESTROY
 
-blaze::RetCode subscription_event_int::new_instance(subscription_event_int
+vlg::RetCode subscription_event_int::new_instance(subscription_event_int
                                                     **ptr)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, ptr))
     if(!((*ptr) = new subscription_event_int())) {
         IFLOG(cri(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_MEMERR;
+        return vlg::RetCode_MEMERR;
     } else {
         IFLOG(trc(TH_ID, LS_CLO "%s(new_inst:%p)", __func__, *ptr))
-        return blaze::RetCode_OK;
+        return vlg::RetCode_OK;
     }
 }
 
@@ -84,7 +84,7 @@ subscription_event_int::~subscription_event_int()
         /************************
         RELEASE_ID: SBE_DTA_01
         ************************/
-        blaze::collector &c = sbs_data_->get_collector();
+        vlg::collector &c = sbs_data_->get_collector();
         c.release(sbs_data_);
     }
     IFLOG(trc(TH_ID, LS_DTR "%s(ptr:%p)", __func__, this))
@@ -173,13 +173,13 @@ void subscription_event_int::set_obj(const nclass *obj)
         /************************
         RELEASE_ID: SBE_DTA_01
         ************************/
-        blaze::collector &c = sbs_data_->get_collector();
+        vlg::collector &c = sbs_data_->get_collector();
         c.release(sbs_data_);
         sbs_data_ = NULL;
     }
     if(obj) {
         if((sbs_data_ = obj->clone())) {
-            blaze::collector &c = sbs_data_->get_collector();
+            vlg::collector &c = sbs_data_->get_collector();
             /************************
             ADOPT_ID: SBE_DTA_01
             ************************/
@@ -194,12 +194,12 @@ void subscription_event_int::set_obj_on_event_receive(nclass *val)
         /************************
         RELEASE_ID: SBE_DTA_01
         ************************/
-        blaze::collector &c = sbs_data_->get_collector();
+        vlg::collector &c = sbs_data_->get_collector();
         c.release(sbs_data_);
         sbs_data_ = NULL;
     }
     if((sbs_data_ = val)) {
-        blaze::collector &c = sbs_data_->get_collector();
+        vlg::collector &c = sbs_data_->get_collector();
         /************************
         ADOPT_ID: SBE_DTA_01
         ************************/
@@ -213,7 +213,7 @@ sbs_event_wrapper::sbs_event_wrapper(subscription_event_int *evt) :
     evt_(evt)
 {
     if(evt_) {
-        blaze::collector &c = evt_->get_collector();
+        vlg::collector &c = evt_->get_collector();
         /************************
         ADOPT_ID: SEW_SBE_01
         ************************/
@@ -224,7 +224,7 @@ sbs_event_wrapper::sbs_event_wrapper(subscription_event_int *evt) :
 sbs_event_wrapper::~sbs_event_wrapper()
 {
     if(evt_) {
-        blaze::collector &c = evt_->get_collector();
+        vlg::collector &c = evt_->get_collector();
         /************************
         RELEASE_ID: SEW_SBE_01
         ************************/
@@ -235,7 +235,7 @@ sbs_event_wrapper::~sbs_event_wrapper()
 void sbs_event_wrapper::set_evt(subscription_event_int *evt)
 {
     if(evt_) {
-        blaze::collector &c = evt_->get_collector();
+        vlg::collector &c = evt_->get_collector();
         /************************
         RELEASE_ID: SEW_SBE_01
         ************************/
@@ -243,7 +243,7 @@ void sbs_event_wrapper::set_evt(subscription_event_int *evt)
         evt_ = NULL;
     }
     if((evt_ = evt)) {
-        blaze::collector &c = evt_->get_collector();
+        vlg::collector &c = evt_->get_collector();
         /************************
         ADOPT_ID: SEW_SBE_01
         ************************/
@@ -260,14 +260,14 @@ subscription_event_int *sbs_event_wrapper::get_evt()
 
 //BLZ_SUBSCRIPTION MEMORY
 
-class subscription_inst_collector : public blaze::collector {
+class subscription_inst_collector : public vlg::collector {
     public:
-        subscription_inst_collector() : blaze::collector("subscription_int") {}
+        subscription_inst_collector() : vlg::collector("subscription_int") {}
 
 };
 
-blaze::collector *sbs_inst_coll_ = NULL;
-blaze::collector &sbs_inst_collector()
+vlg::collector *sbs_inst_coll_ = NULL;
+vlg::collector &sbs_inst_collector()
 {
     if(sbs_inst_coll_) {
         return *sbs_inst_coll_;
@@ -278,7 +278,7 @@ blaze::collector &sbs_inst_collector()
     return *sbs_inst_coll_;
 }
 
-blaze::collector &subscription_int::get_collector()
+vlg::collector &subscription_int::get_collector()
 {
     return sbs_inst_collector();
 }
@@ -308,13 +308,13 @@ subscription_int::subscription_int(connection_int &conn) :
     sen_hndl_(NULL),
     sen_hndl_ud_(NULL),
     cli_evt_sts_(BLZ_SBS_Evt_Undef),
-    cli_evt_q_(blaze::sngl_ptr_obj_mng()),
+    cli_evt_q_(vlg::sngl_ptr_obj_mng()),
     srv_sbs_last_evt_ack_(true), //at the beginning we consider true this.
     srv_sbs_to_ack_evtid_(0),
     srv_sbs_last_ack_evtid_(0),
-    srv_sbs_evt_glob_q_(blaze::sngl_ptr_obj_mng()),
-    srv_sbs_classkey_evt_q_hm_(blaze::sngl_ptr_obj_mng(),
-                               blaze::sngl_cstr_obj_mng()),
+    srv_sbs_evt_glob_q_(vlg::sngl_ptr_obj_mng()),
+    srv_sbs_classkey_evt_q_hm_(vlg::sngl_ptr_obj_mng(),
+                               vlg::sngl_cstr_obj_mng()),
     initial_query_(NULL),
     initial_query_ended_(true)
 {
@@ -324,7 +324,7 @@ subscription_int::subscription_int(connection_int &conn) :
 
 subscription_int::~subscription_int()
 {
-    blaze::collector &c = get_collector();
+    vlg::collector &c = get_collector();
     if(c.is_instance_collected(this)) {
         IFLOG(cri(TH_ID, LS_DTR "%s(ptr:%p)" D_W_R_COLL LS_EXUNX,
                   __func__,
@@ -336,7 +336,7 @@ subscription_int::~subscription_int()
     IFLOG(trc(TH_ID, LS_DTR "%s(ptr:%p)", __func__, this))
 }
 
-blaze::RetCode subscription_int::init()
+vlg::RetCode subscription_int::init()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     RETURN_IF_NOT_OK(cli_evt_q_.init(1))
@@ -345,7 +345,7 @@ blaze::RetCode subscription_int::init()
     RETURN_IF_NOT_OK(srv_sbs_classkey_evt_q_hm_.init(HM_SIZE_SMALL))
     set_status(SubscriptionStatus_INITIALIZED);
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 void subscription_int::release_initial_query()
@@ -510,7 +510,7 @@ void subscription_int::set_initial_query_ended(bool val)
 
 // BLZ_SUBSCRIPTION STATUS
 
-blaze::RetCode subscription_int::set_req_sent()
+vlg::RetCode subscription_int::set_req_sent()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     IFLOG(inf(TH_ID,
@@ -527,45 +527,45 @@ blaze::RetCode subscription_int::set_req_sent()
               open_tmstp1_))
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
     set_status(SubscriptionStatus_REQUEST_SENT);
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode subscription_int::set_started()
+vlg::RetCode subscription_int::set_started()
 {
     IFLOG(inf(TH_ID, LS_SBS"[CONNID:%010u-SBSID:%010u][STARTED]", conn_.connid(),
               sbsid_))
     set_status(SubscriptionStatus_STARTED);
     on_start();
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode subscription_int::set_stopped()
+vlg::RetCode subscription_int::set_stopped()
 {
     IFLOG(inf(TH_ID, LS_SBS"[CONNID:%010u-SBSID:%010u][STOPPED]", conn_.connid(),
               sbsid_))
     set_status(SubscriptionStatus_STOPPED);
     on_stop();
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode subscription_int::set_released()
+vlg::RetCode subscription_int::set_released()
 {
     IFLOG(dbg(TH_ID, LS_SBS"[CONNID:%010u-SBSID:%010u][RELEASED]", conn_.connid(),
               sbsid_))
     set_status(SubscriptionStatus_RELEASED);
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode subscription_int::set_error()
+vlg::RetCode subscription_int::set_error()
 {
     IFLOG(err(TH_ID, LS_SBS"[CONNID:%010u-SBSID:%010u][ERROR]", conn_.connid(),
               sbsid_))
     set_status(SubscriptionStatus_ERROR);
     on_stop();
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode subscription_int::set_status(SubscriptionStatus status)
+vlg::RetCode subscription_int::set_status(SubscriptionStatus status)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, status:%d)", __func__, this, status))
     CHK_MON_ERR_0(lock)
@@ -576,10 +576,10 @@ blaze::RetCode subscription_int::set_status(SubscriptionStatus status)
     CHK_MON_ERR_0(notify_all)
     CHK_MON_ERR_0(unlock)
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode subscription_int::await_for_status_reached_or_outdated(
+vlg::RetCode subscription_int::await_for_status_reached_or_outdated(
     SubscriptionStatus test,
     SubscriptionStatus &current,
     time_t sec,
@@ -590,20 +590,20 @@ blaze::RetCode subscription_int::await_for_status_reached_or_outdated(
     if(status_ < SubscriptionStatus_INITIALIZED) {
         CHK_MON_ERR_0(unlock)
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     while(status_ < test) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res =  blaze::RetCode_TIMEOUT;
+                cdrs_res =  vlg::RetCode_TIMEOUT;
                 break;
             }
         }
     }
     current = status_;
-    IFLOG(log(cdrs_res ? blaze::TL_WRN : blaze::TL_DBG, TH_ID,
+    IFLOG(log(cdrs_res ? vlg::TL_WRN : vlg::TL_DBG, TH_ID,
               LS_CLO "%s(ptr:%p, res:%d) - test:%d [reached or outdated] current:%d",
               __func__, this, cdrs_res,
               test, status_))
@@ -611,7 +611,7 @@ blaze::RetCode subscription_int::await_for_status_reached_or_outdated(
     return cdrs_res;
 }
 
-blaze::RetCode subscription_int::await_for_start_result(
+vlg::RetCode subscription_int::await_for_start_result(
     SubscriptionResponse
     &sbs_start_result,
     ProtocolCode &sbs_start_protocode,
@@ -623,21 +623,21 @@ blaze::RetCode subscription_int::await_for_start_result(
     if(status_ < SubscriptionStatus_INITIALIZED) {
         CHK_MON_ERR_0(unlock)
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     while(!start_stop_evt_occur_) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res =  blaze::RetCode_TIMEOUT;
+                cdrs_res =  vlg::RetCode_TIMEOUT;
                 break;
             }
         }
     }
     sbs_start_result = sbresl_;
     sbs_start_protocode = last_blzcod_;
-    IFLOG(log(cdrs_res ? blaze::TL_WRN : blaze::TL_DBG, TH_ID, LS_CLO
+    IFLOG(log(cdrs_res ? vlg::TL_WRN : vlg::TL_DBG, TH_ID, LS_CLO
               "%s(ptr:%p, res:%d, status:%d) - [subscription start result available] - sbs_start_result:%d, sbs_start_protocode:%d",
               __func__,
               this,
@@ -650,7 +650,7 @@ blaze::RetCode subscription_int::await_for_start_result(
     return cdrs_res;
 }
 
-blaze::RetCode subscription_int::await_for_stop_result(SubscriptionResponse
+vlg::RetCode subscription_int::await_for_stop_result(SubscriptionResponse
                                                        &sbs_stop_result,
                                                        ProtocolCode &sbs_stop_protocode,
                                                        time_t sec,
@@ -661,21 +661,21 @@ blaze::RetCode subscription_int::await_for_stop_result(SubscriptionResponse
     if(status_ < SubscriptionStatus_INITIALIZED) {
         CHK_MON_ERR_0(unlock)
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     while(!start_stop_evt_occur_) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res =  blaze::RetCode_TIMEOUT;
+                cdrs_res =  vlg::RetCode_TIMEOUT;
                 break;
             }
         }
     }
     sbs_stop_result = sbresl_;
     sbs_stop_protocode = last_blzcod_;
-    IFLOG(log(cdrs_res ? blaze::TL_WRN : blaze::TL_DBG, TH_ID, LS_CLO
+    IFLOG(log(cdrs_res ? vlg::TL_WRN : vlg::TL_DBG, TH_ID, LS_CLO
               "%s(ptr:%p, res:%d, status:%d) - [subscription stop result available] - sbs_stop_result:%d, sbs_stop_protocode:%d",
               __func__,
               this,
@@ -688,7 +688,7 @@ blaze::RetCode subscription_int::await_for_stop_result(SubscriptionResponse
     return cdrs_res;
 }
 
-blaze::RetCode subscription_int::notify_for_start_stop_result()
+vlg::RetCode subscription_int::notify_for_start_stop_result()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     mon_.lock();
@@ -696,29 +696,29 @@ blaze::RetCode subscription_int::notify_for_start_stop_result()
     mon_.notify_all();
     mon_.unlock();
     IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 // BLZ_SUBSCRIPTION ACTIONS
 
-blaze::RetCode subscription_int::start()
+vlg::RetCode subscription_int::start()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ != SubscriptionStatus_INITIALIZED &&
             status_ != SubscriptionStatus_STOPPED) {
         IFLOG(err(TH_ID, LS_CLO "%s() - [status:%d]", __func__, status_))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     //client side adoption to avoid userspace deletion.
     /************************
     RETAIN_ID: SBS_CLI_01
     ************************/
-    blaze::collector &c = get_collector();
+    vlg::collector &c = get_collector();
     c.retain(this);
 
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     reqid_ = conn_.next_reqid();
-    blaze::synch_hash_map &reqid_sbs_map = conn_.reqid_sbs_map();
+    vlg::synch_hash_map &reqid_sbs_map = conn_.reqid_sbs_map();
     subscription_int *self = this;
     if((cdrs_res = reqid_sbs_map.put(&reqid_, &self))) {
         IFLOG(cri(TH_ID, LS_CLO "%s() - hash put, res:%d", __func__, cdrs_res))
@@ -732,7 +732,7 @@ blaze::RetCode subscription_int::start()
     return cdrs_res;
 }
 
-blaze::RetCode subscription_int::start(SubscriptionType sbscr_type,
+vlg::RetCode subscription_int::start(SubscriptionType sbscr_type,
                                        SubscriptionMode sbscr_mode,
                                        SubscriptionFlowType sbscr_flow_type,
                                        SubscriptionDownloadType  sbscr_dwnld_type,
@@ -753,11 +753,11 @@ blaze::RetCode subscription_int::start(SubscriptionType sbscr_type,
               nclass_id,
               start_timestamp_0,
               start_timestamp_1))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     if(status_ != SubscriptionStatus_INITIALIZED &&
             status_ != SubscriptionStatus_STOPPED) {
         IFLOG(err(TH_ID, LS_CLO "%s() - [status:%d]", __func__, status_))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     sbstyp_ = sbscr_type;
     sbsmod_ = sbscr_mode;
@@ -772,14 +772,14 @@ blaze::RetCode subscription_int::start(SubscriptionType sbscr_type,
     return cdrs_res;
 }
 
-blaze::RetCode subscription_int::stop()
+vlg::RetCode subscription_int::stop()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ != SubscriptionStatus_STARTED) {
         IFLOG(err(TH_ID, LS_CLO "%s() - [status:%d]", __func__, status_))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     if(!initial_query_ended_) {
         if(initial_query_) {
             initial_query_->release();
@@ -805,10 +805,10 @@ blaze::RetCode subscription_int::stop()
 
 // BLZ_SUBSCRIPTION SENDING METHS
 
-blaze::RetCode subscription_int::send_start_request()
+vlg::RetCode subscription_int::send_start_request()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     set_req_sent();
     start_stop_evt_occur_ = false;
     DECLINITH_GBB(gbb, BLZ_BUFF_DEF_SZ)
@@ -834,10 +834,10 @@ blaze::RetCode subscription_int::send_start_request()
     return cdrs_res;
 }
 
-blaze::RetCode subscription_int::send_start_response()
+vlg::RetCode subscription_int::send_start_response()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     DECLINITH_GBB(gbb, BLZ_BUFF_DEF_SZ)
     build_PKT_SBSRES(sbresl_,
                      last_blzcod_,
@@ -856,11 +856,11 @@ blaze::RetCode subscription_int::send_start_response()
     return cdrs_res;
 }
 
-blaze::RetCode subscription_int::send_event(const subscription_event_int
+vlg::RetCode subscription_int::send_event(const subscription_event_int
                                             *sbs_evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, sbs_evt:%p)", __func__, this, sbs_evt))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     DECLINITH_GBB(gbb, BLZ_BUFF_DEF_SZ)
     build_PKT_SBSEVT(sbsid_,
                      sbs_evt->sbs_evttype_,
@@ -894,10 +894,10 @@ blaze::RetCode subscription_int::send_event(const subscription_event_int
     return cdrs_res;
 }
 
-blaze::RetCode subscription_int::send_event_ack()
+vlg::RetCode subscription_int::send_event_ack()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     DECLINITH_GBB(gbb, BLZ_BUFF_DEF_SZ)
     build_PKT_SBSACK(sbsid_,
                      cli_last_evt_->sbs_evtid_,
@@ -916,13 +916,13 @@ blaze::RetCode subscription_int::send_event_ack()
 
 // BLZ_SUBSCRIPTION ASYNCH SENDING
 
-blaze::RetCode subscription_int::store_sbs_evt_srv_asynch(subscription_event_int
+vlg::RetCode subscription_int::store_sbs_evt_srv_asynch(subscription_event_int
                                                           *evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, evt:%p)", __func__, this, evt))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
-    blaze::ascii_string pkey;
-    blaze::blocking_queue *classkeyvalue_inst_evt_q = NULL;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::ascii_string pkey;
+    vlg::blocking_queue *classkeyvalue_inst_evt_q = NULL;
     sbs_event_wrapper *sev_wrpr = NULL;
     if(evt->get_evttype() == SubscriptionEventType_LIVE) {
         //class instance.
@@ -931,7 +931,7 @@ blaze::RetCode subscription_int::store_sbs_evt_srv_asynch(subscription_event_int
                                                       &classkeyvalue_inst_evt_q))) {
             //not found.
             classkeyvalue_inst_evt_q =
-                new blaze::blocking_queue(blaze::sngl_ptr_obj_mng());
+                new vlg::blocking_queue(vlg::sngl_ptr_obj_mng());
             classkeyvalue_inst_evt_q->init();
 
             if((cdrs_res = srv_sbs_classkey_evt_q_hm_.put(pkey.internal_buff(),
@@ -958,7 +958,7 @@ blaze::RetCode subscription_int::store_sbs_evt_srv_asynch(subscription_event_int
                 //not found.
                 if(!(sev_wrpr = new sbs_event_wrapper(evt))) {
                     IFLOG(cri(TH_ID, LS_CLO "%s - memory", __func__))
-                    return blaze::RetCode_MEMERR;
+                    return vlg::RetCode_MEMERR;
                 }
                 if((cdrs_res = classkeyvalue_inst_evt_q->put(&sev_wrpr))) {
                     IFLOG(cri(TH_ID, LS_CLO
@@ -1006,7 +1006,7 @@ blaze::RetCode subscription_int::store_sbs_evt_srv_asynch(subscription_event_int
             /*evt adoption is implicit when evt is wrapped.*/
             if(!(sev_wrpr = new sbs_event_wrapper(evt))) {
                 IFLOG(cri(TH_ID, LS_CLO "%s - memory", __func__))
-                return blaze::RetCode_MEMERR;
+                return vlg::RetCode_MEMERR;
             }
             if((cdrs_res = classkeyvalue_inst_evt_q->put(&sev_wrpr))) {
                 IFLOG(cri(TH_ID, LS_CLO
@@ -1034,7 +1034,7 @@ blaze::RetCode subscription_int::store_sbs_evt_srv_asynch(subscription_event_int
         //these events are always enqueued in glob queue
         if(!(sev_wrpr = new sbs_event_wrapper(evt))) {
             IFLOG(cri(TH_ID, LS_CLO "%s", __func__))
-            return blaze::RetCode_MEMERR;
+            return vlg::RetCode_MEMERR;
         }
         if((cdrs_res = srv_sbs_evt_glob_q_.put(&sev_wrpr))) {
             IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - failed to put into srv_sbs_evt_glob_q_",
@@ -1046,14 +1046,14 @@ blaze::RetCode subscription_int::store_sbs_evt_srv_asynch(subscription_event_int
     return cdrs_res;
 }
 
-blaze::RetCode subscription_int::consume_sbs_evt_srv_asynch(
+vlg::RetCode subscription_int::consume_sbs_evt_srv_asynch(
     subscription_event_int **evt_out)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, evt_out:%p)", __func__, this, evt_out))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     sbs_event_wrapper *sev_wrpr_1 = NULL, *sev_wrpr_2 = NULL;
     if(!(cdrs_res = srv_sbs_evt_glob_q_.get(0, 0, &sev_wrpr_1))) {
-        blaze::ascii_string pkey;
+        vlg::ascii_string pkey;
         sev_wrpr_1->get_evt()->get_obj()->primary_key_string_value(&pkey);
         IFLOG(trc(TH_ID, LS_TRL "%s() - new event[%u] available. - [key:%s]",
                   __func__,
@@ -1061,7 +1061,7 @@ blaze::RetCode subscription_int::consume_sbs_evt_srv_asynch(
                   pkey.internal_buff()))
         if(sev_wrpr_1->get_evt()->get_evttype() ==
                 SubscriptionEventType_LIVE) {
-            blaze::blocking_queue *classkeyvalue_inst_evt_q = NULL;
+            vlg::blocking_queue *classkeyvalue_inst_evt_q = NULL;
             if(!(cdrs_res = srv_sbs_classkey_evt_q_hm_.get(pkey.internal_buff(),
                                                            &classkeyvalue_inst_evt_q))) {
                 if(!(cdrs_res = classkeyvalue_inst_evt_q->get(0, 0, &sev_wrpr_2))) {
@@ -1071,7 +1071,7 @@ blaze::RetCode subscription_int::consume_sbs_evt_srv_asynch(
                                   __func__,
                                   cdrs_res, sev_wrpr_1, sev_wrpr_2, pkey.internal_buff(),
                                   classkeyvalue_inst_evt_q))
-                        return blaze::RetCode_GENERR;
+                        return vlg::RetCode_GENERR;
                     }
                 } else {
                     //error get event from queue.
@@ -1079,7 +1079,7 @@ blaze::RetCode subscription_int::consume_sbs_evt_srv_asynch(
                               "%s(res:%d) - failed to get sev_wrpr_2 from classkeyvalue_inst_evt_q - [key:%s] - aborting",
                               __func__,
                               cdrs_res, pkey.internal_buff()))
-                    return blaze::RetCode_GENERR;
+                    return vlg::RetCode_GENERR;
                 }
             } else {
                 //not found.
@@ -1087,13 +1087,13 @@ blaze::RetCode subscription_int::consume_sbs_evt_srv_asynch(
                           "%s(res:%d) - failed to get event from srv_sbs_classkey_evt_q_hm_ - [key:%s] - aborting",
                           __func__,
                           cdrs_res, pkey.internal_buff()))
-                return blaze::RetCode_GENERR;
+                return vlg::RetCode_GENERR;
             }
         }
         /************************
         RETAIN_ID: SBE_SRV_02
         ************************/
-        blaze::collector &c = sev_wrpr_1->get_evt()->get_collector();
+        vlg::collector &c = sev_wrpr_1->get_evt()->get_collector();
         c.retain(sev_wrpr_1->get_evt());
         *evt_out = sev_wrpr_1->get_evt();
         delete sev_wrpr_1;
@@ -1105,19 +1105,19 @@ blaze::RetCode subscription_int::consume_sbs_evt_srv_asynch(
     return cdrs_res;
 }
 
-blaze::RetCode subscription_int::accept_event(subscription_event_int *sbs_evt)
+vlg::RetCode subscription_int::accept_event(subscription_event_int *sbs_evt)
 {
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode subscription_int::submit_live_event(subscription_event_int
+vlg::RetCode subscription_int::submit_live_event(subscription_event_int
                                                    *sbs_evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, sbs_evt:%p)",
               __func__,
               this,
               sbs_evt))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     if((cdrs_res = accept_event(sbs_evt))) {
         IFLOG(trc(TH_ID, LS_TRL
                   "%s() - unauthorized event:[%d] skipped for subscriber[%d].",
@@ -1156,8 +1156,8 @@ blaze::RetCode subscription_int::submit_live_event(subscription_event_int
 // BLZ_SUBSCRIPTION RECVING METHS
 
 /*Client only*/
-blaze::RetCode subscription_int::receive_event(const blz_hdr_rec *pkt_hdr,
-                                               blaze::grow_byte_buffer *pkt_body,
+vlg::RetCode subscription_int::receive_event(const blz_hdr_rec *pkt_hdr,
+                                               vlg::grow_byte_buffer *pkt_body,
                                                subscription_event_int *sbs_evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(pkt_hdr:%p, pkt_body:%p, sbs_evt:%p)",
@@ -1166,7 +1166,7 @@ blaze::RetCode subscription_int::receive_event(const blz_hdr_rec *pkt_hdr,
               pkt_body,
               sbs_evt))
 
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     if(sbs_evt->get_evttype() != SubscriptionEventType_DOWNLOAD_END) {
         nclass *nobj = NULL;
         if((cdrs_res = bem_.new_class_instance(nclass_id(), &nobj))) {
@@ -1175,7 +1175,7 @@ blaze::RetCode subscription_int::receive_event(const blz_hdr_rec *pkt_hdr,
                       cdrs_res, nclass_id()))
             return cdrs_res;
         } else {
-            blaze::collector &c = nobj->get_collector();
+            vlg::collector &c = nobj->get_collector();
             c.retain(nobj);
         }
         sbs_evt->set_obj_on_event_receive(nobj);
@@ -1195,10 +1195,10 @@ blaze::RetCode subscription_int::receive_event(const blz_hdr_rec *pkt_hdr,
 
     if((cdrs_res = cli_evt_q_.put(&sbs_evt))) {
         switch(cdrs_res) {
-            case blaze::RetCode_QFULL:
-            case blaze::RetCode_TIMEOUT:
+            case vlg::RetCode_QFULL:
+            case vlg::RetCode_TIMEOUT:
                 IFLOG(cri(TH_ID, LS_CLO "%s() - queue full.", __func__))
-            case blaze::RetCode_PTHERR:
+            case vlg::RetCode_PTHERR:
                 IFLOG(cri(TH_ID, LS_CLO "%s() - pthread error.", __func__))
             default:
                 IFLOG(cri(TH_ID, LS_CLO "%s() - RetCode_CODE:%d", __func__, cdrs_res))
@@ -1221,12 +1221,12 @@ blaze::RetCode subscription_int::receive_event(const blz_hdr_rec *pkt_hdr,
 }
 
 /*Server only*/
-blaze::RetCode subscription_int::receive_event_ack(const blz_hdr_rec *hdr)
+vlg::RetCode subscription_int::receive_event_ack(const blz_hdr_rec *hdr)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     IFLOG(dbg(TH_ID, LS_SBS"[sbsid:[%d] - sbs event[%u] ack received]", sbsid_,
               srv_sbs_to_ack_evtid_))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     pthread_rwlock_wrlock(&lock_srv_sbs_rep_asynch_);
     set_sbs_last_ack_evt_id();
     subscription_event_int *sbs_evt = NULL;
@@ -1238,7 +1238,7 @@ blaze::RetCode subscription_int::receive_event_ack(const blz_hdr_rec *hdr)
      if cdrs_res == RetCode_ENMEND initial query has ended now.
      in both cases we must check for pending live events.
     ***********************************/
-    if((!cdrs_res || cdrs_res == blaze::RetCode_ENMEND) &&
+    if((!cdrs_res || cdrs_res == vlg::RetCode_ENMEND) &&
             !(cdrs_res = consume_sbs_evt_srv_asynch(&sbs_evt))) {
         //there is a new event to send.
         IFLOG(trc(TH_ID, LS_TRL
@@ -1251,16 +1251,16 @@ blaze::RetCode subscription_int::receive_event_ack(const blz_hdr_rec *hdr)
                       __func__,
                       sbs_evt->sbs_evtid_))
         }
-    } else if(cdrs_res == blaze::RetCode_EMPTY) {
+    } else if(cdrs_res == vlg::RetCode_EMPTY) {
         IFLOG(trc(TH_ID, LS_TRL
                   "%s() - last event:[%d], has been ack by client, no new event to send.",
                   __func__,
                   srv_sbs_last_ack_evtid_))
-        cdrs_res = blaze::RetCode_OK;
+        cdrs_res = vlg::RetCode_OK;
     }
     pthread_rwlock_unlock(&lock_srv_sbs_rep_asynch_);
     if(sbs_evt) {
-        blaze::collector &c = sbs_evt->get_collector();
+        vlg::collector &c = sbs_evt->get_collector();
         /************************
         RELEASE_ID: SBE_SRV_02
         ************************/
@@ -1271,9 +1271,9 @@ blaze::RetCode subscription_int::receive_event_ack(const blz_hdr_rec *hdr)
 }
 
 /*Server only*/
-blaze::RetCode subscription_int::submit_dwnl_event()
+vlg::RetCode subscription_int::submit_dwnl_event()
 {
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     per_nclassid_helper_rec *sdr = NULL;
     subscription_event_int *new_dwnl_sbs_event = NULL;
@@ -1287,11 +1287,11 @@ blaze::RetCode subscription_int::submit_dwnl_event()
     }
     //we need to newinstance here because we do not know if query has ended here.
     bem.new_class_instance(nclassid_, &dwnl_obj);
-    blaze::collector &c = dwnl_obj->get_collector();
+    vlg::collector &c = dwnl_obj->get_collector();
     c.retain(dwnl_obj);
 
     if((cdrs_res = initial_query_->load_next_entity(ts0, ts1,
-                                                    *dwnl_obj)) == blaze::RetCode_DBROW) {
+                                                    *dwnl_obj)) == vlg::RetCode_DBROW) {
         RETURN_IF_NOT_OK(peer_.build_sbs_event(sdr->next_sbs_evt_id(),
                                                SubscriptionEventType_DOWNLOAD,
                                                ProtocolCode_SUCCESS,
@@ -1303,7 +1303,7 @@ blaze::RetCode subscription_int::submit_dwnl_event()
         /************************
         RETAIN_ID: SBE_SRV_03
         ************************/
-        blaze::collector &c1 = new_dwnl_sbs_event->get_collector();
+        vlg::collector &c1 = new_dwnl_sbs_event->get_collector();
         c1.retain(new_dwnl_sbs_event);
         if((cdrs_res = accept_event(new_dwnl_sbs_event))) {
             IFLOG(trc(TH_ID, LS_TRL
@@ -1326,7 +1326,7 @@ blaze::RetCode subscription_int::submit_dwnl_event()
         RELEASE_ID: SBE_SRV_03
         ************************/
         c1.release(new_dwnl_sbs_event);
-    } else if(cdrs_res == blaze::RetCode_QRYEND) {
+    } else if(cdrs_res == vlg::RetCode_QRYEND) {
         IFLOG(dbg(TH_ID, LS_TRL "%s(res:%d) - initial query has ended.",
                   __func__,
                   cdrs_res))
@@ -1342,7 +1342,7 @@ blaze::RetCode subscription_int::submit_dwnl_event()
         /************************
         RETAIN_ID: SBE_SRV_03b
         ************************/
-        blaze::collector &c1 = new_dwnl_sbs_event->get_collector();
+        vlg::collector &c1 = new_dwnl_sbs_event->get_collector();
         c1.retain(new_dwnl_sbs_event);
 
         IFLOG(trc(TH_ID, LS_TRL "%s() - send dwnl-end event:[%d].", __func__,
@@ -1373,10 +1373,10 @@ blaze::RetCode subscription_int::submit_dwnl_event()
     return cdrs_res;
 }
 
-blaze::RetCode subscription_int::execute_initial_query()
+vlg::RetCode subscription_int::execute_initial_query()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     const entity_desc *class_desc = NULL;
     if(!(cdrs_res = bem_.get_entity_descriptor(nclassid_, &class_desc))) {
         if(class_desc->is_persistent()) {
@@ -1384,7 +1384,7 @@ blaze::RetCode subscription_int::execute_initial_query()
             if((driv = peer_.get_pers_mng().available_driver(nclassid_))) {
                 persistence_connection_int *conn = NULL;
                 if((conn = driv->available_connection(nclassid_))) {
-                    blaze::ascii_string qry_s;
+                    vlg::ascii_string qry_s;
                     qry_s.assign("select * from ");
                     qry_s.append(class_desc->get_entity_name());
                     if(dwltyp_ == SubscriptionDownloadType_PARTIAL) {
@@ -1407,17 +1407,17 @@ blaze::RetCode subscription_int::execute_initial_query()
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%u",
                               __func__, nclassid_))
-                    cdrs_res = blaze::RetCode_KO;
+                    cdrs_res = vlg::RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-driver for nclass_id:%u",
                           __func__, nclassid_))
-                cdrs_res = blaze::RetCode_KO;
+                cdrs_res = vlg::RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "%s() - class is not persistable. [nclass_id:%u]",
                       __func__, nclassid_))
-            cdrs_res = blaze::RetCode_KO;
+            cdrs_res = vlg::RetCode_KO;
         }
     } else {
         IFLOG(cri(TH_ID, LS_TRL "%s() - class descriptor not found. [nclass_id:%u]",
@@ -1437,40 +1437,40 @@ blaze::RetCode subscription_int::execute_initial_query()
 }
 
 
-blaze::RetCode subscription_int::safe_submit_dwnl_event()
+vlg::RetCode subscription_int::safe_submit_dwnl_event()
 {
     pthread_rwlock_wrlock(&lock_srv_sbs_rep_asynch_);
-    blaze::RetCode cdrs_res = submit_dwnl_event();
+    vlg::RetCode cdrs_res = submit_dwnl_event();
     pthread_rwlock_unlock(&lock_srv_sbs_rep_asynch_);
     return cdrs_res;
 }
 
 // BLZ_SUBSCRIPTION EVENT MNGMNT
 
-blaze::RetCode subscription_int::await_for_next_event(
+vlg::RetCode subscription_int::await_for_next_event(
     subscription_event_int **sbs_evt,
     time_t sec,
     long nsec)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     CHK_MON_ERR_0(lock)
     if(status_ < SubscriptionStatus_STARTED) {
         CHK_MON_ERR_0(unlock)
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     while(cli_evt_sts_ != BLZ_SBS_Evt_Rdy) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res =  blaze::RetCode_TIMEOUT;
+                cdrs_res =  vlg::RetCode_TIMEOUT;
                 break;
             }
         }
     }
     if(!cdrs_res) {
-        IFLOG(log(cdrs_res ? blaze::TL_WRN : blaze::TL_DBG, TH_ID,
+        IFLOG(log(cdrs_res ? vlg::TL_WRN : vlg::TL_DBG, TH_ID,
                   LS_TRL "%s(ptr:%p) - [event occurred]",
                   __func__,
                   this))
@@ -1482,15 +1482,15 @@ blaze::RetCode subscription_int::await_for_next_event(
     return cdrs_res;
 }
 
-blaze::RetCode subscription_int::ack_event()
+vlg::RetCode subscription_int::ack_event()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     CHK_MON_ERR_0(lock)
     if(status_ < SubscriptionStatus_STARTED) {
         CHK_MON_ERR_0(unlock)
         IFLOG(err(TH_ID, LS_CLO "%s() - status[%d]", __func__, status_))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     cdrs_res = ack_event_priv();
     CHK_MON_ERR_0(unlock)
@@ -1499,16 +1499,16 @@ blaze::RetCode subscription_int::ack_event()
     return cdrs_res;
 }
 
-blaze::RetCode subscription_int::consume_event(subscription_event_int **sbs_evt)
+vlg::RetCode subscription_int::consume_event(subscription_event_int **sbs_evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     if((cdrs_res = cli_evt_q_.get(sbs_evt))) {
         switch(cdrs_res) {
-            case blaze::RetCode_EMPTY:
-            case blaze::RetCode_TIMEOUT:
+            case vlg::RetCode_EMPTY:
+            case vlg::RetCode_TIMEOUT:
                 IFLOG(cri(TH_ID, LS_CLO "%s(ptr:%p) - empty queue.", __func__, this))
-            case blaze::RetCode_PTHERR:
+            case vlg::RetCode_PTHERR:
                 IFLOG(cri(TH_ID, LS_CLO "%s(ptr:%p) - pthread error.", __func__, this))
             default:
                 IFLOG(cri(TH_ID, LS_CLO "%s(ptr:%p) - RetCode_CODE:%d", __func__, this,
@@ -1525,23 +1525,23 @@ blaze::RetCode subscription_int::consume_event(subscription_event_int **sbs_evt)
     return cdrs_res;
 }
 
-blaze::RetCode subscription_int::ack_event_priv()
+vlg::RetCode subscription_int::ack_event_priv()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     if(cli_evt_sts_ != BLZ_SBS_Evt_ToAck || !cli_last_evt_) {
         IFLOG(wrn(TH_ID, LS_CLO "%s() - cli_last_evt_[%p] evt_status[%d]",
                   __func__,
                   &cli_last_evt_,
                   cli_evt_sts_))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     if((cdrs_res = send_event_ack())) {
         IFLOG(err(TH_ID, LS_TRL "%s() - [event ack sending failed res:%d]",
                   __func__,
                   cdrs_res))
     } else {
-        blaze::collector &c = cli_last_evt_->get_collector();
+        vlg::collector &c = cli_last_evt_->get_collector();
         /************************
         RELEASE_ID: SBE_CLI_01
         ************************/
@@ -1556,31 +1556,31 @@ blaze::RetCode subscription_int::ack_event_priv()
     return cdrs_res;
 }
 
-blaze::RetCode subscription_int::evt_reset()
+vlg::RetCode subscription_int::evt_reset()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     cli_evt_sts_ = BLZ_SBS_Evt_Rst;
     CHK_MON_ERR_0(notify_all)
     IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode subscription_int::evt_ready()
+vlg::RetCode subscription_int::evt_ready()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     cli_evt_sts_ = BLZ_SBS_Evt_Rdy;
     CHK_MON_ERR_0(notify_all)
     IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode subscription_int::evt_to_ack()
+vlg::RetCode subscription_int::evt_to_ack()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     cli_evt_sts_ = BLZ_SBS_Evt_ToAck;
     CHK_MON_ERR_0(notify_all)
     IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 void subscription_int::on_start()

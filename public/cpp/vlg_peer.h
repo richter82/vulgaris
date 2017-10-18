@@ -21,7 +21,7 @@
 
 #ifndef BLZ_CPP_PEER_H_
 #define BLZ_CPP_PEER_H_
-#include "blaze.h"
+#include "vlg.h"
 #ifdef WIN32
 #include <winsock2.h>
 #else
@@ -33,7 +33,7 @@
 #define SOCKET_ERROR   (-1)
 #endif
 
-namespace blaze {
+namespace vlg {
 
 /** @brief peer class.
 */
@@ -48,8 +48,8 @@ class peer {
         explicit peer();
         virtual ~peer();
 
-        blaze::RetCode set_params_file_dir(const char *dir);
-        blaze::RetCode set_params_file_path_name(const char *file_path);
+        vlg::RetCode set_params_file_dir(const char *dir);
+        vlg::RetCode set_params_file_path_name(const char *file_path);
 
     public:
         const char              *get_name();
@@ -89,8 +89,8 @@ class peer {
         void set_configured(bool configured);
 
     public:
-        blaze::RetCode    extend_model(entity_manager *em);
-        blaze::RetCode    extend_model(const char *model_name);
+        vlg::RetCode    extend_model(entity_manager *em);
+        vlg::RetCode    extend_model(const char *model_name);
 
         // AUTOMA - User mandatory entrypoints
     public:
@@ -99,14 +99,14 @@ class peer {
 
         // AUTOMA - User opt. entrypoints
     public:
-        virtual blaze::RetCode  on_load_config(int pnum,
+        virtual vlg::RetCode  on_load_config(int pnum,
                                                const char *param,
                                                const char *value);
 
-        virtual blaze::RetCode  on_init();
-        virtual blaze::RetCode  on_starting();
-        virtual blaze::RetCode  on_stopping();
-        virtual blaze::RetCode  on_transit_on_air();
+        virtual vlg::RetCode  on_init();
+        virtual vlg::RetCode  on_starting();
+        virtual vlg::RetCode  on_stopping();
+        virtual vlg::RetCode  on_transit_on_air();
         virtual void            on_error();
         virtual void            on_dying_breath();
 
@@ -118,13 +118,13 @@ class peer {
                                        void *ud);
 
     public:
-        blaze::RetCode
+        vlg::RetCode
         await_for_status_reached_or_outdated(PeerStatus test,
                                              PeerStatus &current,
                                              time_t sec = -1,
                                              long nsec = 0);
 
-        blaze::RetCode await_for_status_change(PeerStatus &peer_status,
+        vlg::RetCode await_for_status_change(PeerStatus &peer_status,
                                                time_t sec = -1,
                                                long nsec = 0);
         // SERVER-CONNECTIVITY
@@ -134,58 +134,58 @@ class peer {
 
         // ACTIONS
     public:
-        blaze::RetCode start(int argc,
+        vlg::RetCode start(int argc,
                              char *argv[],
                              bool spawn_new_thread);
 
-        blaze::RetCode stop(bool force_disconnect = false);
+        vlg::RetCode stop(bool force_disconnect = false);
 
         // PERSISTENCE
     public:
-        blaze::RetCode
+        vlg::RetCode
         persistence_schema_create(PersistenceAlteringMode mode);
 
-        blaze::RetCode
+        vlg::RetCode
         class_persistence_schema_create(PersistenceAlteringMode mode,
                                         unsigned int nclass_id);
 
-        blaze::RetCode class_persistent_load(unsigned short class_key,
+        vlg::RetCode class_persistent_load(unsigned short class_key,
                                              unsigned int &ts_0_out,
                                              unsigned int &ts_1_out,
                                              nclass &in_out_obj);
 
-        blaze::RetCode class_persistent_save(const nclass &in_obj);
+        vlg::RetCode class_persistent_save(const nclass &in_obj);
 
-        blaze::RetCode class_persistent_update(unsigned short class_key,
+        vlg::RetCode class_persistent_update(unsigned short class_key,
                                                const nclass &in_obj);
 
-        blaze::RetCode class_persistent_update_or_save(unsigned short class_key,
+        vlg::RetCode class_persistent_update_or_save(unsigned short class_key,
                                                        const nclass &in_obj);
 
-        blaze::RetCode class_persistent_remove(unsigned short class_key,
+        vlg::RetCode class_persistent_remove(unsigned short class_key,
                                                PersistenceDeletionMode mode,
                                                const nclass &in_obj);
 
         // DISTRIBUTION
     public:
-        blaze::RetCode class_distribute(SubscriptionEventType event_type,
+        vlg::RetCode class_distribute(SubscriptionEventType event_type,
                                         Action action,
                                         const nclass &in_obj);
 
         // PERSISTENCE + DISTRIBUTION
     public:
-        blaze::RetCode
+        vlg::RetCode
         class_persistent_save_and_distribute(const nclass &in_obj);
 
-        blaze::RetCode
+        vlg::RetCode
         class_persistent_update_and_distribute(unsigned short class_key,
                                                const nclass &in_obj);
 
-        blaze::RetCode class_persistent_update_or_save_and_distribute(
+        vlg::RetCode class_persistent_update_or_save_and_distribute(
             unsigned short class_key,
             const nclass &in_obj);
 
-        blaze::RetCode
+        vlg::RetCode
         class_persistent_remove_and_distribute(unsigned short class_key,
                                                PersistenceDeletionMode mode,
                                                const nclass &in_obj);
@@ -205,7 +205,7 @@ class peer {
                 so all incoming will be accepted.
         */
         virtual
-        blaze::RetCode
+        vlg::RetCode
         on_new_incoming_connection(connection &incoming_connection);
 
     public:

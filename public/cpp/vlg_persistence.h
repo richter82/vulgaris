@@ -21,9 +21,9 @@
 
 #ifndef BLZ_CPP_PERSISTENCE_H_
 #define BLZ_CPP_PERSISTENCE_H_
-#include "blaze.h"
+#include "vlg.h"
 
-namespace blaze {
+namespace vlg {
 
 /** @brief pepersistence_managerer class.
 */
@@ -34,31 +34,31 @@ class persistence_manager {
         driver loading
         ***************************/
         /*dyna*/
-        static blaze::RetCode
+        static vlg::RetCode
         load_persistence_driver_dynamic(const char *drivers[],
                                         int drivers_num);
 
         /*static*/
-        static blaze::RetCode
+        static vlg::RetCode
         load_persistence_driver(persistence_driver_int *drivers[],
                                 int drivers_num);
 
         /***************************
         persistence config loading
         ***************************/
-        static blaze::RetCode
+        static vlg::RetCode
         set_persistence_config_file_dir(const char *dir);
 
-        static blaze::RetCode
+        static vlg::RetCode
         set_persistence_config_file_path_name(const char *file_path);
 
-        static blaze::RetCode
+        static vlg::RetCode
         load_persistence_config(const char *file_name);
 
         /***************************
         driver usage
         ***************************/
-        static blaze::RetCode start_all_persistence_drivers();
+        static vlg::RetCode start_all_persistence_drivers();
 
         //returns null if no driver is available.
         static persistence_driver_int *available_driver(unsigned int nclass_id);
@@ -74,7 +74,7 @@ class persistence_connection {
         explicit persistence_connection();
         ~persistence_connection();
 
-        blaze::RetCode bind(unsigned int nclass_id,
+        vlg::RetCode bind(unsigned int nclass_id,
                             persistence_driver_int &driver);
 
         //getters
@@ -86,45 +86,45 @@ class persistence_connection {
 
         //business meths
     public:
-        blaze::RetCode    create_entity_schema(PersistenceAlteringMode mode,
+        vlg::RetCode    create_entity_schema(PersistenceAlteringMode mode,
                                                const entity_manager &em,
                                                unsigned int nclass_id);
 
-        blaze::RetCode    create_entity_schema(PersistenceAlteringMode mode,
+        vlg::RetCode    create_entity_schema(PersistenceAlteringMode mode,
                                                const entity_manager &em,
                                                const entity_desc &desc);
 
-        blaze::RetCode    save_entity(const entity_manager &em,
+        vlg::RetCode    save_entity(const entity_manager &em,
                                       unsigned int ts0,
                                       unsigned int ts1,
                                       const nclass &in_obj);
 
-        blaze::RetCode    update_entity(unsigned short key,
+        vlg::RetCode    update_entity(unsigned short key,
                                         const entity_manager &em,
                                         unsigned int ts0,
                                         unsigned int ts1,
                                         const nclass &in_obj);
 
-        blaze::RetCode    save_or_update_entity(unsigned short key,
+        vlg::RetCode    save_or_update_entity(unsigned short key,
                                                 const entity_manager &em,
                                                 unsigned int ts0,
                                                 unsigned int ts1,
                                                 const nclass &in_obj);
 
-        blaze::RetCode    remove_entity(unsigned short key,
+        vlg::RetCode    remove_entity(unsigned short key,
                                         const entity_manager &em,
                                         unsigned int ts0,
                                         unsigned int ts1,
                                         PersistenceDeletionMode mode,
                                         const nclass &in_obj);
 
-        blaze::RetCode    load_entity(unsigned short key,
+        vlg::RetCode    load_entity(unsigned short key,
                                       const entity_manager &em,
                                       unsigned int &ts0_out,
                                       unsigned int &ts1_out,
                                       nclass &in_out_obj);
 
-        blaze::RetCode    execute_statement(const char *stmt);
+        vlg::RetCode    execute_statement(const char *stmt);
 
     private:
         persistence_connection_impl *impl_;
@@ -141,17 +141,17 @@ class persistence_query {
 
         unsigned int    get_id()                        const;
 
-        blaze::RetCode  bind(unsigned int nclass_id, const char *sql);
+        vlg::RetCode  bind(unsigned int nclass_id, const char *sql);
 
     public:
         PersistenceQueryStatus  get_status()            const;
         const entity_manager    &get_entity_manager()   const;
 
-        blaze::RetCode    next_entity(unsigned int &ts0_out,
+        vlg::RetCode    next_entity(unsigned int &ts0_out,
                                       unsigned int &ts1_out,
                                       nclass &out_obj);
 
-        blaze::RetCode    release();
+        vlg::RetCode    release();
 
     private:
         persistence_query_impl *impl_;

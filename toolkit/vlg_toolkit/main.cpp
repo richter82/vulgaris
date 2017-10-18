@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
     qApp->setApplicationVersion(QUOTE(APP_VERSION));
     qApp->setApplicationName(QUOTE(APP_NAME));
     qApp->setOrganizationName("Blaze");
-    qApp->setOrganizationDomain("www.blaze-tech.net");
+    qApp->setOrganizationDomain("www.vlg-tech.net");
     blz_toolkit_MainWindow w;
     w.setWindowTitle(qApp->applicationName() + QString(" - ") +
                      qApp->applicationVersion() + " - " + __DATE__);

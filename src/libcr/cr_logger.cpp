@@ -56,7 +56,7 @@
 #define S_LGSG  "{lgsign}"
 #define S_LF    "[Line Flush]"
 
-namespace blaze {
+namespace vlg {
 
 #define LOG_CFG_FILE_DIR_LEN 512
 static char log_cfg_file_dir[LOG_CFG_FILE_DIR_LEN] = {0};
@@ -1385,24 +1385,24 @@ size_t logger::fatm(uint32_t id, const char *msg)
 
 extern "C" {
 
-    blaze::RetCode logger_set_logger_cfg_file_dir(const char *dir)
+    vlg::RetCode logger_set_logger_cfg_file_dir(const char *dir)
     {
-        return blaze::logger::set_logger_cfg_file_dir(dir);
+        return vlg::logger::set_logger_cfg_file_dir(dir);
     }
 
-    blaze::RetCode logger_set_logger_cfg_file_path_name(const char *file_path)
+    vlg::RetCode logger_set_logger_cfg_file_path_name(const char *file_path)
     {
-        return blaze::logger::set_logger_cfg_file_path_name(file_path);
+        return vlg::logger::set_logger_cfg_file_path_name(file_path);
     }
 
-    blaze::RetCode logger_load_logger_config()
+    vlg::RetCode logger_load_logger_config()
     {
-        return blaze::logger::load_logger_config();
+        return vlg::logger::load_logger_config();
     }
 
-    blaze::RetCode logger_load_logger_config_by_name(const char *fname)
+    vlg::RetCode logger_load_logger_config_by_name(const char *fname)
     {
-        return blaze::logger::load_logger_config(fname);
+        return vlg::logger::load_logger_config(fname);
     }
 
 }

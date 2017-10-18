@@ -33,7 +33,7 @@
 #define SOCKET_ERROR   (-1)
 #endif
 
-namespace blaze {
+namespace vlg {
 
 /** @brief class connection_factory.
 */
@@ -57,7 +57,7 @@ class connection_factory {
 /** @brief class connection.
 */
 class connection_impl;
-class connection : public blaze::collectable {
+class connection : public vlg::collectable {
     public:
         typedef void (*connection_status_change)(connection &conn,
                                                  ConnectionStatus status,
@@ -68,10 +68,10 @@ class connection : public blaze::collectable {
         explicit connection();
         virtual ~connection();
 
-        virtual blaze::collector &get_collector();
+        virtual vlg::collector &get_collector();
 
     public:
-        blaze::RetCode          bind(peer &p);
+        vlg::RetCode          bind(peer &p);
 
     public:
         peer                        *get_peer();
@@ -85,13 +85,13 @@ class connection : public blaze::collectable {
         ConnectionStatus            get_status();
 
     public:
-        blaze::RetCode
+        vlg::RetCode
         await_for_status_reached_or_outdated(ConnectionStatus test,
                                              ConnectionStatus &current,
                                              time_t sec = -1,
                                              long nsec = 0);
 
-        blaze::RetCode
+        vlg::RetCode
         await_for_status_change(ConnectionStatus &status,
                                 time_t sec = -1,
                                 long nsec = 0);
@@ -100,11 +100,11 @@ class connection : public blaze::collectable {
                                              void *ud);
 
     public:
-        blaze::RetCode    connect(sockaddr_in &connection_params);
+        vlg::RetCode    connect(sockaddr_in &connection_params);
 
         /* this function must be called from same thread that
         called connect()*/
-        blaze::RetCode
+        vlg::RetCode
         await_for_connection_result(ConnectivityEventResult
                                     &con_evt_res,
                                     ConnectivityEventType &c_evt_type,
@@ -112,11 +112,11 @@ class connection : public blaze::collectable {
                                     long nsec = 0);
 
     public:
-        blaze::RetCode    disconnect(DisconnectionResultReason reason_code);
+        vlg::RetCode    disconnect(DisconnectionResultReason reason_code);
 
         /* this function must be called from same thread that
         called disconnect()*/
-        blaze::RetCode
+        vlg::RetCode
         await_for_disconnection_result(ConnectivityEventResult
                                        &con_evt_res,
                                        ConnectivityEventType &c_evt_type,

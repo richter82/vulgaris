@@ -138,7 +138,7 @@ void MurmurHash3_x86_32(const void *key, int len, uint32_t seed, void *out)
 
 //-----------------------------
 // MEMORY MANAGEMENT
-namespace blaze {
+namespace vlg {
 
 typedef void *(*alloc_func)(size_t type_size, const void *copy);
 typedef void(*dealloc_func)(void *ptr);
@@ -389,7 +389,7 @@ void obj_mng::hash_obj(const void *ptr, void *out) const
 
 }
 
-namespace blaze {
+namespace vlg {
 //-----------------------------
 // COMMON MANAGER SINGLETONS
 class ptr_obj_mng : public obj_mng {
@@ -464,7 +464,7 @@ int_obj_mng &sngl_int_obj_mng()
 
 //-----------------------------
 // Linked-List and Hash-Map REPS
-namespace blaze {
+namespace vlg {
 
 //-----------------------------
 // base_rep

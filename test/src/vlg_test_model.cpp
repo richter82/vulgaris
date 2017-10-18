@@ -25,7 +25,7 @@ MODEL TESTS
 #include <iostream>
 #include "blz_model_sample.h"
 
-using namespace blaze;
+using namespace vlg;
 using namespace blz_model_sample;
 
 static void  TypeSize(FILE *f)

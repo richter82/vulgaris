@@ -35,11 +35,11 @@
 
 #if defined(__cplusplus)
 extern "C" {
-namespace blaze {
+namespace vlg {
 #endif
 
-/** @brief blaze return codes.
-    When possible functions and methods of the blaze framework
+/** @brief vlg return codes.
+    When possible functions and methods of the vlg framework
     use this set of codes as return value.
 */
 typedef enum {
@@ -131,11 +131,11 @@ typedef enum {
 
 #if defined(__cplusplus)
 extern "C" {
-namespace blaze {
+namespace vlg {
 #endif
 
 /*****************************************
-BLAZE PROTOCOL RESULT CODE
+vlg PROTOCOL RESULT CODE
 ******************************************/
 typedef enum  {
     //-- GENERIC ERROR CODES (0-199) (0x0-0xC7)
@@ -166,7 +166,7 @@ typedef enum  {
 } ProtocolCode;
 
 /*****************************************
-BLAZE SUPPORTED TYPES // length expressed is fixed when data is transmitted.
+vlg SUPPORTED TYPES // length expressed is fixed when data is transmitted.
 ******************************************/
 typedef enum  {
     Type_UNDEFINED,
@@ -359,7 +359,7 @@ typedef enum  {
 } TransactionStatus;
 
 /*****************************************
-BLAZE SUBSCRIPTION TYPE
+vlg SUBSCRIPTION TYPE
 ******************************************/
 typedef enum  {
     SubscriptionType_UNDEFINED,
@@ -368,7 +368,7 @@ typedef enum  {
 } SubscriptionType;
 
 /*****************************************
-BLAZE SUBSCRIPTION MODE
+vlg SUBSCRIPTION MODE
 ******************************************/
 typedef enum  {
     SubscriptionMode_UNDEFINED,
@@ -378,7 +378,7 @@ typedef enum  {
 } SubscriptionMode;
 
 /*****************************************
-BLAZE SUBSCRIPTION FLOW TYPE
+vlg SUBSCRIPTION FLOW TYPE
 ******************************************/
 typedef enum  {
     SubscriptionFlowType_UNDEFINED,
@@ -387,7 +387,7 @@ typedef enum  {
 } SubscriptionFlowType;
 
 /*****************************************
-BLAZE SUBSCRIPTION DOWNLOAD TYPE
+vlg SUBSCRIPTION DOWNLOAD TYPE
 ******************************************/
 typedef enum  {
     SubscriptionDownloadType_UNDEFINED,
@@ -574,7 +574,7 @@ typedef void *ascii_str_wr;
 
 #if defined(__cplusplus)
 extern "C" {
-namespace blaze {
+namespace vlg {
 #endif
 
 /**

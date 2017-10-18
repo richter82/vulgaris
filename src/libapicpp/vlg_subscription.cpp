@@ -24,20 +24,20 @@
 #include "blz_connection_int.h"
 #include "blz_subscription_int.h"
 
-namespace blaze {
+namespace vlg {
 
-extern blaze::synch_hash_map &int_publ_peer_map();
-extern blaze::synch_hash_map &int_publ_srv_conn_map();
+extern vlg::synch_hash_map &int_publ_peer_map();
+extern vlg::synch_hash_map &int_publ_srv_conn_map();
 
-blaze::synch_hash_map *int_publ_srv_sbs_map_ = NULL;  //int --> publ
-blaze::synch_hash_map &int_publ_srv_sbs_map()
+vlg::synch_hash_map *int_publ_srv_sbs_map_ = NULL;  //int --> publ
+vlg::synch_hash_map &int_publ_srv_sbs_map()
 {
     if(int_publ_srv_sbs_map_) {
         return *int_publ_srv_sbs_map_;
     }
-    if(!(int_publ_srv_sbs_map_ = new blaze::synch_hash_map(
-        blaze::sngl_ptr_obj_mng(),
-        blaze::sngl_ptr_obj_mng()))) {
+    if(!(int_publ_srv_sbs_map_ = new vlg::synch_hash_map(
+        vlg::sngl_ptr_obj_mng(),
+        vlg::sngl_ptr_obj_mng()))) {
         EXIT_ACTION("failed creating int_publ_srv_sbs_map_\n")
     }
     int_publ_srv_sbs_map_->init(HM_SIZE_MICRO);
@@ -52,7 +52,7 @@ class subscription_event_impl {
         subscription_event_impl() : sbs_(NULL), int_(NULL) {}
         ~subscription_event_impl() {
             if(int_) {
-                blaze::collector &c = int_->get_collector();
+                vlg::collector &c = int_->get_collector();
                 c.release(int_);
             }
         }
@@ -63,12 +63,12 @@ class subscription_event_impl {
 
         void set_sbs_evt(subscription_event_int *val) {
             if(int_) {
-                blaze::collector &c = int_->get_collector();
+                vlg::collector &c = int_->get_collector();
                 c.release(int_);
                 int_ = NULL;
             }
             if((int_ = val)) {
-                blaze::collector &c = int_->get_collector();
+                vlg::collector &c = int_->get_collector();
                 c.retain(int_);
             }
         }
@@ -86,13 +86,13 @@ class subscription_event_impl {
         subscription_event_int *int_;
 };
 
-class subscription_event_collector : public blaze::collector {
+class subscription_event_collector : public vlg::collector {
     public:
-        subscription_event_collector() : blaze::collector("subscription_event") {}
+        subscription_event_collector() : vlg::collector("subscription_event") {}
 };
 
-blaze::collector *inst_subscription_event_collector = NULL;
-blaze::collector &get_inst_subscription_event_collector()
+vlg::collector *inst_subscription_event_collector = NULL;
+vlg::collector &get_inst_subscription_event_collector()
 {
     if(inst_subscription_event_collector) {
         return *inst_subscription_event_collector;
@@ -104,7 +104,7 @@ blaze::collector &get_inst_subscription_event_collector()
     return *inst_subscription_event_collector;
 }
 
-blaze::collector &subscription_event::get_collector()
+vlg::collector &subscription_event::get_collector()
 {
     return get_inst_subscription_event_collector();
 }
@@ -248,7 +248,7 @@ class subscription_impl {
                     int_->stop();
                     int_->await_for_stop_result(resp, pcode);
                 }
-                blaze::collector &c = int_->get_collector();
+                vlg::collector &c = int_->get_collector();
                 c.release(int_);
             }
         }
@@ -295,14 +295,14 @@ class subscription_impl {
             senh_ud_ = val;
         }
 
-        blaze::RetCode bind_internal(connection &conn) {
-            blaze::RetCode cdrs_res = blaze::RetCode_OK;
+        vlg::RetCode bind_internal(connection &conn) {
+            vlg::RetCode cdrs_res = vlg::RetCode_OK;
             if(conn.get_connection_type() == ConnectionType_OUTGOING) {
                 subscription_int *s_int = NULL;
                 if((cdrs_res = conn.get_internal()->new_subscription(&s_int,
-                                                                     blz_sbs_factory_simpl, &publ_)) == blaze::RetCode_OK) {
+                                                                     blz_sbs_factory_simpl, &publ_)) == vlg::RetCode_OK) {
                     int_ = s_int;
-                    blaze::collector &c = int_->get_collector();
+                    vlg::collector &c = int_->get_collector();
                     c.retain(int_);
                 }
             }
@@ -327,13 +327,13 @@ class subscription_impl {
 //subscription MEMORY MNGMENT BEGIN
 //*************************************
 
-class subscription_collector : public blaze::collector {
+class subscription_collector : public vlg::collector {
     public:
-        subscription_collector() : blaze::collector("subscription") {}
+        subscription_collector() : vlg::collector("subscription") {}
 };
 
-blaze::collector *inst_subscription_collector = NULL;
-blaze::collector &get_inst_subscription_collector()
+vlg::collector *inst_subscription_collector = NULL;
+vlg::collector &get_inst_subscription_collector()
 {
     if(inst_subscription_collector) {
         return *inst_subscription_collector;
@@ -345,7 +345,7 @@ blaze::collector &get_inst_subscription_collector()
     return *inst_subscription_collector;
 }
 
-blaze::collector &subscription::get_collector()
+vlg::collector &subscription::get_collector()
 {
     return get_inst_subscription_collector();
 }
@@ -365,7 +365,7 @@ subscription::subscription()
 
 subscription::~subscription()
 {
-    blaze::collector &c = get_collector();
+    vlg::collector &c = get_collector();
     if((c.is_instance_collected(this))) {
         IFLOG(cri(TH_ID, LS_DTR "%s(ptr:%p)" D_W_R_COLL LS_EXUNX, __func__, this))
     }
@@ -375,7 +375,7 @@ subscription::~subscription()
     IFLOG(trc(TH_ID, LS_DTR "%s(ptr:%p)", __func__, this))
 }
 
-blaze::RetCode subscription::bind(connection &conn)
+vlg::RetCode subscription::bind(connection &conn)
 {
     impl_->set_conn(conn);
     return impl_->bind_internal(conn);
@@ -479,7 +479,7 @@ void subscription::set_open_timestamp_1(unsigned int ts1)
     impl_->get_sbs()->set_open_tmstp1(ts1);
 }
 
-blaze::RetCode subscription::await_for_status_reached_or_outdated(
+vlg::RetCode subscription::await_for_status_reached_or_outdated(
     SubscriptionStatus test,
     SubscriptionStatus &current,
     time_t sec,
@@ -496,12 +496,12 @@ void subscription::set_status_change_handler(subscription_status_change handler,
     impl_->set_ssh_ud(ud);
 }
 
-blaze::RetCode subscription::start()
+vlg::RetCode subscription::start()
 {
     return impl_->get_sbs()->start();
 }
 
-blaze::RetCode subscription::start(SubscriptionType sbs_type,
+vlg::RetCode subscription::start(SubscriptionType sbs_type,
                                    SubscriptionMode sbs_mode,
                                    SubscriptionFlowType sbs_flow_type,
                                    SubscriptionDownloadType sbs_dwnl_type,
@@ -519,7 +519,7 @@ blaze::RetCode subscription::start(SubscriptionType sbs_type,
                                    open_timestamp_1);
 }
 
-blaze::RetCode subscription::await_for_start_result(SubscriptionResponse
+vlg::RetCode subscription::await_for_start_result(SubscriptionResponse
                                                     &sbs_start_result,
                                                     ProtocolCode &sbs_start_protocode,
                                                     time_t sec,
@@ -531,12 +531,12 @@ blaze::RetCode subscription::await_for_start_result(SubscriptionResponse
                                                     nsec);
 }
 
-blaze::RetCode subscription::stop()
+vlg::RetCode subscription::stop()
 {
     return impl_->get_sbs()->stop();
 }
 
-blaze::RetCode subscription::await_for_stop_result(SubscriptionResponse
+vlg::RetCode subscription::await_for_stop_result(SubscriptionResponse
                                                    &sbs_stop_result,
                                                    ProtocolCode &sbs_stop_protocode,
                                                    time_t sec,
@@ -564,9 +564,9 @@ void subscription::on_stop()
 void subscription::on_event(subscription_event &sbs_evt)
 {}
 
-blaze::RetCode subscription::on_event_accept(const subscription_event &sbs_evt)
+vlg::RetCode subscription::on_event_accept(const subscription_event &sbs_evt)
 {
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 subscription_int *subscription::get_internal()
@@ -594,7 +594,7 @@ class timpl_subscription_int_server : public subscription_int {
             /************************
             RELEASE_ID: SPB_SRV_01
             ************************/
-            blaze::collector &c = publ_.get_collector();
+            vlg::collector &c = publ_.get_collector();
             c.release(&publ_);
         }
 
@@ -607,10 +607,10 @@ class timpl_subscription_int_server : public subscription_int {
             publ_.on_stop();
         }
 
-        virtual blaze::RetCode accept_event(subscription_event_int *sbs_evt) {
+        virtual vlg::RetCode accept_event(subscription_event_int *sbs_evt) {
             subscription_event *publ_evt = new subscription_event();
             publ_evt->get_opaque()->set_sbs_evt(sbs_evt);
-            blaze::RetCode cdrs_res = publ_.on_event_accept(*publ_evt);
+            vlg::RetCode cdrs_res = publ_.on_event_accept(*publ_evt);
             delete publ_evt;
             return cdrs_res;
         }
@@ -644,7 +644,7 @@ subscription_int *subscription_factory::sbs_factory_int_f(connection_int &conn,
         EXIT_ACTION("failed get instance from int_publ_srv_conn_map\n")
     }
     subscription *publ = ssf->new_subscription(*c_publ);
-    blaze::collector &c = publ->get_collector();
+    vlg::collector &c = publ->get_collector();
     /************************
     RETAIN_ID: SPB_SRV_01
     ************************/

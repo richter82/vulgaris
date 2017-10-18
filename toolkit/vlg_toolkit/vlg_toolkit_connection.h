@@ -55,7 +55,7 @@ class blz_toolkit_Connection : public QWidget {
         Q_OBJECT
 
     public:
-        explicit blz_toolkit_Connection(blaze::connection_int &conn,
+        explicit blz_toolkit_Connection(vlg::connection_int &conn,
                                         const QString &host,
                                         const QString &port,
                                         const QString &usr,
@@ -66,22 +66,22 @@ class blz_toolkit_Connection : public QWidget {
         ~blz_toolkit_Connection();
 
     public slots:
-        void OnConnStatusChange(blaze::ConnectionStatus status);
+        void OnConnStatusChange(vlg::ConnectionStatus status);
         void OnTestSlot();
         void OnCustomMenuRequested(const QPoint &pos);
 
     signals:
-        void SignalConnStatusChange(blaze::ConnectionStatus status);
+        void SignalConnStatusChange(vlg::ConnectionStatus status);
         void SignalConnectionTimeout(const QString &msg);
         void SignalDisconnectionTimeout(const QString &msg);
 
     public:
-        void EmitConnStatus(blaze::ConnectionStatus status);
+        void EmitConnStatus(vlg::ConnectionStatus status);
 
 
-        friend void blz_toolkit_connection_status_change_hndl(blaze::connection_int
+        friend void blz_toolkit_connection_status_change_hndl(vlg::connection_int
                                                               &conn,
-                                                              blaze::ConnectionStatus status,
+                                                              vlg::ConnectionStatus status,
                                                               void *ud);
 
     private:
@@ -110,7 +110,7 @@ class blz_toolkit_Connection : public QWidget {
         int tab_idx_; //in the QTabWidget
         int tab_id_;
         QTabWidget &parent_;
-        blaze::connection_int &conn_;
+        vlg::connection_int &conn_;
 
     private:
         blz_toolkit_Conn_mdl b_mdl_;

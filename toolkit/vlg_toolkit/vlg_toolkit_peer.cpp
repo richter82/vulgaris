@@ -35,25 +35,25 @@ toolkit_peer::toolkit_peer(unsigned int id) : peer_int(id)
 // BLZ_PEER_LFCYC ABS METHS
 //------------------------------------------------------------------------------
 
-blaze::RetCode toolkit_peer::peer_load_cfg_usr(int pnum, const char *param,
+vlg::RetCode toolkit_peer::peer_load_cfg_usr(int pnum, const char *param,
                                                const char *value)
 {
     return peer_int::peer_load_cfg_usr(pnum, param, value);
 }
 
-blaze::RetCode toolkit_peer::peer_init_usr()
+vlg::RetCode toolkit_peer::peer_init_usr()
 {
     IFLOG(dbg(TH_ID, LS_APL"[CALLED BLZ_TOOLKIT_PEER APPLINIT HNDL]"))
     return peer_int::peer_init_usr();
 }
 
-blaze::RetCode toolkit_peer::peer_start_usr()
+vlg::RetCode toolkit_peer::peer_start_usr()
 {
     IFLOG(dbg(TH_ID, LS_APL"[CALLED BLZ_TOOLKIT_PEER APPLSTART HNDL]"))
     return peer_int::peer_start_usr();
 }
 
-blaze::RetCode toolkit_peer::peer_dying_breath_handler()
+vlg::RetCode toolkit_peer::peer_dying_breath_handler()
 {
     IFLOG(dbg(TH_ID, LS_APL"[CALLED BLZ_TOOLKIT_PEER DYINGBRTH HNDL]"))
     return peer_int::peer_dying_breath_handler();

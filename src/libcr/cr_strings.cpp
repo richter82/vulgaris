@@ -22,7 +22,7 @@
 #include "blz_glob_int.h"
 #include "blaze_ascii_string.h"
 
-namespace blaze {
+namespace vlg {
 
 #define CR_BUF_SIZE_16      16
 #define CR_BUF_SIZE_32      32

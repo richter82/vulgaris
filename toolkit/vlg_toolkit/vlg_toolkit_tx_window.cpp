@@ -49,8 +49,8 @@ blz_toolkit_tx_blz_class_model &blz_toolkit_tx_model::wrapped_mdl()
 // blz_toolkit_tx_window
 //------------------------------------------------------------------------------
 
-void tx_status_change_hndlr(blaze::transaction_int &trans,
-                            blaze::TransactionStatus status,
+void tx_status_change_hndlr(vlg::transaction_int &trans,
+                            vlg::TransactionStatus status,
                             void *ud)
 {
     blz_toolkit_tx_window *txw = (blz_toolkit_tx_window *)ud;
@@ -58,16 +58,16 @@ void tx_status_change_hndlr(blaze::transaction_int &trans,
     txw->EmitTxStatus(status);
 }
 
-void tx_closure_hndlr(blaze::transaction_int &trans, void *ud)
+void tx_closure_hndlr(vlg::transaction_int &trans, void *ud)
 {
     blz_toolkit_tx_window *txw = (blz_toolkit_tx_window *)ud;
     txw->EmitTxClosure();
 }
 
 
-blz_toolkit_tx_window::blz_toolkit_tx_window(const blaze::entity_desc &edesc,
-                                             const blaze::entity_manager &bem,
-                                             blaze::transaction_int &tx,
+blz_toolkit_tx_window::blz_toolkit_tx_window(const vlg::entity_desc &edesc,
+                                             const vlg::entity_manager &bem,
+                                             vlg::transaction_int &tx,
                                              blz_toolkit_tx_blz_class_model &mdl,
                                              QWidget *parent) :
     bem_(bem),
@@ -85,9 +85,9 @@ blz_toolkit_tx_window::blz_toolkit_tx_window(const blaze::entity_desc &edesc,
     tx_.get_collector().retain(&tx_);
 
     connect(this,
-            SIGNAL(SignalTxStatusChange(blaze::TransactionStatus)),
+            SIGNAL(SignalTxStatusChange(vlg::TransactionStatus)),
             this,
-            SLOT(OnTxStatusChange(blaze::TransactionStatus)));
+            SLOT(OnTxStatusChange(vlg::TransactionStatus)));
 
     connect(this,
             SIGNAL(SignalTxClosure()),
@@ -102,12 +102,12 @@ blz_toolkit_tx_window::blz_toolkit_tx_window(const blaze::entity_desc &edesc,
 blz_toolkit_tx_window::~blz_toolkit_tx_window()
 {
     qDebug() << "~blz_toolkit_tx_window()";
-    blaze::TransactionStatus current = blaze::TransactionStatus_UNDEFINED;
+    vlg::TransactionStatus current = vlg::TransactionStatus_UNDEFINED;
     tx_.set_transaction_status_change_handler(NULL, NULL);
     tx_.set_transaction_closure_handler(NULL, NULL);
     tx_.get_connection().release_transaction(&tx_);
 
-    blaze::collector &c = tx_.get_collector();
+    vlg::collector &c = tx_.get_collector();
     c.release(&tx_);
 
     delete ui;
@@ -117,26 +117,26 @@ void blz_toolkit_tx_window::closeEvent(QCloseEvent *event)
 {
 }
 
-void blz_toolkit_tx_window::OnTxStatusChange(blaze::TransactionStatus
+void blz_toolkit_tx_window::OnTxStatusChange(vlg::TransactionStatus
                                              status)
 {
     switch(status) {
-        case blaze::TransactionStatus_UNDEFINED:
+        case vlg::TransactionStatus_UNDEFINED:
             ui->tx_status_label_disp->setText(QObject::tr("UNDEFINED"));
             ui->tx_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : Beige; color : black;"));
             break;
-        case blaze::TransactionStatus_EARLY:
+        case vlg::TransactionStatus_EARLY:
             ui->tx_status_label_disp->setText(QObject::tr("EARLY"));
             ui->tx_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : Beige; color : black;"));
             break;
-        case blaze::TransactionStatus_INITIALIZED:
+        case vlg::TransactionStatus_INITIALIZED:
             ui->tx_status_label_disp->setText(QObject::tr("INITIALIZED"));
             ui->tx_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : IndianRed; color : black;"));
             break;
-        case blaze::TransactionStatus_PREPARED:
+        case vlg::TransactionStatus_PREPARED:
             ui->tx_status_label_disp->setText(QObject::tr("PREPARED"));
             ui->tx_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : RosyBrown; color : black;"));
@@ -144,17 +144,17 @@ void blz_toolkit_tx_window::OnTxStatusChange(blaze::TransactionStatus
                                              tx_.tx_id_SVID()).arg(
                                              tx_.tx_id_CNID()).arg(tx_.tx_id_PRID()));
             break;
-        case blaze::TransactionStatus_FLYING:
+        case vlg::TransactionStatus_FLYING:
             ui->tx_status_label_disp->setText(QObject::tr("FLYING"));
             ui->tx_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : LightGreen; color : black;"));
             break;
-        case blaze::TransactionStatus_CLOSED:
+        case vlg::TransactionStatus_CLOSED:
             ui->tx_status_label_disp->setText(QObject::tr("CLOSED"));
             ui->tx_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : LawnGreen; color : black;"));
             break;
-        case blaze::TransactionStatus_ERROR:
+        case vlg::TransactionStatus_ERROR:
             ui->tx_status_label_disp->setText(QObject::tr("ERROR"));
             ui->tx_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : Red; color : black;"));
@@ -167,17 +167,17 @@ void blz_toolkit_tx_window::OnTxStatusChange(blaze::TransactionStatus
 void blz_toolkit_tx_window::OnTxClosure()
 {
     switch(tx_.tx_res()) {
-        case blaze::TransactionResult_COMMITTED:
+        case vlg::TransactionResult_COMMITTED:
             ui->connid_tx_res_disp->setText(QObject::tr("COMMITTED"));
             ui->connid_tx_res_disp->setStyleSheet(
                 QObject::tr("background-color : LightGreen; color : black;"));
             break;
-        case blaze::TransactionResult_FAILED:
+        case vlg::TransactionResult_FAILED:
             ui->connid_tx_res_disp->setText(QObject::tr("FAILED"));
             ui->connid_tx_res_disp->setStyleSheet(
                 QObject::tr("background-color : Red; color : black;"));
             break;
-        case blaze::TransactionResult_ABORTED:
+        case vlg::TransactionResult_ABORTED:
             ui->connid_tx_res_disp->setText(QObject::tr("ABORTED"));
             ui->connid_tx_res_disp->setStyleSheet(
                 QObject::tr("background-color : Red; color : black;"));
@@ -189,22 +189,22 @@ void blz_toolkit_tx_window::OnTxClosure()
 
 void blz_toolkit_tx_window::on_actionSend_TX_triggered()
 {
-    if(tx_.status() != blaze::TransactionStatus_INITIALIZED) {
+    if(tx_.status() != vlg::TransactionStatus_INITIALIZED) {
         tx_.re_new();
     }
 
     switch(ui->cfg_tx_reqtype_cb->currentIndex()) {
         case 0:
-            tx_.set_tx_req_type(blaze::TransactionRequestType_RESERVED);
+            tx_.set_tx_req_type(vlg::TransactionRequestType_RESERVED);
             break;
         case 1:
-            tx_.set_tx_req_type(blaze::TransactionRequestType_SYSTEM);
+            tx_.set_tx_req_type(vlg::TransactionRequestType_SYSTEM);
             break;
         case 2:
-            tx_.set_tx_req_type(blaze::TransactionRequestType_SPECIAL);
+            tx_.set_tx_req_type(vlg::TransactionRequestType_SPECIAL);
             break;
         case 3:
-            tx_.set_tx_req_type(blaze::TransactionRequestType_OBJECT);
+            tx_.set_tx_req_type(vlg::TransactionRequestType_OBJECT);
             break;
         default:
             break;
@@ -212,22 +212,22 @@ void blz_toolkit_tx_window::on_actionSend_TX_triggered()
 
     switch(ui->cfg_act_cb->currentIndex()) {
         case 0:
-            tx_.set_tx_act(blaze::Action_INSERT);
+            tx_.set_tx_act(vlg::Action_INSERT);
             break;
         case 1:
-            tx_.set_tx_act(blaze::Action_UPDATE);
+            tx_.set_tx_act(vlg::Action_UPDATE);
             break;
         case 2:
-            tx_.set_tx_act(blaze::Action_DELTA);
+            tx_.set_tx_act(vlg::Action_DELTA);
             break;
         case 3:
-            tx_.set_tx_act(blaze::Action_DELETE);
+            tx_.set_tx_act(vlg::Action_DELETE);
             break;
         case 4:
-            tx_.set_tx_act(blaze::Action_REMOVE);
+            tx_.set_tx_act(vlg::Action_REMOVE);
             break;
         case 5:
-            tx_.set_tx_act(blaze::Action_RESET);
+            tx_.set_tx_act(vlg::Action_RESET);
             break;
         default:
             break;
@@ -235,10 +235,10 @@ void blz_toolkit_tx_window::on_actionSend_TX_triggered()
 
     switch(ui->cfg_class_encode_cb->currentIndex()) {
         case 0:
-            tx_.set_tx_req_class_encode(blaze::Encode_INDEXED_NOT_ZERO);
+            tx_.set_tx_req_class_encode(vlg::Encode_INDEXED_NOT_ZERO);
             break;
         case 1:
-            tx_.set_tx_req_class_encode(blaze::Encode_INDEXED_DELTA);
+            tx_.set_tx_req_class_encode(vlg::Encode_INDEXED_DELTA);
             break;
         default:
             break;
@@ -253,12 +253,12 @@ void blz_toolkit_tx_window::on_actionSend_TX_triggered()
 
 void blz_toolkit_tx_window::on_actionReNew_TX_triggered()
 {
-    if(tx_.status() != blaze::TransactionStatus_INITIALIZED) {
+    if(tx_.status() != vlg::TransactionStatus_INITIALIZED) {
         tx_.re_new();
     }
 }
 
-void blz_toolkit_tx_window::EmitTxStatus(blaze::TransactionStatus status)
+void blz_toolkit_tx_window::EmitTxStatus(vlg::TransactionStatus status)
 {
     emit SignalTxStatusChange(status);
 }

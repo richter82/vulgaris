@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>sample_blz_model_dll</ProjectName>
+    <ProjectName>vlg_test_smplmdl_dyn</ProjectName>
     <ProjectGuid>{2CACDE4E-E781-42B0-9DBB-00D97068F8FD}</ProjectGuid>
     <RootNamespace>blz_test_model_dll</RootNamespace>
     <Keyword>Win32Proj</Keyword>

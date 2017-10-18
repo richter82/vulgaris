@@ -21,9 +21,9 @@
 
 #ifndef BLZ_MEM_H_
 #define BLZ_MEM_H_
-#include "blaze.h"
+#include "vlg.h"
 
-namespace blaze {
+namespace vlg {
 
 /** @brief collectable interface.
 */

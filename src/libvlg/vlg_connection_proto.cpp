@@ -26,7 +26,7 @@
 /*****************************************
  GLOB PROTO UTILS
 ******************************************/
-namespace blaze {
+namespace vlg {
 
 blz_hdr_rec::blz_hdr_rec()
 {
@@ -174,7 +174,7 @@ int dump_blz_hdr_rec(const blz_hdr_ptr hdr, char *out)
 const char *dump_raw_pkt(bool all,
                          const unsigned char *buf,
                          size_t buf_sz,
-                         blaze::ascii_string &out)
+                         vlg::ascii_string &out)
 {
     char abuff[32];
     size_t buf_offst = 0;
@@ -242,7 +242,7 @@ MASKS FOR ENCODING:
 
 
 inline void Encode_WRD_PKTHDR(const BLZ_WRD_PKTHDR_REC *rec,
-                              blaze::grow_byte_buffer *obb)
+                              vlg::grow_byte_buffer *obb)
 {
     unsigned int data_out = 0;
     //PROVER |VVVV VV00 0000 0000|0000 0000 0000 0000|
@@ -259,21 +259,21 @@ inline void Encode_WRD_PKTHDR(const BLZ_WRD_PKTHDR_REC *rec,
 }
 
 inline void Encode_WRD_PKTLEN(const unsigned int *pktlen,
-                              blaze::grow_byte_buffer *obb)
+                              vlg::grow_byte_buffer *obb)
 {
     //PKTLEN |LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL|
     obb->append_uint(htonl(*pktlen));
 }
 
 inline void Encode_WRD_TMSTMP(const time_stamp *tstamp,
-                              blaze::grow_byte_buffer *obb)
+                              vlg::grow_byte_buffer *obb)
 {
     //TMSTMP |TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT|
     obb->append_uint(htonl(*tstamp));
 }
 
 inline void Encode_WRD_CLIHBT(const unsigned short *hbtsec,
-                              blaze::grow_byte_buffer *obb)
+                              vlg::grow_byte_buffer *obb)
 {
     unsigned int data_out = 0;
     //CLIHBT |HHHH HHHH 0000 0000|0000 0000 0000 0000|
@@ -282,7 +282,7 @@ inline void Encode_WRD_CLIHBT(const unsigned short *hbtsec,
 }
 
 inline void Encode_WRD_SRVCRS(const BLZ_WRD_SRVCRS_REC *rec,
-                              blaze::grow_byte_buffer *obb)
+                              vlg::grow_byte_buffer *obb)
 {
     unsigned int data_out = 0;
     //CONRES |RRR0 0000 0000 0000|0000 0000 0000 0000|
@@ -295,7 +295,7 @@ inline void Encode_WRD_SRVCRS(const BLZ_WRD_SRVCRS_REC *rec,
 }
 
 inline void Encode_WRD_DISWRD(const BLZ_WRD_DISWRD_REC *rec,
-                              blaze::grow_byte_buffer *obb)
+                              vlg::grow_byte_buffer *obb)
 {
     unsigned int data_out = 0;
     //DISRES |RRRR0000000000000000000000000000|
@@ -304,7 +304,7 @@ inline void Encode_WRD_DISWRD(const BLZ_WRD_DISWRD_REC *rec,
 }
 
 inline void Encode_WRD_TXREQW(const BLZ_WRD_TXREQW_REC *rec,
-                              blaze::grow_byte_buffer *obb)
+                              vlg::grow_byte_buffer *obb)
 {
     unsigned int data_out = 0;
     //TXTYPE |TTTT0000000000000000000000000000|
@@ -317,7 +317,7 @@ inline void Encode_WRD_TXREQW(const BLZ_WRD_TXREQW_REC *rec,
 }
 
 inline void Encode_WRD_CLSENC(const BLZ_WRD_CLSENC_REC *rec,
-                              blaze::grow_byte_buffer *obb)
+                              vlg::grow_byte_buffer *obb)
 {
     unsigned int data_out = 0;
     //ENCTYP |EEEE0000000000000000000000000000|
@@ -332,7 +332,7 @@ inline void Encode_WRD_CLSENC(const BLZ_WRD_CLSENC_REC *rec,
 }
 
 inline void Encode_WRD_TXRESW(const BLZ_WRD_TXRESW_REC *rec,
-                              blaze::grow_byte_buffer *obb)
+                              vlg::grow_byte_buffer *obb)
 {
     unsigned int data_out = 0;
     //TXRESL |XXX00000000000000000000000000000|
@@ -350,49 +350,49 @@ inline void Encode_WRD_TXRESW(const BLZ_WRD_TXRESW_REC *rec,
 }
 
 inline void Encode_WRD_TXPLID(const unsigned int *txplid,
-                              blaze::grow_byte_buffer *obb)
+                              vlg::grow_byte_buffer *obb)
 {
     //TXPLID |PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP|
     obb->append_uint(htonl(*txplid));
 }
 
 inline void Encode_WRD_TXSVID(const unsigned int *txsvid,
-                              blaze::grow_byte_buffer *obb)
+                              vlg::grow_byte_buffer *obb)
 {
     //TXSVID |SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS|
     obb->append_uint(htonl(*txsvid));
 }
 
 inline void Encode_WRD_TXCNID(const unsigned int *txcnid,
-                              blaze::grow_byte_buffer *obb)
+                              vlg::grow_byte_buffer *obb)
 {
     //TXCNID |CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC|
     obb->append_uint(htonl(*txcnid));
 }
 
 inline void Encode_WRD_TXPRID(const unsigned int *txprid,
-                              blaze::grow_byte_buffer *obb)
+                              vlg::grow_byte_buffer *obb)
 {
     //TXPRID |PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP|
     obb->append_uint(htonl(*txprid));
 }
 
 inline void Encode_WRD_CONNID(const unsigned int *connid,
-                              blaze::grow_byte_buffer *obb)
+                              vlg::grow_byte_buffer *obb)
 {
     //CONNID |CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC|
     obb->append_uint(htonl(*connid));
 }
 
 inline void Encode_WRD_RQSTID(const unsigned int *rqstid,
-                              blaze::grow_byte_buffer *obb)
+                              vlg::grow_byte_buffer *obb)
 {
     //RQSTID |RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR|
     obb->append_uint(htonl(*rqstid));
 }
 
 inline void Encode_WRD_SBREQW(const BLZ_WRD_SBREQW_REC *rec,
-                              blaze::grow_byte_buffer *obb)
+                              vlg::grow_byte_buffer *obb)
 {
     unsigned int data_out = 0;
     //SBSTYP |00SS 0000 0000 0000 | 0000 0000 0000 0000|
@@ -407,7 +407,7 @@ inline void Encode_WRD_SBREQW(const BLZ_WRD_SBREQW_REC *rec,
 }
 
 inline void Encode_WRD_SBRESW(const BLZ_WRD_SBRESW_REC *rec,
-                              blaze::grow_byte_buffer *obb)
+                              vlg::grow_byte_buffer *obb)
 {
     unsigned int data_out = 0;
     //TXRESL |XXX00000000000000000000000000000|
@@ -423,21 +423,21 @@ inline void Encode_WRD_SBRESW(const BLZ_WRD_SBRESW_REC *rec,
 }
 
 inline void Encode_WRD_SBSRID(const unsigned int *sbsrid,
-                              blaze::grow_byte_buffer *obb)
+                              vlg::grow_byte_buffer *obb)
 {
     //SBSRID |SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS|
     obb->append_uint(htonl(*sbsrid));
 }
 
 inline void Encode_WRD_SEVTID(const unsigned int *sevtid,
-                              blaze::grow_byte_buffer *obb)
+                              vlg::grow_byte_buffer *obb)
 {
     //SEVTID |EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE|
     obb->append_uint(htonl(*sevtid));
 }
 
 inline void Encode_WRD_SEVTTP(const BLZ_WRD_SEVTTP_REC *rec,
-                              blaze::grow_byte_buffer *obb)
+                              vlg::grow_byte_buffer *obb)
 {
     unsigned int data_out = 0;
     //SEVTTP |TTTT0000000000000000000000000000|
@@ -652,7 +652,7 @@ inline void Decode_WRD_SEVTTP(const unsigned int *data_in,
 //TEST REQUEST
 void build_PKT_TSTREQ(time_stamp tstamp,
                       unsigned int connid,
-                      blaze::grow_byte_buffer *obb)
+                      vlg::grow_byte_buffer *obb)
 {
     BLZ_WRD_PKTHDR_REC pkthdr;
     pkthdr.hdrlen = connid ? 3 : 2;
@@ -668,7 +668,7 @@ void build_PKT_TSTREQ(time_stamp tstamp,
 //HEARTBEAT
 void build_PKT_HRTBET(time_stamp tstamp,
                       unsigned int connid,
-                      blaze::grow_byte_buffer *obb)
+                      vlg::grow_byte_buffer *obb)
 {
     BLZ_WRD_PKTHDR_REC pkthdr;
     pkthdr.hdrlen = connid ? 3 : 2;
@@ -683,7 +683,7 @@ void build_PKT_HRTBET(time_stamp tstamp,
 
 //CONNECTION REQUEST
 void build_PKT_CONREQ(unsigned short clihbt,
-                      blaze::grow_byte_buffer *obb)
+                      vlg::grow_byte_buffer *obb)
 {
     BLZ_WRD_PKTHDR_REC pkthdr;
     pkthdr.hdrlen = 2;
@@ -698,7 +698,7 @@ void build_PKT_CONRES(ConnectionResult conres,
                       ConnectionResultReason errcod,
                       unsigned short agrhbt,
                       unsigned int connid,
-                      blaze::grow_byte_buffer *obb)
+                      vlg::grow_byte_buffer *obb)
 {
     BLZ_WRD_PKTHDR_REC pkthdr;
     pkthdr.hdrlen = connid ? 3 : 2;
@@ -718,7 +718,7 @@ void build_PKT_CONRES(ConnectionResult conres,
 //DISCONNECTED
 void build_PKT_DSCOND(DisconnectionResultReason disres,
                       unsigned int connid,
-                      blaze::grow_byte_buffer *obb)
+                      vlg::grow_byte_buffer *obb)
 {
     BLZ_WRD_PKTHDR_REC pkthdr;
     pkthdr.hdrlen = connid ? 3 : 2;
@@ -741,7 +741,7 @@ void build_PKT_TXRQST(TransactionRequestType txtype,
                       Encode enctyp,
                       unsigned int nclsid,
                       unsigned int connid,
-                      blaze::grow_byte_buffer *obb)
+                      vlg::grow_byte_buffer *obb)
 {
     BLZ_WRD_PKTHDR_REC pkthdr;
     BLZ_WRD_TXREQW_REC txreqw;
@@ -783,7 +783,7 @@ void build_PKT_TXRESP(TransactionResult txresl,
                       bool rescls,
                       Encode enctyp,
                       unsigned int nclsid,
-                      blaze::grow_byte_buffer *obb)
+                      vlg::grow_byte_buffer *obb)
 {
     BLZ_WRD_PKTHDR_REC pkthdr;
     BLZ_WRD_TXRESW_REC txresw;
@@ -827,7 +827,7 @@ void build_PKT_SBSREQ(SubscriptionType sbstyp,
                       unsigned int rqstid,
                       unsigned int tmstp0,
                       unsigned int tmstp1,
-                      blaze::grow_byte_buffer *obb)
+                      vlg::grow_byte_buffer *obb)
 {
     BLZ_WRD_PKTHDR_REC pkthdr;
     BLZ_WRD_SBREQW_REC sbreqw;
@@ -864,7 +864,7 @@ void build_PKT_SBSRES(SubscriptionResponse sbresl,
                       ProtocolCode blzcod,
                       unsigned int rqstid,
                       unsigned int sbsrid,
-                      blaze::grow_byte_buffer *obb)
+                      vlg::grow_byte_buffer *obb)
 {
     BLZ_WRD_PKTHDR_REC pkthdr;
     BLZ_WRD_SBRESW_REC sbresw;
@@ -894,7 +894,7 @@ void build_PKT_SBSEVT(unsigned int sbsrid,
                       unsigned int sevtid,
                       unsigned int tmstp0,
                       unsigned int tmstp1,
-                      blaze::grow_byte_buffer *obb)
+                      vlg::grow_byte_buffer *obb)
 {
     BLZ_WRD_PKTHDR_REC pkthdr;
     BLZ_WRD_SEVTTP_REC sevttpw;
@@ -926,7 +926,7 @@ void build_PKT_SBSEVT(unsigned int sbsrid,
 //SUBSCRIPTION EVENT ACK
 void build_PKT_SBSACK(unsigned int sbsrid,
                       unsigned int sevtid,
-                      blaze::grow_byte_buffer *obb)
+                      vlg::grow_byte_buffer *obb)
 {
     BLZ_WRD_PKTHDR_REC pkthdr;
     pkthdr.hdrlen = 3;
@@ -939,7 +939,7 @@ void build_PKT_SBSACK(unsigned int sbsrid,
 
 //SUBSCRIPTION STOP REQUEST
 void build_PKT_SBSTOP(unsigned int sbsrid,
-                      blaze::grow_byte_buffer *obb)
+                      vlg::grow_byte_buffer *obb)
 {
     BLZ_WRD_PKTHDR_REC pkthdr;
     pkthdr.prover = BLZ_PROTO_VER;
@@ -953,7 +953,7 @@ void build_PKT_SBSTOP(unsigned int sbsrid,
 void build_PKT_SBSSPR(SubscriptionResponse sbresl,
                       ProtocolCode blzcod,
                       unsigned int sbsrid,
-                      blaze::grow_byte_buffer *obb)
+                      vlg::grow_byte_buffer *obb)
 {
     BLZ_WRD_PKTHDR_REC pkthdr;
     BLZ_WRD_SBRESW_REC sbresw;
@@ -977,9 +977,9 @@ void build_PKT_SBSSPR(SubscriptionResponse sbresl,
 // CONNECTION RECV METHS
 //-----------------------------
 
-inline blaze::RetCode connection_int::recv_single_hdr_row(unsigned int *hdr_row)
+inline vlg::RetCode connection_int::recv_single_hdr_row(unsigned int *hdr_row)
 {
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     bool stay = true;
     long brecv = 0, tot_brecv = 0, recv_buf_sz = BLZ_WRD_BYTE_SIZE;
     char buff[BLZ_WRD_BYTE_SIZE] = {0};
@@ -992,10 +992,10 @@ inline blaze::RetCode connection_int::recv_single_hdr_row(unsigned int *hdr_row)
                       __func__, brecv, tot_brecv, recv_buf_sz))
         }
         if(tot_brecv != BLZ_WRD_BYTE_SIZE) {
-            if((cdrs_res = socket_excptn_hndl(brecv)) != blaze::RetCode_SCKEAGN) {
+            if((cdrs_res = socket_excptn_hndl(brecv)) != vlg::RetCode_SCKEAGN) {
                 stay = false;
             } else {
-                cdrs_res = blaze::RetCode_OK;
+                cdrs_res = vlg::RetCode_OK;
             }
         } else {
             break;
@@ -1007,9 +1007,9 @@ inline blaze::RetCode connection_int::recv_single_hdr_row(unsigned int *hdr_row)
 
 #define RCVSNGLROW if((cdrs_res = recv_single_hdr_row(&hdr_row))) return cdrs_res;
 
-blaze::RetCode connection_int::recv_and_decode_hdr(blz_hdr_rec *pkt_hdr)
+vlg::RetCode connection_int::recv_and_decode_hdr(blz_hdr_rec *pkt_hdr)
 {
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     unsigned int hdr_row = 0;
     RCVSNGLROW
     Decode_WRD_PKTHDR(&hdr_row, &pkt_hdr->phdr);
@@ -1164,7 +1164,7 @@ blaze::RetCode connection_int::recv_and_decode_hdr(blz_hdr_rec *pkt_hdr)
             }
             break;
         default:
-            return blaze::RetCode_DRPPKT;
+            return vlg::RetCode_DRPPKT;
     }
     return cdrs_res;
 }

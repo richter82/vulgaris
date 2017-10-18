@@ -25,20 +25,20 @@
 
 #define LG_BUF_LEN_16K 16384
 
-namespace blaze {
+namespace vlg {
 extern bool deflt_log_loaded;
 }
 
-namespace blaze {
+namespace vlg {
 
-blaze::hash_map *blz_lgname_lg = NULL;
-blaze::hash_map &get_blz_logger_map()
+vlg::hash_map *blz_lgname_lg = NULL;
+vlg::hash_map &get_blz_logger_map()
 {
     if(blz_lgname_lg) {
         return *blz_lgname_lg;
     }
-    if(!(blz_lgname_lg = new blaze::hash_map(blaze::sngl_ptr_obj_mng(),
-                                             blaze::sngl_cstr_obj_mng()))) {
+    if(!(blz_lgname_lg = new vlg::hash_map(vlg::sngl_ptr_obj_mng(),
+                                             vlg::sngl_cstr_obj_mng()))) {
         EXIT_ACTION("get_blz_logger_map() - failed create blz_lgname_lg map\n")
     }
     if(blz_lgname_lg->init(HM_SIZE_NANO)) {
@@ -49,16 +49,16 @@ blaze::hash_map &get_blz_logger_map()
 
 nclass_logger *get_nclass_logger(const char *logger_name)
 {
-    if(!blaze::deflt_log_loaded) {
-        COMMAND_IF_NOT_OK(blaze::logger::load_logger_config(), NO_ACTION)
-        blaze::deflt_log_loaded = true;
+    if(!vlg::deflt_log_loaded) {
+        COMMAND_IF_NOT_OK(vlg::logger::load_logger_config(), NO_ACTION)
+        vlg::deflt_log_loaded = true;
     }
     nclass_logger *b_log = NULL;
     IF_RetCode_OK_CMD(get_blz_logger_map().get(logger_name, &b_log), return b_log)
-    blaze::logger *log = NULL;
-    blaze::logger::get_logger(logger_name, &log);
+    vlg::logger *log = NULL;
+    vlg::logger::get_logger(logger_name, &log);
     if(!log) {
-        COMMAND_IF_NOT_OK(blaze::logger::get_logger("root", &log), NO_ACTION)
+        COMMAND_IF_NOT_OK(vlg::logger::get_logger("root", &log), NO_ACTION)
     }
     if(log) {
         b_log = new nclass_logger();
@@ -87,7 +87,7 @@ size_t nclass_logger::trc_class(uint32_t id,
 {
     size_t blen = 0;
     char msg_b[LG_BUF_LEN_16K];
-    if(level() <= blaze::TL_TRC) {
+    if(level() <= vlg::TL_TRC) {
         va_list args;
         va_start(args, msg);
         blen = vsprintf(msg_b, msg, args);
@@ -107,7 +107,7 @@ size_t nclass_logger::dbg_class(uint32_t id,
 {
     size_t blen = 0;
     char msg_b[LG_BUF_LEN_16K];
-    if(level() <= blaze::TL_DBG) {
+    if(level() <= vlg::TL_DBG) {
         va_list args;
         va_start(args, msg);
         blen = vsprintf(msg_b, msg, args);
@@ -126,7 +126,7 @@ size_t nclass_logger::inf_class(uint32_t id,
 {
     size_t blen = 0;
     char msg_b[LG_BUF_LEN_16K];
-    if(level() <= blaze::TL_INF) {
+    if(level() <= vlg::TL_INF) {
         va_list args;
         va_start(args, msg);
         blen = vsprintf(msg_b, msg, args);
@@ -145,7 +145,7 @@ size_t nclass_logger::wrn_class(uint32_t id,
 {
     size_t blen = 0;
     char msg_b[LG_BUF_LEN_16K];
-    if(level() <= blaze::TL_WRN) {
+    if(level() <= vlg::TL_WRN) {
         va_list args;
         va_start(args, msg);
         blen = vsprintf(msg_b, msg, args);
@@ -164,7 +164,7 @@ size_t nclass_logger::err_class(uint32_t id,
 {
     size_t blen = 0;
     char msg_b[LG_BUF_LEN_16K];
-    if(level() <= blaze::TL_ERR) {
+    if(level() <= vlg::TL_ERR) {
         va_list args;
         va_start(args, msg);
         blen = vsprintf(msg_b, msg, args);
@@ -183,7 +183,7 @@ size_t nclass_logger::cri_class(uint32_t id,
 {
     size_t blen = 0;
     char msg_b[LG_BUF_LEN_16K];
-    if(level() <= blaze::TL_CRI) {
+    if(level() <= vlg::TL_CRI) {
         va_list args;
         va_start(args, msg);
         blen = vsprintf(msg_b, msg, args);
@@ -202,7 +202,7 @@ size_t nclass_logger::fat_class(uint32_t id,
 {
     size_t blen = 0;
     char msg_b[LG_BUF_LEN_16K];
-    if(level() <= blaze::TL_FAT) {
+    if(level() <= vlg::TL_FAT) {
         va_list args;
         va_start(args, msg);
         blen = vsprintf(msg_b, msg, args);

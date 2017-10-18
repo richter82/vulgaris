@@ -31,20 +31,20 @@
 #include "blz_transaction_int.h"
 #include "blz_subscription_int.h"
 
-namespace blaze {
+namespace vlg {
 
 // BLZ_CONNECTION CTORS - INIT - DESTROY
 
 //BLZ_CONNECTION MEMORY
 
-class connection_int_inst_collector : public blaze::collector {
+class connection_int_inst_collector : public vlg::collector {
     public:
-        connection_int_inst_collector() : blaze::collector("connection_int") {}
+        connection_int_inst_collector() : vlg::collector("connection_int") {}
 
 };
 
-blaze::collector *conn_inst_coll_ = NULL;
-blaze::collector &conn_inst_collector()
+vlg::collector *conn_inst_coll_ = NULL;
+vlg::collector &conn_inst_collector()
 {
     if(conn_inst_coll_) {
         return *conn_inst_coll_;
@@ -55,12 +55,12 @@ blaze::collector &conn_inst_collector()
     return *conn_inst_coll_;
 }
 
-blaze::collector &connection_int::get_collector()
+vlg::collector &connection_int::get_collector()
 {
     return conn_inst_collector();
 }
 
-blaze::logger *connection_int::log_ = NULL;
+vlg::logger *connection_int::log_ = NULL;
 
 connection_int::connection_int(peer_int &peer, ConnectionType con_type,
                                unsigned int connid) :
@@ -80,13 +80,13 @@ connection_int::connection_int(peer_int &peer, ConnectionType con_type,
     csc_hndl_(NULL),
     csc_hndl_ud_(NULL),
     connect_evt_occur_(false),
-    pkt_sending_q_(blaze::sngl_ptr_obj_mng()),
-    srv_flytx_repo_(blaze::sngl_ptr_obj_mng(), sizeof(tx_id)),
-    cli_flytx_repo_(blaze::sngl_ptr_obj_mng(), sizeof(tx_id)),
-    srv_classid_sbs_repo_(blaze::sngl_ptr_obj_mng(), sizeof(unsigned int)),
-    srv_sbsid_sbs_repo_(blaze::sngl_ptr_obj_mng(), sizeof(unsigned int)),
-    cli_reqid_sbs_repo_(blaze::sngl_ptr_obj_mng(), sizeof(unsigned int)),
-    cli_sbsid_sbs_repo_(blaze::sngl_ptr_obj_mng(), sizeof(unsigned int)),
+    pkt_sending_q_(vlg::sngl_ptr_obj_mng()),
+    srv_flytx_repo_(vlg::sngl_ptr_obj_mng(), sizeof(tx_id)),
+    cli_flytx_repo_(vlg::sngl_ptr_obj_mng(), sizeof(tx_id)),
+    srv_classid_sbs_repo_(vlg::sngl_ptr_obj_mng(), sizeof(unsigned int)),
+    srv_sbsid_sbs_repo_(vlg::sngl_ptr_obj_mng(), sizeof(unsigned int)),
+    cli_reqid_sbs_repo_(vlg::sngl_ptr_obj_mng(), sizeof(unsigned int)),
+    cli_sbsid_sbs_repo_(vlg::sngl_ptr_obj_mng(), sizeof(unsigned int)),
     tx_factory_(NULL),
     tx_factory_ud_(NULL),
     sbs_factory_(NULL),
@@ -95,7 +95,7 @@ connection_int::connection_int(peer_int &peer, ConnectionType con_type,
     reqid_(0),
     sbsid_(0)
 {
-    log_ = blaze::logger::get_logger("connection_int");
+    log_ = vlg::logger::get_logger("connection_int");
     if(connid_) {
         IFLOG(trc(TH_ID, LS_CTR "%s()(candidate connid: %d)", __func__, connid_))
     } else {
@@ -105,7 +105,7 @@ connection_int::connection_int(peer_int &peer, ConnectionType con_type,
 
 connection_int::~connection_int()
 {
-    blaze::collector &c = get_collector();
+    vlg::collector &c = get_collector();
     if(c.is_instance_collected(this)) {
         IFLOG(cri(TH_ID, LS_DTR "%s(ptr:%p)" D_W_R_COLL LS_EXUNX,
                   __func__,
@@ -123,7 +123,7 @@ connection_int::~connection_int()
     IFLOG(trc(TH_ID, LS_DTR "%s", __func__))
 }
 
-blaze::RetCode connection_int::clean_best_effort()
+vlg::RetCode connection_int::clean_best_effort()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     mon_.lock();
@@ -135,7 +135,7 @@ blaze::RetCode connection_int::clean_best_effort()
         while(!cli_flytx_repo_.next(NULL, &tx)) {
             tx->set_tx_result_code(ProtocolCode_TRANSACTION_CLIENT_ABORT);
             tx->set_aborted();
-            blaze::collector &c = tx->get_collector();
+            vlg::collector &c = tx->get_collector();
             c.release(tx);
             cli_flytx_repo_.remove_in_iteration();
         }
@@ -154,7 +154,7 @@ blaze::RetCode connection_int::clean_best_effort()
     }
     //SUBSCRIPTIONS
     subscription_int *sbs = NULL;
-    blaze::linked_list support_list(blaze::sngl_ptr_obj_mng());
+    vlg::linked_list support_list(vlg::sngl_ptr_obj_mng());
     support_list.init();
     if(con_type_ == ConnectionType_OUTGOING) {
         //REQID
@@ -193,20 +193,20 @@ blaze::RetCode connection_int::clean_best_effort()
     clean_packet_snd_q();
     mon_.unlock();
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 void connection_int::clean_packet_snd_q()
 {
     if(pkt_sending_q_.size()) {
-        blaze::grow_byte_buffer *pkt = NULL;
+        vlg::grow_byte_buffer *pkt = NULL;
         while((!pkt_sending_q_.get(0, 0, &pkt))) {
             delete pkt;
         }
     }
 }
 
-blaze::RetCode connection_int::init(unsigned int pkt_sending_q_capcty)
+vlg::RetCode connection_int::init(unsigned int pkt_sending_q_capcty)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, pkt_sending_q_capcty:%u)", __func__, this,
               pkt_sending_q_capcty))
@@ -219,7 +219,7 @@ blaze::RetCode connection_int::init(unsigned int pkt_sending_q_capcty)
     RETURN_IF_NOT_OK(cli_sbsid_sbs_repo_.init(HM_SIZE_SMALL))
     set_status(ConnectionStatus_INITIALIZED);
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 // STATUS
@@ -229,12 +229,12 @@ ConnectionStatus connection_int::status()
     return status_;
 }
 
-blaze::RetCode connection_int::set_connection_established()
+vlg::RetCode connection_int::set_connection_established()
 {
     return set_connection_established(socket_);
 }
 
-blaze::RetCode connection_int::set_connection_established(SOCKET socket)
+vlg::RetCode connection_int::set_connection_established(SOCKET socket)
 {
     socket_ = socket;
     sockaddr_in saddr;
@@ -248,10 +248,10 @@ blaze::RetCode connection_int::set_connection_established(SOCKET socket)
               connid_))
     set_status(ConnectionStatus_ESTABLISHED);
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode connection_int::set_status(ConnectionStatus status)
+vlg::RetCode connection_int::set_status(ConnectionStatus status)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, status:%d)", __func__, this, status))
     CHK_MON_ERR_0(lock)
@@ -262,10 +262,10 @@ blaze::RetCode connection_int::set_status(ConnectionStatus status)
     CHK_MON_ERR_0(notify_all)
     CHK_MON_ERR_0(unlock)
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode connection_int::await_for_status_reached_or_outdated(
+vlg::RetCode connection_int::await_for_status_reached_or_outdated(
     ConnectionStatus test,
     ConnectionStatus &current,
     time_t sec,
@@ -276,20 +276,20 @@ blaze::RetCode connection_int::await_for_status_reached_or_outdated(
     if(status_ < ConnectionStatus_INITIALIZED) {
         CHK_MON_ERR_0(unlock)
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     while(status_ < test) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res =  blaze::RetCode_TIMEOUT;
+                cdrs_res =  vlg::RetCode_TIMEOUT;
                 break;
             }
         }
     }
     current = status_;
-    IFLOG(log(cdrs_res ? blaze::TL_WRN : blaze::TL_DBG, TH_ID,
+    IFLOG(log(cdrs_res ? vlg::TL_WRN : vlg::TL_DBG, TH_ID,
               LS_CLO "%s(connid:%d, res:%d) - status:%d [reached or outdated] current:%d",
               __func__, connid_,
               cdrs_res, test, status_))
@@ -297,7 +297,7 @@ blaze::RetCode connection_int::await_for_status_reached_or_outdated(
     return cdrs_res;
 }
 
-blaze::RetCode connection_int::await_for_status_change(ConnectionStatus
+vlg::RetCode connection_int::await_for_status_change(ConnectionStatus
                                                        &status,
                                                        time_t sec,
                                                        long nsec)
@@ -307,104 +307,104 @@ blaze::RetCode connection_int::await_for_status_change(ConnectionStatus
     if(status_ < ConnectionStatus_INITIALIZED) {
         CHK_MON_ERR_0(unlock)
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     while(status == status_) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res =  blaze::RetCode_TIMEOUT;
+                cdrs_res =  vlg::RetCode_TIMEOUT;
                 break;
             }
         }
     }
     status = status_;
     CHK_MON_ERR_0(unlock)
-    IFLOG(log(cdrs_res ? blaze::TL_WRN : blaze::TL_DBG, TH_ID,
+    IFLOG(log(cdrs_res ? vlg::TL_WRN : vlg::TL_DBG, TH_ID,
               LS_CLO "%s(res:%d) - status:%d [changed] current:%d", __func__, cdrs_res,
               status, status_))
     return cdrs_res;
 }
 
-blaze::RetCode connection_int::set_proto_connected()
+vlg::RetCode connection_int::set_proto_connected()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ != ConnectionStatus_ESTABLISHED) {
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     set_status(ConnectionStatus_PROTOCOL_HANDSHAKE);
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode connection_int::set_disconnecting()
+vlg::RetCode connection_int::set_disconnecting()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     set_status(ConnectionStatus_DISCONNECTING);
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode connection_int::set_socket_disconnected()
+vlg::RetCode connection_int::set_socket_disconnected()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     IFLOG(inf(TH_ID, LS_CON"[connid:%d][disconnected]", connid_))
     set_status(ConnectionStatus_DISCONNECTED);
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode connection_int::set_proto_error(blaze::RetCode cause_res)
+vlg::RetCode connection_int::set_proto_error(vlg::RetCode cause_res)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ == ConnectionStatus_DISCONNECTED) {
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     set_status(ConnectionStatus_PROTOCOL_ERROR);
     IFLOG(err(TH_ID, LS_CLO "%s(cause_res:%d, last_sock_err:%d)", __func__,
               cause_res, last_socket_err_))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode connection_int::set_socket_error(blaze::RetCode cause_res)
+vlg::RetCode connection_int::set_socket_error(vlg::RetCode cause_res)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ < ConnectionStatus_INITIALIZED) {
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     IFLOG(err(TH_ID, LS_CLO "%s(cause_res:%d, last_sock_err:%d)", __func__,
               cause_res, last_socket_err_))
     set_status(ConnectionStatus_SOCKET_ERROR);
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode connection_int::set_internal_error(blaze::RetCode cause_res)
+vlg::RetCode connection_int::set_internal_error(vlg::RetCode cause_res)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ < ConnectionStatus_INITIALIZED) {
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     IFLOG(cri(TH_ID, LS_CLO "%s(cause_res:%d, last_sock_err:%d)", __func__,
               cause_res, last_socket_err_))
     set_status(ConnectionStatus_ERROR);
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode connection_int::set_appl_connected()
+vlg::RetCode connection_int::set_appl_connected()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ != ConnectionStatus_PROTOCOL_HANDSHAKE) {
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     IFLOG(inf(TH_ID, LS_CLO "%s", __func__))
     set_status(ConnectionStatus_AUTHENTICATED);
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 void connection_int::set_connection_status_change_handler(
@@ -416,27 +416,27 @@ void connection_int::set_connection_status_change_handler(
 
 // GETTERS / SETTERS
 
-blaze::synch_hash_map &connection_int::client_fly_tx_map()
+vlg::synch_hash_map &connection_int::client_fly_tx_map()
 {
     return cli_flytx_repo_;
 }
 
-blaze::synch_hash_map &connection_int::server_fly_tx_map()
+vlg::synch_hash_map &connection_int::server_fly_tx_map()
 {
     return srv_flytx_repo_;
 }
 
-blaze::synch_hash_map &connection_int::class_id_sbs_map()
+vlg::synch_hash_map &connection_int::class_id_sbs_map()
 {
     return srv_classid_sbs_repo_;
 }
 
-blaze::synch_hash_map &connection_int::sbsid_sbs_map()
+vlg::synch_hash_map &connection_int::sbsid_sbs_map()
 {
     return srv_sbsid_sbs_repo_;
 }
 
-blaze::synch_hash_map &connection_int::reqid_sbs_map()
+vlg::synch_hash_map &connection_int::reqid_sbs_map()
 {
     return cli_reqid_sbs_repo_;
 }
@@ -558,7 +558,7 @@ unsigned short connection_int::get_host_port() const
     return ntohs(saddr.sin_port);
 }
 
-blaze::blocking_queue &connection_int::pkt_snd_q()
+vlg::blocking_queue &connection_int::pkt_snd_q()
 {
     return pkt_sending_q_;
 }
@@ -578,10 +578,10 @@ unsigned int connection_int::connid() const
     return connid_;
 }
 
-blaze::RetCode connection_int::set_connid(unsigned int connid)
+vlg::RetCode connection_int::set_connid(unsigned int connid)
 {
     connid_ = connid;
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 unsigned int connection_int::next_prid()
@@ -610,28 +610,28 @@ unsigned int connection_int::next_sbsid()
 
 // TCP/IP
 
-blaze::RetCode connection_int::set_socket_blocking_mode(bool blocking)
+vlg::RetCode connection_int::set_socket_blocking_mode(bool blocking)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(blocking:%d)", __func__, blocking))
 #ifdef WIN32
     unsigned long mode = blocking ? 0 : 1;
     return (ioctlsocket(socket_, FIONBIO,
-                        &mode) == 0) ? blaze::RetCode_OK : blaze::RetCode_KO;
+                        &mode) == 0) ? vlg::RetCode_OK : vlg::RetCode_KO;
 #else
     int flags = fcntl(socket_, F_GETFL, 0);
     if(flags < 0) {
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
     flags = blocking ? (flags&~O_NONBLOCK) : (flags|O_NONBLOCK);
     return (fcntl(socket_, F_SETFL,
-                  flags) == 0) ? blaze::RetCode_OK : blaze::RetCode_KO;
+                  flags) == 0) ? vlg::RetCode_OK : vlg::RetCode_KO;
 #endif
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
 }
 
-blaze::RetCode connection_int::socket_excptn_hndl(long sock_op_res)
+vlg::RetCode connection_int::socket_excptn_hndl(long sock_op_res)
 {
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     if(sock_op_res == SOCKET_ERROR) {
 #ifdef WIN32
         last_socket_err_ = WSAGetLastError();
@@ -642,10 +642,10 @@ blaze::RetCode connection_int::socket_excptn_hndl(long sock_op_res)
         if(last_socket_err_ == WSAEWOULDBLOCK) {
 #else
         if(last_socket_err_ == EAGAIN) {
-            return blaze::RetCode_SCKEAGN;
+            return vlg::RetCode_SCKEAGN;
         } else if(last_socket_err_ == EWOULDBLOCK) {
 #endif
-            cdrs_res = blaze::RetCode_SCKWBLK;
+            cdrs_res = vlg::RetCode_SCKWBLK;
 #ifdef WIN32
         } else if(last_socket_err_ == WSAECONNRESET) {
 #else
@@ -654,34 +654,34 @@ blaze::RetCode connection_int::socket_excptn_hndl(long sock_op_res)
             IFLOG(err(TH_ID, LS_CON
                       "[connid:%d][sockid:%d][connection reset by peer][err:%d]",connid_, socket_,
                       last_socket_err_))
-            cdrs_res = blaze::RetCode_SCKCLO;
+            cdrs_res = vlg::RetCode_SCKCLO;
         } else {
             perror(__func__);
             IFLOG(err(TH_ID, LS_CON
                       "[connid:%d][sockid:%d][connection socket error][errno:%d][err:%d]",connid_,
                       socket_, errno,
                       last_socket_err_))
-            cdrs_res = blaze::RetCode_SCKERR;
+            cdrs_res = vlg::RetCode_SCKERR;
         }
     } else if(!sock_op_res) {
         /*typically we can arrive here on client applicative disconnections*/
         IFLOG(dbg(TH_ID, LS_CON
                   "[connid:%d][sockid:%d][connection socket was closed by peer]",connid_,
                   socket_))
-        cdrs_res = blaze::RetCode_SCKCLO;
+        cdrs_res = vlg::RetCode_SCKCLO;
     } else {
         IFLOG(err(TH_ID, LS_CON "[connid:%d][sockid:%d][connection unk. error]",
                   connid_, socket_))
-        cdrs_res = blaze::RetCode_UNKERR;
+        cdrs_res = vlg::RetCode_UNKERR;
     }
     return cdrs_res;
 }
 
-blaze::RetCode connection_int::establish_connection(sockaddr_in &params)
+vlg::RetCode connection_int::establish_connection(sockaddr_in &params)
 {
     IFLOG(dbg(TH_ID, LS_OPN "%s() -> [host:%s - port:%d]", __func__,
               inet_ntoa(params.sin_addr), htons(params.sin_port)))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     int connect_res = 0;
     if((socket_ = socket(AF_INET, SOCK_STREAM, 0)) != INVALID_SOCKET) {
         IFLOG(trc(TH_ID, LS_TRL "%s(sockid:%d) -socket OK-", __func__, socket_))
@@ -717,28 +717,28 @@ blaze::RetCode connection_int::establish_connection(sockaddr_in &params)
     } else {
         notify_for_connectivity_result(ConnectivityEventResult_KO,
                                        ConnectivityEventType_NETWORK);
-        cdrs_res = blaze::RetCode_KO;
+        cdrs_res = vlg::RetCode_KO;
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
     return cdrs_res;
 }
 
-blaze::RetCode connection_int::send_single_pkt(blaze::grow_byte_buffer
+vlg::RetCode connection_int::send_single_pkt(vlg::grow_byte_buffer
                                                *pkt_bbuf)
 {
-    blaze::ascii_string raw_pkt;
+    vlg::ascii_string raw_pkt;
     IFLOG(trc(TH_ID, LS_OPN "%s(sockid:%d, sndbuffsz:%u, pkt_bbuf:%p)", __func__,
               socket_, pkt_bbuf->limit(), pkt_bbuf))
     if(!pkt_bbuf->limit() || !pkt_bbuf) {
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_BADARG;
+        return vlg::RetCode_BADARG;
     }
-    if(log_ && log_->level() <= blaze::TL_TRC) {
-        blaze::ascii_string tmp;
+    if(log_ && log_->level() <= vlg::TL_TRC) {
+        vlg::ascii_string tmp;
         log_->trc(TH_ID, LS_OUT LS_PKT "%s", dump_raw_pkt(true, pkt_bbuf->buffer(),
                                                           pkt_bbuf->limit(), tmp));
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     bool stay = true;
     long bsent = 0, tot_bsent = 0, remaining = (long)pkt_bbuf->limit();
     while(stay) {
@@ -752,9 +752,9 @@ blaze::RetCode connection_int::send_single_pkt(blaze::grow_byte_buffer
                       bsent, tot_bsent, remaining))
         }
         if(remaining) {
-            if(((cdrs_res = socket_excptn_hndl(bsent)) != blaze::RetCode_SCKEAGN) ||
-                    (cdrs_res != blaze::RetCode_SCKWBLK)) {
-                cdrs_res = blaze::RetCode_OK;
+            if(((cdrs_res = socket_excptn_hndl(bsent)) != vlg::RetCode_SCKEAGN) ||
+                    (cdrs_res != vlg::RetCode_SCKWBLK)) {
+                cdrs_res = vlg::RetCode_OK;
                 stay = false;
             }
         } else {
@@ -770,10 +770,10 @@ blaze::RetCode connection_int::send_single_pkt(blaze::grow_byte_buffer
     return cdrs_res;
 }
 
-blaze::RetCode connection_int::recv_body(unsigned int bodylen,
-                                         blaze::grow_byte_buffer *pkt_body)
+vlg::RetCode connection_int::recv_body(unsigned int bodylen,
+                                         vlg::grow_byte_buffer *pkt_body)
 {
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     bool stay = true;
     unsigned int tot_brecv = 0;
     long brecv = 0, recv_buf_sz = bodylen;
@@ -789,8 +789,8 @@ blaze::RetCode connection_int::recv_body(unsigned int bodylen,
                       __func__, brecv, tot_brecv, recv_buf_sz))
         }
         if(tot_brecv != bodylen) {
-            if((cdrs_res = socket_excptn_hndl(brecv)) != blaze::RetCode_SCKEAGN) {
-                cdrs_res = blaze::RetCode_OK;
+            if((cdrs_res = socket_excptn_hndl(brecv)) != vlg::RetCode_SCKEAGN) {
+                cdrs_res = vlg::RetCode_OK;
                 stay = false;
             }
         } else {
@@ -801,36 +801,36 @@ blaze::RetCode connection_int::recv_body(unsigned int bodylen,
     return cdrs_res;
 }
 
-blaze::RetCode connection_int::recv_single_pkt(blz_hdr_rec *pkt_hdr,
-                                               blaze::grow_byte_buffer *pkt_body)
+vlg::RetCode connection_int::recv_single_pkt(blz_hdr_rec *pkt_hdr,
+                                               vlg::grow_byte_buffer *pkt_body)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(pkt_hdr:%p, pkt_body:%p)(sockid:%d)", __func__,
               pkt_hdr, pkt_body, socket_))
     if(!pkt_hdr || !pkt_body) {
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_BADARG;
+        return vlg::RetCode_BADARG;
     }
     int tot_brecv = 0;
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     //first phase: decode pkt header.
     switch((cdrs_res = recv_and_decode_hdr(pkt_hdr))) {
-        case blaze::RetCode_OK:
+        case vlg::RetCode_OK:
             break;
-        case blaze::RetCode_SCKCLO:
+        case vlg::RetCode_SCKCLO:
             clean_best_effort();
             socket_shutdown();
             on_disconnect(ConnectivityEventResult_OK,
                           ConnectivityEventType_NETWORK);
             break;
-        case blaze::RetCode_SCKERR:
+        case vlg::RetCode_SCKERR:
             clean_best_effort();
             socket_shutdown();
             set_socket_error(cdrs_res);
             on_disconnect(ConnectivityEventResult_KO,
                           ConnectivityEventType_NETWORK);
             break;
-        case blaze::RetCode_SCKWBLK:
-        case blaze::RetCode_DRPPKT:
+        case vlg::RetCode_SCKWBLK:
+        case vlg::RetCode_DRPPKT:
             clean_best_effort();
             socket_shutdown();
             set_proto_error(cdrs_res);
@@ -849,23 +849,23 @@ blaze::RetCode connection_int::recv_single_pkt(blz_hdr_rec *pkt_hdr,
     if(pkt_hdr->bdy_bytelen) {
         //second phase: read eventual remaining body.
         switch((cdrs_res = recv_body(pkt_hdr->bdy_bytelen, pkt_body))) {
-            case blaze::RetCode_OK:
+            case vlg::RetCode_OK:
                 break;
-            case blaze::RetCode_SCKCLO:
+            case vlg::RetCode_SCKCLO:
                 clean_best_effort();
                 socket_shutdown();
                 on_disconnect(ConnectivityEventResult_OK,
                               ConnectivityEventType_NETWORK);
                 break;
-            case blaze::RetCode_SCKERR:
+            case vlg::RetCode_SCKERR:
                 clean_best_effort();
                 socket_shutdown();
                 set_socket_error(cdrs_res);
                 on_disconnect(ConnectivityEventResult_KO,
                               ConnectivityEventType_NETWORK);
                 break;
-            case blaze::RetCode_SCKWBLK:
-            case blaze::RetCode_DRPPKT:
+            case vlg::RetCode_SCKWBLK:
+            case vlg::RetCode_DRPPKT:
                 clean_best_effort();
                 socket_shutdown();
                 set_proto_error(cdrs_res);
@@ -884,13 +884,13 @@ blaze::RetCode connection_int::recv_single_pkt(blz_hdr_rec *pkt_hdr,
     }
     if(!cdrs_res) {
         tot_brecv = pkt_hdr->hdr_bytelen + pkt_hdr->bdy_bytelen;
-        if(log_ && log_->level() <= blaze::TL_TRC) {
+        if(log_ && log_->level() <= vlg::TL_TRC) {
             char dump_buf[DMP_OUT_BUF_LEN] = {0};
             dump_blz_hdr_rec(pkt_hdr, dump_buf);
             log_->trc(TH_ID, LS_INC LS_PKT "%s", dump_buf);
         }
-        if(pkt_hdr->bdy_bytelen && log_ && log_->level() <= blaze::TL_TRC) {
-            blaze::ascii_string tmp;
+        if(pkt_hdr->bdy_bytelen && log_ && log_->level() <= vlg::TL_TRC) {
+            vlg::ascii_string tmp;
             log_->trc(TH_ID, LS_INC LS_PKT "%s", dump_raw_pkt(false, pkt_body->buffer(),
                                                               pkt_body->limit(), tmp));
         }
@@ -904,7 +904,7 @@ blaze::RetCode connection_int::recv_single_pkt(blz_hdr_rec *pkt_hdr,
     return cdrs_res;
 }
 
-blaze::RetCode connection_int::socket_shutdown()
+vlg::RetCode connection_int::socket_shutdown()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sockid:%d)", __func__, socket_))
     int last_socket_err_ = 0;
@@ -936,31 +936,31 @@ blaze::RetCode connection_int::socket_shutdown()
 #endif
     set_socket_disconnected();
     IFLOG(trc(TH_ID, LS_CLO "%s(sockid:%d)", __func__, socket_))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 // CONNECTIVITY
 
-blaze::RetCode connection_int::client_connect(sockaddr_in &params)
+vlg::RetCode connection_int::client_connect(sockaddr_in &params)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     if(peer_.peer_status() != PeerStatus_RUNNING) {
         IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p) - invalid peer status.", __func__, this))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     if(status_ != ConnectionStatus_INITIALIZED &&
             status_ != ConnectionStatus_DISCONNECTED) {
         IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p) - invalid connection status.", __func__,
                   this))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
 
     //client side adoption to avoid userspace deletion.
     /************************
     RETAIN_ID: CONN_CLI_01
     ************************/
-    blaze::collector &c = get_collector();
+    vlg::collector &c = get_collector();
     c.retain(this);
 
     connect_evt_occur_ = false;
@@ -978,13 +978,13 @@ blaze::RetCode connection_int::client_connect(sockaddr_in &params)
     return cdrs_res;
 }
 
-blaze::RetCode connection_int::server_send_connect_res()
+vlg::RetCode connection_int::server_send_connect_res()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     if(status_ != ConnectionStatus_ESTABLISHED) {
         IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     DECLINITH_GBB(gbb, 3*4)
     build_PKT_CONRES(conres_,
@@ -1003,15 +1003,15 @@ blaze::RetCode connection_int::server_send_connect_res()
     return cdrs_res;
 }
 
-blaze::RetCode connection_int::disconnect(DisconnectionResultReason
+vlg::RetCode connection_int::disconnect(DisconnectionResultReason
                                           disres)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     if(status_ != ConnectionStatus_PROTOCOL_HANDSHAKE &&
             status_ != ConnectionStatus_AUTHENTICATED) {
         IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     IFLOG(inf(TH_ID,
               LS_CON"[connid:%d][socket:%d][sending disconnection][disconrescode:%d]",
@@ -1034,7 +1034,7 @@ blaze::RetCode connection_int::disconnect(DisconnectionResultReason
     return cdrs_res;
 }
 
-blaze::RetCode connection_int::await_for_connection_result(
+vlg::RetCode connection_int::await_for_connection_result(
     ConnectivityEventResult
     &con_evt_res,
     ConnectivityEventType &connectivity_evt_type,
@@ -1044,22 +1044,22 @@ blaze::RetCode connection_int::await_for_connection_result(
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ < ConnectionStatus_INITIALIZED) {
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     CHK_MON_ERR_0(lock)
     while(!connect_evt_occur_) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res =  blaze::RetCode_TIMEOUT;
+                cdrs_res =  vlg::RetCode_TIMEOUT;
                 break;
             }
         }
     }
     con_evt_res = con_evt_res_;
     connectivity_evt_type = connectivity_evt_type_;
-    IFLOG(log(cdrs_res ? blaze::TL_WRN : blaze::TL_DBG, TH_ID, LS_CLO
+    IFLOG(log(cdrs_res ? vlg::TL_WRN : vlg::TL_DBG, TH_ID, LS_CLO
               "%s(ptr:%p, res:%d, socket:%d, last_socket_err:%d, status:%d) - [connection result available] - con_evt_res:%d connectivity_evt_type:%d, conres:%d, resultcode:%d",
               __func__,
               this,
@@ -1076,7 +1076,7 @@ blaze::RetCode connection_int::await_for_connection_result(
     return cdrs_res;
 }
 
-blaze::RetCode connection_int::notify_for_connectivity_result(
+vlg::RetCode connection_int::notify_for_connectivity_result(
     ConnectivityEventResult con_evt_res,
     ConnectivityEventType connectivity_evt_type)
 {
@@ -1089,10 +1089,10 @@ blaze::RetCode connection_int::notify_for_connectivity_result(
     mon_.notify_all();
     mon_.unlock();
     IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode connection_int::await_for_disconnection_result(
+vlg::RetCode connection_int::await_for_disconnection_result(
     ConnectivityEventResult &con_evt_res,
     ConnectivityEventType &connectivity_evt_type,
     time_t sec,
@@ -1103,21 +1103,21 @@ blaze::RetCode connection_int::await_for_disconnection_result(
     if(status_ < ConnectionStatus_INITIALIZED) {
         CHK_MON_ERR_0(unlock)
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     while(!connect_evt_occur_) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res =  blaze::RetCode_TIMEOUT;
+                cdrs_res =  vlg::RetCode_TIMEOUT;
                 break;
             }
         }
     }
     con_evt_res = con_evt_res_;
     connectivity_evt_type = connectivity_evt_type_;
-    IFLOG(log(cdrs_res ? blaze::TL_WRN : blaze::TL_DBG, TH_ID, LS_CLO
+    IFLOG(log(cdrs_res ? vlg::TL_WRN : vlg::TL_DBG, TH_ID, LS_CLO
               "%s(connid:%d, res:%d, socket:%d, last_socket_err:%d, status:%d) - [disconnection result available] - con_evt_res:%d connectivity_evt_type:%d, conres:%d, resultcode:%d",
               __func__,
               connid_,
@@ -1134,12 +1134,12 @@ blaze::RetCode connection_int::await_for_disconnection_result(
     return cdrs_res;
 }
 
-blaze::RetCode connection_int::recv_connection_request(const blz_hdr_rec
+vlg::RetCode connection_int::recv_connection_request(const blz_hdr_rec
                                                        *pkt_hdr)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sockid:%d, pkt_hdr:%p)", __func__, get_socket(),
               pkt_hdr))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     if(status() == ConnectionStatus_PROTOCOL_HANDSHAKE ||
             status() == ConnectionStatus_AUTHENTICATED) {
         set_disconnecting();
@@ -1148,7 +1148,7 @@ blaze::RetCode connection_int::recv_connection_request(const blz_hdr_rec
         IFLOG(wrn(TH_ID, LS_CLO "%s(sockid:%d) [peer already connected - connid:%d]",
                   __func__, get_socket(), connid()))
         server_send_connect_res();
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
     if(status() != ConnectionStatus_ESTABLISHED) {
         set_disconnecting();
@@ -1157,7 +1157,7 @@ blaze::RetCode connection_int::recv_connection_request(const blz_hdr_rec
         IFLOG(err(TH_ID, LS_CLO "%s(sockid:%d) [invalid connection status - connid:%d]",
                   __func__, get_socket(), connid()))
         server_send_connect_res();
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
     set_conn_response(ConnectionResult_ACCEPTED);
     set_conn_res_code(ConnectionResultReason_NO_ERROR);
@@ -1200,11 +1200,11 @@ blaze::RetCode connection_int::recv_connection_request(const blz_hdr_rec
     return cdrs_res;
 }
 
-blaze::RetCode connection_int::recv_connection_response(
+vlg::RetCode connection_int::recv_connection_response(
     const blz_hdr_rec *pkt_hdr)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(pkt_hdr:%p)", __func__, pkt_hdr))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     ConnectivityEventResult con_evt_res = ConnectivityEventResult_OK;
     set_conn_response(pkt_hdr->row_1.srvcrs.conres);
     set_conn_res_code(pkt_hdr->row_1.srvcrs.errcod);
@@ -1245,10 +1245,10 @@ blaze::RetCode connection_int::recv_connection_response(
     notify_for_connectivity_result(con_evt_res,
                                    ConnectivityEventType_PROTOCOL);
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode connection_int::recv_disconnection(const blz_hdr_rec *pkt_hdr)
+vlg::RetCode connection_int::recv_disconnection(const blz_hdr_rec *pkt_hdr)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(pkt_hdr:%p)", __func__, pkt_hdr))
     disconrescode_ = pkt_hdr->row_1.diswrd.disres;
@@ -1258,19 +1258,19 @@ blaze::RetCode connection_int::recv_disconnection(const blz_hdr_rec *pkt_hdr)
               disconrescode_))
     set_disconnecting();
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode connection_int::recv_test_request(const blz_hdr_rec *pkt_hdr)
+vlg::RetCode connection_int::recv_test_request(const blz_hdr_rec *pkt_hdr)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(pkt_hdr:%p)", __func__, pkt_hdr))
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_UNSP;
+    return vlg::RetCode_UNSP;
 }
 
 // TRANSACTIONAL
 
-blaze::RetCode connection_int::next_tx_id(tx_id &txid)
+vlg::RetCode connection_int::next_tx_id(tx_id &txid)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     txid.txplid = peer_.peer_plid_;
@@ -1283,7 +1283,7 @@ blaze::RetCode connection_int::next_tx_id(tx_id &txid)
               txid.txsvid,
               txid.txcnid,
               txid.txprid))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 transaction_int *connection_int::blz_tx_factory_default_func(
@@ -1294,7 +1294,7 @@ transaction_int *connection_int::blz_tx_factory_default_func(
     return new_transaction;
 }
 
-blaze::RetCode connection_int::new_transaction(transaction_int
+vlg::RetCode connection_int::new_transaction(transaction_int
                                                **new_transaction,
                                                blz_tx_factory_func blz_tx_factory_f,
                                                bool compute_txid,
@@ -1303,7 +1303,7 @@ blaze::RetCode connection_int::new_transaction(transaction_int
     IFLOG(trc(TH_ID, LS_OPN "%s(new_transaction:%p)", __func__, new_transaction))
     if(!new_transaction) {
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_BADARG;
+        return vlg::RetCode_BADARG;
     }
     if(!blz_tx_factory_f) {
         *new_transaction = blz_tx_factory_default_func(*this, NULL);
@@ -1317,44 +1317,44 @@ blaze::RetCode connection_int::new_transaction(transaction_int
         }
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(new_transaction:%p)", __func__, *new_transaction))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode connection_int::release_transaction(transaction_int *transaction)
+vlg::RetCode connection_int::release_transaction(transaction_int *transaction)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(transaction:%p)", __func__, transaction))
     if(&transaction->conn_ != this) {
         IFLOG(err(TH_ID, LS_CLO "%s(conn:%p, connid:%d) [transaction:%p is not mine]",
                   __func__, this, connid_, transaction))
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
     if(transaction->status() == TransactionStatus_FLYING) {
         IFLOG(err(TH_ID, LS_CLO
                   "%s(conn:%p, connid:%d) [transaction:%p is not in a valid state:%d]", __func__,
                   this, connid_,
                   transaction, transaction->status()))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     if(con_type_ == ConnectionType_INGOING) {
         /************************
         RELEASE_ID: TRX_SRV_01
         ************************/
-        blaze::collector &c = transaction->get_collector();
+        vlg::collector &c = transaction->get_collector();
         c.release(transaction);
     }
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /*only server*/
-blaze::RetCode connection_int::recv_tx_req(const blz_hdr_rec *pkt_hdr,
-                                           blaze::grow_byte_buffer *pkt_body)
+vlg::RetCode connection_int::recv_tx_req(const blz_hdr_rec *pkt_hdr,
+                                           vlg::grow_byte_buffer *pkt_body)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sockid:%d, connid:%d, pkt_hdr:%p, pkt_body:%p)",
               __func__, get_socket(), connid(),
               pkt_hdr,
               pkt_body))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     bool skip_appl_mng = false;
     bool aborted = false;
     transaction_int *trans = NULL;
@@ -1363,7 +1363,7 @@ blaze::RetCode connection_int::recv_tx_req(const blz_hdr_rec *pkt_hdr,
     /************************
     RETAIN_ID: TRX_SRV_01
     ************************/
-    blaze::collector &c = trans->get_collector();
+    vlg::collector &c = trans->get_collector();
     c.retain(trans);
 
     trans->set_tx_req_type(pkt_hdr->row_1.txreqw.txtype);
@@ -1373,7 +1373,7 @@ blaze::RetCode connection_int::recv_tx_req(const blz_hdr_rec *pkt_hdr,
     trans->set_tx_id_SVID(pkt_hdr->row_3.txsvid.txsvid);
     trans->set_tx_id_CNID(pkt_hdr->row_4.txcnid.txcnid);
     trans->set_tx_id_PRID(pkt_hdr->row_5.txprid.txprid);
-    blaze::rt_mark_time(&trans->start_mark_tim_);
+    vlg::rt_mark_time(&trans->start_mark_tim_);
     IFLOG(inf(TH_ID, LS_TRX"[%08x%08x%08x%08x][TXTYPE:%d, TXACT:%d, RSCLREQ:%d]",
               pkt_hdr->row_2.txplid.txplid,
               pkt_hdr->row_3.txsvid.txsvid,
@@ -1453,14 +1453,14 @@ blaze::RetCode connection_int::recv_tx_req(const blz_hdr_rec *pkt_hdr,
     return cdrs_res;
 }
 
-blaze::RetCode connection_int::recv_tx_res(const blz_hdr_rec *pkt_hdr,
-                                           blaze::grow_byte_buffer *pkt_body)
+vlg::RetCode connection_int::recv_tx_res(const blz_hdr_rec *pkt_hdr,
+                                           vlg::grow_byte_buffer *pkt_body)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sockid:%d, connid:%d, pkt_hdr:%p, pkt_body:%p)",
               __func__, get_socket(), connid(),
               pkt_hdr,
               pkt_body))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     bool aborted = false;
     tx_id txid;
     txid.txplid = pkt_hdr->row_2.txplid.txplid;
@@ -1479,7 +1479,7 @@ blaze::RetCode connection_int::recv_tx_res(const blz_hdr_rec *pkt_hdr,
     if((cdrs_res = cli_flytx_repo_.get(&txid, &trans))) {
         IFLOG(err(TH_ID, LS_TXT"[tx not found, aborting.]"))
         IFLOG(err(TH_ID, LS_CLO "%s(aborted)", __func__))
-        return blaze::RetCode_ABORT;
+        return vlg::RetCode_ABORT;
     }
     trans->set_tx_res(pkt_hdr->row_1.txresw.txresl);
     trans->set_tx_result_code(pkt_hdr->row_1.txresw.blzcod);
@@ -1521,7 +1521,7 @@ blaze::RetCode connection_int::recv_tx_res(const blz_hdr_rec *pkt_hdr,
     /************************
     RELEASE_ID: TRX_CLI_01
     ************************/
-    blaze::collector &c = trans->get_collector();
+    vlg::collector &c = trans->get_collector();
     c.release(trans);
 
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
@@ -1538,7 +1538,7 @@ subscription_int *connection_int::blz_sbs_factory_default_func(
     return new_subscription;
 }
 
-blaze::RetCode connection_int::new_subscription(subscription_int
+vlg::RetCode connection_int::new_subscription(subscription_int
                                                 **new_subscription,
                                                 blz_sbs_factory_func  blz_sbs_factory_f,
                                                 void *ud)
@@ -1546,7 +1546,7 @@ blaze::RetCode connection_int::new_subscription(subscription_int
     IFLOG(trc(TH_ID, LS_OPN "%s(new_subscription:%p)", __func__, new_subscription))
     if(!new_subscription) {
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_BADARG;
+        return vlg::RetCode_BADARG;
     }
     if(!blz_sbs_factory_f) {
         *new_subscription = blz_sbs_factory_default_func(*this, NULL);
@@ -1557,23 +1557,23 @@ blaze::RetCode connection_int::new_subscription(subscription_int
         (*new_subscription)->init();
     } else {
         IFLOG(cri(TH_ID, LS_CLO "%s() - new subscription fail.", __func__))
-        return blaze::RetCode_MEMERR;
+        return vlg::RetCode_MEMERR;
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(new_subscription:%p)", __func__, *new_subscription))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 //client only
-blaze::RetCode connection_int::detach_subscription(subscription_int
+vlg::RetCode connection_int::detach_subscription(subscription_int
                                                    *subscription)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(subscription:%p)", __func__, subscription))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     if(&subscription->conn_ != this) {
         IFLOG(err(TH_ID, LS_CLO "%s(connid:%d) [subscription:%d is not mine]", __func__,
                   connid_,
                   subscription->sbsid()))
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
     if(subscription->status() == SubscriptionStatus_REQUEST_SENT ||
             subscription->status() == SubscriptionStatus_STARTED ||
@@ -1584,13 +1584,13 @@ blaze::RetCode connection_int::detach_subscription(subscription_int
                   connid_,
                   subscription->sbsid(),
                   subscription->status()))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     if(con_type_ == ConnectionType_INGOING) {
         IFLOG(err(TH_ID, LS_CLO "%s(connid:%d) [invalid subscription type]", __func__,
                   connid_,
                   subscription->sbsid()))
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     } else {
         /*for additional safety we try to remove also from cli_reqid_sbs_repo_*/
         cli_reqid_sbs_repo_.remove(&subscription->reqid_, NULL);
@@ -1598,23 +1598,23 @@ blaze::RetCode connection_int::detach_subscription(subscription_int
         /************************
         RELEASE_ID: SBS_CLI_01
         ************************/
-        blaze::collector &c = subscription->get_collector();
+        vlg::collector &c = subscription->get_collector();
         c.release(subscription);
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
     return cdrs_res;
 }
 
-blaze::RetCode connection_int::release_subscription(subscription_int
+vlg::RetCode connection_int::release_subscription(subscription_int
                                                     *subscription)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(subscription:%p)", __func__, subscription))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     if(&subscription->conn_ != this) {
         IFLOG(err(TH_ID, LS_CLO "%s(connid:%d) [subscription:%d is not mine]", __func__,
                   connid_,
                   subscription->sbsid()))
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
     if(subscription->status() == SubscriptionStatus_REQUEST_SENT ||
             subscription->status() == SubscriptionStatus_STARTED ||
@@ -1625,7 +1625,7 @@ blaze::RetCode connection_int::release_subscription(subscription_int
                   connid_,
                   subscription->sbsid(),
                   subscription->status()))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     if(con_type_ == ConnectionType_INGOING) {
         subscription->release_initial_query();
@@ -1647,7 +1647,7 @@ blaze::RetCode connection_int::release_subscription(subscription_int
         RELEASE_ID: SBS_SRV_01
         ************************/
         subscription->set_released();
-        blaze::collector &c = subscription->get_collector();
+        vlg::collector &c = subscription->get_collector();
         c.release(subscription);
     } else {
         /*for additional safety we try to remove also from cli_reqid_sbs_repo_*/
@@ -1657,7 +1657,7 @@ blaze::RetCode connection_int::release_subscription(subscription_int
         RELEASE_ID: SBS_CLI_01
         ************************/
         subscription->set_released();
-        blaze::collector &c = subscription->get_collector();
+        vlg::collector &c = subscription->get_collector();
         c.release(subscription);
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
@@ -1665,11 +1665,11 @@ blaze::RetCode connection_int::release_subscription(subscription_int
 }
 
 /*server only*/
-blaze::RetCode connection_int::recv_sbs_start_req(const blz_hdr_rec *pkt_hdr)
+vlg::RetCode connection_int::recv_sbs_start_req(const blz_hdr_rec *pkt_hdr)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sockid:%d, connid:%d, pkt_hdr:%p)", __func__,
               get_socket(), connid(), pkt_hdr))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     unsigned int sbsid = next_sbsid();
     subscription_int *inc_sbs = NULL;
     new_subscription(&inc_sbs, sbs_factory_, sbs_factory_ud_);
@@ -1677,7 +1677,7 @@ blaze::RetCode connection_int::recv_sbs_start_req(const blz_hdr_rec *pkt_hdr)
     /************************
     RETAIN_ID: SBS_SRV_01
     ************************/
-    blaze::collector &c = inc_sbs->get_collector();
+    vlg::collector &c = inc_sbs->get_collector();
     c.retain(inc_sbs);
 
     inc_sbs->sbstyp_ = pkt_hdr->row_1.sbreqw.sbstyp;
@@ -1764,11 +1764,11 @@ blaze::RetCode connection_int::recv_sbs_start_req(const blz_hdr_rec *pkt_hdr)
 }
 
 /*client only*/
-blaze::RetCode connection_int::recv_sbs_start_res(const blz_hdr_rec *pkt_hdr)
+vlg::RetCode connection_int::recv_sbs_start_res(const blz_hdr_rec *pkt_hdr)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sockid:%d, connid:%d, pkt_hdr:%p)", __func__,
               get_socket(), connid(), pkt_hdr))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     unsigned int sbsid = ((pkt_hdr->row_1.sbresw.sbresl ==
                            SubscriptionResponse_OK) ||
                           (pkt_hdr->row_1.sbresw.sbresl == SubscriptionResponse_PARTIAL)) ?
@@ -1785,7 +1785,7 @@ blaze::RetCode connection_int::recv_sbs_start_res(const blz_hdr_rec *pkt_hdr)
     if((cdrs_res = cli_reqid_sbs_repo_.remove(&pkt_hdr->row_2.rqstid.rqstid,
                                               &sbs))) {
         IFLOG(err(TH_ID, LS_SBT"[sbs not found, aborting.]"))
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
     sbs->sbsid_ = sbsid;
     sbs->sbresl_ = pkt_hdr->row_1.sbresw.sbresl;
@@ -1805,8 +1805,8 @@ blaze::RetCode connection_int::recv_sbs_start_res(const blz_hdr_rec *pkt_hdr)
     return cdrs_res;
 }
 
-blaze::RetCode connection_int::recv_sbs_evt(const blz_hdr_rec *pkt_hdr,
-                                            blaze::grow_byte_buffer *pkt_body)
+vlg::RetCode connection_int::recv_sbs_evt(const blz_hdr_rec *pkt_hdr,
+                                            vlg::grow_byte_buffer *pkt_body)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sockid:%d, connid:%d, pkt_hdr:%p, pkt_body:%p)",
               __func__,
@@ -1814,15 +1814,15 @@ blaze::RetCode connection_int::recv_sbs_evt(const blz_hdr_rec *pkt_hdr,
               connid(),
               pkt_hdr,
               pkt_body))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     bool mng = true;
     subscription_event_int *new_sbs_event = NULL;
     if((subscription_event_int::new_instance(&new_sbs_event))) {
         IFLOG(cri(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_MEMERR;
+        return vlg::RetCode_MEMERR;
     }
 
-    blaze::collector &c = new_sbs_event->get_collector();
+    vlg::collector &c = new_sbs_event->get_collector();
     /*adopted until AckEvent is called on related sbs*/
     /************************
     RETAIN_ID: SBE_CLI_01
@@ -1868,11 +1868,11 @@ blaze::RetCode connection_int::recv_sbs_evt(const blz_hdr_rec *pkt_hdr,
     return cdrs_res;
 }
 
-blaze::RetCode connection_int::recv_sbs_evt_ack(const blz_hdr_rec *pkt_hdr)
+vlg::RetCode connection_int::recv_sbs_evt_ack(const blz_hdr_rec *pkt_hdr)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sockid:%d, connid:%d, pkt_hdr:%p)", __func__,
               get_socket(), connid(), pkt_hdr))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     subscription_int *sbs = NULL;
     if((cdrs_res = srv_sbsid_sbs_repo_.get(&pkt_hdr->row_1.sbsrid.sbsrid, &sbs))) {
         IFLOG(cri(TH_ID,
@@ -1886,11 +1886,11 @@ blaze::RetCode connection_int::recv_sbs_evt_ack(const blz_hdr_rec *pkt_hdr)
     return cdrs_res;
 }
 
-blaze::RetCode connection_int::recv_sbs_stop_req(const blz_hdr_rec *pkt_hdr)
+vlg::RetCode connection_int::recv_sbs_stop_req(const blz_hdr_rec *pkt_hdr)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sockid:%d, connid:%d, pkt_hdr:%p)", __func__,
               get_socket(), connid(), pkt_hdr))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     unsigned int sbsid = pkt_hdr->row_1.sbsrid.sbsrid;
     IFLOG(inf(TH_ID, LS_SBS"[CONNID:%010u-SBSID:%010u][STOP REQUEST]",
               connid_,
@@ -1921,11 +1921,11 @@ blaze::RetCode connection_int::recv_sbs_stop_req(const blz_hdr_rec *pkt_hdr)
     return cdrs_res;
 }
 
-blaze::RetCode connection_int::recv_sbs_stop_res(const blz_hdr_rec *pkt_hdr)
+vlg::RetCode connection_int::recv_sbs_stop_res(const blz_hdr_rec *pkt_hdr)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sockid:%d, connid:%d, pkt_hdr:%p)", __func__,
               get_socket(), connid(), pkt_hdr))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     IFLOG(inf(TH_ID, LS_INC
               LS_SBS"[CONNID:%010u-SBSID:%010u][SBSRES:%d, BLZCOD:%d]",
               connid_,

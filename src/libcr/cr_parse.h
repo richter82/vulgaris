@@ -23,7 +23,7 @@
 #define CR_PARSE_H_
 #include "blaze_ascii_string.h"
 
-namespace blaze {
+namespace vlg {
 
 #define CR_MAX_SRC_FILE_NAME_LEN    512
 #define CR_MAX_SRC_PATH_LEN        1024

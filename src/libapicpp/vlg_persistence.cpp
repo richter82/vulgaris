@@ -22,13 +22,13 @@
 #include "blaze_persistence.h"
 #include "blz_persistence_int.h"
 
-namespace blaze {
+namespace vlg {
 
 //-----------------------------
 // CLASS persistence_manager
 //-----------------------------
 
-blaze::RetCode persistence_manager::load_persistence_driver_dynamic(
+vlg::RetCode persistence_manager::load_persistence_driver_dynamic(
     const char *drivers[],
     int drivers_num)
 {
@@ -36,7 +36,7 @@ blaze::RetCode persistence_manager::load_persistence_driver_dynamic(
                                                                          drivers_num);
 }
 
-blaze::RetCode persistence_manager::load_persistence_driver(
+vlg::RetCode persistence_manager::load_persistence_driver(
     persistence_driver_int
     *drivers[], int drivers_num)
 {
@@ -44,26 +44,26 @@ blaze::RetCode persistence_manager::load_persistence_driver(
                                                                     drivers_num);
 }
 
-blaze::RetCode persistence_manager::set_persistence_config_file_dir(
+vlg::RetCode persistence_manager::set_persistence_config_file_dir(
     const char *dir)
 {
     return persistence_manager_int::get_instance().set_cfg_file_dir(dir);
 }
 
-blaze::RetCode persistence_manager::set_persistence_config_file_path_name(
+vlg::RetCode persistence_manager::set_persistence_config_file_path_name(
     const char *file_path)
 {
     return persistence_manager_int::get_instance().set_cfg_file_path_name(
                file_path);
 }
 
-blaze::RetCode persistence_manager::load_persistence_config(
+vlg::RetCode persistence_manager::load_persistence_config(
     const char *file_name)
 {
     return persistence_manager_int::get_instance().load_cfg(file_name);
 }
 
-blaze::RetCode persistence_manager::start_all_persistence_drivers()
+vlg::RetCode persistence_manager::start_all_persistence_drivers()
 {
     return persistence_manager_int::get_instance().start_all_drivers();
 }
@@ -91,9 +91,9 @@ class persistence_connection_impl {
             driv_ = &val;
         }
 
-        blaze::RetCode set_connection(unsigned int nclass_id) {
+        vlg::RetCode set_connection(unsigned int nclass_id) {
             conn_ = driv_->available_connection(nclass_id);
-            return conn_ ? blaze::RetCode_OK : blaze::RetCode_UNVRSC;
+            return conn_ ? vlg::RetCode_OK : vlg::RetCode_UNVRSC;
         }
 
         persistence_connection_int *get_conn_int() const {
@@ -121,7 +121,7 @@ persistence_connection::~persistence_connection()
     }
 }
 
-blaze::RetCode persistence_connection::bind(unsigned int nclass_id,
+vlg::RetCode persistence_connection::bind(unsigned int nclass_id,
                                             persistence_driver_int &driver)
 {
     impl_->set_driver(driver);
@@ -148,7 +148,7 @@ PersistenceConnectionStatus persistence_connection::get_status() const
     return impl_->get_conn_int()->status();
 }
 
-blaze::RetCode persistence_connection::create_entity_schema(
+vlg::RetCode persistence_connection::create_entity_schema(
     PersistenceAlteringMode
     mode,
     const entity_manager &em,
@@ -157,7 +157,7 @@ blaze::RetCode persistence_connection::create_entity_schema(
     return impl_->get_conn_int()->create_entity_schema(mode, em, nclass_id);
 }
 
-blaze::RetCode persistence_connection::create_entity_schema(
+vlg::RetCode persistence_connection::create_entity_schema(
     PersistenceAlteringMode
     mode,
     const entity_manager &em,
@@ -166,7 +166,7 @@ blaze::RetCode persistence_connection::create_entity_schema(
     return impl_->get_conn_int()->create_entity_schema(mode, em, desc);
 }
 
-blaze::RetCode persistence_connection::save_entity(const entity_manager &em,
+vlg::RetCode persistence_connection::save_entity(const entity_manager &em,
                                                    unsigned int ts0,
                                                    unsigned int ts1,
                                                    const nclass &in_obj)
@@ -174,7 +174,7 @@ blaze::RetCode persistence_connection::save_entity(const entity_manager &em,
     return impl_->get_conn_int()->save_entity(em, ts0, ts1, in_obj);
 }
 
-blaze::RetCode persistence_connection::update_entity(unsigned short key,
+vlg::RetCode persistence_connection::update_entity(unsigned short key,
                                                      const entity_manager &em,
                                                      unsigned int ts0,
                                                      unsigned int ts1,
@@ -183,7 +183,7 @@ blaze::RetCode persistence_connection::update_entity(unsigned short key,
     return impl_->get_conn_int()->update_entity(key, em, ts0, ts1, in_obj);
 }
 
-blaze::RetCode persistence_connection::save_or_update_entity(unsigned short key,
+vlg::RetCode persistence_connection::save_or_update_entity(unsigned short key,
                                                              const entity_manager &em,
                                                              unsigned int ts0,
                                                              unsigned int ts1,
@@ -192,7 +192,7 @@ blaze::RetCode persistence_connection::save_or_update_entity(unsigned short key,
     return impl_->get_conn_int()->save_or_update_entity(key, em, ts0, ts1, in_obj);
 }
 
-blaze::RetCode persistence_connection::remove_entity(unsigned short key,
+vlg::RetCode persistence_connection::remove_entity(unsigned short key,
                                                      const entity_manager &em,
                                                      unsigned int ts0,
                                                      unsigned int ts1,
@@ -202,7 +202,7 @@ blaze::RetCode persistence_connection::remove_entity(unsigned short key,
     return impl_->get_conn_int()->remove_entity(key, em, ts0, ts1, mode, in_obj);
 }
 
-blaze::RetCode persistence_connection::load_entity(unsigned short key,
+vlg::RetCode persistence_connection::load_entity(unsigned short key,
                                                    const entity_manager &em,
                                                    unsigned int &ts0_out,
                                                    unsigned int &ts1_out,
@@ -212,7 +212,7 @@ blaze::RetCode persistence_connection::load_entity(unsigned short key,
                                               in_out_obj);
 }
 
-blaze::RetCode persistence_connection::execute_statement(const char *stmt)
+vlg::RetCode persistence_connection::execute_statement(const char *stmt)
 {
     return impl_->get_conn_int()->execute_statement(stmt);
 }
@@ -240,7 +240,7 @@ class persistence_query_impl {
             int_ = val;
         }
 
-        blaze::RetCode request_new_query_int(unsigned int nclass_id, const char *sql) {
+        vlg::RetCode request_new_query_int(unsigned int nclass_id, const char *sql) {
             persistence_driver_int *driv =
                 persistence_manager_int::get_instance().available_driver(nclass_id);
             if(driv) {
@@ -248,10 +248,10 @@ class persistence_query_impl {
                 if(pcon) {
                     return pcon->execute_query(sql, em_, &int_);
                 } else {
-                    return blaze::RetCode_UNVRSC;
+                    return vlg::RetCode_UNVRSC;
                 }
             } else {
-                return blaze::RetCode_UNVRSC;
+                return vlg::RetCode_UNVRSC;
             }
         }
 
@@ -276,7 +276,7 @@ persistence_query::~persistence_query()
     }
 }
 
-blaze::RetCode persistence_query::bind(unsigned int nclass_id, const char *sql)
+vlg::RetCode persistence_query::bind(unsigned int nclass_id, const char *sql)
 {
     return impl_->request_new_query_int(nclass_id, sql);
 }
@@ -296,13 +296,13 @@ const entity_manager &persistence_query::get_entity_manager() const
     return impl_->get_query_int()->get_em();
 }
 
-blaze::RetCode persistence_query::next_entity(unsigned int &ts0_out,
+vlg::RetCode persistence_query::next_entity(unsigned int &ts0_out,
                                               unsigned int &ts1_out, nclass &out_obj)
 {
     return impl_->get_query_int()->load_next_entity(ts0_out, ts1_out, out_obj);
 }
 
-blaze::RetCode persistence_query::release()
+vlg::RetCode persistence_query::release()
 {
     return impl_->get_query_int()->release();
 }

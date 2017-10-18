@@ -67,24 +67,24 @@ class blz_toolkit_MainWindow : public QMainWindow {
         void on_actionClean_Console_triggered();
 
     public slots:
-        void OnLogEvent(blaze::TraceLVL tlvl, const QString &msg);
-        void OnPeer_status_change(blaze::PeerStatus status);
+        void OnLogEvent(vlg::TraceLVL tlvl, const QString &msg);
+        void OnPeer_status_change(vlg::PeerStatus status);
         void On_BLZ_MODEL_Update();
         void OnSetInfoMsg(const QString &msg);
         void OnFlashInfoMsg();
         void OnResetInfoMsg();
 
     signals:
-        void Peer_status_change(blaze::PeerStatus status);
+        void Peer_status_change(vlg::PeerStatus status);
         void BLZ_MODEL_Update_event();
         void SignalNewConnectionTimeout(const QString &msg);
 
     public:
-        void EmitPeerStatus(blaze::PeerStatus status);
+        void EmitPeerStatus(vlg::PeerStatus status);
 
-        friend void blz_toolkit_peer_lfcyc_status_change_hndlr(blaze::peer_automa
+        friend void blz_toolkit_peer_lfcyc_status_change_hndlr(vlg::peer_automa
                                                                &peer,
-                                                               blaze::PeerStatus status,
+                                                               vlg::PeerStatus status,
                                                                void *ud);
     private:
         void Status_RUNNING_Actions();
@@ -92,7 +92,7 @@ class blz_toolkit_MainWindow : public QMainWindow {
 
     private:
         void AddNewModelTab();
-        void AddNewConnectionTab(blaze::connection_int &new_conn,
+        void AddNewConnectionTab(vlg::connection_int &new_conn,
                                  const QString &host,
                                  const QString &port,
                                  const QString &usr,
@@ -107,7 +107,7 @@ class blz_toolkit_MainWindow : public QMainWindow {
                                         void *ud);
 
     private:
-        blaze::RetCode PeerLoadCfgHndl(int pnum,
+        vlg::RetCode PeerLoadCfgHndl(int pnum,
                                        const char *param,
                                        const char *value);
 

@@ -31,7 +31,7 @@ namespace blz_tlkt {
 //-----------------------------------------------------------------------------
 // QPlainTextEditApnd
 //-----------------------------------------------------------------------------
-class QPlainTextEditApnd : public QObject, public blaze::appender {
+class QPlainTextEditApnd : public QObject, public vlg::appender {
         Q_OBJECT
 
         //---ctors
@@ -43,7 +43,7 @@ class QPlainTextEditApnd : public QObject, public blaze::appender {
 
 
     signals:
-        void messageReady(blaze::TraceLVL tlvl, const QString &s);
+        void messageReady(vlg::TraceLVL tlvl, const QString &s);
 
 
     public:
@@ -51,7 +51,7 @@ class QPlainTextEditApnd : public QObject, public blaze::appender {
 
         //---pub meths
     public:
-        virtual size_t put_msg(blaze::TraceLVL tlvl,
+        virtual size_t put_msg(vlg::TraceLVL tlvl,
                                const char *sign,
                                uint16_t sign_len,
                                uint32_t id,
@@ -59,7 +59,7 @@ class QPlainTextEditApnd : public QObject, public blaze::appender {
 
         virtual size_t put_msg_plain(const char *msg);
 
-        virtual size_t put_msg_va(blaze::TraceLVL tlvl,
+        virtual size_t put_msg_va(vlg::TraceLVL tlvl,
                                   const char *sign,
                                   uint16_t sign_len,
                                   uint32_t id,

@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>blzdrisqlite_static</ProjectName>
+    <ProjectName>vlg_drv_sqlite_sta</ProjectName>
     <ProjectGuid>{4FD13D0B-33A4-4A4C-B9D3-33DB732B7AFC}</ProjectGuid>
     <RootNamespace>blz_drv_sqlite</RootNamespace>
     <Keyword>Win32Proj</Keyword>

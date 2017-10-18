@@ -22,7 +22,7 @@
 #include "blaze_c_persistence.h"
 #include "blaze_persistence.h"
 
-namespace blaze {
+namespace vlg {
 extern "C" {
 
     RetCode persistence_manager_load_persistence_driver_dynamic(const char *drivers[],

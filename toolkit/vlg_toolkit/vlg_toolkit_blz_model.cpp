@@ -26,8 +26,8 @@
 //------------------------------------------------------------------------------
 
 model_item::model_item(BLZ_MODEL_ITEM_TYPE item_type,
-                       const blaze::entity_desc *edesc,
-                       const blaze::member_desc *mdesc,
+                       const vlg::entity_desc *edesc,
+                       const vlg::member_desc *mdesc,
                        model_item *parent) :
     item_type_(item_type),
     edesc_(edesc),
@@ -52,7 +52,7 @@ void model_item::cfgHeader()
     header_ << "Entity CLASSID";
     header_ << "Field No.";
     header_ << "Persistent";
-    header_ << "BLZ Type";
+    header_ << "vlg Type";
     header_ << "TypeSize (1)";
     header_ << "NMEMB";
     header_ << "Field CLASSID";
@@ -94,12 +94,12 @@ QVariant model_item::data(int column) const
                 case 1:
                     return QString(edesc_->get_entity_namespace());
                 case 2:
-                    if(edesc_->get_entity_type() != blaze::EntityType_UNDEFINED) {
+                    if(edesc_->get_entity_type() != vlg::EntityType_UNDEFINED) {
                         return QString(string_from_EntityType(edesc_->get_entity_type()));
                     }
                     break;
                 case 3:
-                    if(edesc_->get_entity_type() == blaze::EntityType_NCLASS) {
+                    if(edesc_->get_entity_type() == vlg::EntityType_NCLASS) {
                         return QString("%1").arg(edesc_->get_nclass_id());
                     }
                     break;
@@ -123,14 +123,14 @@ QVariant model_item::data(int column) const
                 case 8:
                     return QString("%1").arg(mdesc_->get_field_nmemb());
                 case 9:
-                    if(mdesc_->get_field_entity_type() == blaze::EntityType_NCLASS) {
+                    if(mdesc_->get_field_entity_type() == vlg::EntityType_NCLASS) {
                         return QString("%1").arg(mdesc_->get_field_class_id());
                     }
                     break;
                 case 10:
                     return QString(mdesc_->get_field_user_type());
                 case 11:
-                    if(mdesc_->get_field_entity_type() != blaze::EntityType_UNDEFINED) {
+                    if(mdesc_->get_field_entity_type() != vlg::EntityType_UNDEFINED) {
                         return QString(string_from_EntityType(mdesc_->get_field_entity_type()));
                     }
                     break;
@@ -151,12 +151,12 @@ BLZ_MODEL_ITEM_TYPE model_item::item_type() const
     return item_type_;
 }
 
-const blaze::entity_desc *model_item::edesc() const
+const vlg::entity_desc *model_item::edesc() const
 {
     return edesc_;
 }
 
-const blaze::member_desc *model_item::mdesc() const
+const vlg::member_desc *model_item::mdesc() const
 {
     return mdesc_;
 }
@@ -179,7 +179,7 @@ void blz_toolkit_blz_model::OnModelUpdate_event()
     updateModelData(rootItem_);
 }
 
-blz_toolkit_blz_model::blz_toolkit_blz_model(blaze::entity_manager &bem,
+blz_toolkit_blz_model::blz_toolkit_blz_model(vlg::entity_manager &bem,
                                              QObject *parent) :
     QAbstractItemModel(parent),
     bem_(bem),
@@ -282,7 +282,7 @@ QVariant blz_toolkit_blz_model::headerData(int section,
     return QVariant();
 }
 
-void EnumMdscEDescFunc(const blaze::member_desc &desc, void *ud, bool &stop)
+void EnumMdscEDescFunc(const vlg::member_desc &desc, void *ud, bool &stop)
 {
     model_item *bmi_parent = (model_item *)ud;
     model_item *mdsc_item = new model_item(BLZ_MODEL_ITEM_TYPE_MDESC,
@@ -293,7 +293,7 @@ void EnumMdscEDescFunc(const blaze::member_desc &desc, void *ud, bool &stop)
 }
 
 
-void EnumBemEdescF(const blaze::entity_desc &entity_desc, void *ud, bool &stop)
+void EnumBemEdescF(const vlg::entity_desc &entity_desc, void *ud, bool &stop)
 {
     blz_toolkit_blz_model *btbm = (blz_toolkit_blz_model *)ud;
     model_item *edsc_item = new model_item(BLZ_MODEL_ITEM_TYPE_EDESC,
@@ -309,7 +309,7 @@ void blz_toolkit_blz_model::updateModelData(model_item *parent)
     bem_.enum_entity_descriptors(EnumBemEdescF, this);
 }
 
-blaze::entity_manager &blz_toolkit_blz_model::bem() const
+vlg::entity_manager &blz_toolkit_blz_model::bem() const
 {
     return bem_;
 }

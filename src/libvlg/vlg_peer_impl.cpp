@@ -28,7 +28,7 @@
 //-----------------------------
 #define BLZ_INT_AWT_TIMEOUT 1
 
-namespace blaze {
+namespace vlg {
 
 bool status_running_superseeded(peer_automa *peer)
 {
@@ -38,20 +38,20 @@ bool status_running_superseeded(peer_automa *peer)
 //-----------------------------
 // BLZ_PEER_RECV_TASK
 //-----------------------------
-class peer_recv_task : public blaze::p_task {
+class peer_recv_task : public vlg::p_task {
     public:
         //---ctor
         peer_recv_task(unsigned int id,
                        peer_int &rcvn_peer,
                        connection_int &conn,
-                       blaze::grow_byte_buffer *pkt_body,
+                       vlg::grow_byte_buffer *pkt_body,
                        blz_hdr_rec *pkt_hdr = NULL) :
-            blaze::p_task(id),
+            vlg::p_task(id),
             rcvn_peer_(rcvn_peer),
             conn_(conn),
             pkt_body_(pkt_body),
             pkt_hdr_(pkt_hdr) {
-            log_ = blaze::logger::get_logger("peer_recv_task");
+            log_ = vlg::logger::get_logger("peer_recv_task");
             IFLOG(trc(TH_ID, LS_CTR "%s(taskid:%d, sockid:%d, host:%s, port:%d)",
                       __func__,
                       id,
@@ -67,8 +67,8 @@ class peer_recv_task : public blaze::p_task {
         }
 
         /*this method will be called when this task will be run by an executor*/
-        virtual blaze::RetCode execute() {
-            blaze::RetCode cdrs_res = blaze::RetCode_OK;
+        virtual vlg::RetCode execute() {
+            vlg::RetCode cdrs_res = vlg::RetCode_OK;
             if((cdrs_res = rcvn_peer_.recv_and_route_pkt(conn_, pkt_hdr_, pkt_body_))) {
                 IFLOG(dbg(TH_ID, LS_EXE "[recv task:%d - execution failed - res:%d]", get_id(),
                           cdrs_res))
@@ -78,7 +78,7 @@ class peer_recv_task : public blaze::p_task {
             /************************
             RELEASE_ID: CONN_BTH_01
             ************************/
-            blaze::collector &c = conn_.get_collector();
+            vlg::collector &c = conn_.get_collector();
             if(c.release(&conn_) == RetCode_MEMNOTR) {
                 /*forcing SocketDisconnected when disconnecting
                  this case can occur when selector thread has already managed
@@ -93,13 +93,13 @@ class peer_recv_task : public blaze::p_task {
     private:
         peer_int                &rcvn_peer_;
         connection_int          &conn_;
-        blaze::grow_byte_buffer *pkt_body_;
+        vlg::grow_byte_buffer *pkt_body_;
         blz_hdr_rec             *pkt_hdr_;
     protected:
-        static blaze::logger    *log_;
+        static vlg::logger    *log_;
 };
 
-blaze::logger *peer_recv_task::log_ = NULL;
+vlg::logger *peer_recv_task::log_ = NULL;
 
 //-----------------------------
 // BLZ_PEER
@@ -124,14 +124,14 @@ peer_int::peer_int(unsigned int id) :
     srv_sbs_exectrs_(BLZ_DEF_SRV_SBS_EXEC_NO),
     selector_(*this, id*2),
     prgr_conn_id_(0),
-    model_map_(blaze::sngl_cstr_obj_mng(), blaze::sngl_cstr_obj_mng()),
+    model_map_(vlg::sngl_cstr_obj_mng(), vlg::sngl_cstr_obj_mng()),
     pers_enabled_(false),
     pers_mng_(persistence_manager_int::get_instance()),
-    pers_dri_load_(blaze::sngl_cstr_obj_mng(), blaze::sngl_cstr_obj_mng()),
+    pers_dri_load_(vlg::sngl_cstr_obj_mng(), vlg::sngl_cstr_obj_mng()),
     pers_schema_create_(false),
     drop_existing_schema_(false),
     srv_sbs_exec_serv_(id*4, true),
-    srv_sbs_nclassid_condesc_set_(blaze::sngl_ptr_obj_mng(), sizeof(unsigned int)),
+    srv_sbs_nclassid_condesc_set_(vlg::sngl_ptr_obj_mng(), sizeof(unsigned int)),
     conn_factory_(NULL),
     conn_factory_ud_(NULL)
 {
@@ -144,15 +144,15 @@ peer_int::~peer_int()
     IFLOG(trc(TH_ID, LS_DTR "%s(peerid:%d)", __func__, peer_id_))
 }
 
-blaze::RetCode peer_int::set_params_file_dir(const char *dir)
+vlg::RetCode peer_int::set_params_file_dir(const char *dir)
 {
     return peer_conf_ldr_.set_params_file_dir(dir);
 }
 
-blaze::RetCode peer_int::init_peer()
+vlg::RetCode peer_int::init_peer()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(peer_id_:%d)", __func__, peer_id_))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     RETURN_IF_NOT_OK(selector_.init(srv_exectrs_,
                                     srv_pkt_q_len_,
                                     cli_exectrs_,
@@ -174,11 +174,11 @@ blaze::RetCode peer_int::init_peer()
     if(pers_enabled_) {
         IFLOG(dbg(TH_ID, LS_TRL "%s() - loading persistence-configuration..", __func__))
         if((cdrs_res = pers_mng_.load_cfg())) {
-            if(cdrs_res == blaze::RetCode_IOERR) {
+            if(cdrs_res == vlg::RetCode_IOERR) {
                 IFLOG(wrn(TH_ID, LS_TRL
                           "%s() - no persistence-configuration file available. proceeding anyway.",
                           __func__))
-                cdrs_res = blaze::RetCode_OK;
+                cdrs_res = vlg::RetCode_OK;
             } else {
                 IFLOG(cri(TH_ID, LS_TRL
                           "%s(res:%d) - critical error loading persistence-configuration.", __func__,
@@ -192,10 +192,10 @@ blaze::RetCode peer_int::init_peer()
     return cdrs_res;
 }
 
-blaze::RetCode peer_int::init_peer_dyna()
+vlg::RetCode peer_int::init_peer_dyna()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(peer_id_:%d)", __func__, peer_id_))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     IFLOG(dbg(TH_ID, LS_TRL "%s() - extending model..", __func__))
     char model_name[BLZ_MDL_NAME_LEN] = {0};
     if(model_map_.size() > 0) {
@@ -244,7 +244,7 @@ bool peer_int::pers_schema_create()
     return pers_schema_create_;
 }
 
-blaze::synch_hash_map &peer_int::get_srv_classid_condesc_set()
+vlg::synch_hash_map &peer_int::get_srv_classid_condesc_set()
 {
     return srv_sbs_nclassid_condesc_set_;
 }
@@ -394,9 +394,9 @@ void peer_int::set_cfg_load_pers_driv(const char *driv)
     }
 }
 
-blaze::p_task *peer_int::new_peer_recv_task(connection_int &conn,
+vlg::p_task *peer_int::new_peer_recv_task(connection_int &conn,
                                             blz_hdr_rec *pkt_hdr,
-                                            blaze::grow_byte_buffer *pkt_body)
+                                            vlg::grow_byte_buffer *pkt_body)
 {
     mon_.lock();
     peer_recv_task *nbtsk = new peer_recv_task(++tskid_,
@@ -407,24 +407,24 @@ blaze::p_task *peer_int::new_peer_recv_task(connection_int &conn,
     /************************
     RETAIN_ID: CONN_BTH_01
     ************************/
-    blaze::collector &c = conn.get_collector();
+    vlg::collector &c = conn.get_collector();
     c.retain(&conn);
     mon_.unlock();
     return nbtsk;
 }
 
-blaze::RetCode peer_int::next_connid(unsigned int &connid)
+vlg::RetCode peer_int::next_connid(unsigned int &connid)
 {
     CHK_MON_ERR_0(lock)
     connid = ++prgr_conn_id_;
     CHK_MON_ERR_0(unlock)
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode peer_int::extend_model(entity_manager *emng)
+vlg::RetCode peer_int::extend_model(entity_manager *emng)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(emng:%p)", __func__, emng))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     if((cdrs_res = bem_.extend(emng))) {
         IFLOG(cri(TH_ID, LS_MDL "%s(res:%d) - [failed to extend bem]", __func__,
                   cdrs_res))
@@ -433,10 +433,10 @@ blaze::RetCode peer_int::extend_model(entity_manager *emng)
     return cdrs_res;
 }
 
-blaze::RetCode peer_int::extend_model(const char *model_name)
+vlg::RetCode peer_int::extend_model(const char *model_name)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(model:%s)", __func__, model_name))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     if((cdrs_res = bem_.extend(model_name))) {
         IFLOG(cri(TH_ID, LS_MDL "%s(model:%s, res:%d) - [failed to extend bem]",
                   __func__, model_name, cdrs_res))
@@ -456,7 +456,7 @@ connection_int *peer_int::blz_conn_factory_default(peer_int &peer,
     return new_connection;
 }
 
-blaze::RetCode peer_int::new_connection(connection_int **new_connection,
+vlg::RetCode peer_int::new_connection(connection_int **new_connection,
                                         blz_conn_factory blz_conn_factory_f,
                                         ConnectionType con_type,
                                         unsigned int connid,
@@ -470,7 +470,7 @@ blaze::RetCode peer_int::new_connection(connection_int **new_connection,
 
     if(!new_connection) {
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_BADARG;
+        return vlg::RetCode_BADARG;
     }
     if(!blz_conn_factory_f) {
         *new_connection = blz_conn_factory_default(*this, con_type, connid, NULL);
@@ -481,19 +481,19 @@ blaze::RetCode peer_int::new_connection(connection_int **new_connection,
         (*new_connection)->init();
     } else {
         IFLOG(cri(TH_ID, LS_CLO "%s() -Memory-", __func__))
-        return blaze::RetCode_MEMERR;
+        return vlg::RetCode_MEMERR;
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(new_connection:%p)", __func__, *new_connection))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode peer_int::release_connection(connection_int *connection)
+vlg::RetCode peer_int::release_connection(connection_int *connection)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     if(!connection) {
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_BADARG;
+        return vlg::RetCode_BADARG;
     }
     ConnectionStatus con_status = connection->status();
     if(con_status == ConnectionStatus_ESTABLISHED ||
@@ -502,15 +502,15 @@ blaze::RetCode peer_int::release_connection(connection_int *connection)
         IFLOG(err(TH_ID, LS_CLO
                   "%s(connection:%p) - [connection not released: state:%d]", __func__, connection,
                   con_status))
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
-    blaze::collector &c = connection->get_collector();
-    if((cdrs_res = c.release(connection)) == blaze::RetCode_MEMNOTR) {
+    vlg::collector &c = connection->get_collector();
+    if((cdrs_res = c.release(connection)) == vlg::RetCode_MEMNOTR) {
         IFLOG(err(TH_ID, LS_CLO
                   "%s(connection:%p) - [connection not released: refcount not zero]",
                   __func__,
                   connection))
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
     IFLOG(inf(TH_ID, LS_TRL "%s(connection:%p) - [connection released]", __func__,
               connection))
@@ -518,10 +518,10 @@ blaze::RetCode peer_int::release_connection(connection_int *connection)
     return cdrs_res;
 }
 
-blaze::RetCode peer_int::new_incoming_connection_accept(connection_int
+vlg::RetCode peer_int::new_incoming_connection_accept(connection_int
                                                         &incoming_connection)
 {
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 blz_conn_factory peer_int::conn_factory() const
@@ -548,7 +548,7 @@ void peer_int::set_conn_factory_ud(void *val)
 // BLZ_PEER_LFCYC HANDLERS
 //-----------------------------
 
-blaze::RetCode peer_int::peer_load_cfg_usr(int pnum, const char *param,
+vlg::RetCode peer_int::peer_load_cfg_usr(int pnum, const char *param,
                                            const char *value)
 {
     if(!strcmp(param, "pure_server")) {
@@ -567,13 +567,13 @@ blaze::RetCode peer_int::peer_load_cfg_usr(int pnum, const char *param,
         if(value) {
             if(!model_map_.contains_key(value)) {
                 IFLOG(err(TH_ID, LS_PAR"[load_model] model already specified:%s", value))
-                return blaze::RetCode_BADCFG;
+                return vlg::RetCode_BADCFG;
             } else {
                 RETURN_IF_NOT_OK(model_map_.put(value, ""))
             }
         } else {
             IFLOG(err(TH_ID, LS_PAR"[load_model] requires argument."))
-            return blaze::RetCode_BADCFG;
+            return vlg::RetCode_BADCFG;
         }
     }
     if(!strcmp(param, "srv_sin_addr")) {
@@ -583,7 +583,7 @@ blaze::RetCode peer_int::peer_load_cfg_usr(int pnum, const char *param,
             selector_.set_srv_sock_addr(srv_sock_addr);
         } else {
             IFLOG(err(TH_ID, LS_PAR"[srv_sin_addr] requires argument."))
-            return blaze::RetCode_BADCFG;
+            return vlg::RetCode_BADCFG;
         }
     }
     if(!strcmp(param, "srv_sin_port")) {
@@ -593,7 +593,7 @@ blaze::RetCode peer_int::peer_load_cfg_usr(int pnum, const char *param,
             selector_.set_srv_sock_addr(srv_sock_addr);
         } else {
             IFLOG(err(TH_ID, LS_PAR"[srv_sin_port] requires argument."))
-            return blaze::RetCode_BADCFG;
+            return vlg::RetCode_BADCFG;
         }
     }
     if(!strcmp(param, "srv_pkt_q_len")) {
@@ -601,7 +601,7 @@ blaze::RetCode peer_int::peer_load_cfg_usr(int pnum, const char *param,
             srv_pkt_q_len_ = atoi(value);
         } else {
             IFLOG(err(TH_ID, LS_PAR"[srv_pkt_q_len] requires argument."))
-            return blaze::RetCode_BADCFG;
+            return vlg::RetCode_BADCFG;
         }
     }
     if(!strcmp(param, "srv_exectrs")) {
@@ -609,7 +609,7 @@ blaze::RetCode peer_int::peer_load_cfg_usr(int pnum, const char *param,
             srv_exectrs_ = atoi(value);
         } else {
             IFLOG(err(TH_ID, LS_PAR"[srv_exectrs] requires argument."))
-            return blaze::RetCode_BADCFG;
+            return vlg::RetCode_BADCFG;
         }
     }
     if(!strcmp(param, "cli_pkt_q_len")) {
@@ -617,7 +617,7 @@ blaze::RetCode peer_int::peer_load_cfg_usr(int pnum, const char *param,
             cli_pkt_q_len_ = atoi(value);
         } else {
             IFLOG(err(TH_ID, LS_PAR"[cli_pkt_q_len] requires argument."))
-            return blaze::RetCode_BADCFG;
+            return vlg::RetCode_BADCFG;
         }
     }
     if(!strcmp(param, "cli_exectrs")) {
@@ -625,7 +625,7 @@ blaze::RetCode peer_int::peer_load_cfg_usr(int pnum, const char *param,
             cli_exectrs_ = atoi(value);
         } else {
             IFLOG(err(TH_ID, LS_PAR"[cli_exectrs] requires argument."))
-            return blaze::RetCode_BADCFG;
+            return vlg::RetCode_BADCFG;
         }
     }
     if(!strcmp(param, "srv_sbs_evt_q_len")) {
@@ -633,7 +633,7 @@ blaze::RetCode peer_int::peer_load_cfg_usr(int pnum, const char *param,
             srv_sbs_evt_q_len_ = atoi(value);
         } else {
             IFLOG(err(TH_ID, LS_PAR"[srv_sbs_evt_q_len] requires argument."))
-            return blaze::RetCode_BADCFG;
+            return vlg::RetCode_BADCFG;
         }
     }
     if(!strcmp(param, "srv_sbs_exectrs")) {
@@ -641,7 +641,7 @@ blaze::RetCode peer_int::peer_load_cfg_usr(int pnum, const char *param,
             srv_sbs_exectrs_ = atoi(value);
         } else {
             IFLOG(err(TH_ID, LS_PAR"[srv_sbs_exectrs] requires argument."))
-            return blaze::RetCode_BADCFG;
+            return vlg::RetCode_BADCFG;
         }
     }
     if(!strcmp(param, "pers_enabled")) {
@@ -658,22 +658,22 @@ blaze::RetCode peer_int::peer_load_cfg_usr(int pnum, const char *param,
             if(!pers_dri_load_.contains_key(value)) {
                 IFLOG(wrn(TH_ID,
                           LS_PAR"[load_pers_driv] driver already specified:%s, skipping.", value))
-                return blaze::RetCode_OK;
+                return vlg::RetCode_OK;
             } else {
                 RETURN_IF_NOT_OK(pers_dri_load_.put(value, ""))
             }
         } else {
             IFLOG(err(TH_ID, LS_PAR"[load_pers_driv] requires argument."))
-            return blaze::RetCode_BADCFG;
+            return vlg::RetCode_BADCFG;
         }
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode peer_int::peer_early_init_usr()
+vlg::RetCode peer_int::peer_early_init_usr()
 {
     IFLOG(trc(TH_ID, LS_APL"[CALLED BLZ_PEER EARLYINIT HNDL]"))
-    blaze::rt_init_timers();
+    vlg::rt_init_timers();
     IFLOG(inf(TH_ID, LS_RTM "[RT-Timers initialized]"))
 #ifdef WIN32
     RETURN_IF_NOT_OK(WSA_init(peer_log_))
@@ -682,19 +682,19 @@ blaze::RetCode peer_int::peer_early_init_usr()
     RETURN_IF_NOT_OK(model_map_.init(HM_SIZE_NANO))
     RETURN_IF_NOT_OK(pers_dri_load_.init(HM_SIZE_NANO))
     RETURN_IF_NOT_OK(srv_sbs_nclassid_condesc_set_.init(HM_SIZE_MIDI))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode peer_int::peer_init_usr()
+vlg::RetCode peer_int::peer_init_usr()
 {
     IFLOG(inf(TH_ID, LS_APL"[CALLED BLZ_PEER PEERINIT HNDL]"))
     return init_peer();
 }
 
-blaze::RetCode peer_int::peer_start_usr()
+vlg::RetCode peer_int::peer_start_usr()
 {
     BLZ_ASYNCH_SELECTOR_STATUS current = BLZ_ASYNCH_SELECTOR_STATUS_UNDEF;
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     IFLOG(inf(TH_ID, LS_APL"[CALLED BLZ_PEER PEERSTART HNDL]"))
     IFLOG(inf(TH_ID, LS_APL"[PEER PERSONALITY: << %s >>]",
               (personality_ == PeerPersonality_BOTH) ? "BOTH" :
@@ -702,14 +702,14 @@ blaze::RetCode peer_int::peer_start_usr()
               "PURE-CLIENT"))
     if(personality_ == PeerPersonality_PURE_SERVER ||
             personality_ == PeerPersonality_BOTH) {
-        blaze::PEXEC_SERVICE_STATUS current_exc_srv = blaze::PEXEC_SERVICE_STATUS_ZERO;
+        vlg::PEXEC_SERVICE_STATUS current_exc_srv = vlg::PEXEC_SERVICE_STATUS_ZERO;
         if((cdrs_res = srv_sbs_exec_serv_.start())) {
             IFLOG(cri(TH_ID, LS_CLO "%s() - starting subscription executor service, res:%d",
                       __func__, cdrs_res))
             return cdrs_res;
         }
         srv_sbs_exec_serv_.await_for_status_reached_or_outdated(
-            blaze::PEXEC_SERVICE_STATUS_STARTED, current_exc_srv);
+            vlg::PEXEC_SERVICE_STATUS_STARTED, current_exc_srv);
     }
     //persitence driv. bgn
     if(pers_enabled_) {
@@ -717,13 +717,13 @@ blaze::RetCode peer_int::peer_start_usr()
         RETURN_IF_NOT_OK(pers_mng_.start_all_drivers())
         IFLOG(inf(TH_ID, LS_TRL "%s() - persistence drivers started.", __func__))
         if(pers_schema_create_) {
-            blaze::RetCode db_res = blaze::RetCode_OK;
+            vlg::RetCode db_res = vlg::RetCode_OK;
             IFLOG(dbg(TH_ID, LS_TRL "%s() - creating persistence schema..", __func__))
             db_res = pers_schema_create(drop_existing_schema_ ?
                                         PersistenceAlteringMode_DROP_IF_EXIST :
                                         PersistenceAlteringMode_CREATE_ONLY);
             if(db_res) {
-                if(db_res != blaze::RetCode_DBOPFAIL) {
+                if(db_res != vlg::RetCode_DBOPFAIL) {
                     IFLOG(cri(TH_ID, LS_TRL "%s() - bad error creating pers schema, res:%d",
                               __func__, db_res))
                     return db_res;
@@ -741,7 +741,7 @@ blaze::RetCode peer_int::peer_start_usr()
     }
     if((selector_.start())) {
         IFLOG(err(TH_ID, LS_CLO "%s() - selector failed to start", __func__))
-        return blaze::RetCode_PTHERR;
+        return vlg::RetCode_PTHERR;
     }
     IFLOG(dbg(TH_ID, LS_TRL "%s() - wait selector go init.", __func__))
     RETURN_IF_NOT_OK(selector_.await_for_status_reached_or_outdated(
@@ -752,11 +752,11 @@ blaze::RetCode peer_int::peer_start_usr()
     return cdrs_res;
 }
 
-blaze::RetCode peer_int::peer_move_running_usr()
+vlg::RetCode peer_int::peer_move_running_usr()
 {
     BLZ_ASYNCH_SELECTOR_STATUS current = BLZ_ASYNCH_SELECTOR_STATUS_UNDEF;
     IFLOG2(peer_log_, inf(TH_ID, LS_APL"[CALLED BLZ_PEER MOVE RUNNING HNDL]"))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     if((cdrs_res = selector_.on_peer_move_running_actions())) {
         IFLOG(err(TH_ID, LS_CLO "%s(res:%d) - selector failed to move running",
                   __func__,
@@ -775,15 +775,15 @@ blaze::RetCode peer_int::peer_move_running_usr()
     return cdrs_res;
 }
 
-blaze::RetCode peer_int::peer_stop_usr()
+vlg::RetCode peer_int::peer_stop_usr()
 {
     IFLOG(inf(TH_ID, LS_APL"[CALLED BLZ_PEER PEERSTOP HNDL]"))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     if(selector_.inco_conn_count() || selector_.outg_conn_count()) {
         if(!force_disconnect_on_stop_) {
             IFLOG(err(TH_ID, LS_CLO "%s() - active connections detected. cannot stop peer.",
                       __func__))
-            return blaze::RetCode_KO;
+            return vlg::RetCode_KO;
         }
     }
     IFLOG(dbg(TH_ID, LS_TRL "%s() - request selector to stop.", __func__))
@@ -801,23 +801,23 @@ blaze::RetCode peer_int::peer_stop_usr()
     return cdrs_res;
 }
 
-blaze::RetCode peer_int::peer_dying_breath_handler()
+vlg::RetCode peer_int::peer_dying_breath_handler()
 {
     IFLOG(inf(TH_ID,
               LS_APL"[CALLED BLZ_PEER DYINGBRTH HNDL - DOING NO ACTIONS - (OVERRIDE IF NEEDED)]"))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 //-----------------------------
 // PROTOCOL INTERFACE
 //-----------------------------
-blaze::RetCode peer_int::recv_and_route_pkt(connection_int &conn,
+vlg::RetCode peer_int::recv_and_route_pkt(connection_int &conn,
                                             blz_hdr_rec *hdr,
-                                            blaze::grow_byte_buffer *body)
+                                            vlg::grow_byte_buffer *body)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sockid:%d, hdr:%p, body:%p)", __func__,
               conn.get_socket(), hdr, body))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     switch(hdr->phdr.pkttyp) {
         case BLZ_PKT_TSTREQ_ID:
             /*TEST REQUEST******************************************************************/
@@ -882,19 +882,19 @@ per_nclassid_helper_rec::per_nclassid_helper_rec() :
     sbsevtid_(0),
     ts0_(0),
     ts1_(0),
-    srv_connid_condesc_set_(blaze::sngl_ptr_obj_mng(), sizeof(unsigned int))
+    srv_connid_condesc_set_(vlg::sngl_ptr_obj_mng(), sizeof(unsigned int))
 {}
 
 per_nclassid_helper_rec::~per_nclassid_helper_rec()
 {}
 
-blaze::RetCode per_nclassid_helper_rec::init()
+vlg::RetCode per_nclassid_helper_rec::init()
 {
     RETURN_IF_NOT_OK(srv_connid_condesc_set_.init(HM_SIZE_SMALL))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::synch_hash_map &per_nclassid_helper_rec::get_srv_connid_condesc_set()
+vlg::synch_hash_map &per_nclassid_helper_rec::get_srv_connid_condesc_set()
 {
     return srv_connid_condesc_set_;
 }
@@ -921,16 +921,16 @@ void per_nclassid_helper_rec::next_time_stamp(unsigned int &ts0,
     mon_.unlock();
 }
 
-blaze::RetCode peer_int::add_subscriber(subscription_int *sbsdesc)
+vlg::RetCode peer_int::add_subscriber(subscription_int *sbsdesc)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     unsigned int nclsid = sbsdesc->nclass_id();
     per_nclassid_helper_rec *sdrec = NULL;
     if((cdrs_res = srv_sbs_nclassid_condesc_set_.get(&nclsid, &sdrec))) {
         if(!(sdrec = new per_nclassid_helper_rec())) {
             IFLOG(cri(TH_ID, LS_CLO "%s - memory", __func__))
-            return blaze::RetCode_MEMERR;
+            return vlg::RetCode_MEMERR;
         }
         RETURN_IF_NOT_OK(sdrec->init())
         RETURN_IF_NOT_OK(srv_sbs_nclassid_condesc_set_.put(&nclsid, &sdrec))
@@ -942,15 +942,15 @@ blaze::RetCode peer_int::add_subscriber(subscription_int *sbsdesc)
               "%s() - [added subscriber: connid:%d for nclass_id:%d]",
               __func__, sbsdesc->conn_.connid_,
               nclsid))
-    cdrs_res = blaze::RetCode_OK;
+    cdrs_res = vlg::RetCode_OK;
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
     return cdrs_res;
 }
 
-blaze::RetCode peer_int::remove_subscriber(subscription_int *sbsdesc)
+vlg::RetCode peer_int::remove_subscriber(subscription_int *sbsdesc)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     unsigned int nclsid = sbsdesc->nclass_id();
     per_nclassid_helper_rec *sdrec = NULL;
     if((cdrs_res = srv_sbs_nclassid_condesc_set_.get(&nclsid, &sdrec))) {
@@ -958,7 +958,7 @@ blaze::RetCode peer_int::remove_subscriber(subscription_int *sbsdesc)
                   "%s() - [subscriber: connid:%d not found for nclass_id:%d, hash srv_sbs_clssid_condesc_set_]",
                   __func__,
                   sbsdesc->conn_.connid_, nclsid))
-        return blaze::RetCode_GENERR;
+        return vlg::RetCode_GENERR;
     }
     if((cdrs_res = sdrec->get_srv_connid_condesc_set().remove(
                        &sbsdesc->conn_.connid_, NULL))) {
@@ -966,7 +966,7 @@ blaze::RetCode peer_int::remove_subscriber(subscription_int *sbsdesc)
                   "%s() - [subscriber: connid:%d not found for nclass_id:%d, hash srv_connid_condesc_set]",
                   __func__,
                   sbsdesc->conn_.connid_, nclsid))
-        return blaze::RetCode_GENERR;
+        return vlg::RetCode_GENERR;
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
     return cdrs_res;
@@ -986,21 +986,21 @@ class peer_sbs_task;
 struct srv_connid_condesc_set_ashsnd_rud {
     unsigned int    nclass_id;
     peer_sbs_task   *tsk;
-    blaze::RetCode            cdrs_res;
+    vlg::RetCode            cdrs_res;
 };
 
-class peer_sbs_task : public blaze::p_task {
+class peer_sbs_task : public vlg::p_task {
     public:
         //---ctor
         peer_sbs_task(unsigned int id,
                       peer_int &peer,
                       subscription_event_int &sbs_evt,
-                      blaze::synch_hash_map &srv_connid_condesc_set) :
-            blaze::p_task(id),
+                      vlg::synch_hash_map &srv_connid_condesc_set) :
+            vlg::p_task(id),
             peer_(peer),
             sbs_evt_(sbs_evt),
             srv_connid_connection_map_(srv_connid_condesc_set) {
-            log_ = blaze::logger::get_logger("peer_sbs_task");
+            log_ = vlg::logger::get_logger("peer_sbs_task");
             IFLOG(trc(TH_ID, LS_CTR "%s(taskid:%d)", __func__, id))
         }
 
@@ -1008,12 +1008,12 @@ class peer_sbs_task : public blaze::p_task {
             IFLOG(trc(TH_ID, LS_DTR "%s(taskid:%d)", __func__, get_id()))
         }
 
-        static void enum_srv_connid_connection_map_ashsnd(const blaze::synch_hash_map
+        static void enum_srv_connid_connection_map_ashsnd(const vlg::synch_hash_map
                                                           &map,
                                                           const void      *key,
                                                           const void      *ptr,
                                                           void            *ud) {
-            blaze::RetCode cdrs_res = blaze::RetCode_OK;
+            vlg::RetCode cdrs_res = vlg::RetCode_OK;
             srv_connid_condesc_set_ashsnd_rud *rud =
                 static_cast<srv_connid_condesc_set_ashsnd_rud *>(ud);
             connection_int *conn = *(connection_int **)ptr;
@@ -1038,9 +1038,9 @@ class peer_sbs_task : public blaze::p_task {
         }
 
         /*this method will be called when this task will be run by an executor*/
-        virtual blaze::RetCode execute() {
-            blaze::RetCode cdrs_res = blaze::RetCode_OK;
-            blaze::collector &c = sbs_evt_.get_collector();
+        virtual vlg::RetCode execute() {
+            vlg::RetCode cdrs_res = vlg::RetCode_OK;
+            vlg::collector &c = sbs_evt_.get_collector();
             /*
             External Event Adoption.
             This sbs_evt can eventually remain live in one or more
@@ -1053,7 +1053,7 @@ class peer_sbs_task : public blaze::p_task {
             srv_connid_condesc_set_ashsnd_rud rud;
             rud.nclass_id = sbs_evt_.get_obj()->get_nclass_id();
             rud.tsk = this;
-            rud.cdrs_res = blaze::RetCode_OK;
+            rud.cdrs_res = vlg::RetCode_OK;
             srv_connid_connection_map_.enum_elements_safe_read(
                 enum_srv_connid_connection_map_ashsnd, &rud);
             if((rud.cdrs_res)) {
@@ -1079,17 +1079,17 @@ class peer_sbs_task : public blaze::p_task {
     private:
         peer_int &peer_;
         subscription_event_int &sbs_evt_;
-        blaze::synch_hash_map
+        vlg::synch_hash_map
         &srv_connid_connection_map_;  //connid --> condesc [uint --> ptr]
     protected:
-        static blaze::logger   *log_;
+        static vlg::logger   *log_;
 };
 
-blaze::logger *peer_sbs_task::log_ = NULL;
+vlg::logger *peer_sbs_task::log_ = NULL;
 
-blaze::p_task *peer_int::new_sbs_evt_task(
+vlg::p_task *peer_int::new_sbs_evt_task(
     subscription_event_int &sbs_evt,
-    blaze::synch_hash_map &srv_connid_connection_map)
+    vlg::synch_hash_map &srv_connid_connection_map)
 {
     mon_.lock();
     peer_sbs_task *nbtsk = new peer_sbs_task(++tskid_,
@@ -1100,16 +1100,16 @@ blaze::p_task *peer_int::new_sbs_evt_task(
     return nbtsk;
 }
 
-blaze::RetCode peer_int::get_per_classid_helper_class(unsigned int nclass_id,
+vlg::RetCode peer_int::get_per_classid_helper_class(unsigned int nclass_id,
                                                       per_nclassid_helper_rec **out)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     per_nclassid_helper_rec *sdrec = NULL;
     if((cdrs_res = srv_sbs_nclassid_condesc_set_.get(&nclass_id, &sdrec))) {
         if(!(sdrec = new per_nclassid_helper_rec())) {
             IFLOG(cri(TH_ID, LS_CLO "%s - memory", __func__))
-            return blaze::RetCode_MEMERR;
+            return vlg::RetCode_MEMERR;
         }
         if((cdrs_res = sdrec->init())) {
             IFLOG(cri(TH_ID, LS_CLO "%s - init", __func__))
@@ -1125,7 +1125,7 @@ blaze::RetCode peer_int::get_per_classid_helper_class(unsigned int nclass_id,
     return cdrs_res;
 }
 
-blaze::RetCode peer_int::build_sbs_event(unsigned int evt_id,
+vlg::RetCode peer_int::build_sbs_event(unsigned int evt_id,
                                          SubscriptionEventType sbs_evttype,
                                          ProtocolCode sbs_protocode,
                                          unsigned int sbs_tmstp0,
@@ -1135,10 +1135,10 @@ blaze::RetCode peer_int::build_sbs_event(unsigned int evt_id,
                                          subscription_event_int **new_sbs_event)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     if((subscription_event_int::new_instance(new_sbs_event))) {
         IFLOG(cri(TH_ID, LS_CLO "%s - memory", __func__))
-        return blaze::RetCode_MEMERR;
+        return vlg::RetCode_MEMERR;
     }
     (*new_sbs_event)->set_evtid(evt_id);
     (*new_sbs_event)->set_evttype(sbs_evttype);
@@ -1151,15 +1151,15 @@ blaze::RetCode peer_int::build_sbs_event(unsigned int evt_id,
     return cdrs_res;
 }
 
-blaze::RetCode peer_int::submit_sbs_evt_task(subscription_event_int &sbs_evt,
-                                             blaze::synch_hash_map &srv_connid_condesc_set)
+vlg::RetCode peer_int::submit_sbs_evt_task(subscription_event_int &sbs_evt,
+                                             vlg::synch_hash_map &srv_connid_condesc_set)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
-    blaze::p_task *sbs_tsk = new_sbs_evt_task(sbs_evt, srv_connid_condesc_set);
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::p_task *sbs_tsk = new_sbs_evt_task(sbs_evt, srv_connid_condesc_set);
     if(!sbs_tsk) {
         IFLOG(cri(TH_ID, LS_CLO "%s - memory", __func__))
-        return blaze::RetCode_MEMERR;
+        return vlg::RetCode_MEMERR;
     }
     if((cdrs_res = srv_sbs_exec_serv_.submit(sbs_tsk))) {
         IFLOG(cri(TH_ID, LS_TRL "%s() - submit failed, res:%d.", __func__, cdrs_res))

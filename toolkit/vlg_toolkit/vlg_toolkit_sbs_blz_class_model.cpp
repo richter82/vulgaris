@@ -22,7 +22,7 @@
 #include "blz_toolkit_sbs_blz_class_model.h"
 
 BLZ_CLASS_ROW_IDX_PAIR::BLZ_CLASS_ROW_IDX_PAIR(int rowidx,
-                                               blaze::nclass *obj) :
+                                               vlg::nclass *obj) :
     rowidx_(rowidx),
     obj_(obj)
 {}
@@ -60,7 +60,7 @@ BLZ_SBS_COL_DATA_ENTRY::~BLZ_SBS_COL_DATA_ENTRY()
     delete color_timer_;
 }
 
-BLZ_SBS_DATA_ENTRY::BLZ_SBS_DATA_ENTRY(blaze::nclass *entry,
+BLZ_SBS_DATA_ENTRY::BLZ_SBS_DATA_ENTRY(vlg::nclass *entry,
                                        int row_idx,
                                        int col_num) :
     entry_(entry),
@@ -87,8 +87,8 @@ void blz_toolkit_sbs_blz_class_model::OnCellResetColor(BLZ_SBS_COL_DATA_ENTRY
 
 ENM_GEN_SBS_REP_REC_UD::ENM_GEN_SBS_REP_REC_UD(blz_toolkit_sbs_blz_class_model
                                                &mdl,
-                                               const blaze::entity_manager &bem,
-                                               blaze::ascii_string *prfx,
+                                               const vlg::entity_manager &bem,
+                                               vlg::ascii_string *prfx,
                                                bool array_fld,
                                                unsigned int fld_idx) :
     mdl_(mdl),
@@ -101,16 +101,16 @@ ENM_GEN_SBS_REP_REC_UD::ENM_GEN_SBS_REP_REC_UD(blz_toolkit_sbs_blz_class_model
 ENM_GEN_SBS_REP_REC_UD::~ENM_GEN_SBS_REP_REC_UD()
 {}
 
-void enum_generate_sbs_model_rep(const blaze::hash_map &map,
+void enum_generate_sbs_model_rep(const vlg::hash_map &map,
                                  const void *key,
                                  const void *ptr,
                                  void *ud)
 {
     ENM_GEN_SBS_REP_REC_UD *rud = (ENM_GEN_SBS_REP_REC_UD *)ud;
-    const blaze::member_desc *mmbrd = *(const blaze::member_desc **)ptr;
-    blaze::ascii_string hdr_col_nm;
+    const vlg::member_desc *mmbrd = *(const vlg::member_desc **)ptr;
+    vlg::ascii_string hdr_col_nm;
     hdr_col_nm.assign("");
-    blaze::ascii_string idx_prfx;
+    vlg::ascii_string idx_prfx;
     idx_prfx.assign(*(rud->prfx_));
     char idx_b[GEN_HDR_FIDX_BUFF] = {0};
     int sprintf_dbg = 0;
@@ -122,8 +122,8 @@ void enum_generate_sbs_model_rep(const blaze::hash_map &map,
         idx_prfx.append(idx_b);
     }
 
-    if(mmbrd->get_field_blz_type() == blaze::Type_ENTITY) {
-        if(mmbrd->get_field_entity_type() == blaze::EntityType_ENUM) {
+    if(mmbrd->get_field_blz_type() == vlg::Type_ENTITY) {
+        if(mmbrd->get_field_entity_type() == vlg::EntityType_ENUM) {
             //treat enum as number
             if(mmbrd->get_field_nmemb() > 1) {
                 for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
@@ -151,16 +151,16 @@ void enum_generate_sbs_model_rep(const blaze::hash_map &map,
         } else {
             //class, struct is a recursive step.
             ENM_GEN_SBS_REP_REC_UD rrud = *rud;
-            blaze::ascii_string rprfx;
+            vlg::ascii_string rprfx;
             rprfx.assign(idx_prfx);
             if(rprfx.length()) {
                 rprfx.append("_");
             }
             rprfx.append(mmbrd->get_member_name());
             rrud.prfx_ = &rprfx;
-            const blaze::entity_desc *edsc = NULL;
+            const vlg::entity_desc *edsc = NULL;
             if(!rud->bem_.get_entity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
-                const blaze::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
+                const vlg::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
                 if(mmbrd->get_field_nmemb() > 1) {
                     rrud.array_fld_ = true;
                     for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
@@ -176,7 +176,7 @@ void enum_generate_sbs_model_rep(const blaze::hash_map &map,
         }
     } else {
         //primitive type
-        if(mmbrd->get_field_blz_type() == blaze::Type_ASCII) {
+        if(mmbrd->get_field_blz_type() == vlg::Type_ASCII) {
             if(rud->prfx_->length()) {
                 hdr_col_nm.append(idx_prfx);
                 hdr_col_nm.append("_");
@@ -220,7 +220,7 @@ void enum_generate_sbs_model_rep(const blaze::hash_map &map,
 
 ENM_UPD_CLS_ROW_REC_UD::ENM_UPD_CLS_ROW_REC_UD(blz_toolkit_sbs_blz_class_model
                                                &mdl,
-                                               const blaze::entity_manager &bem,
+                                               const vlg::entity_manager &bem,
                                                const char *obj_ptr,
                                                const char *obj_ptr_prev,
                                                int rowidx,
@@ -239,19 +239,19 @@ ENM_UPD_CLS_ROW_REC_UD::ENM_UPD_CLS_ROW_REC_UD(blz_toolkit_sbs_blz_class_model
 ENM_UPD_CLS_ROW_REC_UD::~ENM_UPD_CLS_ROW_REC_UD()
 {}
 
-void enum_update_class_row(const blaze::hash_map &map,
+void enum_update_class_row(const vlg::hash_map &map,
                            const void *key,
                            const void *ptr,
                            void *ud)
 {
     ENM_UPD_CLS_ROW_REC_UD *rud = (ENM_UPD_CLS_ROW_REC_UD *)ud;
-    const blaze::member_desc *mmbrd = *(const blaze::member_desc **)ptr;
+    const vlg::member_desc *mmbrd = *(const vlg::member_desc **)ptr;
     const char *obj_f_ptr_new = NULL, *obj_f_ptr_prev = NULL;
     QString val;
     QModelIndex qindex;
 
-    if(mmbrd->get_field_blz_type() == blaze::Type_ENTITY) {
-        if(mmbrd->get_field_entity_type() == blaze::EntityType_ENUM) {
+    if(mmbrd->get_field_blz_type() == vlg::Type_ENTITY) {
+        if(mmbrd->get_field_entity_type() == vlg::EntityType_ENUM) {
             //treat enum as number
             if(mmbrd->get_field_nmemb() > 1) {
                 for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
@@ -295,9 +295,9 @@ void enum_update_class_row(const blaze::hash_map &map,
         } else {
             //class, struct is a recursive step.
             ENM_UPD_CLS_ROW_REC_UD rrud = *rud;
-            const blaze::entity_desc *edsc = NULL;
+            const vlg::entity_desc *edsc = NULL;
             if(!rud->bem_.get_entity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
-                const blaze::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
+                const vlg::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
                 if(mmbrd->get_field_nmemb() > 1) {
                     rrud.array_fld_ = true;
                     for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
@@ -314,7 +314,7 @@ void enum_update_class_row(const blaze::hash_map &map,
         }
     } else {
         //primitive type
-        if(mmbrd->get_field_blz_type() == blaze::Type_ASCII) {
+        if(mmbrd->get_field_blz_type() == vlg::Type_ASCII) {
             //new value ptr
             obj_f_ptr_new = rud->obj_ptr_ + mmbrd->get_field_offset();
 
@@ -377,8 +377,8 @@ void enum_update_class_row(const blaze::hash_map &map,
 
 
 blz_toolkit_sbs_blz_class_model::blz_toolkit_sbs_blz_class_model(
-    const blaze::entity_desc &edesc,
-    const blaze::entity_manager &bem,
+    const vlg::entity_desc &edesc,
+    const vlg::entity_manager &bem,
     QObject *parent) :
     edesc_(edesc),
     bem_(bem),
@@ -442,14 +442,14 @@ QVariant blz_toolkit_sbs_blz_class_model::data(const QModelIndex &index,
         return QVariant();
     }
     if(role == Qt::DisplayRole) {
-        blaze::nclass *obj = data_[index.row()].entry_;
+        vlg::nclass *obj = data_[index.row()].entry_;
         if(obj) {
-            const blaze::member_desc *obj_fld_mdesc = NULL;
+            const vlg::member_desc *obj_fld_mdesc = NULL;
             char *obj_fld_ptr = NULL;
             if((obj_fld_ptr = obj->get_term_field_ref_by_plain_idx(index.column(), bem_,
                                                                    &obj_fld_mdesc))) {
                 QString out;
-                if((obj_fld_mdesc->get_field_blz_type() == blaze::Type_ASCII) &&
+                if((obj_fld_mdesc->get_field_blz_type() == vlg::Type_ASCII) &&
                         obj_fld_mdesc->get_field_nmemb() > 1) {
                     out = QString::fromLatin1(obj_fld_ptr, obj_fld_mdesc->get_field_nmemb());
                 } else {
@@ -512,7 +512,7 @@ bool blz_toolkit_sbs_blz_class_model::insertRows(int position,
 {
     Q_UNUSED(index);
     beginInsertRows(QModelIndex(), position, position);
-    blaze::nclass *insert_obj = static_cast<blaze::nclass *>
+    vlg::nclass *insert_obj = static_cast<vlg::nclass *>
                                 (index.internalPointer());
     BLZ_SBS_DATA_ENTRY sbs_data_entry(insert_obj, position, colnum_);
     data_.append(sbs_data_entry);
@@ -533,18 +533,18 @@ void blz_toolkit_sbs_blz_class_model::GenerateModelRep()
 
 void blz_toolkit_sbs_blz_class_model::GenerateHeader()
 {
-    blaze::ascii_string prfx;
+    vlg::ascii_string prfx;
     prfx.assign("");
-    const blaze::hash_map &nm_desc = edesc_.get_opaque()->GetMap_NM_MMBRDSC();
+    const vlg::hash_map &nm_desc = edesc_.get_opaque()->GetMap_NM_MMBRDSC();
     ENM_GEN_SBS_REP_REC_UD gen_rep_rud(*this, bem_, &prfx, false, 0);
     nm_desc.enum_elements(enum_generate_sbs_model_rep, &gen_rep_rud);
 }
 
 void blz_toolkit_sbs_blz_class_model::updateEntry(int rowidx,
-                                                  blaze::nclass *entry,
-                                                  blaze::nclass *prev_entry)
+                                                  vlg::nclass *entry,
+                                                  vlg::nclass *prev_entry)
 {
-    const blaze::hash_map &nm_desc = edesc_.get_opaque()->GetMap_NM_MMBRDSC();
+    const vlg::hash_map &nm_desc = edesc_.get_opaque()->GetMap_NM_MMBRDSC();
     ENM_UPD_CLS_ROW_REC_UD upd_cls_row_rud(*this,
                                            bem_,
                                            (const char *)entry,
@@ -557,11 +557,11 @@ void blz_toolkit_sbs_blz_class_model::updateEntry(int rowidx,
                           &upd_cls_row_rud);
 }
 
-void blz_toolkit_sbs_blz_class_model::offerEntry(blaze::nclass *entry)
+void blz_toolkit_sbs_blz_class_model::offerEntry(vlg::nclass *entry)
 {
     int rowidx = 0;
     BLZ_CLASS_ROW_IDX_PAIR crip;
-    blaze::ascii_string entry_key;
+    vlg::ascii_string entry_key;
     entry->primary_key_string_value(&entry_key);
     QString hkey(entry_key.internal_buff());
     if(data_hlpr_.contains(hkey)) {
@@ -570,7 +570,7 @@ void blz_toolkit_sbs_blz_class_model::offerEntry(blaze::nclass *entry)
         updateEntry(rowidx, entry, crip.obj_);
         crip.obj_->set_from(entry);
     } else {
-        blaze::collector &c = entry->get_collector();
+        vlg::collector &c = entry->get_collector();
         c.retain(entry);
         crip.obj_ = entry;
         crip.rowidx_ = rowCount();

@@ -23,17 +23,17 @@
 #include "blaze_connection.h"
 #include "blz_peer_int.h"
 
-namespace blaze {
+namespace vlg {
 
-blaze::synch_hash_map *int_publ_peer_map_ = NULL;  //peer_int --> peer
-blaze::synch_hash_map &int_publ_peer_map()
+vlg::synch_hash_map *int_publ_peer_map_ = NULL;  //peer_int --> peer
+vlg::synch_hash_map &int_publ_peer_map()
 {
     if(int_publ_peer_map_) {
         return *int_publ_peer_map_;
     }
-    if(!(int_publ_peer_map_ = new blaze::synch_hash_map(
-        blaze::sngl_ptr_obj_mng(),
-        blaze::sngl_ptr_obj_mng()))) {
+    if(!(int_publ_peer_map_ = new vlg::synch_hash_map(
+        vlg::sngl_ptr_obj_mng(),
+        vlg::sngl_ptr_obj_mng()))) {
         EXIT_ACTION("failed creating int_publ_peer_map_\n")
     }
     int_publ_peer_map_->init(HM_SIZE_TINY);
@@ -60,49 +60,49 @@ class peer_impl {
                     return publ_.version_handler();
                 }
 
-                virtual blaze::RetCode peer_load_cfg_usr(int pnum, const char *param,
+                virtual vlg::RetCode peer_load_cfg_usr(int pnum, const char *param,
                                                          const char *value) {
-                    blaze::RetCode cdrs_res = peer_int::peer_load_cfg_usr(pnum, param, value);
+                    vlg::RetCode cdrs_res = peer_int::peer_load_cfg_usr(pnum, param, value);
                     if(cdrs_res) {
                         return cdrs_res;
                     }
                     return publ_.on_load_config(pnum, param, value);
                 }
 
-                virtual blaze::RetCode peer_init_usr() {
-                    blaze::RetCode cdrs_res = peer_int::peer_init_usr();
+                virtual vlg::RetCode peer_init_usr() {
+                    vlg::RetCode cdrs_res = peer_int::peer_init_usr();
                     if(cdrs_res) {
                         return cdrs_res;
                     }
                     return publ_.on_init();
                 }
 
-                virtual blaze::RetCode peer_start_usr() {
-                    blaze::RetCode cdrs_res = peer_int::peer_start_usr();
+                virtual vlg::RetCode peer_start_usr() {
+                    vlg::RetCode cdrs_res = peer_int::peer_start_usr();
                     if(cdrs_res) {
                         return cdrs_res;
                     }
                     return publ_.on_starting();
                 }
 
-                virtual blaze::RetCode peer_stop_usr() {
-                    blaze::RetCode cdrs_res = peer_int::peer_stop_usr();
+                virtual vlg::RetCode peer_stop_usr() {
+                    vlg::RetCode cdrs_res = peer_int::peer_stop_usr();
                     if(cdrs_res) {
                         return cdrs_res;
                     }
                     return publ_.on_stopping();
                 }
 
-                virtual blaze::RetCode peer_move_running() {
-                    blaze::RetCode cdrs_res = peer_int::peer_move_running_usr();
+                virtual vlg::RetCode peer_move_running() {
+                    vlg::RetCode cdrs_res = peer_int::peer_move_running_usr();
                     if(cdrs_res) {
                         return cdrs_res;
                     }
                     return publ_.on_transit_on_air();
                 }
 
-                virtual blaze::RetCode peer_error_handler() {
-                    blaze::RetCode cdrs_res = peer_int::peer_error_handler();
+                virtual vlg::RetCode peer_error_handler() {
+                    vlg::RetCode cdrs_res = peer_int::peer_error_handler();
                     if(cdrs_res) {
                         return cdrs_res;
                     }
@@ -110,18 +110,18 @@ class peer_impl {
                     return cdrs_res;
                 }
 
-                virtual blaze::RetCode peer_dying_breath_handler() {
+                virtual vlg::RetCode peer_dying_breath_handler() {
                     publ_.on_dying_breath();
                     return peer_int::peer_dying_breath_handler();
                 }
 
-                virtual blaze::RetCode new_incoming_connection_accept(connection_int
+                virtual vlg::RetCode new_incoming_connection_accept(connection_int
                                                                       &incoming_connection) {
                     connection *conn_publ = new connection();
-                    blaze::collector &c = conn_publ->get_collector();
+                    vlg::collector &c = conn_publ->get_collector();
                     c.retain(conn_publ);
                     conn_publ->set_internal(&incoming_connection);
-                    blaze::RetCode accept_res = publ_.on_new_incoming_connection(*conn_publ);
+                    vlg::RetCode accept_res = publ_.on_new_incoming_connection(*conn_publ);
                     c.release(conn_publ);
                     return accept_res;
                 }
@@ -216,12 +216,12 @@ peer::~peer()
     }
 }
 
-blaze::RetCode peer::set_params_file_dir(const char *dir)
+vlg::RetCode peer::set_params_file_dir(const char *dir)
 {
     return impl_->get_peer_int()->set_params_file_dir(dir);
 }
 
-blaze::RetCode peer::set_params_file_path_name(const char *file_path)
+vlg::RetCode peer::set_params_file_path_name(const char *file_path)
 {
     return impl_->get_peer_int()->set_params_file_path_name(file_path);
 }
@@ -366,40 +366,40 @@ void peer::add_load_persistent_driver(const char *driver)
     impl_->get_peer_int()->set_cfg_load_pers_driv(driver);
 }
 
-blaze::RetCode peer::extend_model(entity_manager *em)
+vlg::RetCode peer::extend_model(entity_manager *em)
 {
     return impl_->get_peer_int()->extend_model(em);
 }
 
-blaze::RetCode peer::extend_model(const char *model_name)
+vlg::RetCode peer::extend_model(const char *model_name)
 {
     return impl_->get_peer_int()->extend_model(model_name);
 }
 
-blaze::RetCode peer::on_load_config(int pnum, const char *param,
+vlg::RetCode peer::on_load_config(int pnum, const char *param,
                                     const char *value)
 {
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode peer::on_init()
+vlg::RetCode peer::on_init()
 {
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode peer::on_starting()
+vlg::RetCode peer::on_starting()
 {
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode peer::on_stopping()
+vlg::RetCode peer::on_stopping()
 {
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode peer::on_transit_on_air()
+vlg::RetCode peer::on_transit_on_air()
 {
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 void peer::on_error()
@@ -426,7 +426,7 @@ void peer::set_status_change_handler(peer_status_change handler, void *ud)
     impl_->set_psh_ud(ud);
 }
 
-blaze::RetCode peer::await_for_status_reached_or_outdated(PeerStatus test,
+vlg::RetCode peer::await_for_status_reached_or_outdated(PeerStatus test,
                                                           PeerStatus &current,
                                                           time_t sec,
                                                           long nsec)
@@ -437,7 +437,7 @@ blaze::RetCode peer::await_for_status_reached_or_outdated(PeerStatus test,
                                                                             nsec);
 }
 
-blaze::RetCode peer::await_for_status_change(PeerStatus &peer_status,
+vlg::RetCode peer::await_for_status_change(PeerStatus &peer_status,
                                              time_t sec,
                                              long nsec)
 {
@@ -456,25 +456,25 @@ void peer::set_connection_factory(connection_factory &conn_factory)
     impl_->set_conn_factory(&conn_factory);
 }
 
-blaze::RetCode peer::start(int argc,
+vlg::RetCode peer::start(int argc,
                            char *argv[],
                            bool spawn_new_thread)
 {
     return impl_->get_peer_int()->start_peer(argc, argv, spawn_new_thread);
 }
 
-blaze::RetCode peer::stop(bool force_disconnect /*= false*/)
+vlg::RetCode peer::stop(bool force_disconnect /*= false*/)
 {
     return impl_->get_peer_int()->stop_peer(force_disconnect);
 }
 
-blaze::RetCode peer::persistence_schema_create(PersistenceAlteringMode
+vlg::RetCode peer::persistence_schema_create(PersistenceAlteringMode
                                                mode)
 {
     return impl_->get_peer_int()->pers_schema_create(mode);
 }
 
-blaze::RetCode peer::class_persistence_schema_create(
+vlg::RetCode peer::class_persistence_schema_create(
     PersistenceAlteringMode
     mode,
     unsigned int nclass_id)
@@ -482,7 +482,7 @@ blaze::RetCode peer::class_persistence_schema_create(
     return impl_->get_peer_int()->class_pers_schema_create(mode, nclass_id);
 }
 
-blaze::RetCode peer::class_persistent_load(unsigned short class_key,
+vlg::RetCode peer::class_persistent_load(unsigned short class_key,
                                            unsigned int &ts_0_out,
                                            unsigned int &ts_1_out,
                                            nclass &in_out_obj)
@@ -493,31 +493,31 @@ blaze::RetCode peer::class_persistent_load(unsigned short class_key,
                                                   in_out_obj);
 }
 
-blaze::RetCode peer::class_persistent_save(const nclass &in_obj)
+vlg::RetCode peer::class_persistent_save(const nclass &in_obj)
 {
     return impl_->get_peer_int()->class_pers_save(in_obj);
 }
 
-blaze::RetCode peer::class_persistent_update(unsigned short class_key,
+vlg::RetCode peer::class_persistent_update(unsigned short class_key,
                                              const nclass &in_obj)
 {
     return impl_->get_peer_int()->class_pers_update(class_key, in_obj);
 }
 
-blaze::RetCode peer::class_persistent_update_or_save(unsigned short class_key,
+vlg::RetCode peer::class_persistent_update_or_save(unsigned short class_key,
                                                      const nclass &in_obj)
 {
     return impl_->get_peer_int()->class_pers_update_or_save(class_key, in_obj);
 }
 
-blaze::RetCode peer::class_persistent_remove(unsigned short class_key,
+vlg::RetCode peer::class_persistent_remove(unsigned short class_key,
                                              PersistenceDeletionMode mode,
                                              const nclass &in_obj)
 {
     return impl_->get_peer_int()->class_pers_remove(class_key, mode, in_obj);
 }
 
-blaze::RetCode peer::class_distribute(SubscriptionEventType event_type,
+vlg::RetCode peer::class_distribute(SubscriptionEventType event_type,
                                       Action action,
                                       const nclass &in_obj)
 {
@@ -527,13 +527,13 @@ blaze::RetCode peer::class_distribute(SubscriptionEventType event_type,
                                                    in_obj);
 }
 
-blaze::RetCode peer::class_persistent_save_and_distribute(const nclass
+vlg::RetCode peer::class_persistent_save_and_distribute(const nclass
                                                           &in_obj)
 {
     return impl_->get_peer_int()->class_pers_save_and_distribute(in_obj);
 }
 
-blaze::RetCode peer::class_persistent_update_and_distribute(
+vlg::RetCode peer::class_persistent_update_and_distribute(
     unsigned short class_key,
     const nclass &in_obj)
 {
@@ -541,7 +541,7 @@ blaze::RetCode peer::class_persistent_update_and_distribute(
                                                                    in_obj);
 }
 
-blaze::RetCode peer::class_persistent_update_or_save_and_distribute(
+vlg::RetCode peer::class_persistent_update_or_save_and_distribute(
     unsigned short class_key,
     const nclass &in_obj)
 {
@@ -549,7 +549,7 @@ blaze::RetCode peer::class_persistent_update_or_save_and_distribute(
                class_key, in_obj);
 }
 
-blaze::RetCode peer::class_persistent_remove_and_distribute(
+vlg::RetCode peer::class_persistent_remove_and_distribute(
     unsigned short class_key,
     PersistenceDeletionMode mode,
     const nclass &in_obj)
@@ -559,9 +559,9 @@ blaze::RetCode peer::class_persistent_remove_and_distribute(
                                                                    in_obj);
 }
 
-blaze::RetCode peer::on_new_incoming_connection(connection &incoming_connection)
+vlg::RetCode peer::on_new_incoming_connection(connection &incoming_connection)
 {
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 peer_int *peer::get_internal()

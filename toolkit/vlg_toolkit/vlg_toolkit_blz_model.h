@@ -37,8 +37,8 @@ enum BLZ_MODEL_ITEM_TYPE {
 class model_item {
     public:
         model_item(BLZ_MODEL_ITEM_TYPE    item_type,
-                   const blaze::entity_desc      *edesc,
-                   const blaze::member_desc      *mdesc,
+                   const vlg::entity_desc      *edesc,
+                   const vlg::member_desc      *mdesc,
                    model_item             *parent = NULL);
 
         ~model_item();
@@ -54,8 +54,8 @@ class model_item {
 
         BLZ_MODEL_ITEM_TYPE item_type() const;
 
-        const blaze::entity_desc *edesc() const;
-        const blaze::member_desc *mdesc() const;
+        const vlg::entity_desc *edesc() const;
+        const vlg::member_desc *mdesc() const;
 
     private:
         QList<QString>          header_;
@@ -66,8 +66,8 @@ class model_item {
 
     private:
         BLZ_MODEL_ITEM_TYPE       item_type_;
-        const blaze::entity_desc     *edesc_;
-        const blaze::member_desc     *mdesc_;
+        const vlg::entity_desc     *edesc_;
+        const vlg::member_desc     *mdesc_;
 };
 
 
@@ -82,7 +82,7 @@ class blz_toolkit_blz_model : public QAbstractItemModel {
         void OnModelUpdate_event();
 
     public:
-        blz_toolkit_blz_model(blaze::entity_manager &bem, QObject *parent = 0);
+        blz_toolkit_blz_model(vlg::entity_manager &bem, QObject *parent = 0);
         ~blz_toolkit_blz_model();
 
         //overriden methods
@@ -98,7 +98,7 @@ class blz_toolkit_blz_model : public QAbstractItemModel {
         QVariant data(const QModelIndex &index, int role) const;
 
         model_item *rootItem() const;
-        blaze::entity_manager &bem() const;
+        vlg::entity_manager &bem() const;
 
         QList<model_item *> parents() const;
 
@@ -107,7 +107,7 @@ class blz_toolkit_blz_model : public QAbstractItemModel {
 
         //bem source for this model.
     private:
-        blaze::entity_manager      &bem_;
+        vlg::entity_manager      &bem_;
         model_item          *rootItem_;
 };
 

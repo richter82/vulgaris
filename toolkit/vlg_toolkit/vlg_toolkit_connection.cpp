@@ -40,7 +40,7 @@ bool blz_toolkit_Conn_mdl::filterAcceptsRow(int sourceRow,
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
     model_item *item = static_cast<model_item *>(index.internalPointer());
     return item->item_type() == BLZ_MODEL_ITEM_TYPE_EDESC &&
-           item->edesc()->get_entity_type() == blaze::EntityType_NCLASS;
+           item->edesc()->get_entity_type() == vlg::EntityType_NCLASS;
 }
 
 blz_toolkit_blz_model &blz_toolkit_Conn_mdl::wrapped_mdl()
@@ -54,8 +54,8 @@ blz_toolkit_blz_model &blz_toolkit_Conn_mdl::wrapped_mdl()
 
 int blz_toolkit_Connection::count_ = 0;
 
-void blz_toolkit_connection_status_change_hndl(blaze::connection_int &conn,
-                                               blaze::ConnectionStatus status,
+void blz_toolkit_connection_status_change_hndl(vlg::connection_int &conn,
+                                               vlg::ConnectionStatus status,
                                                void *ud)
 {
     blz_toolkit_Connection *ct = (blz_toolkit_Connection *)ud;
@@ -63,7 +63,7 @@ void blz_toolkit_connection_status_change_hndl(blaze::connection_int &conn,
     ct->EmitConnStatus(status);
 }
 
-blz_toolkit_Connection::blz_toolkit_Connection(blaze::connection_int &conn,
+blz_toolkit_Connection::blz_toolkit_Connection(vlg::connection_int &conn,
                                                const QString &host,
                                                const QString &port,
                                                const QString &usr,
@@ -87,12 +87,12 @@ blz_toolkit_Connection::blz_toolkit_Connection(blaze::connection_int &conn,
     ui->cp_user->setText(usr);
     ui->cp_psswd->setText(psswd);
 
-    blaze::collector &c = conn_.get_collector();
+    vlg::collector &c = conn_.get_collector();
     c.retain(&conn_);
 
-    connect(this, SIGNAL(SignalConnStatusChange(blaze::ConnectionStatus)),
+    connect(this, SIGNAL(SignalConnStatusChange(vlg::ConnectionStatus)),
             this,
-            SLOT(OnConnStatusChange(blaze::ConnectionStatus)));
+            SLOT(OnConnStatusChange(vlg::ConnectionStatus)));
     EmitConnStatus(conn_.status());
     conn_.set_connection_status_change_handler(
         blz_toolkit_connection_status_change_hndl, this);
@@ -111,7 +111,7 @@ blz_toolkit_Connection::blz_toolkit_Connection(blaze::connection_int &conn,
 
 blz_toolkit_Connection::~blz_toolkit_Connection()
 {
-    blaze::collector &c = conn_.get_collector();
+    vlg::collector &c = conn_.get_collector();
     c.release(&conn_);
     delete ui;
 }
@@ -123,21 +123,21 @@ void blz_toolkit_Connection::UpdateTabHeader()
     }
     QIcon icon_flash;
     switch(conn_.status()) {
-        case blaze::ConnectionStatus_UNDEFINED:
-        case blaze::ConnectionStatus_INITIALIZED:
-        case blaze::ConnectionStatus_DISCONNECTED:
+        case vlg::ConnectionStatus_UNDEFINED:
+        case vlg::ConnectionStatus_INITIALIZED:
+        case vlg::ConnectionStatus_DISCONNECTED:
             icon_flash.addFile(QStringLiteral(":/icon/icons/flash_red.png"), QSize(),
                                QIcon::Normal, QIcon::Off);
             break;
-        case blaze::ConnectionStatus_ESTABLISHED:
-        case blaze::ConnectionStatus_PROTOCOL_HANDSHAKE:
-        case blaze::ConnectionStatus_AUTHENTICATED:
+        case vlg::ConnectionStatus_ESTABLISHED:
+        case vlg::ConnectionStatus_PROTOCOL_HANDSHAKE:
+        case vlg::ConnectionStatus_AUTHENTICATED:
             icon_flash.addFile(QStringLiteral(":/icon/icons/flash_green.png"), QSize(),
                                QIcon::Normal, QIcon::Off);
             break;
-        case blaze::ConnectionStatus_SOCKET_ERROR:
-        case blaze::ConnectionStatus_PROTOCOL_ERROR:
-        case blaze::ConnectionStatus_ERROR:
+        case vlg::ConnectionStatus_SOCKET_ERROR:
+        case vlg::ConnectionStatus_PROTOCOL_ERROR:
+        case vlg::ConnectionStatus_ERROR:
         default:
             icon_flash.addFile(QStringLiteral(":/icon/icons/flash_red.png"), QSize(),
                                QIcon::Normal, QIcon::Off);
@@ -199,55 +199,55 @@ int blz_toolkit_Connection::NextCount()
     return ++count_;
 }
 
-void blz_toolkit_Connection::OnConnStatusChange(blaze::ConnectionStatus
+void blz_toolkit_Connection::OnConnStatusChange(vlg::ConnectionStatus
                                                 status)
 {
     switch(status) {
-        case blaze::ConnectionStatus_UNDEFINED:
+        case vlg::ConnectionStatus_UNDEFINED:
             ui->conn_status_label_disp->setText(QObject::tr("UNDEFINED"));
             ui->conn_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : Beige; color : black;"));
             break;
-        case blaze::ConnectionStatus_INITIALIZED:
+        case vlg::ConnectionStatus_INITIALIZED:
             ui->conn_status_label_disp->setText(QObject::tr("INITIALIZED"));
             ui->conn_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : Beige; color : black;"));
             break;
-        case blaze::ConnectionStatus_DISCONNECTED:
+        case vlg::ConnectionStatus_DISCONNECTED:
             ui->conn_status_label_disp->setText(QObject::tr("DISCONNECTED"));
             ui->conn_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : IndianRed; color : black;"));
             ConnectionDownActions();
             break;
-        case blaze::ConnectionStatus_ESTABLISHED:
+        case vlg::ConnectionStatus_ESTABLISHED:
             ui->conn_status_label_disp->setText(QObject::tr("ESTABLISHED"));
             ui->conn_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : GreenYellow; color : black;"));
             ConnectionUpActions();
             break;
-        case blaze::ConnectionStatus_PROTOCOL_HANDSHAKE:
+        case vlg::ConnectionStatus_PROTOCOL_HANDSHAKE:
             ui->conn_status_label_disp->setText(QObject::tr("PROTOCOL HANDSHAKE"));
             ui->conn_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : LightGreen; color : black;"));
             ConnectionUpActions();
             break;
-        case blaze::ConnectionStatus_AUTHENTICATED:
+        case vlg::ConnectionStatus_AUTHENTICATED:
             ui->conn_status_label_disp->setText(QObject::tr("AUTHENTICATED"));
             ui->conn_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : LawnGreen; color : black;"));
             ConnectionUpActions();
             break;
-        case blaze::ConnectionStatus_SOCKET_ERROR:
+        case vlg::ConnectionStatus_SOCKET_ERROR:
             ui->conn_status_label_disp->setText(QObject::tr("SOCKET ERROR"));
             ui->conn_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : Red; color : black;"));
             break;
-        case blaze::ConnectionStatus_PROTOCOL_ERROR:
+        case vlg::ConnectionStatus_PROTOCOL_ERROR:
             ui->conn_status_label_disp->setText(QObject::tr("PROTOCOL ERROR"));
             ui->conn_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : Red; color : black;"));
             break;
-        case blaze::ConnectionStatus_ERROR:
+        case vlg::ConnectionStatus_ERROR:
             ui->conn_status_label_disp->setText(QObject::tr("ERROR"));
             ui->conn_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : Red; color : black;"));
@@ -286,7 +286,7 @@ void blz_toolkit_Connection::OnCustomMenuRequested(const QPoint &pos)
         return;
     }
     if(item->item_type() != BLZ_MODEL_ITEM_TYPE_EDESC ||
-            item->edesc()->get_entity_size() != blaze::EntityType_NCLASS) {
+            item->edesc()->get_entity_size() != vlg::EntityType_NCLASS) {
         return;
     }
     QMenu *custom_menu = new QMenu(QString("%1").arg(
@@ -305,7 +305,7 @@ void blz_toolkit_Connection::OnCustomMenuRequested(const QPoint &pos)
     custom_menu->popup(ui->peer_model_tree_view->viewport()->mapToGlobal(pos));
 }
 
-void blz_toolkit_Connection::EmitConnStatus(blaze::ConnectionStatus status)
+void blz_toolkit_Connection::EmitConnStatus(vlg::ConnectionStatus status)
 {
     emit SignalConnStatusChange(status);
 }
@@ -323,13 +323,13 @@ void blz_toolkit_Connection::on_connect_button_clicked()
 
 void blz_toolkit_Connection::on_disconnect_button_clicked()
 {
-    blaze::ConnectivityEventResult cres =
-        blaze::ConnectivityEventResult_UNDEFINED;
-    blaze::ConnectivityEventType cevttyp =
-        blaze::ConnectivityEventType_UNDEFINED;
-    conn_.disconnect(blaze::DisconnectionResultReason_APPLICATIVE);
+    vlg::ConnectivityEventResult cres =
+        vlg::ConnectivityEventResult_UNDEFINED;
+    vlg::ConnectivityEventType cevttyp =
+        vlg::ConnectivityEventType_UNDEFINED;
+    conn_.disconnect(vlg::DisconnectionResultReason_APPLICATIVE);
     if(conn_.await_for_disconnection_result(cres, cevttyp, BLZ_TKT_INT_AWT_TIMEOUT,
-                                            0) == blaze::RetCode_TIMEOUT) {
+                                            0) == vlg::RetCode_TIMEOUT) {
         emit SignalDisconnectionTimeout(QString("on disconnection [connid:%1]").arg(
                                             conn_.connid()));
     }
@@ -353,15 +353,15 @@ void blz_toolkit_Connection::on_new_tx_button_clicked()
     if(!item) {
         return;
     }
-    const blaze::entity_desc *edesc = item->edesc();
+    const vlg::entity_desc *edesc = item->edesc();
     if(!edesc) {
         return;
     }
-    blaze::transaction_int *new_tx = NULL;
+    vlg::transaction_int *new_tx = NULL;
     conn_.new_transaction(&new_tx);
     new_tx->set_tx_req_class_id(item->edesc()->get_nclass_id());
 
-    blaze::nclass *sending_obj = NULL;
+    vlg::nclass *sending_obj = NULL;
     conn_.peer().get_em().new_class_instance(edesc->get_nclass_id(), &sending_obj);
     new_tx->set_request_obj(sending_obj);
 
@@ -394,11 +394,11 @@ void blz_toolkit_Connection::on_new_sbs_button_clicked()
     if(!item) {
         return;
     }
-    const blaze::entity_desc *edesc = item->edesc();
+    const vlg::entity_desc *edesc = item->edesc();
     if(!edesc) {
         return;
     }
-    blaze::subscription_int *new_sbs = NULL;
+    vlg::subscription_int *new_sbs = NULL;
     conn_.new_subscription(&new_sbs);
     new_sbs->set_nclassid(item->edesc()->get_nclass_id());
 

@@ -22,7 +22,7 @@
 #include "blz_glob_int.h"
 #include "cr_structs_rep.h"
 
-namespace blaze {
+namespace vlg {
 
 //-----------------------------
 // linked_list

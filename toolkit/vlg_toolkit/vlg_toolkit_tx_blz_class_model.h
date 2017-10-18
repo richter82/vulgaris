@@ -32,16 +32,16 @@ class blz_toolkit_tx_blz_class_model;
 
 struct ENM_GEN_TX_REP_REC_UD {
     ENM_GEN_TX_REP_REC_UD(blz_toolkit_tx_blz_class_model &mdl,
-                          const blaze::entity_manager &bem,
-                          blaze::ascii_string *prfx,
+                          const vlg::entity_manager &bem,
+                          vlg::ascii_string *prfx,
                           bool array_fld,
                           unsigned int fld_idx);
 
     ~ENM_GEN_TX_REP_REC_UD();
 
     blz_toolkit_tx_blz_class_model &mdl_;
-    const blaze::entity_manager &bem_;
-    blaze::ascii_string *prfx_;
+    const vlg::entity_manager &bem_;
+    vlg::ascii_string *prfx_;
 
     bool array_fld_;
     unsigned int fld_idx_;   //used to render column name when the field is an array
@@ -60,13 +60,13 @@ class blz_toolkit_tx_blz_class_model : public QAbstractTableModel {
         Q_OBJECT
 
     public:
-        blz_toolkit_tx_blz_class_model(const blaze::entity_desc &edesc,
-                                       const blaze::entity_manager &bem,
-                                       blaze::transaction_int &tx,
+        blz_toolkit_tx_blz_class_model(const vlg::entity_desc &edesc,
+                                       const vlg::entity_manager &bem,
+                                       vlg::transaction_int &tx,
                                        QObject *parent = 0);
         ~blz_toolkit_tx_blz_class_model();
 
-        blaze::nclass *local_obj() const;
+        vlg::nclass *local_obj() const;
 
         int columnCount(const QModelIndex &parent = QModelIndex()) const;
         int rowCount(const QModelIndex &parent = QModelIndex()) const;
@@ -92,10 +92,10 @@ class blz_toolkit_tx_blz_class_model : public QAbstractTableModel {
 
 
     private:
-        const blaze::entity_desc       &edesc_;
-        const blaze::entity_manager    &bem_;
-        blaze::transaction_int         &tx_;
-        blaze::nclass             *local_obj_;
+        const vlg::entity_desc       &edesc_;
+        const vlg::entity_manager    &bem_;
+        vlg::transaction_int         &tx_;
+        vlg::nclass             *local_obj_;
 
         //METADATA REP
         int rownum_;

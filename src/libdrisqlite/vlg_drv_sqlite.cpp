@@ -27,7 +27,7 @@
 #define snprintf sprintf_s
 #endif
 
-namespace blaze {
+namespace vlg {
 
 enum BLZ_SQLITE_DATATYPE {
     BLZ_SQLITE_DATATYPE_Undef,
@@ -54,13 +54,13 @@ class pers_conn_sqlite;
 //-----------------------------
 class entity_desc_impl {
     public:
-        const blaze::hash_map &GetMap_NM_MMBRDSC() const;
-        const blaze::hash_map &GetMap_KEYID_KDESC() const;
+        const vlg::hash_map &GetMap_NM_MMBRDSC() const;
+        const vlg::hash_map &GetMap_KEYID_KDESC() const;
 };
 
 class key_desc_impl {
     public:
-        const blaze::linked_list &GetKeyFieldSet() const;
+        const vlg::linked_list &GetKeyFieldSet() const;
 };
 
 
@@ -207,7 +207,7 @@ SQLTE_ENM_BUFF::~SQLTE_ENM_BUFF()
 void SQLTE_ENM_BUFF::Init()
 {
     val_buf_sz_ = SQLITE_VAL_BUFF;
-    val_buf_ = (char *)blaze::grow_buff_or_die(0, 0, SQLITE_VAL_BUFF);
+    val_buf_ = (char *)vlg::grow_buff_or_die(0, 0, SQLITE_VAL_BUFF);
 }
 
 char *SQLTE_ENM_BUFF::getValBuff()
@@ -218,7 +218,7 @@ char *SQLTE_ENM_BUFF::getValBuff()
 char *SQLTE_ENM_BUFF::getValBuff_RSZ(size_t req_size)
 {
     if(req_size > val_buf_sz_) {
-        val_buf_ = (char *)blaze::grow_buff_or_die(val_buf_, val_buf_sz_,
+        val_buf_ = (char *)vlg::grow_buff_or_die(val_buf_, val_buf_sz_,
                                                    (req_size - val_buf_sz_));
         val_buf_sz_ = req_size;
     }
@@ -231,9 +231,9 @@ char *SQLTE_ENM_BUFF::getValBuff_RSZ(size_t req_size)
 struct SQLTE_ENM_SELECT_REC_UD {
     const entity_manager &bem;
     char *obj_ptr;
-    blaze::ascii_string *prfx;
-    blaze::ascii_string *columns;
-    blaze::ascii_string *where_claus;
+    vlg::ascii_string *prfx;
+    vlg::ascii_string *columns;
+    vlg::ascii_string *where_claus;
 
     bool *first_fld;
     bool array_fld;
@@ -242,8 +242,8 @@ struct SQLTE_ENM_SELECT_REC_UD {
     bool *first_key;
     bool *first_key_mmbr;
 
-    blaze::RetCode *last_error_code;
-    blaze::ascii_string *last_error_msg;
+    vlg::RetCode *last_error_code;
+    vlg::ascii_string *last_error_msg;
 
     //used in enum_mmbrs_fill_entity
     int *colmn_idx;
@@ -254,7 +254,7 @@ struct SQLTE_ENM_SELECT_REC_UD {
 };
 
 // enum_mmbrs_fill_entity
-void enum_mmbrs_fill_entity(const blaze::hash_map &map, const void *key,
+void enum_mmbrs_fill_entity(const vlg::hash_map &map, const void *key,
                             const void *ptr, void *ud)
 {
     SQLTE_ENM_SELECT_REC_UD *rud = static_cast<SQLTE_ENM_SELECT_REC_UD *>(ud);
@@ -280,7 +280,7 @@ void enum_mmbrs_fill_entity(const blaze::hash_map &map, const void *key,
             SQLTE_ENM_SELECT_REC_UD rrud = *rud;
             const entity_desc *edsc = NULL;
             if(!rud->bem.get_entity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
-                const blaze::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
+                const vlg::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
                 if(mmbrd->get_field_nmemb() > 1) {
                     for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
                         rrud.obj_ptr = rud->obj_ptr + mmbrd->get_field_offset() +
@@ -292,7 +292,7 @@ void enum_mmbrs_fill_entity(const blaze::hash_map &map, const void *key,
                     nm_desc.enum_elements(enum_mmbrs_fill_entity, &rrud);
                 }
             } else {
-                *rud->last_error_code = blaze::RetCode_GENERR;
+                *rud->last_error_code = vlg::RetCode_GENERR;
                 rud->last_error_msg->assign("enum_mmbrs_fill_entity: entity not found in bem [");
                 rud->last_error_msg->append(mmbrd->get_field_user_type());
                 rud->last_error_msg->append("]");
@@ -327,9 +327,9 @@ void enum_mmbrs_fill_entity(const blaze::hash_map &map, const void *key,
 struct SQLTE_ENM_UPDATE_REC_UD {
     const entity_manager &bem;
     const char *obj_ptr;
-    blaze::ascii_string *prfx;
-    blaze::ascii_string *set_section;
-    blaze::ascii_string *where_claus;
+    vlg::ascii_string *prfx;
+    vlg::ascii_string *set_section;
+    vlg::ascii_string *where_claus;
 
     bool *first_fld;
     bool array_fld;
@@ -338,20 +338,20 @@ struct SQLTE_ENM_UPDATE_REC_UD {
     bool *first_key;
     bool *first_key_mmbr;
 
-    blaze::RetCode *last_error_code;
-    blaze::ascii_string *last_error_msg;
+    vlg::RetCode *last_error_code;
+    vlg::ascii_string *last_error_msg;
 
     SQLTE_ENM_BUFF *enm_buff;
 };
 
 // enum_mmbrs_update
-void enum_mmbrs_update(const blaze::hash_map &map, const void *key,
+void enum_mmbrs_update(const vlg::hash_map &map, const void *key,
                        const void *ptr,
                        void *ud)
 {
     SQLTE_ENM_UPDATE_REC_UD *rud = static_cast<SQLTE_ENM_UPDATE_REC_UD *>(ud);
     const member_desc *mmbrd = *(const member_desc **)ptr;
-    blaze::ascii_string idx_prfx;
+    vlg::ascii_string idx_prfx;
     char idx_b[SQLITE_FIDX_BUFF] = { 0 };
     const char *obj_f_ptr = NULL;
     idx_prfx.assign(*(rud->prfx));
@@ -405,7 +405,7 @@ void enum_mmbrs_update(const blaze::hash_map &map, const void *key,
         } else {
             //class, struct is a recursive step.
             SQLTE_ENM_UPDATE_REC_UD rrud = *rud;
-            blaze::ascii_string rprfx;
+            vlg::ascii_string rprfx;
             rprfx.assign(idx_prfx);
             if(rprfx.length()) {
                 rprfx.append("_");
@@ -414,7 +414,7 @@ void enum_mmbrs_update(const blaze::hash_map &map, const void *key,
             rrud.prfx = &rprfx;
             const entity_desc *edsc = NULL;
             if(!rud->bem.get_entity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
-                const blaze::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
+                const vlg::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
                 if(mmbrd->get_field_nmemb() > 1) {
                     rrud.array_fld = true;
                     for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
@@ -428,7 +428,7 @@ void enum_mmbrs_update(const blaze::hash_map &map, const void *key,
                     nm_desc.enum_elements(enum_mmbrs_update, &rrud);
                 }
             } else {
-                *rud->last_error_code = blaze::RetCode_GENERR;
+                *rud->last_error_code = vlg::RetCode_GENERR;
                 rud->last_error_msg->assign("enum_mmbrs_insert: entity not found in bem [");
                 rud->last_error_msg->append(mmbrd->get_field_user_type());
                 rud->last_error_msg->append("]");
@@ -505,11 +505,11 @@ void enum_mmbrs_update(const blaze::hash_map &map, const void *key,
 struct SQLTE_ENM_DELETE_REC_UD {
     const entity_manager &bem;
     const char *obj_ptr;
-    blaze::ascii_string *where_claus;
+    vlg::ascii_string *where_claus;
     bool *first_key;
     bool *first_key_mmbr;
-    blaze::RetCode *last_error_code;
-    blaze::ascii_string *last_error_msg;
+    vlg::RetCode *last_error_code;
+    vlg::ascii_string *last_error_msg;
     SQLTE_ENM_BUFF *enm_buff;
 };
 
@@ -519,16 +519,16 @@ struct SQLTE_ENM_DELETE_REC_UD {
 struct SQLTE_ENM_INSERT_REC_UD {
     const entity_manager &bem;
     const char *obj_ptr;
-    blaze::ascii_string *insert_stmt;
-    blaze::ascii_string *prfx;
-    blaze::ascii_string *values;
+    vlg::ascii_string *insert_stmt;
+    vlg::ascii_string *prfx;
+    vlg::ascii_string *values;
 
     bool *first_fld;
     bool array_fld;
     unsigned int fld_idx;   //used to render column name when the field is an array
 
-    blaze::RetCode *last_error_code;
-    blaze::ascii_string *last_error_msg;
+    vlg::RetCode *last_error_code;
+    vlg::ascii_string *last_error_msg;
 
     SQLTE_ENM_BUFF *enm_buff;
 };
@@ -576,71 +576,71 @@ class pers_conn_sqlite : public persistence_connection_int {
         pers_conn_sqlite(unsigned int id,
                          persistence_connection_pool &conn_pool);
 
-        blaze::RetCode sqlite_connect(const char *filename,
+        vlg::RetCode sqlite_connect(const char *filename,
                                       int flags);
 
-        blaze::RetCode sqlite_disconnect();
+        vlg::RetCode sqlite_disconnect();
 
-        blaze::RetCode sqlite_exec_stmt(const char *stmt,
+        vlg::RetCode sqlite_exec_stmt(const char *stmt,
                                         bool fail_is_error = true);
 
-        blaze::RetCode sqlite_prepare_stmt(const char *sql_stmt,
+        vlg::RetCode sqlite_prepare_stmt(const char *sql_stmt,
                                            sqlite3_stmt **stmt);
 
-        blaze::RetCode sqlite_step_stmt(sqlite3_stmt *stmt,
+        vlg::RetCode sqlite_step_stmt(sqlite3_stmt *stmt,
                                         int &sqlite_rc);
 
-        blaze::RetCode sqlite_release_stmt(sqlite3_stmt *stmt);
+        vlg::RetCode sqlite_release_stmt(sqlite3_stmt *stmt);
 
         int  sqlite_last_err_code();
 
-        virtual blaze::RetCode do_connect();
+        virtual vlg::RetCode do_connect();
 
-        virtual blaze::RetCode do_create_table(const entity_manager &bem,
+        virtual vlg::RetCode do_create_table(const entity_manager &bem,
                                                const entity_desc &edesc,
                                                bool drop_if_exist);
 
-        virtual blaze::RetCode do_select(unsigned int key,
+        virtual vlg::RetCode do_select(unsigned int key,
                                          const entity_manager &bem,
                                          unsigned int &ts0_out,
                                          unsigned int &ts1_out,
                                          nclass &in_out_obj);
 
-        virtual blaze::RetCode do_update(unsigned int key,
+        virtual vlg::RetCode do_update(unsigned int key,
                                          const entity_manager &bem,
                                          unsigned int ts0,
                                          unsigned int ts1,
                                          const nclass &in_obj);
 
-        virtual blaze::RetCode do_delete(unsigned int key,
+        virtual vlg::RetCode do_delete(unsigned int key,
                                          const entity_manager &bem,
                                          unsigned int ts0,
                                          unsigned int ts1,
                                          PersistenceDeletionMode mode,
                                          const nclass &in_obj);
 
-        virtual blaze::RetCode do_insert(const entity_manager &bem,
+        virtual vlg::RetCode do_insert(const entity_manager &bem,
                                          unsigned int ts0,
                                          unsigned int ts1,
                                          const nclass &in_obj,
                                          bool fail_is_error = true);
 
-        virtual blaze::RetCode do_execute_query(const entity_manager &bem,
+        virtual vlg::RetCode do_execute_query(const entity_manager &bem,
                                                 const char *sql,
                                                 persistence_query_int **qry_out);
 
-        virtual blaze::RetCode do_release_query(persistence_query_int *qry);
+        virtual vlg::RetCode do_release_query(persistence_query_int *qry);
 
-        virtual blaze::RetCode do_next_entity_from_query(persistence_query_int *qry,
+        virtual vlg::RetCode do_next_entity_from_query(persistence_query_int *qry,
                                                          unsigned int &ts0_out,
                                                          unsigned int &ts1_out,
                                                          nclass &out_obj);
 
-        virtual blaze::RetCode do_execute_statement(const char *sql);
+        virtual vlg::RetCode do_execute_statement(const char *sql);
 
 
     private:
-        static blaze::RetCode read_timestamp_and_del_from_record(sqlite3_stmt  *stmt,
+        static vlg::RetCode read_timestamp_and_del_from_record(sqlite3_stmt  *stmt,
                                                                  int           &sqlite_rc,
                                                                  unsigned int  *ts0,
                                                                  unsigned int  *ts1,
@@ -664,21 +664,21 @@ class pers_conn_sqlite : public persistence_connection_int {
                 }
             protected:
 
-                virtual blaze::RetCode do_connect() {
+                virtual vlg::RetCode do_connect() {
                     persistence_connection_pool &pcp = sql_conn_.get_connection_pool();
                     IFLOG(trc(TH_ID, LS_OPN "%s(url:%s, usr:%s, psswd:%s)", __func__, pcp.url(),
                               pcp.user(), pcp.password()))
-                    blaze::RetCode cdrs_res = sql_conn_.sqlite_connect(pcp.url(),
+                    vlg::RetCode cdrs_res = sql_conn_.sqlite_connect(pcp.url(),
                                                                        SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
                     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
                     return cdrs_res;
                 }
 
-                virtual blaze::RetCode do_create_table() {
-                    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+                virtual vlg::RetCode do_create_table() {
+                    vlg::RetCode cdrs_res = vlg::RetCode_OK;
                     if((cdrs_res = sql_conn_.sqlite_exec_stmt(stmt_bf_->internal_buff(), false))) {
                         if(in_drop_if_exist_) {
-                            blaze::ascii_string drop_stmt;
+                            vlg::ascii_string drop_stmt;
                             RETURN_IF_NOT_OK(drop_stmt.assign("DROP TABLE "))
                             RETURN_IF_NOT_OK(drop_stmt.append(in_edesc_->get_entity_name()))
                             RETURN_IF_NOT_OK(drop_stmt.append(";"))
@@ -701,8 +701,8 @@ class pers_conn_sqlite : public persistence_connection_int {
                     return cdrs_res;
                 }
 
-                virtual blaze::RetCode do_select() {
-                    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+                virtual vlg::RetCode do_select() {
+                    vlg::RetCode cdrs_res = vlg::RetCode_OK;
                     sqlite3_stmt *stmt = NULL;
                     if((cdrs_res = sql_conn_.sqlite_prepare_stmt(stmt_bf_->internal_buff(),
                                                                  &stmt))) {
@@ -711,22 +711,22 @@ class pers_conn_sqlite : public persistence_connection_int {
                     } else {
                         if(!(cdrs_res = sql_conn_.sqlite_step_stmt(stmt, *sel_rud_->sqlite_rc))) {
                             if(*sel_rud_->sqlite_rc == SQLITE_ROW) {
-                                const blaze::hash_map &nm_desc =
+                                const vlg::hash_map &nm_desc =
                                     in_out_obj_->get_entity_descriptor()->get_opaque()->GetMap_NM_MMBRDSC();
                                 read_timestamp_and_del_from_record(stmt, *sel_rud_->sqlite_rc, in_out_ts0_,
                                                                    in_out_ts1_, NULL);
                                 sel_rud_->stmt = stmt;
                                 nm_desc.enum_elements(enum_mmbrs_fill_entity, sel_rud_);
-                                cdrs_res = blaze::RetCode_DBROW;
+                                cdrs_res = vlg::RetCode_DBROW;
                             } else if(*sel_rud_->sqlite_rc == SQLITE_DONE) {
                                 IFLOG(trc(TH_ID, LS_TRL "%s() - no data.", __func__))
-                                cdrs_res = blaze::RetCode_NODATA;
+                                cdrs_res = vlg::RetCode_NODATA;
                             } else {
                                 IFLOG(err(TH_ID, LS_TRL "%s(rc:%d) - sqlite_step_stmt - unhandled sqlite code.",
                                           __func__, *sel_rud_->sqlite_rc))
-                                cdrs_res = blaze::RetCode_DBERR;
+                                cdrs_res = vlg::RetCode_DBERR;
                             }
-                            blaze::RetCode rels_cdrs_res = blaze::RetCode_OK;
+                            vlg::RetCode rels_cdrs_res = vlg::RetCode_OK;
                             if((rels_cdrs_res = sql_conn_.sqlite_release_stmt(stmt))) {
                                 IFLOG(err(TH_ID, LS_TRL "%s(res:%d) - sqlite_release_stmt failed.", __func__,
                                           rels_cdrs_res))
@@ -739,8 +739,8 @@ class pers_conn_sqlite : public persistence_connection_int {
                     return cdrs_res;
                 }
 
-                virtual blaze::RetCode do_update() {
-                    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+                virtual vlg::RetCode do_update() {
+                    vlg::RetCode cdrs_res = vlg::RetCode_OK;
                     if((cdrs_res = sql_conn_.sqlite_exec_stmt(stmt_bf_->internal_buff()))) {
                         IFLOG(err(TH_ID, LS_TRL "%s(res:%d) - sqlite_exec_stmt failed.", __func__,
                                   cdrs_res))
@@ -748,8 +748,8 @@ class pers_conn_sqlite : public persistence_connection_int {
                     return cdrs_res;
                 }
 
-                virtual blaze::RetCode do_delete() {
-                    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+                virtual vlg::RetCode do_delete() {
+                    vlg::RetCode cdrs_res = vlg::RetCode_OK;
                     if((cdrs_res = sql_conn_.sqlite_exec_stmt(stmt_bf_->internal_buff()))) {
                         IFLOG(err(TH_ID, LS_TRL "%s(res:%d) - sqlite_exec_stmt failed.", __func__,
                                   cdrs_res))
@@ -757,8 +757,8 @@ class pers_conn_sqlite : public persistence_connection_int {
                     return cdrs_res;
                 }
 
-                virtual blaze::RetCode do_insert() {
-                    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+                virtual vlg::RetCode do_insert() {
+                    vlg::RetCode cdrs_res = vlg::RetCode_OK;
                     if((cdrs_res = sql_conn_.sqlite_exec_stmt(stmt_bf_->internal_buff(),
                                                               in_fail_is_error_))) {
                         if(in_fail_is_error_) {
@@ -772,8 +772,8 @@ class pers_conn_sqlite : public persistence_connection_int {
                     return cdrs_res;
                 }
 
-                virtual blaze::RetCode do_execute_query() {
-                    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+                virtual vlg::RetCode do_execute_query() {
+                    vlg::RetCode cdrs_res = vlg::RetCode_OK;
                     sqlite3_stmt *stmt = NULL;
                     if((cdrs_res = sql_conn_.sqlite_prepare_stmt(in_sql_, &stmt))) {
                         IFLOG(err(TH_ID, LS_CLO "%s(res:%d) - sqlite_prepare_stmt failed.", __func__,
@@ -785,31 +785,31 @@ class pers_conn_sqlite : public persistence_connection_int {
                     return cdrs_res;
                 }
 
-                virtual blaze::RetCode do_release_query() {
+                virtual vlg::RetCode do_release_query() {
                     pers_query_sqlite *qry_sqlite = static_cast<pers_query_sqlite *>(in_out_query_);
-                    blaze::RetCode cdrs_res = sql_conn_.sqlite_release_stmt(
+                    vlg::RetCode cdrs_res = sql_conn_.sqlite_release_stmt(
                                                   qry_sqlite->get_sqlite_stmt());
                     return cdrs_res;
                 }
 
-                virtual blaze::RetCode do_next_entity_from_query() {
-                    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+                virtual vlg::RetCode do_next_entity_from_query() {
+                    vlg::RetCode cdrs_res = vlg::RetCode_OK;
                     pers_query_sqlite *qry_sqlite = static_cast<pers_query_sqlite *>(in_out_query_);
                     if(!(cdrs_res = sql_conn_.sqlite_step_stmt(qry_sqlite->get_sqlite_stmt(),
                                                                *sel_rud_->sqlite_rc))) {
                         if(*sel_rud_->sqlite_rc == SQLITE_ROW) {
-                            const blaze::hash_map &nm_desc =
+                            const vlg::hash_map &nm_desc =
                                 in_out_obj_->get_entity_descriptor()->get_opaque()->GetMap_NM_MMBRDSC();
                             read_timestamp_and_del_from_record(qry_sqlite->get_sqlite_stmt(),
                                                                *sel_rud_->sqlite_rc, in_out_ts0_, in_out_ts1_, NULL);
                             nm_desc.enum_elements(enum_mmbrs_fill_entity, sel_rud_);
-                            cdrs_res = blaze::RetCode_DBROW;
+                            cdrs_res = vlg::RetCode_DBROW;
                         } else if(*sel_rud_->sqlite_rc == SQLITE_DONE) {
-                            cdrs_res = blaze::RetCode_QRYEND;
+                            cdrs_res = vlg::RetCode_QRYEND;
                         } else {
                             IFLOG(err(TH_ID, LS_TRL "%s(rc:%d) - sqlite_step_stmt unhandled sqlite code.",
                                       __func__, *sel_rud_->sqlite_rc))
-                            cdrs_res = blaze::RetCode_DBERR;
+                            cdrs_res = vlg::RetCode_DBERR;
                         }
                     } else {
                         IFLOG(err(TH_ID, LS_TRL "%s(res:%d) - sqlite_step_stmt failed.", __func__,
@@ -818,7 +818,7 @@ class pers_conn_sqlite : public persistence_connection_int {
                     return cdrs_res;
                 }
 
-                virtual blaze::RetCode do_execute_statement() {
+                virtual vlg::RetCode do_execute_statement() {
                     return sql_conn_.sqlite_exec_stmt(in_sql_);
                 }
 
@@ -840,11 +840,11 @@ pers_conn_sqlite::pers_conn_sqlite(unsigned int id,
     IFLOG(trc(TH_ID, LS_CTR "%s(id:%d)", __func__, id))
 }
 
-blaze::RetCode pers_conn_sqlite::sqlite_connect(const char *filename, int flags)
+vlg::RetCode pers_conn_sqlite::sqlite_connect(const char *filename, int flags)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(id:%d, filename:%s, flags:%d)", __func__, id_,
               filename, flags))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     int last_rc = sqlite3_open_v2(filename, &db_, flags, 0);
     if(last_rc) {
         IFLOG(err(TH_ID, LS_TRL
@@ -852,7 +852,7 @@ blaze::RetCode pers_conn_sqlite::sqlite_connect(const char *filename, int flags)
                   __func__, id_,
                   filename, last_rc, sqlite3_errstr(last_rc)))
         status_ = PersistenceConnectionStatus_ERROR;
-        cdrs_res = blaze::RetCode_DBERR;
+        cdrs_res = vlg::RetCode_DBERR;
     } else {
         status_ = PersistenceConnectionStatus_CONNECTED;
     }
@@ -860,10 +860,10 @@ blaze::RetCode pers_conn_sqlite::sqlite_connect(const char *filename, int flags)
     return cdrs_res;
 }
 
-blaze::RetCode pers_conn_sqlite::sqlite_disconnect()
+vlg::RetCode pers_conn_sqlite::sqlite_disconnect()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(id:%d)", __func__, id_))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     int last_rc = sqlite3_close_v2(db_);
     if(last_rc) {
         IFLOG(err(TH_ID, LS_CLO
@@ -871,7 +871,7 @@ blaze::RetCode pers_conn_sqlite::sqlite_disconnect()
                   last_rc,
                   sqlite3_errstr(last_rc)))
         status_ = PersistenceConnectionStatus_ERROR;
-        cdrs_res = blaze::RetCode_DBERR;
+        cdrs_res = vlg::RetCode_DBERR;
     } else {
         status_ = PersistenceConnectionStatus_DISCONNECTED;
     }
@@ -879,11 +879,11 @@ blaze::RetCode pers_conn_sqlite::sqlite_disconnect()
     return cdrs_res;
 }
 
-blaze::RetCode pers_conn_sqlite::sqlite_exec_stmt(const char *stmt,
+vlg::RetCode pers_conn_sqlite::sqlite_exec_stmt(const char *stmt,
                                                   bool fail_is_error)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(id:%d, stmt:%p)", __func__, id_, stmt))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     char *zErrMsg = 0;
     int last_rc = sqlite3_exec(db_, stmt, 0, 0, &zErrMsg);
     if(last_rc != SQLITE_OK) {
@@ -899,41 +899,41 @@ blaze::RetCode pers_conn_sqlite::sqlite_exec_stmt(const char *stmt,
                       zErrMsg))
         }
         sqlite3_free(zErrMsg);
-        cdrs_res = blaze::RetCode_DBOPFAIL;
+        cdrs_res = vlg::RetCode_DBOPFAIL;
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(id:%d)", __func__, id_))
     return cdrs_res;
 }
 
-blaze::RetCode pers_conn_sqlite::sqlite_prepare_stmt(const char *sql_stmt,
+vlg::RetCode pers_conn_sqlite::sqlite_prepare_stmt(const char *sql_stmt,
                                                      sqlite3_stmt **stmt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sql_stmt:p, stmt:%p)", __func__, sql_stmt, stmt))
     if(!stmt) {
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_BADARG;
+        return vlg::RetCode_BADARG;
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     int last_rc = sqlite3_prepare_v2(db_, sql_stmt, (int)strlen(sql_stmt), stmt, 0);
     if(last_rc != SQLITE_OK) {
         IFLOG(err(TH_ID, LS_TRL
                   "%s(id:%d) - sqlite3_prepare_v2(rc:%d) - errdesc[%s] - db error.", __func__,
                   id_, last_rc,
                   sqlite3_errstr(last_rc)))
-        cdrs_res = blaze::RetCode_DBERR;
+        cdrs_res = vlg::RetCode_DBERR;
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(id:%d)", __func__, id_))
     return cdrs_res;
 }
 
-blaze::RetCode pers_conn_sqlite::sqlite_step_stmt(sqlite3_stmt *stmt,
+vlg::RetCode pers_conn_sqlite::sqlite_step_stmt(sqlite3_stmt *stmt,
                                                   int &sqlite_rc)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(stmt:%p)", __func__, stmt))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     if(!stmt) {
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_BADARG;
+        return vlg::RetCode_BADARG;
     }
     sqlite_rc = sqlite3_step(stmt);
     if(sqlite_rc != SQLITE_ROW && sqlite_rc != SQLITE_DONE) {
@@ -941,38 +941,38 @@ blaze::RetCode pers_conn_sqlite::sqlite_step_stmt(sqlite3_stmt *stmt,
                   "%s(id:%d) - sqlite3_step(rc:%d) - errdesc[%s] - db operation fail.", __func__,
                   id_, sqlite_rc,
                   sqlite3_errstr(sqlite_rc)))
-        cdrs_res = blaze::RetCode_DBERR;
+        cdrs_res = vlg::RetCode_DBERR;
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(id:%d, rc:%d)", __func__, id_, sqlite_rc))
     return cdrs_res;
 }
 
-blaze::RetCode pers_conn_sqlite::sqlite_release_stmt(sqlite3_stmt *stmt)
+vlg::RetCode pers_conn_sqlite::sqlite_release_stmt(sqlite3_stmt *stmt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(id:%d)", __func__, id_))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     if(!stmt) {
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_BADARG;
+        return vlg::RetCode_BADARG;
     }
     int last_rc = sqlite3_finalize(stmt);
     if(last_rc != SQLITE_OK) {
         IFLOG(err(TH_ID, LS_TRL "%s(id:%d) - sqlite3_finalize(rc:%d) - db error.",
                   __func__, id_, last_rc))
-        cdrs_res = blaze::RetCode_DBERR;
+        cdrs_res = vlg::RetCode_DBERR;
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(id:%d)", __func__, id_))
     return cdrs_res;
 }
 
-blaze::RetCode pers_conn_sqlite::read_timestamp_and_del_from_record(
+vlg::RetCode pers_conn_sqlite::read_timestamp_and_del_from_record(
     sqlite3_stmt  *stmt,
     int           &sqlite_rc,
     unsigned int  *ts0,
     unsigned int  *ts1,
     bool          *del)
 {
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     //TS0
     *ts0 = (unsigned int)sqlite3_column_int(stmt, 0);
     //TS1
@@ -986,22 +986,22 @@ blaze::RetCode pers_conn_sqlite::read_timestamp_and_del_from_record(
 
 //--------------------- CONNECT -------------------------------------------------
 
-blaze::RetCode pers_conn_sqlite::do_connect()
+vlg::RetCode pers_conn_sqlite::do_connect()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(id:%d)", __func__, id_))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     worker_ = conn_pool_.get_worker_rr_can_create_start();
     if(worker_ == NULL) {
         IFLOG(cri(TH_ID, LS_CLO "%s() - unavailable thread.", __func__,
-                  blaze::RetCode_UNVRSC))
-        return blaze::RetCode_UNVRSC;
+                  vlg::RetCode_UNVRSC))
+        return vlg::RetCode_UNVRSC;
     }
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
                                                                 BLZ_PERS_TASK_OP_CONNECT);
     if((cdrs_res = worker_->submit_task(task))) {
         IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, cdrs_res))
     } else {
-        task->await_for_status(blaze::PTASK_STATUS_EXECUTED);
+        task->await_for_status(vlg::PTASK_STATUS_EXECUTED);
     }
     cdrs_res = task->op_res();
     delete task;
@@ -1013,22 +1013,22 @@ blaze::RetCode pers_conn_sqlite::do_connect()
 
 struct SQLTE_ENM_CREATE_REC_UD {
     const entity_manager &bem;
-    blaze::ascii_string *create_stmt;
-    blaze::ascii_string *prfx;
+    vlg::ascii_string *create_stmt;
+    vlg::ascii_string *prfx;
     bool array_fld;
     unsigned int fld_idx;   //used to render column name when the field is an array
     bool *first_key;
     bool *first_key_mmbr;
-    blaze::RetCode *last_error_code;
-    blaze::ascii_string *last_error_msg;
+    vlg::RetCode *last_error_code;
+    vlg::ascii_string *last_error_msg;
 };
 
-void enum_mmbrs_create_table(const blaze::hash_map &map, const void *key,
+void enum_mmbrs_create_table(const vlg::hash_map &map, const void *key,
                              const void *ptr, void *ud)
 {
     SQLTE_ENM_CREATE_REC_UD *rud = static_cast<SQLTE_ENM_CREATE_REC_UD *>(ud);
     const member_desc *mmbrd = *(const member_desc **)ptr;
-    blaze::ascii_string idx_prfx;
+    vlg::ascii_string idx_prfx;
     char idx_b[SQLITE_FIDX_BUFF] = {0};
     idx_prfx.assign(*(rud->prfx));
     if(rud->array_fld) {
@@ -1060,7 +1060,7 @@ void enum_mmbrs_create_table(const blaze::hash_map &map, const void *key,
         } else {
             //class, struct is a recursive step.
             SQLTE_ENM_CREATE_REC_UD rrud = *rud;
-            blaze::ascii_string rprfx;
+            vlg::ascii_string rprfx;
             rprfx.assign(idx_prfx);
             if(rprfx.length()) {
                 rprfx.append("_");
@@ -1069,7 +1069,7 @@ void enum_mmbrs_create_table(const blaze::hash_map &map, const void *key,
             rrud.prfx = &rprfx;
             const entity_desc *edsc = NULL;
             if(!rud->bem.get_entity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
-                const blaze::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
+                const vlg::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
                 if(mmbrd->get_field_nmemb() > 1) {
                     rrud.array_fld = true;
                     for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
@@ -1080,7 +1080,7 @@ void enum_mmbrs_create_table(const blaze::hash_map &map, const void *key,
                     nm_desc.enum_elements(enum_mmbrs_create_table, &rrud);
                 }
             } else {
-                *rud->last_error_code = blaze::RetCode_GENERR;
+                *rud->last_error_code = vlg::RetCode_GENERR;
                 rud->last_error_msg->assign("enum_mmbrs_create_table: entity not found in bem [");
                 rud->last_error_msg->append(mmbrd->get_field_user_type());
                 rud->last_error_msg->append("]");
@@ -1123,7 +1123,7 @@ void enum_mmbrs_create_table(const blaze::hash_map &map, const void *key,
     }
 }
 
-void enum_keyset_create(const blaze::linked_list &list, const void *ptr,
+void enum_keyset_create(const vlg::linked_list &list, const void *ptr,
                         void *ud)
 {
     SQLTE_ENM_CREATE_REC_UD *rud = static_cast<SQLTE_ENM_CREATE_REC_UD *>(ud);
@@ -1137,12 +1137,12 @@ void enum_keyset_create(const blaze::linked_list &list, const void *ptr,
     rud->create_stmt->append(mmbrd->get_member_name());
 }
 
-void enum_keys_create_table(const blaze::hash_map &map, const void *key,
+void enum_keys_create_table(const vlg::hash_map &map, const void *key,
                             const void *ptr, void *ud)
 {
     SQLTE_ENM_CREATE_REC_UD *rud = static_cast<SQLTE_ENM_CREATE_REC_UD *>(ud);
     const key_desc *kdsc = *(const key_desc **)ptr;
-    const blaze::linked_list &kset = kdsc->get_opaque()->GetKeyFieldSet();
+    const vlg::linked_list &kset = kdsc->get_opaque()->GetKeyFieldSet();
     //coma handling
     if(*(rud->first_key)) {
         *(rud->first_key) = false;
@@ -1162,23 +1162,23 @@ void enum_keys_create_table(const blaze::hash_map &map, const void *key,
     rud->create_stmt->append(")");
 }
 
-blaze::RetCode pers_conn_sqlite::do_create_table(const entity_manager &bem,
+vlg::RetCode pers_conn_sqlite::do_create_table(const entity_manager &bem,
                                                  const entity_desc &edesc,
                                                  bool drop_if_exist)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(drop_if_exist:%d)", __func__, drop_if_exist))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
-    blaze::RetCode last_error_code = blaze::RetCode_OK;
-    blaze::ascii_string last_error_str;
-    blaze::ascii_string create_stmt;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode last_error_code = vlg::RetCode_OK;
+    vlg::ascii_string last_error_str;
+    vlg::ascii_string create_stmt;
     RETURN_IF_NOT_OK(create_stmt.assign("CREATE TABLE "))
     RETURN_IF_NOT_OK(create_stmt.append(edesc.get_entity_name()))
     RETURN_IF_NOT_OK(create_stmt.append("("))
     RETURN_IF_NOT_OK(create_stmt.append(P_F_TS0" " BLZ_SQLITE_DTYPE_NUMERIC", "))
     RETURN_IF_NOT_OK(create_stmt.append(P_F_TS1" " BLZ_SQLITE_DTYPE_NUMERIC", "))
     RETURN_IF_NOT_OK(create_stmt.append(P_F_DEL" " BLZ_SQLITE_DTYPE_NUMERIC", "))
-    const blaze::hash_map &nm_desc = edesc.get_opaque()->GetMap_NM_MMBRDSC();
-    blaze::ascii_string prfx;
+    const vlg::hash_map &nm_desc = edesc.get_opaque()->GetMap_NM_MMBRDSC();
+    vlg::ascii_string prfx;
     RETURN_IF_NOT_OK(prfx.assign(""))
     bool frst_key = true, frst_key_mmbr = true;
     SQLTE_ENM_CREATE_REC_UD rud = { bem,
@@ -1192,7 +1192,7 @@ blaze::RetCode pers_conn_sqlite::do_create_table(const entity_manager &bem,
                                     &last_error_str
                                   };
     nm_desc.enum_elements(enum_mmbrs_create_table, &rud);
-    const blaze::hash_map &idk_desc = edesc.get_opaque()->GetMap_KEYID_KDESC();
+    const vlg::hash_map &idk_desc = edesc.get_opaque()->GetMap_KEYID_KDESC();
     idk_desc.enum_elements(enum_keys_create_table, &rud);
     RETURN_IF_NOT_OK(create_stmt.append(");"))
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
@@ -1205,7 +1205,7 @@ blaze::RetCode pers_conn_sqlite::do_create_table(const entity_manager &bem,
     if((cdrs_res = worker_->submit_task(task))) {
         IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, cdrs_res))
     } else {
-        task->await_for_status(blaze::PTASK_STATUS_EXECUTED);
+        task->await_for_status(vlg::PTASK_STATUS_EXECUTED);
     }
     cdrs_res = task->op_res();
     delete task;
@@ -1215,7 +1215,7 @@ blaze::RetCode pers_conn_sqlite::do_create_table(const entity_manager &bem,
 
 //--------------------- SELECT -------------------------------------------------
 
-void enum_keyset_select(const blaze::linked_list &list, const void *ptr,
+void enum_keyset_select(const vlg::linked_list &list, const void *ptr,
                         void *ud)
 {
     SQLTE_ENM_SELECT_REC_UD *rud = static_cast<SQLTE_ENM_SELECT_REC_UD *>(ud);
@@ -1253,23 +1253,23 @@ void enum_keyset_select(const blaze::linked_list &list, const void *ptr,
     }
 }
 
-blaze::RetCode pers_conn_sqlite::do_select(unsigned int key,
+vlg::RetCode pers_conn_sqlite::do_select(unsigned int key,
                                            const entity_manager &bem,
                                            unsigned int &ts0_out,
                                            unsigned int &ts1_out,
                                            nclass &in_out_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%d)", __func__, key))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
-    blaze::RetCode last_error_code = blaze::RetCode_OK;
-    blaze::ascii_string last_error_str;
-    blaze::ascii_string select_stmt;
-    blaze::ascii_string columns;
-    blaze::ascii_string where_claus;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode last_error_code = vlg::RetCode_OK;
+    vlg::ascii_string last_error_str;
+    vlg::ascii_string select_stmt;
+    vlg::ascii_string columns;
+    vlg::ascii_string where_claus;
     int sqlite_rc = 0;
     RETURN_IF_NOT_OK(columns.assign(""))
     RETURN_IF_NOT_OK(where_claus.assign(P_F_DEL"=0 AND "));
-    blaze::ascii_string prfx;
+    vlg::ascii_string prfx;
     RETURN_IF_NOT_OK(prfx.assign(""))
     bool frst_fld = true, frst_key = true, frst_key_mmbr = true;
     int column_idx = 3; //column idx, [ts0, ts1, del] we start from 3.
@@ -1291,14 +1291,14 @@ blaze::RetCode pers_conn_sqlite::do_select(unsigned int key,
                                    &sqlite_rc,
                                    enm_buff
                                   };
-    const blaze::hash_map &idk_desc =
+    const vlg::hash_map &idk_desc =
         in_out_obj.get_entity_descriptor()->get_opaque()->GetMap_KEYID_KDESC();
     const key_desc *kdsc = NULL;
     if(idk_desc.get(&key, &kdsc)) {
         IFLOG(err(TH_ID, LS_CLO "%s() - key not found [key:%d]", __func__, key))
-        return blaze::RetCode_BADARG;
+        return vlg::RetCode_BADARG;
     }
-    const blaze::linked_list &kset = kdsc->get_opaque()->GetKeyFieldSet();
+    const vlg::linked_list &kset = kdsc->get_opaque()->GetKeyFieldSet();
     kset.enum_elements(enum_keyset_select, &rud);
     /*not necessary because we can use select (*), column order is preserved*/
     //nm_desc.Enum(enum_mmbrs_select, &rud);
@@ -1325,7 +1325,7 @@ blaze::RetCode pers_conn_sqlite::do_select(unsigned int key,
     if((cdrs_res = worker_->submit_task(task))) {
         IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, cdrs_res))
     } else {
-        task->await_for_status(blaze::PTASK_STATUS_EXECUTED);
+        task->await_for_status(vlg::PTASK_STATUS_EXECUTED);
     }
     cdrs_res = task->op_res();
     delete task;
@@ -1338,7 +1338,7 @@ blaze::RetCode pers_conn_sqlite::do_select(unsigned int key,
 
 //--------------------- UPDATE -------------------------------------------------
 
-void enum_keyset_update(const blaze::linked_list &list, const void *ptr,
+void enum_keyset_update(const vlg::linked_list &list, const void *ptr,
                         void *ud)
 {
     SQLTE_ENM_UPDATE_REC_UD *rud = static_cast<SQLTE_ENM_UPDATE_REC_UD *>(ud);
@@ -1376,19 +1376,19 @@ void enum_keyset_update(const blaze::linked_list &list, const void *ptr,
     }
 }
 
-blaze::RetCode pers_conn_sqlite::do_update(unsigned int key,
+vlg::RetCode pers_conn_sqlite::do_update(unsigned int key,
                                            const entity_manager &bem,
                                            unsigned int ts0,
                                            unsigned int ts1,
                                            const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%d)", __func__, key))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
-    blaze::RetCode last_error_code = blaze::RetCode_OK;
-    blaze::ascii_string last_error_str;
-    blaze::ascii_string update_stmt;
-    blaze::ascii_string set_section;
-    blaze::ascii_string where_claus;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode last_error_code = vlg::RetCode_OK;
+    vlg::ascii_string last_error_str;
+    vlg::ascii_string update_stmt;
+    vlg::ascii_string set_section;
+    vlg::ascii_string where_claus;
     char ts_buff[TMSTMP_BUFF_SZ];
     RETURN_IF_NOT_OK(set_section.assign(P_F_TS0"="))
     snprintf(ts_buff, TMSTMP_BUFF_SZ, "%u", ts0);
@@ -1399,9 +1399,9 @@ blaze::RetCode pers_conn_sqlite::do_update(unsigned int key,
     RETURN_IF_NOT_OK(set_section.append(ts_buff))
     RETURN_IF_NOT_OK(set_section.append(", "))
     RETURN_IF_NOT_OK(where_claus.assign(P_F_DEL"=0 AND "));
-    const blaze::hash_map &nm_desc =
+    const vlg::hash_map &nm_desc =
         in_obj.get_entity_descriptor()->get_opaque()->GetMap_NM_MMBRDSC();
-    blaze::ascii_string prfx;
+    vlg::ascii_string prfx;
     RETURN_IF_NOT_OK(prfx.assign(""))
     bool frst_fld = true, frst_key = true, frst_key_mmbr = true;
     SQLTE_ENM_BUFF *enm_buff = new SQLTE_ENM_BUFF();
@@ -1419,14 +1419,14 @@ blaze::RetCode pers_conn_sqlite::do_update(unsigned int key,
                                     &last_error_str,
                                     enm_buff
                                   };
-    const blaze::hash_map &idk_desc =
+    const vlg::hash_map &idk_desc =
         in_obj.get_entity_descriptor()->get_opaque()->GetMap_KEYID_KDESC();
     const key_desc *kdsc = NULL;
     if(idk_desc.get(&key, &kdsc)) {
         IFLOG(err(TH_ID, LS_CLO "%s() - key not found [key:%d]", __func__, key))
-        return blaze::RetCode_BADARG;
+        return vlg::RetCode_BADARG;
     }
-    const blaze::linked_list &kset = kdsc->get_opaque()->GetKeyFieldSet();
+    const vlg::linked_list &kset = kdsc->get_opaque()->GetKeyFieldSet();
     kset.enum_elements(enum_keyset_update, &rud);
     nm_desc.enum_elements(enum_mmbrs_update, &rud);
     RETURN_IF_NOT_OK(update_stmt.assign("UPDATE "))
@@ -1449,7 +1449,7 @@ blaze::RetCode pers_conn_sqlite::do_update(unsigned int key,
     if((cdrs_res = worker_->submit_task(task))) {
         IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, cdrs_res))
     } else {
-        task->await_for_status(blaze::PTASK_STATUS_EXECUTED);
+        task->await_for_status(vlg::PTASK_STATUS_EXECUTED);
     }
     cdrs_res = task->op_res();
     delete task;
@@ -1462,7 +1462,7 @@ blaze::RetCode pers_conn_sqlite::do_update(unsigned int key,
 
 //--------------------- DELETE -------------------------------------------------
 
-void enum_keyset_delete(const blaze::linked_list &list, const void *ptr,
+void enum_keyset_delete(const vlg::linked_list &list, const void *ptr,
                         void *ud)
 {
     SQLTE_ENM_DELETE_REC_UD *rud = static_cast<SQLTE_ENM_DELETE_REC_UD *>(ud);
@@ -1500,7 +1500,7 @@ void enum_keyset_delete(const blaze::linked_list &list, const void *ptr,
     }
 }
 
-blaze::RetCode pers_conn_sqlite::do_delete(unsigned int key,
+vlg::RetCode pers_conn_sqlite::do_delete(unsigned int key,
                                            const entity_manager &bem,
                                            unsigned int ts0,
                                            unsigned int ts1,
@@ -1508,11 +1508,11 @@ blaze::RetCode pers_conn_sqlite::do_delete(unsigned int key,
                                            const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%d)", __func__, key))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
-    blaze::RetCode last_error_code = blaze::RetCode_OK;
-    blaze::ascii_string last_error_str;
-    blaze::ascii_string delete_stmt;
-    blaze::ascii_string where_claus;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode last_error_code = vlg::RetCode_OK;
+    vlg::ascii_string last_error_str;
+    vlg::ascii_string delete_stmt;
+    vlg::ascii_string where_claus;
     RETURN_IF_NOT_OK(where_claus.assign(""))
     bool frst_key = true, frst_key_mmbr = true;
     SQLTE_ENM_BUFF *enm_buff = new SQLTE_ENM_BUFF();
@@ -1525,14 +1525,14 @@ blaze::RetCode pers_conn_sqlite::do_delete(unsigned int key,
                                     &last_error_str,
                                     enm_buff
                                   };
-    const blaze::hash_map &idk_desc =
+    const vlg::hash_map &idk_desc =
         in_obj.get_entity_descriptor()->get_opaque()->GetMap_KEYID_KDESC();
     const key_desc *kdsc = NULL;
     if(idk_desc.get(&key, &kdsc)) {
         IFLOG(err(TH_ID, LS_CLO "%s() - key not found [key:%d]", __func__, key))
-        return blaze::RetCode_BADARG;
+        return vlg::RetCode_BADARG;
     }
-    const blaze::linked_list &kset = kdsc->get_opaque()->GetKeyFieldSet();
+    const vlg::linked_list &kset = kdsc->get_opaque()->GetKeyFieldSet();
     kset.enum_elements(enum_keyset_delete, &rud);
     if(mode == PersistenceDeletionMode_PHYSICAL) {
         RETURN_IF_NOT_OK(delete_stmt.assign("DELETE FROM "))
@@ -1563,7 +1563,7 @@ blaze::RetCode pers_conn_sqlite::do_delete(unsigned int key,
     if((cdrs_res = worker_->submit_task(task))) {
         IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, cdrs_res))
     } else {
-        task->await_for_status(blaze::PTASK_STATUS_EXECUTED);
+        task->await_for_status(vlg::PTASK_STATUS_EXECUTED);
     }
     cdrs_res = task->op_res();
     delete task;
@@ -1576,13 +1576,13 @@ blaze::RetCode pers_conn_sqlite::do_delete(unsigned int key,
 
 //--------------------- INSERT -------------------------------------------------
 
-void enum_mmbrs_insert(const blaze::hash_map &map, const void *key,
+void enum_mmbrs_insert(const vlg::hash_map &map, const void *key,
                        const void *ptr,
                        void *ud)
 {
     SQLTE_ENM_INSERT_REC_UD *rud = static_cast<SQLTE_ENM_INSERT_REC_UD *>(ud);
     const member_desc *mmbrd = *(const member_desc **)ptr;
-    blaze::ascii_string idx_prfx;
+    vlg::ascii_string idx_prfx;
     char idx_b[SQLITE_FIDX_BUFF] = {0};
     const char *obj_f_ptr = NULL;
     idx_prfx.assign(*(rud->prfx));
@@ -1635,7 +1635,7 @@ void enum_mmbrs_insert(const blaze::hash_map &map, const void *key,
         } else {
             //class, struct is a recursive step.
             SQLTE_ENM_INSERT_REC_UD rrud = *rud;
-            blaze::ascii_string rprfx;
+            vlg::ascii_string rprfx;
             rprfx.assign(idx_prfx);
             if(rprfx.length()) {
                 rprfx.append("_");
@@ -1644,7 +1644,7 @@ void enum_mmbrs_insert(const blaze::hash_map &map, const void *key,
             rrud.prfx = &rprfx;
             const entity_desc *edsc = NULL;
             if(!rud->bem.get_entity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
-                const blaze::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
+                const vlg::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
                 if(mmbrd->get_field_nmemb() > 1) {
                     rrud.array_fld = true;
                     for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
@@ -1658,7 +1658,7 @@ void enum_mmbrs_insert(const blaze::hash_map &map, const void *key,
                     nm_desc.enum_elements(enum_mmbrs_insert, &rrud);
                 }
             } else {
-                *rud->last_error_code = blaze::RetCode_GENERR;
+                *rud->last_error_code = vlg::RetCode_GENERR;
                 rud->last_error_msg->assign("enum_mmbrs_insert: entity not found in bem [");
                 rud->last_error_msg->append(mmbrd->get_field_user_type());
                 rud->last_error_msg->append("]");
@@ -1728,18 +1728,18 @@ void enum_mmbrs_insert(const blaze::hash_map &map, const void *key,
     }
 }
 
-blaze::RetCode pers_conn_sqlite::do_insert(const entity_manager &bem,
+vlg::RetCode pers_conn_sqlite::do_insert(const entity_manager &bem,
                                            unsigned int ts0,
                                            unsigned int ts1,
                                            const nclass &in_obj,
                                            bool fail_is_error)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
-    blaze::RetCode last_error_code = blaze::RetCode_OK;
-    blaze::ascii_string last_error_str;
-    blaze::ascii_string insert_stmt;
-    blaze::ascii_string values;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode last_error_code = vlg::RetCode_OK;
+    vlg::ascii_string last_error_str;
+    vlg::ascii_string insert_stmt;
+    vlg::ascii_string values;
     char ts_buff[TMSTMP_BUFF_SZ];
     snprintf(ts_buff, TMSTMP_BUFF_SZ, "%u", ts0);
     RETURN_IF_NOT_OK(values.assign(ts_buff))
@@ -1752,9 +1752,9 @@ blaze::RetCode pers_conn_sqlite::do_insert(const entity_manager &bem,
     RETURN_IF_NOT_OK(insert_stmt.append(
                          in_obj.get_entity_descriptor()->get_entity_name()))
     RETURN_IF_NOT_OK(insert_stmt.append("(" P_F_TS0", " P_F_TS1", " P_F_DEL", "))
-    const blaze::hash_map &nm_desc =
+    const vlg::hash_map &nm_desc =
         in_obj.get_entity_descriptor()->get_opaque()->GetMap_NM_MMBRDSC();
-    blaze::ascii_string prfx;
+    vlg::ascii_string prfx;
     RETURN_IF_NOT_OK(prfx.assign(""))
     bool frst_fld = true;
     SQLTE_ENM_BUFF *enm_buff = new SQLTE_ENM_BUFF();
@@ -1783,7 +1783,7 @@ blaze::RetCode pers_conn_sqlite::do_insert(const entity_manager &bem,
     if((cdrs_res = worker_->submit_task(task))) {
         IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, cdrs_res))
     } else {
-        task->await_for_status(blaze::PTASK_STATUS_EXECUTED);
+        task->await_for_status(vlg::PTASK_STATUS_EXECUTED);
     }
     cdrs_res = task->op_res();
     delete task;
@@ -1796,11 +1796,11 @@ blaze::RetCode pers_conn_sqlite::do_insert(const entity_manager &bem,
 
 //--------------------- QUERY -------------------------------------------------
 
-blaze::RetCode pers_conn_sqlite::do_execute_query(const entity_manager &bem,
+vlg::RetCode pers_conn_sqlite::do_execute_query(const entity_manager &bem,
                                                   const char *sql, persistence_query_int **qry_out)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sql:%p, qry_out:%p)", __func__, sql, qry_out))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     IFLOG(trc(TH_ID, LS_QRY "%s() - query-sql:%s", __func__, sql))
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
                                                                 BLZ_PERS_TASK_OP_EXECUTEQUERY);
@@ -1809,7 +1809,7 @@ blaze::RetCode pers_conn_sqlite::do_execute_query(const entity_manager &bem,
     if((cdrs_res = worker_->submit_task(task))) {
         IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, cdrs_res))
     } else {
-        task->await_for_status(blaze::PTASK_STATUS_EXECUTED);
+        task->await_for_status(vlg::PTASK_STATUS_EXECUTED);
     }
     cdrs_res = task->op_res();
     *qry_out = task->in_out_query();
@@ -1818,17 +1818,17 @@ blaze::RetCode pers_conn_sqlite::do_execute_query(const entity_manager &bem,
     return cdrs_res;
 }
 
-blaze::RetCode pers_conn_sqlite::do_release_query(persistence_query_int *qry)
+vlg::RetCode pers_conn_sqlite::do_release_query(persistence_query_int *qry)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(qry:%p)", __func__, qry))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
                                                                 BLZ_PERS_TASK_OP_RELEASEQUERY);
     task->in_out_query(qry);
     if((cdrs_res = worker_->submit_task(task))) {
         IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, cdrs_res))
     } else {
-        task->await_for_status(blaze::PTASK_STATUS_EXECUTED);
+        task->await_for_status(vlg::PTASK_STATUS_EXECUTED);
     }
     cdrs_res = task->op_res();
     delete task;
@@ -1836,7 +1836,7 @@ blaze::RetCode pers_conn_sqlite::do_release_query(persistence_query_int *qry)
     return cdrs_res;
 }
 
-blaze::RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_int
+vlg::RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_int
                                                            *qry,
                                                            unsigned int &ts0_out,
                                                            unsigned int &ts1_out,
@@ -1844,12 +1844,12 @@ blaze::RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_int
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(qry:%p)", __func__, qry))
     pers_query_sqlite *qry_sqlite = static_cast<pers_query_sqlite *>(qry);
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
-    blaze::RetCode last_error_code = blaze::RetCode_OK;
-    blaze::ascii_string last_error_str;
-    blaze::ascii_string select_stmt;
-    blaze::ascii_string columns;
-    blaze::ascii_string where_claus;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode last_error_code = vlg::RetCode_OK;
+    vlg::ascii_string last_error_str;
+    vlg::ascii_string select_stmt;
+    vlg::ascii_string columns;
+    vlg::ascii_string where_claus;
     int sqlite_rc = 0;
     bool frst_fld = true, frst_key = true, frst_key_mmbr = true;
     int column_idx = 3; //column idx, [ts0, ts1, del] we start from 3.
@@ -1881,7 +1881,7 @@ blaze::RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_int
     if((cdrs_res = worker_->submit_task(task))) {
         IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, cdrs_res))
     } else {
-        task->await_for_status(blaze::PTASK_STATUS_EXECUTED);
+        task->await_for_status(vlg::PTASK_STATUS_EXECUTED);
     }
     cdrs_res = task->op_res();
     delete task;
@@ -1894,10 +1894,10 @@ blaze::RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_int
 
 //--------------------- EXEC STMT ----------------------------------------------
 
-blaze::RetCode pers_conn_sqlite::do_execute_statement(const char *sql)
+vlg::RetCode pers_conn_sqlite::do_execute_statement(const char *sql)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sql:%p)", __func__, sql))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     IFLOG(trc(TH_ID, LS_STM "%s() - sql:%s", __func__, sql))
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
                                                                 BLZ_PERS_TASK_OP_EXECUTESTATEMENT);
@@ -1905,7 +1905,7 @@ blaze::RetCode pers_conn_sqlite::do_execute_statement(const char *sql)
     if((cdrs_res = worker_->submit_task(task))) {
         IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, cdrs_res))
     } else {
-        task->await_for_status(blaze::PTASK_STATUS_EXECUTED);
+        task->await_for_status(vlg::PTASK_STATUS_EXECUTED);
     }
     cdrs_res = task->op_res();
     delete task;
@@ -1935,10 +1935,10 @@ class pers_driv_sqlite : public persistence_driver_int {
         ~pers_driv_sqlite();
 
     public:
-        virtual blaze::RetCode new_connection(persistence_connection_pool &conn_pool,
+        virtual vlg::RetCode new_connection(persistence_connection_pool &conn_pool,
                                               persistence_connection_int **new_conn);
 
-        virtual blaze::RetCode close_connection(persistence_connection_int &conn);
+        virtual vlg::RetCode close_connection(persistence_connection_int &conn);
 
         virtual const char *get_driver_name();
 };
@@ -1974,19 +1974,19 @@ pers_driv_sqlite::~pers_driv_sqlite()
     IFLOG(trc(TH_ID, LS_DTR "%s", __func__))
 }
 
-blaze::RetCode pers_driv_sqlite::new_connection(persistence_connection_pool
+vlg::RetCode pers_driv_sqlite::new_connection(persistence_connection_pool
                                                 &conn_pool,
                                                 persistence_connection_int **new_conn)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(url:%s, usr:%s, psswd:%s, new_conn:%p)", __func__,
               conn_pool.url(), conn_pool.user(),
               conn_pool.password(), new_conn))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     pers_conn_sqlite *new_conn_instance = new pers_conn_sqlite(
         GetSQLITE_NEXT_CONNID(), conn_pool);
     if(!new_conn_instance) {
         IFLOG(cri(TH_ID, LS_CLO "%s() - new failed.", __func__))
-        return blaze::RetCode_MEMERR;
+        return vlg::RetCode_MEMERR;
     }
     if(!cdrs_res) {
         *new_conn = new_conn_instance;
@@ -1997,11 +1997,11 @@ blaze::RetCode pers_driv_sqlite::new_connection(persistence_connection_pool
     return cdrs_res;
 }
 
-blaze::RetCode pers_driv_sqlite::close_connection(persistence_connection_int
+vlg::RetCode pers_driv_sqlite::close_connection(persistence_connection_int
                                                   &conn)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    blaze::RetCode res = static_cast<pers_conn_sqlite &>(conn).sqlite_disconnect();
+    vlg::RetCode res = static_cast<pers_conn_sqlite &>(conn).sqlite_disconnect();
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d, id:%d)", __func__, res, conn.get_id()))
     return res;
 }

@@ -27,10 +27,10 @@
 #else
 #include <arpa/inet.h>
 #endif
-#include "blaze.h"
+#include "vlg.h"
 
 #if defined(__cplusplus)
-using namespace blaze;
+using namespace vlg;
 extern "C" {
 #endif
 

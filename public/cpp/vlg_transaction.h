@@ -23,7 +23,7 @@
 #define BLZ_CPP_TRANSACTION_H_
 #include "blaze_memory.h"
 
-namespace blaze {
+namespace vlg {
 
 /** @brief transaction_factory class.
 */
@@ -46,7 +46,7 @@ class transaction_factory {
 /** @brief transaction class.
 */
 class transaction_impl;
-class transaction : public blaze::collectable {
+class transaction : public vlg::collectable {
     public:
         typedef void (*transaction_status_change)(transaction &tx,
                                                   TransactionStatus status,
@@ -60,9 +60,9 @@ class transaction : public blaze::collectable {
         explicit transaction();
         virtual ~transaction();
 
-        virtual blaze::collector &get_collector();
+        virtual vlg::collector &get_collector();
 
-        blaze::RetCode bind(connection &conn);
+        vlg::RetCode bind(connection &conn);
 
     public:
         connection                  *get_connection();
@@ -101,13 +101,13 @@ class transaction : public blaze::collectable {
         TransactionStatus get_status();
 
     public:
-        blaze::RetCode
+        vlg::RetCode
         await_for_status_reached_or_outdated(TransactionStatus  test,
                                              TransactionStatus  &current,
                                              time_t             sec = -1,
                                              long               nsec = 0);
 
-        blaze::RetCode await_for_closure(time_t sec = -1, long nsec = 0);
+        vlg::RetCode await_for_closure(time_t sec = -1, long nsec = 0);
 
     public:
         void
@@ -131,17 +131,17 @@ class transaction : public blaze::collectable {
         void            set_transaction_id_PRID(unsigned int prid);
 
     public:
-        blaze::RetCode  renew();
+        vlg::RetCode  renew();
 
-        blaze::RetCode  prepare();
+        vlg::RetCode  prepare();
 
-        blaze::RetCode  prepare(TransactionRequestType  tx_request_type,
+        vlg::RetCode  prepare(TransactionRequestType  tx_request_type,
                                 Action                  tx_action,
                                 const nclass         *sending_obj = NULL,
                                 const nclass         *current_obj = NULL);
 
     public:
-        blaze::RetCode  send();
+        vlg::RetCode  send();
 
     public:
         virtual void    on_request();

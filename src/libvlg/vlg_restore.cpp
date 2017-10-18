@@ -26,7 +26,7 @@
 #ifdef WIN32
 #define SF_GBB_READ_H(bbuf, meth, cmd)\
 {\
-    blaze::RetCode gbb_read_res;\
+    vlg::RetCode gbb_read_res;\
     if((gbb_read_res = bbuf->meth)){\
         FILE *ferr = fopen("log.err", "wa+");\
         fprintf(ferr ? ferr : stderr, "GBB OVERFL ERROR (%d): cpcty:%u pos:%u limit:%u mark:%u \n",\
@@ -42,7 +42,7 @@
 #else
 #define SF_GBB_READ_H(bbuf, meth, cmd)\
 {\
-    blaze::RetCode gbb_read_res;\
+    vlg::RetCode gbb_read_res;\
     if((gbb_read_res = bbuf->meth)){\
         FILE *ferr = fopen("log.err", "wa+");\
         fprintf(ferr ? ferr : stderr, "GBB OVERFL ERROR (%d): cpcty:%zu pos:%zu limit:%zu mark:%zu \n",\
@@ -57,16 +57,16 @@
 }
 #endif
 
-namespace blaze {
+namespace vlg {
 
 //-----------------------------
 // FldSeqA_Restore
 //-----------------------------
-inline blaze::RetCode FldSeqA_Restore(void *entity_ptr,
+inline vlg::RetCode FldSeqA_Restore(void *entity_ptr,
                                       const entity_manager *em,
                                       Encode enctyp,
                                       const member_desc *mmbrd,
-                                      blaze::grow_byte_buffer *ibb)
+                                      vlg::grow_byte_buffer *ibb)
 {
     size_t array_sz = 0, start_pos = 0;
     unsigned short array_idx = 0;
@@ -74,7 +74,7 @@ inline blaze::RetCode FldSeqA_Restore(void *entity_ptr,
     //read current array len
     SF_GBB_READ_H(ibb, read_uint_to_sizet(&array_sz), return gbb_read_res)
     if(ibb->available_read() < array_sz) {
-        return blaze::RetCode_MALFORM;
+        return vlg::RetCode_MALFORM;
     }
     //we set starting point in the buffer.
     start_pos = ibb->position();
@@ -84,7 +84,7 @@ inline blaze::RetCode FldSeqA_Restore(void *entity_ptr,
             //read elem idx.
             SF_GBB_READ_H(ibb, read_ushort(&array_idx), return gbb_read_res)
             if(mmbrd->get_field_nmemb() < array_idx) {
-                return blaze::RetCode_MALFORM;
+                return vlg::RetCode_MALFORM;
             }
             //compute array fld offset
             elem_cptr = reinterpret_cast<char *>(entity_ptr);
@@ -99,7 +99,7 @@ inline blaze::RetCode FldSeqA_Restore(void *entity_ptr,
             //read elem idx.
             SF_GBB_READ_H(ibb, read_ushort(&array_idx), return gbb_read_res)
             if(mmbrd->get_field_nmemb() < array_idx) {
-                return blaze::RetCode_MALFORM;
+                return vlg::RetCode_MALFORM;
             }
             //compute array fld offset
             elem_cptr = reinterpret_cast<char *>(entity_ptr);
@@ -109,15 +109,15 @@ inline blaze::RetCode FldSeqA_Restore(void *entity_ptr,
                           return gbb_read_res)
         }
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 //-----------------------------
 // nclass
 //-----------------------------
-blaze::RetCode nclass::restore(const entity_manager *em,
+vlg::RetCode nclass::restore(const entity_manager *em,
                                Encode enctyp,
-                               blaze::grow_byte_buffer *ibb)
+                               vlg::grow_byte_buffer *ibb)
 {
     size_t obj_sz = 0, fld_sz = 0, start_pos = 0;
     unsigned short fld_idx = 0;
@@ -127,7 +127,7 @@ blaze::RetCode nclass::restore(const entity_manager *em,
             //read class obj len
             SF_GBB_READ_H(ibb, read_uint_to_sizet(&obj_sz), return gbb_read_res)
             if(ibb->available_read() < obj_sz) {
-                return blaze::RetCode_MALFORM;
+                return vlg::RetCode_MALFORM;
             }
             //we set starting point in the buffer.
             start_pos = ibb->position();
@@ -139,7 +139,7 @@ blaze::RetCode nclass::restore(const entity_manager *em,
                 const member_desc *mmbrd = get_entity_descriptor()->get_member_desc_by_id(
                                                fld_idx);
                 if(!mmbrd) {
-                    return blaze::RetCode_MALFORM;
+                    return vlg::RetCode_MALFORM;
                 }
                 //compute fld offset
                 fld_cptr = reinterpret_cast<char *>(this);
@@ -152,7 +152,7 @@ blaze::RetCode nclass::restore(const entity_manager *em,
                         //read string len.
                         SF_GBB_READ_H(ibb, read_uint_to_sizet(&fld_sz), return gbb_read_res)
                         if(mmbrd->get_field_nmemb() < fld_sz) {
-                            return blaze::RetCode_MALFORM;
+                            return vlg::RetCode_MALFORM;
                         }
                         SF_GBB_READ_H(ibb, read(fld_sz, fld_cptr), return gbb_read_res)
                     } else {
@@ -185,15 +185,15 @@ blaze::RetCode nclass::restore(const entity_manager *em,
                             }
                             break;
                         default:
-                            return blaze::RetCode_MALFORM;
+                            return vlg::RetCode_MALFORM;
                     }
                 }
             }
             break;
         default:
-            return blaze::RetCode_UNSP;
+            return vlg::RetCode_UNSP;
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 }

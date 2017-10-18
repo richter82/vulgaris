@@ -27,8 +27,8 @@
 
 ENM_GEN_TX_REP_REC_UD::ENM_GEN_TX_REP_REC_UD(blz_toolkit_tx_blz_class_model
                                              &mdl,
-                                             const blaze::entity_manager &bem,
-                                             blaze::ascii_string *prfx,
+                                             const vlg::entity_manager &bem,
+                                             vlg::ascii_string *prfx,
                                              bool array_fld,
                                              unsigned int fld_idx) :
     mdl_(mdl),
@@ -41,14 +41,14 @@ ENM_GEN_TX_REP_REC_UD::ENM_GEN_TX_REP_REC_UD(blz_toolkit_tx_blz_class_model
 ENM_GEN_TX_REP_REC_UD::~ENM_GEN_TX_REP_REC_UD()
 {}
 
-void enum_generate_tx_model_rep(const blaze::hash_map &map, const void *key,
+void enum_generate_tx_model_rep(const vlg::hash_map &map, const void *key,
                                 const void *ptr, void *ud)
 {
     ENM_GEN_TX_REP_REC_UD *rud = (ENM_GEN_TX_REP_REC_UD *)ud;
-    const blaze::member_desc *mmbrd = *(const blaze::member_desc **)ptr;
-    blaze::ascii_string hdr_row_nm;
+    const vlg::member_desc *mmbrd = *(const vlg::member_desc **)ptr;
+    vlg::ascii_string hdr_row_nm;
     hdr_row_nm.assign("");
-    blaze::ascii_string idx_prfx;
+    vlg::ascii_string idx_prfx;
     idx_prfx.assign(*(rud->prfx_));
     char idx_b[GEN_HDR_FIDX_BUFF] = {0};
     int sprintf_dbg = 0;
@@ -60,8 +60,8 @@ void enum_generate_tx_model_rep(const blaze::hash_map &map, const void *key,
         idx_prfx.append(idx_b);
     }
 
-    if(mmbrd->get_field_blz_type() == blaze::Type_ENTITY) {
-        if(mmbrd->get_field_entity_type() == blaze::EntityType_ENUM) {
+    if(mmbrd->get_field_blz_type() == vlg::Type_ENTITY) {
+        if(mmbrd->get_field_entity_type() == vlg::EntityType_ENUM) {
             //treat enum as number
             if(mmbrd->get_field_nmemb() > 1) {
                 for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
@@ -89,16 +89,16 @@ void enum_generate_tx_model_rep(const blaze::hash_map &map, const void *key,
         } else {
             //class, struct is a recursive step.
             ENM_GEN_TX_REP_REC_UD rrud = *rud;
-            blaze::ascii_string rprfx;
+            vlg::ascii_string rprfx;
             rprfx.assign(idx_prfx);
             if(rprfx.length()) {
                 rprfx.append("_");
             }
             rprfx.append(mmbrd->get_member_name());
             rrud.prfx_ = &rprfx;
-            const blaze::entity_desc *edsc = NULL;
+            const vlg::entity_desc *edsc = NULL;
             if(!rud->bem_.get_entity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
-                const blaze::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
+                const vlg::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
                 if(mmbrd->get_field_nmemb() > 1) {
                     rrud.array_fld_ = true;
                     for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
@@ -114,7 +114,7 @@ void enum_generate_tx_model_rep(const blaze::hash_map &map, const void *key,
         }
     } else {
         //primitive type
-        if(mmbrd->get_field_blz_type() == blaze::Type_ASCII) {
+        if(mmbrd->get_field_blz_type() == vlg::Type_ASCII) {
             if(rud->prfx_->length()) {
                 hdr_row_nm.append(idx_prfx);
                 hdr_row_nm.append("_");
@@ -153,9 +153,9 @@ void enum_generate_tx_model_rep(const blaze::hash_map &map, const void *key,
 //------------------------------------------------------------------------------
 
 blz_toolkit_tx_blz_class_model::blz_toolkit_tx_blz_class_model(
-    const blaze::entity_desc &edesc,
-    const blaze::entity_manager &bem,
-    blaze::transaction_int &tx,
+    const vlg::entity_desc &edesc,
+    const vlg::entity_manager &bem,
+    vlg::transaction_int &tx,
     QObject *parent) :
     edesc_(edesc),
     bem_(bem),
@@ -185,9 +185,9 @@ void blz_toolkit_tx_blz_class_model::GenerateModelRep()
 
 void blz_toolkit_tx_blz_class_model::GenerateHeader()
 {
-    blaze::ascii_string prfx;
+    vlg::ascii_string prfx;
     prfx.assign("");
-    const blaze::hash_map &nm_desc = edesc_.get_opaque()->GetMap_NM_MMBRDSC();
+    const vlg::hash_map &nm_desc = edesc_.get_opaque()->GetMap_NM_MMBRDSC();
     ENM_GEN_TX_REP_REC_UD gen_rep_rud(*this, bem_, &prfx, false, 0);
     nm_desc.enum_elements(enum_generate_tx_model_rep, &gen_rep_rud);
     int test = 0;
@@ -198,7 +198,7 @@ void blz_toolkit_tx_blz_class_model::IncrRownum()
     rownum_++;
 }
 
-blaze::nclass *blz_toolkit_tx_blz_class_model::local_obj() const
+vlg::nclass *blz_toolkit_tx_blz_class_model::local_obj() const
 {
     return local_obj_;
 }
@@ -243,12 +243,12 @@ QVariant blz_toolkit_tx_blz_class_model::data(const QModelIndex &index,
     }
     if(role == Qt::DisplayRole) {
         if(local_obj_) {
-            const blaze::member_desc *obj_fld_mdesc = NULL;
+            const vlg::member_desc *obj_fld_mdesc = NULL;
             char *obj_fld_ptr = NULL;
             if((obj_fld_ptr = local_obj_->get_term_field_ref_by_plain_idx(index.row(), bem_,
                                                                           &obj_fld_mdesc))) {
                 QString out;
-                if((obj_fld_mdesc->get_field_blz_type() == blaze::Type_ASCII) &&
+                if((obj_fld_mdesc->get_field_blz_type() == vlg::Type_ASCII) &&
                         obj_fld_mdesc->get_field_nmemb() > 1) {
                     out = QString::fromLatin1(obj_fld_ptr, obj_fld_mdesc->get_field_nmemb());
                 } else {
@@ -288,7 +288,7 @@ bool blz_toolkit_tx_blz_class_model::setData(const QModelIndex &index,
     }
     if(role == Qt::EditRole) {
         if(local_obj_) {
-            const blaze::member_desc *obj_fld_mdesc = NULL;
+            const vlg::member_desc *obj_fld_mdesc = NULL;
             char *obj_fld_ptr = NULL;
             if((obj_fld_ptr = local_obj_->get_term_field_ref_by_plain_idx(index.row(), bem_,
                                                                           &obj_fld_mdesc))) {

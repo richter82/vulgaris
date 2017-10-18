@@ -21,7 +21,7 @@
 
 #include "blz_glob_int.h"
 
-namespace blaze {
+namespace vlg {
 
 #define PARAMS_CFG_FILE_DIR_LEN 1024
 

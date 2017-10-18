@@ -26,7 +26,7 @@
 #define USEC_F 1000L
 #define NSEC_F 1L
 
-namespace blaze {
+namespace vlg {
 
 //-----------------------------
 // synch_mon_impl

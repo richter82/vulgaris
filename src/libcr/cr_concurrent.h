@@ -21,9 +21,9 @@
 
 #ifndef CR_CONCURRENT_H_
 #define CR_CONCURRENT_H_
-#include "blaze.h"
+#include "vlg.h"
 
-namespace blaze {
+namespace vlg {
 
 class blocking_queue;
 class p_executor_service;

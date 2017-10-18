@@ -63,10 +63,10 @@ struct BLZ_SBS_COL_DATA_ENTRY {
 };
 
 struct BLZ_SBS_DATA_ENTRY {
-    BLZ_SBS_DATA_ENTRY(blaze::nclass *entry,
+    BLZ_SBS_DATA_ENTRY(vlg::nclass *entry,
                        int row_idx,
                        int col_num);
-    blaze::nclass *entry_;
+    vlg::nclass *entry_;
     QVector<BLZ_SBS_COL_DATA_ENTRY> fld_act_;
 };
 
@@ -74,12 +74,12 @@ struct BLZ_SBS_DATA_ENTRY {
 // BLZ_CLASS_ROW_IDX_PAIR  -- HELPER STRUCT
 //------------------------------------------------------------------------------
 struct BLZ_CLASS_ROW_IDX_PAIR {
-    BLZ_CLASS_ROW_IDX_PAIR(int rowidx = 0, blaze::nclass *obj = NULL);
+    BLZ_CLASS_ROW_IDX_PAIR(int rowidx = 0, vlg::nclass *obj = NULL);
 
     BLZ_CLASS_ROW_IDX_PAIR &operator = (const BLZ_CLASS_ROW_IDX_PAIR &src);
 
     int rowidx_;
-    blaze::nclass *obj_;
+    vlg::nclass *obj_;
 };
 
 //------------------------------------------------------------------------------
@@ -88,16 +88,16 @@ struct BLZ_CLASS_ROW_IDX_PAIR {
 
 struct ENM_GEN_SBS_REP_REC_UD {
     ENM_GEN_SBS_REP_REC_UD(blz_toolkit_sbs_blz_class_model &mdl,
-                           const blaze::entity_manager &bem,
-                           blaze::ascii_string *prfx,
+                           const vlg::entity_manager &bem,
+                           vlg::ascii_string *prfx,
                            bool array_fld,
                            unsigned int fld_idx);
 
     ~ENM_GEN_SBS_REP_REC_UD();
 
     blz_toolkit_sbs_blz_class_model &mdl_;
-    const blaze::entity_manager &bem_;
-    blaze::ascii_string *prfx_;
+    const vlg::entity_manager &bem_;
+    vlg::ascii_string *prfx_;
 
     bool array_fld_;
     unsigned int fld_idx_;   //used to render column name when the field is an array
@@ -113,7 +113,7 @@ struct ENM_GEN_SBS_REP_REC_UD {
 
 struct ENM_UPD_CLS_ROW_REC_UD {
     ENM_UPD_CLS_ROW_REC_UD(blz_toolkit_sbs_blz_class_model &mdl,
-                           const blaze::entity_manager &bem,
+                           const vlg::entity_manager &bem,
                            const char *obj_ptr,
                            const char *obj_ptr_prev,
                            int rowidx,
@@ -123,7 +123,7 @@ struct ENM_UPD_CLS_ROW_REC_UD {
     ~ENM_UPD_CLS_ROW_REC_UD();
 
     blz_toolkit_sbs_blz_class_model &mdl_;
-    const blaze::entity_manager &bem_;
+    const vlg::entity_manager &bem_;
     const char *obj_ptr_;
     const char *obj_ptr_prev_;
     int rowidx_; //this is const during enumeration.
@@ -139,8 +139,8 @@ class blz_toolkit_sbs_blz_class_model : public QAbstractTableModel {
         Q_OBJECT
 
     public:
-        blz_toolkit_sbs_blz_class_model(const blaze::entity_desc &edesc,
-                                        const blaze::entity_manager &bem,
+        blz_toolkit_sbs_blz_class_model(const vlg::entity_desc &edesc,
+                                        const vlg::entity_manager &bem,
                                         QObject *parent = 0);
         ~blz_toolkit_sbs_blz_class_model();
 
@@ -169,14 +169,14 @@ class blz_toolkit_sbs_blz_class_model : public QAbstractTableModel {
         void IncrColnum();
 
     public:
-        void offerEntry(blaze::nclass *entry);
+        void offerEntry(vlg::nclass *entry);
 
     private:
         void GenerateModelRep();
         void GenerateHeader();
         void updateEntry(int rowidx,
-                         blaze::nclass *entry,
-                         blaze::nclass *prev_entry);
+                         vlg::nclass *entry,
+                         vlg::nclass *prev_entry);
 
     public slots:
         void OnCellResetColor(BLZ_SBS_COL_DATA_ENTRY &scde);
@@ -185,8 +185,8 @@ class blz_toolkit_sbs_blz_class_model : public QAbstractTableModel {
          REP
          ****/
     private:
-        const blaze::entity_desc       &edesc_;
-        const blaze::entity_manager    &bem_;
+        const vlg::entity_desc       &edesc_;
+        const vlg::entity_manager    &bem_;
 
         //METADATA REP
         int colnum_;

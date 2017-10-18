@@ -18,6 +18,32 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\libcr\cr.h" />
+    <ClInclude Include="..\src\libcr\cr_cfg.h" />
+    <ClInclude Include="..\src\libcr\cr_concurrent.h" />
+    <ClInclude Include="..\src\libcr\cr_dl.h" />
+    <ClInclude Include="..\src\libcr\cr_parse.h" />
+    <ClInclude Include="..\src\libcr\cr_structs.h" />
+    <ClInclude Include="..\src\libcr\cr_structs_mt.h" />
+    <ClInclude Include="..\src\libcr\cr_structs_rep.h" />
+    <ClInclude Include="..\src\libcr\cr_time.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\libcr\cr_bbuf.cpp" />
+    <ClCompile Include="..\src\libcr\cr_cfg.cpp" />
+    <ClCompile Include="..\src\libcr\cr_concurrent.cpp" />
+    <ClCompile Include="..\src\libcr\cr_core.cpp" />
+    <ClCompile Include="..\src\libcr\cr_dl.cpp" />
+    <ClCompile Include="..\src\libcr\cr_logger.cpp" />
+    <ClCompile Include="..\src\libcr\cr_obj_coll.cpp" />
+    <ClCompile Include="..\src\libcr\cr_parse.cpp" />
+    <ClCompile Include="..\src\libcr\cr_strings.cpp" />
+    <ClCompile Include="..\src\libcr\cr_structs.cpp" />
+    <ClCompile Include="..\src\libcr\cr_structs_mt.cpp" />
+    <ClCompile Include="..\src\libcr\cr_structs_rep.cpp" />
+    <ClCompile Include="..\src\libcr\cr_time.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C2DC0E98-A7EF-4AB6-BD82-DE4BF7A0B56C}</ProjectGuid>
     <RootNamespace>crlib</RootNamespace>
@@ -110,7 +136,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\contrib\pthread;..\contrib\sqlite</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINSOCK_DEPRECATED_NO_WARNINGS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <ExceptionHandling />
@@ -165,32 +191,6 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
 copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(DefaultPlatformToolset)\$(TargetName).pdb"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="..\src\crlib\cr_bbuf.cpp" />
-    <ClCompile Include="..\src\crlib\cr_cfg.cpp" />
-    <ClCompile Include="..\src\crlib\cr_concurrent.cpp" />
-    <ClCompile Include="..\src\crlib\cr_core.cpp" />
-    <ClCompile Include="..\src\crlib\cr_dl.cpp" />
-    <ClCompile Include="..\src\crlib\cr_logger.cpp" />
-    <ClCompile Include="..\src\crlib\cr_obj_coll.cpp" />
-    <ClCompile Include="..\src\crlib\cr_parse.cpp" />
-    <ClCompile Include="..\src\crlib\cr_strings.cpp" />
-    <ClCompile Include="..\src\crlib\cr_structs.cpp" />
-    <ClCompile Include="..\src\crlib\cr_structs_mt.cpp" />
-    <ClCompile Include="..\src\crlib\cr_structs_rep.cpp" />
-    <ClCompile Include="..\src\crlib\cr_time.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\src\crlib\cr.h" />
-    <ClInclude Include="..\src\crlib\cr_cfg.h" />
-    <ClInclude Include="..\src\crlib\cr_concurrent.h" />
-    <ClInclude Include="..\src\crlib\cr_dl.h" />
-    <ClInclude Include="..\src\crlib\cr_parse.h" />
-    <ClInclude Include="..\src\crlib\cr_structs.h" />
-    <ClInclude Include="..\src\crlib\cr_structs_mt.h" />
-    <ClInclude Include="..\src\crlib\cr_structs_rep.h" />
-    <ClInclude Include="..\src\crlib\cr_time.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

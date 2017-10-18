@@ -22,7 +22,7 @@
 #include "blz_glob_int.h"
 #include "blaze_byte_buffer.h"
 
-namespace blaze {
+namespace vlg {
 
 void *grow_buff_or_die(void *buf, size_t cur_size, size_t amnt)
 {
