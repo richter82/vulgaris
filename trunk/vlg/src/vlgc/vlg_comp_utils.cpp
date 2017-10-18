@@ -51,7 +51,7 @@
 
 #define NOTFNDINHASH "key not found in hash"
 
-namespace blaze {
+namespace vlg {
 
 //-----------------------------
 // BLZ_COMP_ARCH: x86_64
@@ -265,11 +265,11 @@ member_desc_comp::member_desc_comp(unsigned short mmbrid,
     enum_value_(enum_value)
 {}
 
-blaze::RetCode member_desc_comp::init()
+vlg::RetCode member_desc_comp::init()
 {
     RETURN_IF_NOT_OK(fild_offset_map_.init(HM_SIZE_NANO))
     RETURN_IF_NOT_OK(fild_type_size_map_.init(HM_SIZE_NANO))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 unsigned short member_desc_comp::get_member_id() const
@@ -381,7 +381,7 @@ entity_desc_comp::entity_desc_comp(unsigned int entityid,
                                    EntityType entitytype,
                                    const char *nmspace,
                                    const char *entityname,
-                                   blaze::alloc_func afun,
+                                   vlg::alloc_func afun,
                                    unsigned int fild_num,
                                    bool persistent) :
     entityid_(entityid),
@@ -392,13 +392,13 @@ entity_desc_comp::entity_desc_comp(unsigned int entityid,
     entityname_(entityname),
     afun_(afun),
     fild_num_(fild_num),
-    mmbrid_mdesc_(blaze::sngl_ptr_obj_mng(), sizeof(unsigned short)),
-    mmbrnm_mdesc_(blaze::sngl_ptr_obj_mng(), blaze::sngl_cstr_obj_mng()),
+    mmbrid_mdesc_(vlg::sngl_ptr_obj_mng(), sizeof(unsigned short)),
+    mmbrnm_mdesc_(vlg::sngl_ptr_obj_mng(), vlg::sngl_cstr_obj_mng()),
     persistent_(persistent),
-    keyid_kdesc_(blaze::sngl_ptr_obj_mng(), sizeof(unsigned short))
+    keyid_kdesc_(vlg::sngl_ptr_obj_mng(), sizeof(unsigned short))
 {}
 
-blaze::RetCode entity_desc_comp::init()
+vlg::RetCode entity_desc_comp::init()
 {
     RETURN_IF_NOT_OK(entity_size_map_.init(HM_SIZE_NANO))
     RETURN_IF_NOT_OK(entity_max_align_map_.init(HM_SIZE_NANO))
@@ -407,11 +407,11 @@ blaze::RetCode entity_desc_comp::init()
     if(persistent_) {
         RETURN_IF_NOT_OK(keyid_kdesc_.init(HM_SIZE_NANO))
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode entity_desc_comp::extend(blaze::hash_map *mmbrmap,
-                                        blaze::hash_map *keymap)
+vlg::RetCode entity_desc_comp::extend(vlg::hash_map *mmbrmap,
+                                        vlg::hash_map *keymap)
 {
     member_desc_comp *mdesc = NULL;
     mmbrmap->start_iteration();
@@ -429,14 +429,14 @@ blaze::RetCode entity_desc_comp::extend(blaze::hash_map *mmbrmap,
             RETURN_IF_NOT_OK(keyid_kdesc_.put(&keyid, &keydesc))
         }
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode entity_desc_comp::add_key_desc(const key_desc_comp *keydesc)
+vlg::RetCode entity_desc_comp::add_key_desc(const key_desc_comp *keydesc)
 {
     unsigned short keyid = keydesc->get_key_id();
     RETURN_IF_NOT_OK(keyid_kdesc_.put(&keyid, &keydesc))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 unsigned int entity_desc_comp::get_entityid()  const
@@ -487,7 +487,7 @@ const char *entity_desc_comp::get_entity_name()  const
     return entityname_;
 }
 
-blaze::alloc_func entity_desc_comp::get_entity_alloc_f() const
+vlg::alloc_func entity_desc_comp::get_entity_alloc_f() const
 {
     return afun_;
 }
@@ -502,22 +502,22 @@ bool entity_desc_comp::is_persistent()  const
     return persistent_;
 }
 
-blaze::hash_map &entity_desc_comp::get_map_id_MMBRDSC()
+vlg::hash_map &entity_desc_comp::get_map_id_MMBRDSC()
 {
     return mmbrid_mdesc_;
 }
 
-const blaze::hash_map &entity_desc_comp::get_map_name_MMBRDSC() const
+const vlg::hash_map &entity_desc_comp::get_map_name_MMBRDSC() const
 {
     return mmbrnm_mdesc_;
 }
 
-const blaze::hash_map &entity_desc_comp::get_map_keyid_KDESC() const
+const vlg::hash_map &entity_desc_comp::get_map_keyid_KDESC() const
 {
     return keyid_kdesc_;
 }
 
-blaze::hash_map &entity_desc_comp::get_map_keyid_KDESC_mod()
+vlg::hash_map &entity_desc_comp::get_map_keyid_KDESC_mod()
 {
     return keyid_kdesc_;
 }
@@ -567,17 +567,17 @@ key_desc_comp
 key_desc_comp::key_desc_comp(unsigned short keyid, bool primary) :
     keyid_(keyid),
     primary_(primary),
-    fildset_(blaze::sngl_ptr_obj_mng())
+    fildset_(vlg::sngl_ptr_obj_mng())
 {
 }
 
-blaze::RetCode key_desc_comp::init()
+vlg::RetCode key_desc_comp::init()
 {
     RETURN_IF_NOT_OK(fildset_.init())
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode key_desc_comp::init(blaze::linked_list *fldset)
+vlg::RetCode key_desc_comp::init(vlg::linked_list *fldset)
 {
     RETURN_IF_NOT_OK(fildset_.init())
     member_desc_comp *mmbrdesc = NULL;
@@ -585,13 +585,13 @@ blaze::RetCode key_desc_comp::init(blaze::linked_list *fldset)
     while(!fldset->next(&mmbrdesc)) {
         RETURN_IF_NOT_OK(fildset_.push_back(&mmbrdesc))
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode key_desc_comp::add_member_desc(const member_desc_comp  *mmbrdesc)
+vlg::RetCode key_desc_comp::add_member_desc(const member_desc_comp  *mmbrdesc)
 {
     RETURN_IF_NOT_OK(fildset_.push_back(&mmbrdesc))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 unsigned short key_desc_comp::get_key_id() const
@@ -604,195 +604,195 @@ bool key_desc_comp::is_primary() const
     return primary_;
 }
 
-const blaze::linked_list &key_desc_comp::get_key_member_set() const
+const vlg::linked_list &key_desc_comp::get_key_member_set() const
 {
     return fildset_;
 }
 
-blaze::linked_list &key_desc_comp::get_key_member_set_m()
+vlg::linked_list &key_desc_comp::get_key_member_set_m()
 {
     return fildset_;
 }
 
 
-blaze::RetCode get_zero_val_for_BLZ_TYPE(Type type,
-                                         blaze::ascii_string &out)
+vlg::RetCode get_zero_val_for_BLZ_TYPE(Type type,
+                                         vlg::ascii_string &out)
 {
     switch(comp_cfg.lang) {
         case BLZ_COMP_LANG_C:
-            return blaze::RetCode_UNSP;
+            return vlg::RetCode_UNSP;
             break;
         case BLZ_COMP_LANG_CPP:
             switch(type) {
                 case Type_BOOL:
                     RETURN_IF_NOT_OK(out.assign("false"))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_INT16:
                     RETURN_IF_NOT_OK(out.assign("0"))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_UINT16:
                     RETURN_IF_NOT_OK(out.assign("0"))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_INT32:
                     RETURN_IF_NOT_OK(out.assign("0"))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_UINT32:
                     RETURN_IF_NOT_OK(out.assign("0"))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_INT64:
                     RETURN_IF_NOT_OK(out.assign("0"))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_UINT64:
                     RETURN_IF_NOT_OK(out.assign("0"))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_FLOAT32:
                     RETURN_IF_NOT_OK(out.assign("0"))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_FLOAT64:
                     RETURN_IF_NOT_OK(out.assign("0.0"))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_ASCII:
                     RETURN_IF_NOT_OK(out.assign("\'\\0\'"))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 default:
-                    return blaze::RetCode_KO;
+                    return vlg::RetCode_KO;
             }
             break;
         case BLZ_COMP_LANG_JAVA:
             switch(type) {
                 case Type_BOOL:
                     RETURN_IF_NOT_OK(out.assign("false"))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_INT16:
                 case Type_UINT16:
                     RETURN_IF_NOT_OK(out.assign("(short)0"))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_INT32:
                 case Type_UINT32:
                     RETURN_IF_NOT_OK(out.assign("0"))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_INT64:
                 case Type_UINT64:
                     RETURN_IF_NOT_OK(out.assign("0L"))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_FLOAT32:
                     RETURN_IF_NOT_OK(out.assign("0f"))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_FLOAT64:
                     RETURN_IF_NOT_OK(out.assign("0.0"))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_ASCII:
                     RETURN_IF_NOT_OK(out.assign("(char)0x0000"))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 default:
-                    return blaze::RetCode_KO;
+                    return vlg::RetCode_KO;
             }
             break;
         default:
-            return blaze::RetCode_KO;
+            return vlg::RetCode_KO;
     }
 }
 
-blaze::RetCode target_type_from_builtin_BLZ_TYPE(member_desc_comp &mdsc,
-                                                 blaze::ascii_string &out)
+vlg::RetCode target_type_from_builtin_BLZ_TYPE(member_desc_comp &mdsc,
+                                                 vlg::ascii_string &out)
 {
     switch(comp_cfg.lang) {
         case BLZ_COMP_LANG_C:
-            return blaze::RetCode_UNSP;
+            return vlg::RetCode_UNSP;
             break;
         case BLZ_COMP_LANG_CPP:
             switch(mdsc.get_field_type()) {
                 case Type_BOOL:
                     RETURN_IF_NOT_OK(out.assign(BLZ_COMP_CPP_TYPE_BOOL))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_INT16:
                     RETURN_IF_NOT_OK(out.assign(BLZ_COMP_CPP_TYPE_SHORT))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_UINT16:
                     RETURN_IF_NOT_OK(out.assign(BLZ_COMP_CPP_TYPE_UNSIGN
                                                 CR_TK_SP
                                                 BLZ_COMP_CPP_TYPE_SHORT))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_INT32:
                     RETURN_IF_NOT_OK(out.assign(BLZ_COMP_CPP_TYPE_INT))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_UINT32:
                     RETURN_IF_NOT_OK(out.assign(BLZ_COMP_CPP_TYPE_UNSIGN
                                                 CR_TK_SP
                                                 BLZ_COMP_CPP_TYPE_INT))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_INT64:
                     RETURN_IF_NOT_OK(out.assign(BLZ_COMP_CPP_TYPE_INT64))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_UINT64:
                     RETURN_IF_NOT_OK(out.assign(BLZ_COMP_CPP_TYPE_UINT64))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_FLOAT32:
                     RETURN_IF_NOT_OK(out.assign(BLZ_COMP_CPP_TYPE_FLOAT))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_FLOAT64:
                     RETURN_IF_NOT_OK(out.assign(BLZ_COMP_CPP_TYPE_DOUBLE))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_ASCII:
                     RETURN_IF_NOT_OK(out.assign(BLZ_COMP_CPP_TYPE_CHAR))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 default:
-                    return blaze::RetCode_KO;
+                    return vlg::RetCode_KO;
             }
             break;
         case BLZ_COMP_LANG_JAVA:
             switch(mdsc.get_field_type()) {
                 case Type_BOOL:
                     RETURN_IF_NOT_OK(out.assign(BLZ_COMP_JAVA_TYPE_BOOL))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_INT16:
                     RETURN_IF_NOT_OK(out.assign(BLZ_COMP_JAVA_TYPE_SHORT))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_UINT16:
                     RETURN_IF_NOT_OK(out.assign(BLZ_COMP_JAVA_TYPE_SHORT))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_INT32:
                     RETURN_IF_NOT_OK(out.assign(BLZ_COMP_JAVA_TYPE_INT))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_UINT32:
                     RETURN_IF_NOT_OK(out.assign(BLZ_COMP_JAVA_TYPE_INT))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_INT64:
                     RETURN_IF_NOT_OK(out.assign(BLZ_COMP_JAVA_TYPE_LONG))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_UINT64:
                     RETURN_IF_NOT_OK(out.assign(BLZ_COMP_JAVA_TYPE_LONG))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_FLOAT32:
                     RETURN_IF_NOT_OK(out.assign(BLZ_COMP_JAVA_TYPE_FLOAT))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_FLOAT64:
                     RETURN_IF_NOT_OK(out.assign(BLZ_COMP_JAVA_TYPE_DOUBLE))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 case Type_ASCII:
                     RETURN_IF_NOT_OK(out.assign((mdsc.get_nmemb() > 1) ?
                                                 BLZ_COMP_JAVA_TYPE_STRING :
                                                 BLZ_COMP_JAVA_TYPE_CHAR))
-                    return blaze::RetCode_OK;
+                    return vlg::RetCode_OK;
                 default:
-                    return blaze::RetCode_KO;
+                    return vlg::RetCode_KO;
             }
             break;
         default:
-            return blaze::RetCode_KO;
+            return vlg::RetCode_KO;
     }
 }
 
-blaze::RetCode target_type_from_BLZ_TYPE(member_desc_comp &mdsc,
-                                         blaze::hash_map &entitymap,
-                                         blaze::ascii_string &out)
+vlg::RetCode target_type_from_BLZ_TYPE(member_desc_comp &mdsc,
+                                         vlg::hash_map &entitymap,
+                                         vlg::ascii_string &out)
 {
     switch(mdsc.get_field_type()) {
         case Type_UNDEFINED:
-            return blaze::RetCode_KO;
+            return vlg::RetCode_KO;
         case Type_ENTITY:
             RETURN_IF_NOT_OK(out.assign(mdsc.get_field_usr_str_type()))
-            return blaze::RetCode_OK;
+            return vlg::RetCode_OK;
         case Type_BOOL:
         case Type_INT16:
         case Type_UINT16:
@@ -804,47 +804,47 @@ blaze::RetCode target_type_from_BLZ_TYPE(member_desc_comp &mdsc,
         case Type_FLOAT64:
         case Type_ASCII:
             RETURN_IF_NOT_OK(target_type_from_builtin_BLZ_TYPE(mdsc, out))
-            return blaze::RetCode_OK;
+            return vlg::RetCode_OK;
         default:
-            return blaze::RetCode_KO;
+            return vlg::RetCode_KO;
     }
 }
 
-blaze::RetCode printf_percent_from_BLZ_TYPE(member_desc_comp &mdsc,
-                                            blaze::ascii_string &out,
+vlg::RetCode printf_percent_from_BLZ_TYPE(member_desc_comp &mdsc,
+                                            vlg::ascii_string &out,
                                             bool strict_linux)
 {
     switch(mdsc.get_field_type()) {
         case Type_BOOL:
-            RETURN_IF_NOT_OK(out.assign("d")) return blaze::RetCode_OK;
+            RETURN_IF_NOT_OK(out.assign("d")) return vlg::RetCode_OK;
         case Type_INT16:
-            RETURN_IF_NOT_OK(out.assign("d")) return blaze::RetCode_OK;
+            RETURN_IF_NOT_OK(out.assign("d")) return vlg::RetCode_OK;
         case Type_UINT16:
-            RETURN_IF_NOT_OK(out.assign("u")) return blaze::RetCode_OK;
+            RETURN_IF_NOT_OK(out.assign("u")) return vlg::RetCode_OK;
         case Type_INT32:
-            RETURN_IF_NOT_OK(out.assign("d")) return blaze::RetCode_OK;
+            RETURN_IF_NOT_OK(out.assign("d")) return vlg::RetCode_OK;
         case Type_UINT32:
-            RETURN_IF_NOT_OK(out.assign("u")) return blaze::RetCode_OK;
+            RETURN_IF_NOT_OK(out.assign("u")) return vlg::RetCode_OK;
         case Type_INT64:
             if(strict_linux) {
-                RETURN_IF_NOT_OK(out.assign("ld")) return blaze::RetCode_OK;
+                RETURN_IF_NOT_OK(out.assign("ld")) return vlg::RetCode_OK;
             } else {
-                RETURN_IF_NOT_OK(out.assign("lld")) return blaze::RetCode_OK;
+                RETURN_IF_NOT_OK(out.assign("lld")) return vlg::RetCode_OK;
             }
         case Type_UINT64:
             if(strict_linux) {
-                RETURN_IF_NOT_OK(out.assign("lu")) return blaze::RetCode_OK;
+                RETURN_IF_NOT_OK(out.assign("lu")) return vlg::RetCode_OK;
             } else {
-                RETURN_IF_NOT_OK(out.assign("llu")) return blaze::RetCode_OK;
+                RETURN_IF_NOT_OK(out.assign("llu")) return vlg::RetCode_OK;
             }
         case Type_FLOAT32:
-            RETURN_IF_NOT_OK(out.assign("f")) return blaze::RetCode_OK;
+            RETURN_IF_NOT_OK(out.assign("f")) return vlg::RetCode_OK;
         case Type_FLOAT64:
-            RETURN_IF_NOT_OK(out.assign("f")) return blaze::RetCode_OK;
+            RETURN_IF_NOT_OK(out.assign("f")) return vlg::RetCode_OK;
         case Type_ASCII:
-            RETURN_IF_NOT_OK(out.assign("c")) return blaze::RetCode_OK;
+            RETURN_IF_NOT_OK(out.assign("c")) return vlg::RetCode_OK;
         default:
-            return blaze::RetCode_KO;
+            return vlg::RetCode_KO;
     }
 }
 
@@ -857,7 +857,7 @@ BLZ_COMP_ARCH arch_from_str(const char *str)
     }
 }
 
-blaze::RetCode str_from_arch(BLZ_COMP_ARCH arch, blaze::ascii_string &out)
+vlg::RetCode str_from_arch(BLZ_COMP_ARCH arch, vlg::ascii_string &out)
 {
     switch(arch) {
         case BLZ_COMP_ARCH_x86_64:
@@ -867,7 +867,7 @@ blaze::RetCode str_from_arch(BLZ_COMP_ARCH arch, blaze::ascii_string &out)
             out.assign("");
             break;
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 BLZ_COMP_LANG lang_from_str(const char *str)
@@ -885,7 +885,7 @@ BLZ_COMP_LANG lang_from_str(const char *str)
     }
 }
 
-blaze::RetCode str_from_lang(BLZ_COMP_LANG lang, blaze::ascii_string &out)
+vlg::RetCode str_from_lang(BLZ_COMP_LANG lang, vlg::ascii_string &out)
 {
     switch(lang) {
         case BLZ_COMP_LANG_C:
@@ -904,7 +904,7 @@ blaze::RetCode str_from_lang(BLZ_COMP_LANG lang, blaze::ascii_string &out)
             out.assign("");
             break;
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 BLZ_COMP_TCOMP tcomp_from_str(const char *str)
@@ -918,7 +918,7 @@ BLZ_COMP_TCOMP tcomp_from_str(const char *str)
     }
 }
 
-blaze::RetCode str_from_tcomp(BLZ_COMP_TCOMP tcomp, blaze::ascii_string &out)
+vlg::RetCode str_from_tcomp(BLZ_COMP_TCOMP tcomp, vlg::ascii_string &out)
 {
     switch(tcomp) {
         case BLZ_COMP_TCOMP_MSVC:
@@ -931,7 +931,7 @@ blaze::RetCode str_from_tcomp(BLZ_COMP_TCOMP tcomp, blaze::ascii_string &out)
             out.assign("");
             break;
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 size_t get_next_valid_offset(size_t &cur_offset,
@@ -965,10 +965,10 @@ size_t adjust_entity_size(size_t cur_offset,
 /***********************************
 OPEN- BLZ_COMP_OpenInputFile
 ***********************************/
-blaze::RetCode open_input_file(const char *fname, FILE **fdesc)
+vlg::RetCode open_input_file(const char *fname, FILE **fdesc)
 {
     comp_cfg.path_list.start_iteration();
-    blaze::ascii_string ffname;
+    vlg::ascii_string ffname;
     char path[CR_MAX_SRC_PATH_LEN];
     while(!comp_cfg.path_list.next(path)) {
         COMMAND_IF_NOT_OK(ffname.assign(path), exit(1))
@@ -984,15 +984,15 @@ blaze::RetCode open_input_file(const char *fname, FILE **fdesc)
         fprintf(stderr, "ERROR opening input file %s\n", ffname.internal_buff());
         EXIT_ACTION_STDOUT("")
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 OPEN- BLZ_COMP_OpenOutputFile
 ***********************************/
-blaze::RetCode open_output_file(const char *fname, FILE **fdesc)
+vlg::RetCode open_output_file(const char *fname, FILE **fdesc)
 {
-    blaze::ascii_string ffname;
+    vlg::ascii_string ffname;
     COMMAND_IF_NOT_OK(ffname.assign(comp_cfg.out_dir), exit(1))
     if(ffname.char_at(ffname.length()-1) != CR_FS_SEP_C) {
         COMMAND_IF_NOT_OK(ffname.append(CR_FS_SEP), exit(1))
@@ -1002,22 +1002,22 @@ blaze::RetCode open_output_file(const char *fname, FILE **fdesc)
         fprintf(stderr, "ERROR opening output file %s\n", ffname.internal_buff());
         EXIT_ACTION_STDOUT("")
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 PUT- BLZ_COMP_Put_NewLine
 ***********************************/
-blaze::RetCode put_newline(FILE *file)
+vlg::RetCode put_newline(FILE *file)
 {
     fprintf(file,  "\n");
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 GET- BLZ_COMP_Get_LocalDate
 ***********************************/
-blaze::RetCode get_local_date(char *out)
+vlg::RetCode get_local_date(char *out)
 {
 #ifdef WIN32
     SYSTEMTIME time;
@@ -1028,13 +1028,13 @@ blaze::RetCode get_local_date(char *out)
     struct tm tm = *localtime(&t);
     sprintf(out, "%02d-%02d-%d", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
 #endif
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_Render_Hdr
 ***********************************/
-blaze::RetCode render_hdr(compile_unit &cunit, blaze::ascii_string &fname,
+vlg::RetCode render_hdr(compile_unit &cunit, vlg::ascii_string &fname,
                           FILE *file)
 {
     fprintf(file,  "/********************************************************");
@@ -1049,26 +1049,26 @@ blaze::RetCode render_hdr(compile_unit &cunit, blaze::ascii_string &fname,
     get_local_date(cur_date);
     fprintf(file, "%-20s%s", "Compiled on:", cur_date);
     RETURN_IF_NOT_OK(put_newline(file))
-    blaze::ascii_string tmp;
+    vlg::ascii_string tmp;
     RETURN_IF_NOT_OK(str_from_lang(comp_cfg.lang, tmp))
     fprintf(file, "%-20s%s", "Lang:", tmp.internal_buff());
     RETURN_IF_NOT_OK(put_newline(file))
     fprintf(file,  "********************************************************/");
     RETURN_IF_NOT_OK(put_newline(file))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 compiler_config::compiler_config() :    verblvl(0),
     lang(BLZ_COMP_LANG_Undef),
-    path_list(blaze::sngl_cstr_obj_mng()),
-    file_list(blaze::sngl_cstr_obj_mng()),
+    path_list(vlg::sngl_cstr_obj_mng()),
+    file_list(vlg::sngl_cstr_obj_mng()),
     out_dir(BLZ_COMP_DFLT_DIR) {}
 
-blaze::RetCode compiler_config::init()
+vlg::RetCode compiler_config::init()
 {
     RETURN_IF_NOT_OK(path_list.init())
     RETURN_IF_NOT_OK(file_list.init())
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 
@@ -1076,10 +1076,10 @@ compile_unit::compile_unit() :
     fname_(NULL),
     model_name_(NULL),
     model_version_(NULL),
-    define_map_(blaze::sngl_cstr_obj_mng(),
-                blaze::sngl_cstr_obj_mng()),
-    entity_map_(blaze::sngl_ptr_obj_mng(),
-                blaze::sngl_cstr_obj_mng())
+    define_map_(vlg::sngl_cstr_obj_mng(),
+                vlg::sngl_cstr_obj_mng()),
+    entity_map_(vlg::sngl_ptr_obj_mng(),
+                vlg::sngl_cstr_obj_mng())
 {}
 
 compile_unit::~compile_unit()
@@ -1089,10 +1089,10 @@ compile_unit::~compile_unit()
     }
 }
 
-blaze::RetCode compile_unit::init(const char *fname)
+vlg::RetCode compile_unit::init(const char *fname)
 {
     if(!fname) {
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
 #ifdef WIN32
     COMMAND_IF_NULL(fname_ = _strdup(fname), exit(1))
@@ -1101,13 +1101,13 @@ blaze::RetCode compile_unit::init(const char *fname)
 #endif
     COMMAND_IF_NOT_OK(define_map_.init(HM_SIZE_MINI), exit(1))
     COMMAND_IF_NOT_OK(entity_map_.init(HM_SIZE_NORM), exit(1))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode compile_unit::parse()
+vlg::RetCode compile_unit::parse()
 {
     FILE *fdesc = NULL;
-    blaze::ascii_string data; //file content loaded on data
+    vlg::ascii_string data; //file content loaded on data
     RETURN_IF_NOT_OK(open_input_file(fname_, &fdesc))
     RETURN_IF_NOT_OK(load_file(fdesc, data))
     RETURN_IF_NOT_OK(parse_data(fname_,
@@ -1116,22 +1116,22 @@ blaze::RetCode compile_unit::parse()
                                 entity_map_,
                                 &model_name_,
                                 &model_version_))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode compile_unit::compile()
+vlg::RetCode compile_unit::compile()
 {
     switch(comp_cfg.lang) {
         case BLZ_COMP_LANG_C:
-            return blaze::RetCode_UNSP;
+            return vlg::RetCode_UNSP;
         case BLZ_COMP_LANG_CPP:
             RETURN_IF_NOT_OK(compile_CPP(*this)) break;
         case BLZ_COMP_LANG_JAVA:
             RETURN_IF_NOT_OK(compile_Java(*this)) break;
         default:
-            return blaze::RetCode_UNSP;
+            return vlg::RetCode_UNSP;
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 const char *compile_unit::model_name() const
@@ -1149,12 +1149,12 @@ const char *compile_unit::get_file_name()
     return fname_;
 }
 
-blaze::hash_map &compile_unit::get_define_map()
+vlg::hash_map &compile_unit::get_define_map()
 {
     return define_map_;
 }
 
-blaze::hash_map &compile_unit::get_entity_map()
+vlg::hash_map &compile_unit::get_entity_map()
 {
     return entity_map_;
 }

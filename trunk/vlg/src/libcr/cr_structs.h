@@ -21,7 +21,7 @@
 
 #ifndef CR_STRUCTS_H_
 #define CR_STRUCTS_H_
-#include "blaze.h"
+#include "vlg.h"
 
 /**
 MurmurHash3 was written by Austin Appleby, and is placed in the public
@@ -32,7 +32,7 @@ void MurmurHash3_x86_32(const void *key,
                         uint32_t seed,
                         void *out);
 
-namespace blaze {
+namespace vlg {
 
 /**
 @param type_size

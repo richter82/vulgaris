@@ -32,7 +32,7 @@
 #define LS_TST "TST|"
 #define TEST_TMOUT 4
 
-blaze::nclass_logger *blog = NULL;
+vlg::nclass_logger *blog = NULL;
 
 int save_class_position(const char *filename,
                         unsigned int ts0,
@@ -84,16 +84,16 @@ int fill_user(blz_model_sample::USER &usr, int count)
 //-----------------------------
 // outgoing_connection
 //-----------------------------
-class outgoing_connection : public blaze::connection {
+class outgoing_connection : public vlg::connection {
     public:
-        virtual void on_connect(blaze::ConnectivityEventResult con_evt_res,
-                                blaze::ConnectivityEventType connectivity_evt_type) {
+        virtual void on_connect(vlg::ConnectivityEventResult con_evt_res,
+                                vlg::ConnectivityEventType connectivity_evt_type) {
             IFLOG2(blog, inf(TH_ID, LS_TST"[CALLED outgoing_connection on_connect][%d, %d]",
                              con_evt_res,
                              connectivity_evt_type))
         }
-        virtual void on_disconnect(blaze::ConnectivityEventResult con_evt_res,
-                                   blaze::ConnectivityEventType connectivity_evt_type) {
+        virtual void on_disconnect(vlg::ConnectivityEventResult con_evt_res,
+                                   vlg::ConnectivityEventType connectivity_evt_type) {
             IFLOG2(blog, inf(TH_ID,
                              LS_TST"[CALLED outgoing_connection on_disconnect][%d, %d]", con_evt_res,
                              connectivity_evt_type))
@@ -103,14 +103,14 @@ class outgoing_connection : public blaze::connection {
 //-----------------------------
 // incoming_connection
 //-----------------------------
-class incoming_connection : public blaze::connection {
+class incoming_connection : public vlg::connection {
     public:
-        virtual void on_connect(blaze::ConnectivityEventResult con_evt_res,
-                                blaze::ConnectivityEventType connectivity_evt_type) {
+        virtual void on_connect(vlg::ConnectivityEventResult con_evt_res,
+                                vlg::ConnectivityEventType connectivity_evt_type) {
             IFLOG2(blog, inf(TH_ID, LS_TST"[CALLED incoming_connection on_connect]"))
         }
-        virtual void on_disconnect(blaze::ConnectivityEventResult con_evt_res,
-                                   blaze::ConnectivityEventType connectivity_evt_type) {
+        virtual void on_disconnect(vlg::ConnectivityEventResult con_evt_res,
+                                   vlg::ConnectivityEventType connectivity_evt_type) {
             IFLOG2(blog, inf(TH_ID, LS_TST"[CALLED incoming_connection on_disconnect]"))
         }
 };
@@ -118,12 +118,12 @@ class incoming_connection : public blaze::connection {
 //-----------------------------
 // incoming_connection_factory
 //-----------------------------
-class incoming_connection_factory : public blaze::connection_factory {
+class incoming_connection_factory : public vlg::connection_factory {
     public:
         virtual ~incoming_connection_factory() {
         }
     public:
-        virtual blaze::connection *new_connection(blaze::peer &p) {
+        virtual vlg::connection *new_connection(vlg::peer &p) {
             return new incoming_connection();
         }
 };
@@ -131,11 +131,11 @@ class incoming_connection_factory : public blaze::connection_factory {
 //-----------------------------
 // incoming_transaction
 //-----------------------------
-class incoming_transaction : public blaze::transaction {
+class incoming_transaction : public vlg::transaction {
     public:
         virtual void on_request() {
             IFLOG2(blog, inf(TH_ID, LS_TST"[CALLED incoming_transaction on_request]"))
-            const blaze::nclass *sending_obj = get_request_obj();
+            const vlg::nclass *sending_obj = get_request_obj();
             if(sending_obj) {
                 switch(sending_obj->get_nclass_id()) {
                     case USER_ENTITY_ID:
@@ -143,14 +143,14 @@ class incoming_transaction : public blaze::transaction {
                         if(!get_connection()->get_peer()->class_persistent_update_or_save_and_distribute(
                                     1,
                                     *sending_obj)) {
-                            set_transaction_result(blaze::TransactionResult_COMMITTED);
-                            set_transaction_result_code(blaze::ProtocolCode_SUCCESS);
+                            set_transaction_result(vlg::TransactionResult_COMMITTED);
+                            set_transaction_result_code(vlg::ProtocolCode_SUCCESS);
                         } else {
-                            set_transaction_result(blaze::TransactionResult_FAILED);
-                            set_transaction_result_code(blaze::ProtocolCode_APPLICATIVE_ERROR);
+                            set_transaction_result(vlg::TransactionResult_FAILED);
+                            set_transaction_result_code(vlg::ProtocolCode_APPLICATIVE_ERROR);
                         }
                         {
-                            blaze::nclass *result_obj = sending_obj->clone();
+                            vlg::nclass *result_obj = sending_obj->clone();
                             set_result_obj(result_obj);
                             delete result_obj;
                         }
@@ -169,12 +169,12 @@ class incoming_transaction : public blaze::transaction {
 //-----------------------------
 // incoming_transaction_factory
 //-----------------------------
-class incoming_transaction_factory : public blaze::transaction_factory {
+class incoming_transaction_factory : public vlg::transaction_factory {
     public:
         virtual ~incoming_transaction_factory() {
         }
     public:
-        virtual blaze::transaction *new_transaction(blaze::connection &conn) {
+        virtual vlg::transaction *new_transaction(vlg::connection &conn) {
             return new incoming_transaction();
         }
 };
@@ -182,7 +182,7 @@ class incoming_transaction_factory : public blaze::transaction_factory {
 //-----------------------------
 // outgoing_transaction
 //-----------------------------
-class outgoing_transaction : public blaze::transaction {
+class outgoing_transaction : public vlg::transaction {
     public:
         virtual void on_request() {
             IFLOG2(blog, dbg(TH_ID, LS_TST"[CALLED outgoing_transaction on_request]"))
@@ -193,13 +193,13 @@ class outgoing_transaction : public blaze::transaction {
         }
 };
 
-void applicative_on_sbs_event(blaze::subscription_event &sbs_evt)
+void applicative_on_sbs_event(vlg::subscription_event &sbs_evt)
 {}
 
 //-----------------------------
 // outgoing_subscription
 //-----------------------------
-class outgoing_subscription : public blaze::subscription {
+class outgoing_subscription : public vlg::subscription {
     public:
         outgoing_subscription() : recv_items(0) {}
     public:
@@ -209,15 +209,15 @@ class outgoing_subscription : public blaze::subscription {
         virtual void on_stop() {
             IFLOG2(blog, inf(TH_ID, LS_TST"[CALLED outgoing_subscription on_stop]"))
         }
-        virtual void on_event(blaze::subscription_event &sbs_evt) {
+        virtual void on_event(vlg::subscription_event &sbs_evt) {
             IFLOG2(blog, dbg(TH_ID, LS_TST"[CALLED outgoing_subscription on_event]"))
             switch(sbs_evt.get_event_type()) {
-                case blaze::SubscriptionEventType_DOWNLOAD_END:
+                case vlg::SubscriptionEventType_DOWNLOAD_END:
                     IFLOG2(blog, inf(TH_ID, LS_TST"[download end]"))
                     break;
-                case blaze::SubscriptionEventType_DOWNLOAD:
+                case vlg::SubscriptionEventType_DOWNLOAD:
                     IFLOG2(blog, inf(TH_ID, LS_TST"[download event]")) {
-                        blaze::nclass *obj = sbs_evt.get_object();
+                        vlg::nclass *obj = sbs_evt.get_object();
                         if(obj) {
                             get_connection()->get_peer()->class_persistent_update_or_save(1, *obj);
                         }
@@ -232,7 +232,7 @@ class outgoing_subscription : public blaze::subscription {
                         }
                     }
                     break;
-                case blaze::SubscriptionEventType_LIVE:
+                case vlg::SubscriptionEventType_LIVE:
                     IFLOG2(blog, dbg(TH_ID, LS_TST"[live event]"))
                     break;
                 default:
@@ -254,7 +254,7 @@ class outgoing_subscription : public blaze::subscription {
 //-----------------------------
 // incoming_subscription
 //-----------------------------
-class incoming_subscription : public blaze::subscription {
+class incoming_subscription : public vlg::subscription {
     public:
         virtual void on_start() {
             IFLOG2(blog, inf(TH_ID, LS_TST"[CALLED incoming_subscription on_start]"))
@@ -262,22 +262,22 @@ class incoming_subscription : public blaze::subscription {
         virtual void on_stop() {
             IFLOG2(blog, inf(TH_ID, LS_TST"[CALLED incoming_subscription on_stop]"))
         }
-        virtual blaze::RetCode
-        on_event_accept(const blaze::subscription_event &sbs_evt) {
+        virtual vlg::RetCode
+        on_event_accept(const vlg::subscription_event &sbs_evt) {
             IFLOG2(blog, dbg(TH_ID, LS_TST"[CALLED incoming_subscription on_event_accept]"))
-            return blaze::RetCode_OK;
+            return vlg::RetCode_OK;
         }
 };
 
 //-----------------------------
 // incoming_transaction_factory
 //-----------------------------
-class incoming_subscription_factory : public blaze::subscription_factory {
+class incoming_subscription_factory : public vlg::subscription_factory {
     public:
         virtual ~incoming_subscription_factory() {
         }
     public:
-        virtual blaze::subscription *new_subscription(blaze::connection &conn) {
+        virtual vlg::subscription *new_subscription(vlg::connection &conn) {
             return new incoming_subscription();
         }
 };
@@ -285,7 +285,7 @@ class incoming_subscription_factory : public blaze::subscription_factory {
 //-----------------------------
 // both_peer
 //-----------------------------
-class both_peer : public blaze::peer {
+class both_peer : public vlg::peer {
     public:
         both_peer() {
             peer_both_ver_[0] = 0;
@@ -306,31 +306,31 @@ class both_peer : public blaze::peer {
             return peer_both_ver_;
         }
 
-        virtual blaze::RetCode on_load_config(int pnum,
+        virtual vlg::RetCode on_load_config(int pnum,
                                               const char *param,
                                               const char *value) {
             IFLOG2(blog, trc(TH_ID, LS_TST"[CALLED both_peer on_load_config]"))
-            return blaze::RetCode_OK;
+            return vlg::RetCode_OK;
         }
 
-        virtual blaze::RetCode on_init() {
+        virtual vlg::RetCode on_init() {
             IFLOG2(blog, inf(TH_ID, LS_TST"[CALLED both_peer on_init]"))
-            return blaze::RetCode_OK;
+            return vlg::RetCode_OK;
         }
 
-        virtual blaze::RetCode on_starting() {
+        virtual vlg::RetCode on_starting() {
             IFLOG2(blog, inf(TH_ID, LS_TST"[CALLED both_peer on_starting]"))
-            return blaze::RetCode_OK;
+            return vlg::RetCode_OK;
         }
 
-        virtual blaze::RetCode on_stopping() {
+        virtual vlg::RetCode on_stopping() {
             IFLOG2(blog, inf(TH_ID, LS_TST"[CALLED both_peer on_stopping]"))
-            return blaze::RetCode_OK;
+            return vlg::RetCode_OK;
         }
 
-        virtual blaze::RetCode on_transit_on_air() {
+        virtual vlg::RetCode on_transit_on_air() {
             IFLOG2(blog, inf(TH_ID, LS_TST"[CALLED both_peer on_transit_on_air]"))
-            return blaze::RetCode_OK;
+            return vlg::RetCode_OK;
         }
 
         virtual void on_error() {
@@ -341,12 +341,12 @@ class both_peer : public blaze::peer {
             IFLOG2(blog, inf(TH_ID, LS_TST"[CALLED both_peer on_dying_breath]"))
         }
 
-        virtual blaze::RetCode
-        on_new_incoming_connection(blaze::connection &incoming_connection) {
+        virtual vlg::RetCode
+        on_new_incoming_connection(vlg::connection &incoming_connection) {
             IFLOG2(blog, inf(TH_ID, LS_TST"[CALLED both_peer on_new_incoming_connection]"))
             incoming_connection.set_transaction_factory(inco_tx_fctry_);
             incoming_connection.set_subscription_factory(inco_sbs_fctry_);
-            return blaze::RetCode_OK;
+            return vlg::RetCode_OK;
         }
     private:
         unsigned int                    peer_both_ver_[4];
@@ -375,37 +375,37 @@ class entry_point {
         }
 
         virtual ~entry_point() {
-            blaze::PeerStatus p_status = blaze::PeerStatus_ZERO;
+            vlg::PeerStatus p_status = vlg::PeerStatus_ZERO;
             tpeer_.stop(true);
-            tpeer_.await_for_status_reached_or_outdated(blaze::PeerStatus_STOPPED,
+            tpeer_.await_for_status_reached_or_outdated(vlg::PeerStatus_STOPPED,
                                                         p_status,
                                                         TEST_TMOUT);
         }
 
-        blaze::RetCode init() {
+        vlg::RetCode init() {
 #if STA_L
-            blaze::persistence_driver_int *sqlite_dri = blaze::get_pers_driv_sqlite();
-            blaze::persistence_manager::load_persistence_driver(&sqlite_dri, 1);
+            vlg::persistence_driver_int *sqlite_dri = vlg::get_pers_driv_sqlite();
+            vlg::persistence_manager::load_persistence_driver(&sqlite_dri, 1);
             tpeer_.extend_model(get_em_blz_model_sample());
 #endif
-            return blaze::RetCode_OK;
+            return vlg::RetCode_OK;
         }
 
-        blaze::RetCode start_peer(int argc, char *argv[], bool spawn_thread) {
-            blaze::PeerStatus p_status = blaze::PeerStatus_ZERO;
+        vlg::RetCode start_peer(int argc, char *argv[], bool spawn_thread) {
+            vlg::PeerStatus p_status = vlg::PeerStatus_ZERO;
             COMMAND_IF_NOT_OK(tpeer_.start(argc,
                                            argv,
                                            spawn_thread),
                               exit(1))
             return tpeer_.await_for_status_reached_or_outdated(
-                       blaze::PeerStatus_RUNNING,
+                       vlg::PeerStatus_RUNNING,
                        p_status, TEST_TMOUT);
         }
 
-        blaze::RetCode out_connect() {
-            blaze::ConnectivityEventResult con_res = blaze::ConnectivityEventResult_OK;
-            blaze::ConnectivityEventType con_evt_type =
-                blaze::ConnectivityEventType_UNDEFINED;
+        vlg::RetCode out_connect() {
+            vlg::ConnectivityEventResult con_res = vlg::ConnectivityEventResult_OK;
+            vlg::ConnectivityEventType con_evt_type =
+                vlg::ConnectivityEventType_UNDEFINED;
             out_conn_.bind(tpeer_);
             out_conn_.connect(out_conn_params_);
             return out_conn_.await_for_connection_result(con_res,
@@ -413,54 +413,54 @@ class entry_point {
                                                          TEST_TMOUT);
         }
 
-        blaze::RetCode out_disconnect() {
-            blaze::ConnectivityEventResult con_res = blaze::ConnectivityEventResult_OK;
-            blaze::ConnectivityEventType con_evt_type =
-                blaze::ConnectivityEventType_UNDEFINED;
-            out_conn_.disconnect(blaze::DisconnectionResultReason_UNSPECIFIED);
+        vlg::RetCode out_disconnect() {
+            vlg::ConnectivityEventResult con_res = vlg::ConnectivityEventResult_OK;
+            vlg::ConnectivityEventType con_evt_type =
+                vlg::ConnectivityEventType_UNDEFINED;
+            out_conn_.disconnect(vlg::DisconnectionResultReason_UNSPECIFIED);
             return out_conn_.await_for_disconnection_result(con_res,
                                                             con_evt_type,
                                                             TEST_TMOUT);
         }
 
-        blaze::RetCode start_user_sbs() {
+        vlg::RetCode start_user_sbs() {
             //READ LAST RECEIVED POSITION TS0, TS1
             unsigned int ts0 = 0, ts1 = 0;
             load_class_position("user.pos", ts0, ts1);
             out_sbs_.bind(out_conn_);
-            out_sbs_.start(blaze::SubscriptionType_SNAPSHOT,
-                           blaze::SubscriptionMode_ALL,
-                           blaze::SubscriptionFlowType_LAST,
-                           blaze::SubscriptionDownloadType_PARTIAL,
-                           blaze::Encode_INDEXED_NOT_ZERO,
+            out_sbs_.start(vlg::SubscriptionType_SNAPSHOT,
+                           vlg::SubscriptionMode_ALL,
+                           vlg::SubscriptionFlowType_LAST,
+                           vlg::SubscriptionDownloadType_PARTIAL,
+                           vlg::Encode_INDEXED_NOT_ZERO,
                            USER_ENTITY_ID,
                            ts0,
                            ts1);
-            blaze::ProtocolCode pcode = blaze::ProtocolCode_SUCCESS;
-            blaze::SubscriptionResponse resp =
-                blaze::SubscriptionResponse_UNDEFINED;
+            vlg::ProtocolCode pcode = vlg::ProtocolCode_SUCCESS;
+            vlg::SubscriptionResponse resp =
+                vlg::SubscriptionResponse_UNDEFINED;
             return out_sbs_.await_for_start_result(resp, pcode, TEST_TMOUT);
         }
 
-        blaze::RetCode send_user_tx(blz_model_sample::USER &user) {
+        vlg::RetCode send_user_tx(blz_model_sample::USER &user) {
             if(first_tx_send_) {
                 out_tx_.bind(out_conn_);
                 first_tx_send_ = false;
             } else {
                 out_tx_.renew();
             }
-            out_tx_.prepare(blaze::TransactionRequestType_OBJECT,
-                            blaze::Action_INSERT,
+            out_tx_.prepare(vlg::TransactionRequestType_OBJECT,
+                            vlg::Action_INSERT,
                             &user,
                             NULL);
             out_tx_.send();
             return out_tx_.await_for_closure(TEST_TMOUT);
         }
 
-        blaze::RetCode start_sbs_dist_th() {
+        vlg::RetCode start_sbs_dist_th() {
             gen_evt_th_.init();
             gen_evt_th_.start();
-            return blaze::RetCode_OK;
+            return vlg::RetCode_OK;
         }
 
     private:
@@ -494,39 +494,39 @@ class entry_point {
         incoming_connection_factory inco_conn_fctry_;
 
     private:
-        class sbs_rr_gen_evts : public blaze::p_thread {
+        class sbs_rr_gen_evts : public vlg::p_thread {
             public:
                 sbs_rr_gen_evts(entry_point &ep) : ep_(ep), cycl_count_(1) {}
             public:
-                blaze::RetCode init() {
-                    return blaze::RetCode_OK;
+                vlg::RetCode init() {
+                    return vlg::RetCode_OK;
                 }
             public:
                 virtual void *run() {
                     while(true) {
-                        blaze::RetCode cdrs_res = blaze::RetCode_OK;
-                        blaze::persistence_query p_qry(ep_.tpeer_.get_entity_manager());
+                        vlg::RetCode cdrs_res = vlg::RetCode_OK;
+                        vlg::persistence_query p_qry(ep_.tpeer_.get_entity_manager());
                         blz_model_sample::USER qry_obj;
                         cdrs_res = p_qry.bind(USER_ENTITY_ID, "select * from USER");
                         if(!cdrs_res) {
                             do_qry_distr(p_qry, qry_obj);
                         }
-                        blaze::mssleep(30000);
+                        vlg::mssleep(30000);
                         IFLOG2(blog, dbg(TH_ID, LS_TST"sbs dist cycle %d.", cycl_count_++))
                     }
                     return 0;
                 }
 
             private:
-                void do_qry_distr(blaze::persistence_query &p_qry,
-                                  blaze::nclass &qry_obj) {
-                    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+                void do_qry_distr(vlg::persistence_query &p_qry,
+                                  vlg::nclass &qry_obj) {
+                    vlg::RetCode cdrs_res = vlg::RetCode_OK;
                     unsigned int ts0 = 0, ts1 = 0;
                     while((cdrs_res = p_qry.next_entity(ts0,
                                                         ts1,
-                                                        qry_obj)) == blaze::RetCode_DBROW) {
-                        ep_.tpeer_.class_distribute(blaze::SubscriptionEventType_LIVE,
-                                                    blaze::Action_UPDATE,
+                                                        qry_obj)) == vlg::RetCode_DBROW) {
+                        ep_.tpeer_.class_distribute(vlg::SubscriptionEventType_LIVE,
+                                                    vlg::Action_UPDATE,
                                                     qry_obj);
                     }
                 }
@@ -545,14 +545,14 @@ class entry_point {
 //-----------------------------
 int main(int argc, char *argv[])
 {
-    blog = blaze::get_nclass_logger("root");
+    blog = vlg::get_nclass_logger("root");
 
     entry_point ep;
     ep.init();
     ep.start_peer(argc, argv, true);
     ep.start_sbs_dist_th();
 
-    blaze::collector_stat::get_instance().start_monitoring(10, blaze::TL_WRN);
+    vlg::collector_stat::get_instance().start_monitoring(10, vlg::TL_WRN);
 
     entry_point::wait_for_enter();
     ep.out_connect();
@@ -564,11 +564,11 @@ int main(int argc, char *argv[])
         blz_model_sample::USER user;
         fill_user(user, ++count);
         ep.send_user_tx(user);
-        blaze::mssleep(50);
+        vlg::mssleep(50);
     }
 
     IFLOG2(blog, inf(TH_ID, LS_TST"MAIN WAITS"))
-    blaze::synch_monitor mon;
+    vlg::synch_monitor mon;
     mon.lock();
     mon.wait();
     mon.unlock();

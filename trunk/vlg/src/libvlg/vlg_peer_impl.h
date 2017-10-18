@@ -27,7 +27,7 @@
 #include "blz_subscription_int.h"
 
 
-namespace blaze {
+namespace vlg {
 
 class connection_int;
 
@@ -41,9 +41,9 @@ class per_nclassid_helper_rec {
         per_nclassid_helper_rec();
         ~per_nclassid_helper_rec();
 
-        blaze::RetCode init();
+        vlg::RetCode init();
 
-        blaze::synch_hash_map &get_srv_connid_condesc_set();
+        vlg::synch_hash_map &get_srv_connid_condesc_set();
 
         unsigned int next_sbs_evt_id();
 
@@ -55,8 +55,8 @@ class per_nclassid_helper_rec {
         unsigned int sbsevtid_;
         unsigned int ts0_;
         unsigned int ts1_;
-        blaze::synch_hash_map srv_connid_condesc_set_;  //[connid --> condesc]
-        mutable blaze::synch_monitor mon_;
+        vlg::synch_hash_map srv_connid_condesc_set_;  //[connid --> condesc]
+        mutable vlg::synch_monitor mon_;
 };
 
 #define BLZ_DEF_SRV_SBS_EXEC_NO     1
@@ -92,7 +92,7 @@ class peer_int : public peer_automa {
         peer_int(unsigned int id);
         ~peer_int();
 
-        blaze::RetCode set_params_file_dir(const char *dir);
+        vlg::RetCode set_params_file_dir(const char *dir);
 
         //-----------------------------
         // GETTERS
@@ -104,7 +104,7 @@ class peer_int : public peer_automa {
         persistence_manager_int &get_pers_mng();
         bool                    persistent();
         bool                    pers_schema_create();
-        blaze::synch_hash_map   &get_srv_classid_condesc_set();
+        vlg::synch_hash_map   &get_srv_classid_condesc_set();
 
         //-----------------------------
         // CONFIG GETTERS
@@ -144,45 +144,45 @@ class peer_int : public peer_automa {
         //-----------------------------
         // MODEL
         //-----------------------------
-        blaze::RetCode    extend_model(entity_manager *emng);
-        blaze::RetCode    extend_model(const char *model_name);
+        vlg::RetCode    extend_model(entity_manager *emng);
+        vlg::RetCode    extend_model(const char *model_name);
 
         //-----------------------------
         // BLZ_PEER_LFCYC HANDLERS
         //-----------------------------
     protected:
-        virtual blaze::RetCode    peer_load_cfg_usr(int pnum,
+        virtual vlg::RetCode    peer_load_cfg_usr(int pnum,
                                                     const char *param,
                                                     const char *value);
 
-        virtual blaze::RetCode    peer_early_init_usr();
-        virtual blaze::RetCode    peer_init_usr();
-        virtual blaze::RetCode    peer_start_usr();
-        virtual blaze::RetCode    peer_stop_usr();
-        virtual blaze::RetCode    peer_move_running_usr();
-        virtual blaze::RetCode    peer_dying_breath_handler();
+        virtual vlg::RetCode    peer_early_init_usr();
+        virtual vlg::RetCode    peer_init_usr();
+        virtual vlg::RetCode    peer_start_usr();
+        virtual vlg::RetCode    peer_stop_usr();
+        virtual vlg::RetCode    peer_move_running_usr();
+        virtual vlg::RetCode    peer_dying_breath_handler();
 
         //-----------------------------
         // CONNECTIVITY
         //-----------------------------
 
     public:
-        blaze::RetCode    next_connid(unsigned int &connid);
+        vlg::RetCode    next_connid(unsigned int &connid);
 
     public:
-        blaze::RetCode    new_connection(connection_int     **new_connection,
+        vlg::RetCode    new_connection(connection_int     **new_connection,
                                          blz_conn_factory   blz_conn_factory_f = NULL,
                                          ConnectionType     con_type = ConnectionType_OUTGOING,
                                          unsigned int       connid = 0,
                                          void               *ud = NULL);
 
-        blaze::RetCode    release_connection(connection_int *connection);
+        vlg::RetCode    release_connection(connection_int *connection);
 
         //-----------------------------
         // SERVER SPECIFIC CONNECTIVITY HANDLER
         //-----------------------------
     public:
-        virtual blaze::RetCode new_incoming_connection_accept(connection_int
+        virtual vlg::RetCode new_incoming_connection_accept(connection_int
                                                               &incoming_connection);
 
         blz_conn_factory conn_factory() const;
@@ -198,9 +198,9 @@ class peer_int : public peer_automa {
         /*
         this method is called by an executor
         */
-        blaze::RetCode recv_and_route_pkt(connection_int &conn,
+        vlg::RetCode recv_and_route_pkt(connection_int &conn,
                                           blz_hdr_rec *hdr,
-                                          blaze::grow_byte_buffer *body);
+                                          vlg::grow_byte_buffer *body);
 
         //-----------------------------
         // RCV TASK
@@ -209,9 +209,9 @@ class peer_int : public peer_automa {
         /*
         this method is called by selector thread.
         */
-        blaze::p_task  *new_peer_recv_task(connection_int &conn,
+        vlg::p_task  *new_peer_recv_task(connection_int &conn,
                                            blz_hdr_rec *pkt_hdr,
-                                           blaze::grow_byte_buffer *pkt_body);
+                                           vlg::grow_byte_buffer *pkt_body);
 
         //-----------------------------
         // SBS TASK
@@ -219,14 +219,14 @@ class peer_int : public peer_automa {
         /*
         this method is called by a client/server executor thread.
         */
-        blaze::p_task  *new_sbs_evt_task(subscription_event_int &sbs_evt,
-                                         blaze::synch_hash_map &srv_connid_connection_map);
+        vlg::p_task  *new_sbs_evt_task(subscription_event_int &sbs_evt,
+                                         vlg::synch_hash_map &srv_connid_connection_map);
 
         //-----------------------------
         // SUBSCRIPTION
         //-----------------------------
     private:
-        blaze::RetCode    build_sbs_event(unsigned int evt_id,
+        vlg::RetCode    build_sbs_event(unsigned int evt_id,
                                           SubscriptionEventType sbs_evttype,
                                           ProtocolCode sbs_protocode,
                                           unsigned int sbs_tmstp0,
@@ -235,40 +235,40 @@ class peer_int : public peer_automa {
                                           const nclass *sbs_data,
                                           subscription_event_int **new_sbs_event);
 
-        blaze::RetCode    add_subscriber(subscription_int *sbsdesc);
+        vlg::RetCode    add_subscriber(subscription_int *sbsdesc);
 
-        blaze::RetCode    remove_subscriber(subscription_int *sbsdesc);
+        vlg::RetCode    remove_subscriber(subscription_int *sbsdesc);
 
-        blaze::RetCode    get_per_classid_helper_class(unsigned int nclass_id,
+        vlg::RetCode    get_per_classid_helper_class(unsigned int nclass_id,
                                                        per_nclassid_helper_rec **out);
 
-        blaze::RetCode    submit_sbs_evt_task(subscription_event_int &sbs_evt,
-                                              blaze::synch_hash_map &srv_connid_condesc_set);
+        vlg::RetCode    submit_sbs_evt_task(subscription_event_int &sbs_evt,
+                                              vlg::synch_hash_map &srv_connid_condesc_set);
 
 
         //-----------------------------
         // PERSISTENCE
         //-----------------------------
     public:
-        blaze::RetCode pers_schema_create(PersistenceAlteringMode mode);
+        vlg::RetCode pers_schema_create(PersistenceAlteringMode mode);
 
-        blaze::RetCode class_pers_schema_create(PersistenceAlteringMode mode,
+        vlg::RetCode class_pers_schema_create(PersistenceAlteringMode mode,
                                                 unsigned int entity_id);
 
-        blaze::RetCode class_pers_load(unsigned short key,
+        vlg::RetCode class_pers_load(unsigned short key,
                                        unsigned int &ts0_out,
                                        unsigned int &ts1_out,
                                        nclass &in_out_obj);
 
-        blaze::RetCode class_pers_save(const nclass &in_obj);
+        vlg::RetCode class_pers_save(const nclass &in_obj);
 
-        blaze::RetCode class_pers_update(unsigned short key,
+        vlg::RetCode class_pers_update(unsigned short key,
                                          const nclass &in_obj);
 
-        blaze::RetCode class_pers_update_or_save(unsigned short key,
+        vlg::RetCode class_pers_update_or_save(unsigned short key,
                                                  const nclass &in_obj);
 
-        blaze::RetCode class_pers_remove(unsigned short key,
+        vlg::RetCode class_pers_remove(unsigned short key,
                                          PersistenceDeletionMode mode,
                                          const nclass &in_obj);
 
@@ -277,7 +277,7 @@ class peer_int : public peer_automa {
         // DISTRIBUTION
         //-----------------------------
     public:
-        blaze::RetCode class_distribute(SubscriptionEventType evt_type,
+        vlg::RetCode class_distribute(SubscriptionEventType evt_type,
                                         ProtocolCode proto_code,
                                         Action act,
                                         const nclass &obj);
@@ -286,15 +286,15 @@ class peer_int : public peer_automa {
         // PERSISTENCE + DISTRIBUTION
         //-----------------------------
     public:
-        blaze::RetCode class_pers_save_and_distribute(const nclass &in_obj);
+        vlg::RetCode class_pers_save_and_distribute(const nclass &in_obj);
 
-        blaze::RetCode class_pers_update_and_distribute(unsigned short key,
+        vlg::RetCode class_pers_update_and_distribute(unsigned short key,
                                                         const nclass &in_obj);
 
-        blaze::RetCode class_pers_update_or_save_and_distribute(unsigned short key,
+        vlg::RetCode class_pers_update_or_save_and_distribute(unsigned short key,
                                                                 const nclass &in_obj);
 
-        blaze::RetCode class_pers_remove_and_distribute(unsigned short key,
+        vlg::RetCode class_pers_remove_and_distribute(unsigned short key,
                                                         PersistenceDeletionMode mode,
                                                         const nclass &in_obj);
 
@@ -302,8 +302,8 @@ class peer_int : public peer_automa {
         // REP INIT
         //-----------------------------
     private:
-        blaze::RetCode            init_peer();
-        blaze::RetCode            init_peer_dyna();
+        vlg::RetCode            init_peer();
+        vlg::RetCode            init_peer_dyna();
 
         //-----------------------------
         // REP
@@ -321,16 +321,16 @@ class peer_int : public peer_automa {
 
     protected:
         selector                        selector_;
-        mutable blaze::synch_monitor    mon_;
+        mutable vlg::synch_monitor    mon_;
         unsigned int                    prgr_conn_id_;
         entity_manager                  bem_;
-        blaze::hash_map                 model_map_;
+        vlg::hash_map                 model_map_;
 
         //persistence
     protected:
         bool                    pers_enabled_;
         persistence_manager_int &pers_mng_;
-        blaze::hash_map         pers_dri_load_;
+        vlg::hash_map         pers_dri_load_;
         bool                    pers_schema_create_;
         /*use this only when develop*/
         bool                    drop_existing_schema_;
@@ -346,9 +346,9 @@ class peer_int : public peer_automa {
         is responsability of srv_exec_serv_ executor service.
         ***********************************/
         //srv sbs executor service.
-        blaze::p_executor_service   srv_sbs_exec_serv_;
+        vlg::p_executor_service   srv_sbs_exec_serv_;
         //nclassid --> condesc_set
-        blaze::synch_hash_map       srv_sbs_nclassid_condesc_set_;
+        vlg::synch_hash_map       srv_sbs_nclassid_condesc_set_;
 
         blz_conn_factory    conn_factory_;      //factory for incoming connections
         void                *conn_factory_ud_;  //factory for incoming connections ud

@@ -21,9 +21,9 @@
 
 #ifndef CR_STRUCTS_REP_H_
 #define CR_STRUCTS_REP_H_
-#include "blaze.h"
+#include "vlg.h"
 
-namespace blaze {
+namespace vlg {
 
 class obj_mng;
 

@@ -23,35 +23,35 @@
 #include "blaze_model.h"
 #include "blz_glob_int.h"
 
-namespace blaze {
+namespace vlg {
 
 const char *string_from_Type(Type bt)
 {
     switch(bt) {
         case Type_UNDEFINED:
-            return "blaze::Type_UNDEFINED";
+            return "vlg::Type_UNDEFINED";
         case Type_ENTITY:
-            return "blaze::Type_ENTITY";
+            return "vlg::Type_ENTITY";
         case Type_BOOL:
-            return "blaze::Type_BOOL";
+            return "vlg::Type_BOOL";
         case Type_INT16:
-            return "blaze::Type_INT16";
+            return "vlg::Type_INT16";
         case Type_UINT16:
-            return "blaze::Type_UINT16";
+            return "vlg::Type_UINT16";
         case Type_INT32:
-            return "blaze::Type_INT32";
+            return "vlg::Type_INT32";
         case Type_UINT32:
-            return "blaze::Type_UINT32";
+            return "vlg::Type_UINT32";
         case Type_INT64:
-            return "blaze::Type_INT64";
+            return "vlg::Type_INT64";
         case Type_UINT64:
-            return "blaze::Type_UINT64";
+            return "vlg::Type_UINT64";
         case Type_FLOAT32:
-            return "blaze::Type_FLOAT32";
+            return "vlg::Type_FLOAT32";
         case Type_FLOAT64:
-            return "blaze::Type_FLOAT64";
+            return "vlg::Type_FLOAT64";
         case Type_ASCII:
-            return "blaze::Type_ASCII";
+            return "vlg::Type_ASCII";
     }
     return "";
 }
@@ -60,11 +60,11 @@ const char *string_from_EntityType(EntityType bet)
 {
     switch(bet) {
         case EntityType_UNDEFINED:
-            return "blaze::EntityType_UNDEFINED";
+            return "vlg::EntityType_UNDEFINED";
         case EntityType_ENUM:
-            return "blaze::EntityType_ENUM";
+            return "vlg::EntityType_ENUM";
         case EntityType_NCLASS:
-            return "blaze::EntityType_NCLASS";
+            return "vlg::EntityType_NCLASS";
         default:
             return "";
     }
@@ -74,11 +74,11 @@ const char *string_from_MemberType(MemberType bmt)
 {
     switch(bmt) {
         case MemberType_UNDEFINED:
-            return "blaze::MemberType_UNDEFINED";
+            return "vlg::MemberType_UNDEFINED";
         case MemberType_FIELD:
-            return "blaze::MemberType_FIELD";
+            return "vlg::MemberType_FIELD";
         case MemberType_ENUM_VALUE:
-            return "blaze::MemberType_ENUM_VALUE";
+            return "vlg::MemberType_ENUM_VALUE";
         default:
             return "";
     }
@@ -92,27 +92,27 @@ class key_desc_impl {
         key_desc_impl(unsigned short keyid, bool primary) :
             keyid_(keyid),
             primary_(primary),
-            fildset_(blaze::sngl_ptr_obj_mng()) {
+            fildset_(vlg::sngl_ptr_obj_mng()) {
         }
 
-        blaze::RetCode Init() {
+        vlg::RetCode Init() {
             RETURN_IF_NOT_OK(fildset_.init())
-            return blaze::RetCode_OK;
+            return vlg::RetCode_OK;
         }
 
-        blaze::RetCode Init(blaze::linked_list *fldset) {
+        vlg::RetCode Init(vlg::linked_list *fldset) {
             RETURN_IF_NOT_OK(fildset_.init())
             member_desc *mmbrdesc = NULL;
             fldset->start_iteration();
             while(!fldset->next(&mmbrdesc)) {
                 RETURN_IF_NOT_OK(fildset_.push_back(&mmbrdesc))
             }
-            return blaze::RetCode_OK;
+            return vlg::RetCode_OK;
         }
 
-        blaze::RetCode AddMemberDesc(const member_desc  *mmbrdesc) {
+        vlg::RetCode AddMemberDesc(const member_desc  *mmbrdesc) {
             RETURN_IF_NOT_OK(fildset_.push_back(&mmbrdesc))
-            return blaze::RetCode_OK;
+            return vlg::RetCode_OK;
         }
 
         unsigned short GetKeyID() const {
@@ -123,11 +123,11 @@ class key_desc_impl {
             return primary_;
         }
 
-        const blaze::linked_list &NOINLINE GetKeyFieldSet() const {
+        const vlg::linked_list &NOINLINE GetKeyFieldSet() const {
             return fildset_;
         }
 
-        blaze::linked_list &GetKeyFieldSet_M() {
+        vlg::linked_list &GetKeyFieldSet_M() {
             return fildset_;
         }
 
@@ -136,7 +136,7 @@ class key_desc_impl {
         unsigned short  keyid_;
         bool            primary_;
         //members being part of this key.
-        blaze::linked_list  fildset_;
+        vlg::linked_list  fildset_;
 };
 
 //-----------------------------
@@ -154,12 +154,12 @@ key_desc::~key_desc()
     }
 }
 
-blaze::RetCode key_desc::init()
+vlg::RetCode key_desc::init()
 {
     return impl_->Init();
 }
 
-blaze::RetCode key_desc::add_member_desc(const member_desc  *mmbrdesc)
+vlg::RetCode key_desc::add_member_desc(const member_desc  *mmbrdesc)
 {
     return impl_->AddMemberDesc(mmbrdesc);
 }
@@ -368,7 +368,7 @@ struct ent_enum_MembDesc_rec {
     void *ud;
 };
 
-void ent_enum_MembDesc(const blaze::hash_map &map,
+void ent_enum_MembDesc(const vlg::hash_map &map,
                        const void *key,
                        const void *ptr,
                        void *ud,
@@ -386,7 +386,7 @@ class entity_desc_impl {
                          EntityType entitytype,
                          const char *nmspace,
                          const char *entityname,
-                         blaze::alloc_func afun,
+                         vlg::alloc_func afun,
                          unsigned int fild_num,
                          bool persistent) :
             entityid_(entityid),
@@ -397,24 +397,24 @@ class entity_desc_impl {
             entityname_(entityname),
             afun_(afun),
             fild_num_(fild_num),
-            mmbrid_mdesc_(blaze::sngl_ptr_obj_mng(), sizeof(unsigned short)),
-            mmbrnm_mdesc_(blaze::sngl_ptr_obj_mng(), blaze::sngl_cstr_obj_mng()),
-            mmbrof_mdesc_(blaze::sngl_ptr_obj_mng(), sizeof(size_t)),
+            mmbrid_mdesc_(vlg::sngl_ptr_obj_mng(), sizeof(unsigned short)),
+            mmbrnm_mdesc_(vlg::sngl_ptr_obj_mng(), vlg::sngl_cstr_obj_mng()),
+            mmbrof_mdesc_(vlg::sngl_ptr_obj_mng(), sizeof(size_t)),
             persistent_(persistent),
-            keyid_kdesc_(blaze::sngl_ptr_obj_mng(), sizeof(unsigned short)) {
+            keyid_kdesc_(vlg::sngl_ptr_obj_mng(), sizeof(unsigned short)) {
         }
 
-        blaze::RetCode Init() {
+        vlg::RetCode Init() {
             RETURN_IF_NOT_OK(mmbrid_mdesc_.init(HM_SIZE_MINI))
             RETURN_IF_NOT_OK(mmbrnm_mdesc_.init(HM_SIZE_MINI))
             RETURN_IF_NOT_OK(mmbrof_mdesc_.init(HM_SIZE_MINI))
             if(persistent_) {
                 RETURN_IF_NOT_OK(keyid_kdesc_.init(HM_SIZE_NANO))
             }
-            return blaze::RetCode_OK;
+            return vlg::RetCode_OK;
         }
 
-        blaze::RetCode Init(blaze::hash_map *mmbrmap, blaze::hash_map *keymap) {
+        vlg::RetCode Init(vlg::hash_map *mmbrmap, vlg::hash_map *keymap) {
             RETURN_IF_NOT_OK(Init())
             member_desc *mdesc = NULL;
             unsigned long   mmbrid = 0;
@@ -438,23 +438,23 @@ class entity_desc_impl {
                     RETURN_IF_NOT_OK(keyid_kdesc_.put(&keyid, &keydesc))
                 }
             }
-            return blaze::RetCode_OK;
+            return vlg::RetCode_OK;
         }
 
-        blaze::RetCode AddMemberDesc(const member_desc *mmbrdesc) {
+        vlg::RetCode AddMemberDesc(const member_desc *mmbrdesc) {
             unsigned long   mmbrid = mmbrdesc->get_member_id();
             const char      *mmbrnm = mmbrdesc->get_member_name();
             unsigned long   fldofst = (unsigned long)mmbrdesc->get_field_offset();
             RETURN_IF_NOT_OK(mmbrid_mdesc_.put(&mmbrid, &mmbrdesc))
             RETURN_IF_NOT_OK(mmbrnm_mdesc_.put(mmbrnm, &mmbrdesc))
             RETURN_IF_NOT_OK(mmbrof_mdesc_.put(&fldofst, &mmbrdesc))
-            return blaze::RetCode_OK;
+            return vlg::RetCode_OK;
         }
 
-        blaze::RetCode AddKeyDesc(const key_desc *keydesc) {
+        vlg::RetCode AddKeyDesc(const key_desc *keydesc) {
             unsigned short keyid = keydesc->get_key_id();
             RETURN_IF_NOT_OK(keyid_kdesc_.put(&keyid, &keydesc))
-            return blaze::RetCode_OK;
+            return vlg::RetCode_OK;
         }
 
         unsigned int GetEntityID()  const {
@@ -481,7 +481,7 @@ class entity_desc_impl {
             return entityname_;
         }
 
-        blaze::alloc_func GetEntityAllocF() const {
+        vlg::alloc_func GetEntityAllocF() const {
             return afun_;
         }
 
@@ -493,19 +493,19 @@ class entity_desc_impl {
             return persistent_;
         }
 
-        blaze::hash_map &NOINLINE GetMap_ID_MMBRDSC() {
+        vlg::hash_map &NOINLINE GetMap_ID_MMBRDSC() {
             return mmbrid_mdesc_;
         }
 
-        const blaze::hash_map &NOINLINE GetMap_NM_MMBRDSC() const {
+        const vlg::hash_map &NOINLINE GetMap_NM_MMBRDSC() const {
             return mmbrnm_mdesc_;
         }
 
-        const blaze::hash_map &NOINLINE GetMap_KEYID_KDESC() const {
+        const vlg::hash_map &NOINLINE GetMap_KEYID_KDESC() const {
             return keyid_kdesc_;
         }
 
-        blaze::hash_map &GetMap_KEYID_KDESC_M() {
+        vlg::hash_map &GetMap_KEYID_KDESC_M() {
             return keyid_kdesc_;
         }
 
@@ -539,13 +539,13 @@ class entity_desc_impl {
         EntityType      entitytype_;
         const char      *nmspace_;
         const char      *entityname_;
-        blaze::alloc_func   afun_;
+        vlg::alloc_func   afun_;
         unsigned int    fild_num_;
-        blaze::hash_map mmbrid_mdesc_;  //mmbrid --> mmbrdesc
-        blaze::hash_map mmbrnm_mdesc_;  //mmbrname --> mmbrdesc
-        blaze::hash_map mmbrof_mdesc_;  //mmbroffset --> mmbrdesc
+        vlg::hash_map mmbrid_mdesc_;  //mmbrid --> mmbrdesc
+        vlg::hash_map mmbrnm_mdesc_;  //mmbrname --> mmbrdesc
+        vlg::hash_map mmbrof_mdesc_;  //mmbroffset --> mmbrdesc
         bool            persistent_;
-        blaze::hash_map keyid_kdesc_;   //keyid --> keydesc
+        vlg::hash_map keyid_kdesc_;   //keyid --> keydesc
 };
 
 //-----------------------------
@@ -557,7 +557,7 @@ entity_desc::entity_desc(unsigned int entityid,
                          EntityType entitytype,
                          const char *nmspace,
                          const char *entityname,
-                         blaze::alloc_func afun,
+                         vlg::alloc_func afun,
                          unsigned int fild_num,
                          bool persistent) : impl_(NULL)
 {
@@ -579,17 +579,17 @@ entity_desc::~entity_desc()
     }
 }
 
-blaze::RetCode entity_desc::init()
+vlg::RetCode entity_desc::init()
 {
     return impl_->Init();
 }
 
-blaze::RetCode entity_desc::add_member_desc(const member_desc *mmbrdesc)
+vlg::RetCode entity_desc::add_member_desc(const member_desc *mmbrdesc)
 {
     return impl_->AddMemberDesc(mmbrdesc);
 }
 
-blaze::RetCode entity_desc::add_key_desc(const key_desc *keydesc)
+vlg::RetCode entity_desc::add_key_desc(const key_desc *keydesc)
 {
     return impl_->AddKeyDesc(keydesc);
 }
@@ -624,7 +624,7 @@ const char *entity_desc::get_entity_name()  const
     return impl_->GetEntityName();
 }
 
-blaze::alloc_func entity_desc::get_entity_allocation_function() const
+vlg::alloc_func entity_desc::get_entity_allocation_function() const
 {
     return impl_->GetEntityAllocF();
 }
@@ -675,7 +675,7 @@ struct bem_enum_EntDesc_rec {
 };
 
 //for all entities
-void bem_enum_EntDesc(const blaze::hash_map &map,
+void bem_enum_EntDesc(const vlg::hash_map &map,
                       const void *key,
                       const void *ptr,
                       void *ud,
@@ -686,7 +686,7 @@ void bem_enum_EntDesc(const blaze::hash_map &map,
 }
 
 //for enums
-void bem_enum_EntDesc_Enum(const blaze::hash_map &map,
+void bem_enum_EntDesc_Enum(const vlg::hash_map &map,
                            const void *key,
                            const void *ptr,
                            void *ud,
@@ -700,7 +700,7 @@ void bem_enum_EntDesc_Enum(const blaze::hash_map &map,
 }
 
 //for classes
-void bem_enum_EntDesc_Class(const blaze::hash_map &map,
+void bem_enum_EntDesc_Class(const vlg::hash_map &map,
                             const void *key,
                             const void *ptr,
                             void *ud,
@@ -720,9 +720,9 @@ class entity_manager_impl {
             num_entity_(0),
             num_enum_(0),
             num_nclass_(0),
-            fakeid_edesc_(blaze::sngl_ptr_obj_mng(), sizeof(int)),
-            entnm_edesc_(blaze::sngl_ptr_obj_mng(), blaze::sngl_cstr_obj_mng()),
-            entid_edesc_(blaze::sngl_ptr_obj_mng(), sizeof(unsigned int)),
+            fakeid_edesc_(vlg::sngl_ptr_obj_mng(), sizeof(int)),
+            entnm_edesc_(vlg::sngl_ptr_obj_mng(), vlg::sngl_cstr_obj_mng()),
+            entid_edesc_(vlg::sngl_ptr_obj_mng(), sizeof(unsigned int)),
             fake_id_(-1) {
             log_ = get_nclass_logger("entity_manager_impl");
             IFLOG(trc(TH_ID, LS_CTR "%s", __func__))
@@ -732,13 +732,13 @@ class entity_manager_impl {
             IFLOG(trc(TH_ID, LS_DTR "%s", __func__))
         }
 
-        blaze::RetCode init() {
+        vlg::RetCode init() {
             IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
             RETURN_IF_NOT_OK(fakeid_edesc_.init(HM_SIZE_SMALL))
             RETURN_IF_NOT_OK(entnm_edesc_.init(HM_SIZE_SMALL))
             RETURN_IF_NOT_OK(entid_edesc_.init(HM_SIZE_SMALL))
             IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-            return blaze::RetCode_OK;
+            return vlg::RetCode_OK;
         }
 
         int next_fake_id() {
@@ -749,36 +749,36 @@ class entity_manager_impl {
             return fake_id_;
         }
 
-        const blaze::hash_map &get_fake_id_entity_desc_map() {
+        const vlg::hash_map &get_fake_id_entity_desc_map() {
             return fakeid_edesc_;
         }
 
-        const blaze::hash_map &get_entity_id_entity_desc_map() {
+        const vlg::hash_map &get_entity_id_entity_desc_map() {
             return entid_edesc_;
         }
 
-        blaze::RetCode get_entity_desc(unsigned int nclass_id,
+        vlg::RetCode get_entity_desc(unsigned int nclass_id,
                                        entity_desc const **edesc) const {
             const entity_desc **ptr = (const entity_desc **)entid_edesc_.get(&nclass_id);
             if(ptr) {
                 *edesc = *ptr;
-                return blaze::RetCode_OK;
+                return vlg::RetCode_OK;
             }
             IFLOG(wrn(TH_ID, LS_CLO "%s(nclass_id:%d) - not found in bem.", __func__,
                       nclass_id))
-            return blaze::RetCode_KO;
+            return vlg::RetCode_KO;
         }
 
-        blaze::RetCode get_entity_desc(const char *entityname,
+        vlg::RetCode get_entity_desc(const char *entityname,
                                        entity_desc const **edesc) const {
             const entity_desc **ptr = (const entity_desc **)entnm_edesc_.get(entityname);
             if(ptr) {
                 *edesc = *ptr;
-                return blaze::RetCode_OK;
+                return vlg::RetCode_OK;
             }
             IFLOG(wrn(TH_ID, LS_CLO "%s(classname:%s) - not found in bem.", __func__,
                       entityname))
-            return blaze::RetCode_KO;
+            return vlg::RetCode_KO;
         }
 
         void enum_entity_descs(enum_entity_desc eedf, void *ud) const {
@@ -825,7 +825,7 @@ class entity_manager_impl {
             return ptr ? (*ptr)->get_entity_name() : NULL;
         }
 
-        blaze::RetCode extend(const entity_desc *entity_desc) {
+        vlg::RetCode extend(const entity_desc *entity_desc) {
             IFLOG(trc(TH_ID, LS_OPN "%s(edsc:%p)", __func__, entity_desc))
             unsigned int eid = 0;
             switch(entity_desc->get_entity_type()) {
@@ -837,31 +837,31 @@ class entity_manager_impl {
                     eid = entity_desc->get_nclass_id();
                     if(entid_edesc_.put(&eid, &entity_desc)) {
                         IFLOG(cri(TH_ID, LS_CLO, "%s", __func__))
-                        return blaze::RetCode_GENERR;
+                        return vlg::RetCode_GENERR;
                     }
                     break;
                 default:
                     IFLOG(err(TH_ID, LS_CLO, "%s", __func__))
-                    return blaze::RetCode_KO;
+                    return vlg::RetCode_KO;
             }
             int fake_id = next_fake_id();
             const char *enm = entity_desc->get_entity_name();
             if(fakeid_edesc_.put(&fake_id, &entity_desc)) {
                 IFLOG(cri(TH_ID, LS_CLO, "%s", __func__))
-                return blaze::RetCode_GENERR;
+                return vlg::RetCode_GENERR;
             }
             if(entnm_edesc_.put(enm, &entity_desc)) {
                 IFLOG(cri(TH_ID, LS_CLO, "%s", __func__))
-                return blaze::RetCode_GENERR;
+                return vlg::RetCode_GENERR;
             }
             num_entity_++;
             IFLOG(trc(TH_ID, LS_CLO
                       "%s(num_enum:%d, num_nclass:%d, num_entity:%d)", __func__,
                       num_enum_, num_nclass_, num_entity_))
-            return blaze::RetCode_OK;
+            return vlg::RetCode_OK;
         }
 
-        blaze::RetCode extend(entity_manager_impl *emng) {
+        vlg::RetCode extend(entity_manager_impl *emng) {
             IFLOG(trc(TH_ID, LS_OPN "%s(emng:%p)", __func__, emng))
             emng->entnm_edesc_.start_iteration();
             entity_desc *entity_desc = NULL;
@@ -870,17 +870,17 @@ class entity_manager_impl {
                 const char *enm = entity_desc->get_entity_name();
                 if(fakeid_edesc_.put(&fake_id, &entity_desc)) {
                     IFLOG(cri(TH_ID, LS_CLO, "%s", __func__))
-                    return blaze::RetCode_GENERR;
+                    return vlg::RetCode_GENERR;
                 }
                 if(entnm_edesc_.put(enm, &entity_desc)) {
                     IFLOG(cri(TH_ID, LS_CLO, "%s", __func__))
-                    return blaze::RetCode_GENERR;
+                    return vlg::RetCode_GENERR;
                 }
                 if(entity_desc->get_entity_type() == EntityType_NCLASS) {
                     unsigned int eid = entity_desc->get_nclass_id();
                     if(entid_edesc_.put(&eid, &entity_desc)) {
                         IFLOG(cri(TH_ID, LS_CLO, "%s", __func__))
-                        return blaze::RetCode_GENERR;
+                        return vlg::RetCode_GENERR;
                     }
                 }
             }
@@ -890,46 +890,46 @@ class entity_manager_impl {
             IFLOG(trc(TH_ID, LS_CLO
                       "%s(num_enum:%d, num_struct:%d, num_nclass:%d, num_entity:%d)", __func__,
                       num_enum_, num_nclass_, num_entity_))
-            return blaze::RetCode_OK;
+            return vlg::RetCode_OK;
         }
 
-        blaze::RetCode extend(const char *model_name) {
+        vlg::RetCode extend(const char *model_name) {
             IFLOG(trc(TH_ID, LS_OPN "%s(model_name:%s)", __func__, model_name))
             if(!model_name || !strlen(model_name)) {
                 IFLOG(err(TH_ID, LS_CLO "%s", __func__))
-                return blaze::RetCode_BADARG;
+                return vlg::RetCode_BADARG;
             }
 #ifdef WIN32
             wchar_t w_model_name[BLZ_MDL_NAME_LEN] = {0};
             swprintf(w_model_name, BLZ_MDL_NAME_LEN, L"%hs", model_name);
-            void *dynalib = blaze::dynamic_lib_open(w_model_name);
+            void *dynalib = vlg::dynamic_lib_open(w_model_name);
 #endif
 #ifdef __linux
             char slib_name[BLZ_MDL_NAME_LEN] = {0};
             sprintf(slib_name, "lib%s.so", model_name);
-            void *dynalib = blaze::dynamic_lib_open(slib_name);
+            void *dynalib = vlg::dynamic_lib_open(slib_name);
 #endif
 #if defined (__MACH__) || defined (__APPLE__)
             char slib_name[BLZ_MDL_NAME_LEN] = {0};
             sprintf(slib_name, "lib%s.dylib", model_name);
-            void *dynalib = blaze::dynamic_lib_open(slib_name);
+            void *dynalib = vlg::dynamic_lib_open(slib_name);
 #endif
             if(!dynalib) {
                 IFLOG(err(TH_ID, LS_CLO "%s() - failed loading dynamic-lib for model:%s",
                           __func__, model_name))
-                return blaze::RetCode_KO;
+                return vlg::RetCode_KO;
             }
             char bem_ep_f[BLZ_MDL_NAME_LEN] = {0};
             sprintf(bem_ep_f, "get_em_%s", model_name);
             entity_manager_func bem_f =
-                (entity_manager_func)blaze::dynamic_lib_load_symbol(dynalib, bem_ep_f);
+                (entity_manager_func)vlg::dynamic_lib_load_symbol(dynalib, bem_ep_f);
             if(!bem_f) {
                 IFLOG(err(TH_ID, LS_CLO
                           "%s() - failed to locate bem entrypoint in dynamic-lib for model:%s", __func__,
                           model_name))
-                return blaze::RetCode_KO;
+                return vlg::RetCode_KO;
             }
-            blaze::RetCode cdrs_res = blaze::RetCode_OK;
+            vlg::RetCode cdrs_res = vlg::RetCode_OK;
             if((cdrs_res = extend(bem_f()->impl_))) {
                 IFLOG(err(TH_ID, LS_CLO "%s() - failed to extend bem for model:%s, res:%d",
                           __func__, model_name, cdrs_res))
@@ -938,13 +938,13 @@ class entity_manager_impl {
                 char mdlv_f_n[BLZ_MDL_NAME_LEN] = {0};
                 sprintf(mdlv_f_n, "get_mdl_ver_%s", model_name);
                 model_version_func mdlv_f =
-                    (model_version_func)blaze::dynamic_lib_load_symbol(dynalib, mdlv_f_n);
+                    (model_version_func)vlg::dynamic_lib_load_symbol(dynalib, mdlv_f_n);
                 IFLOG(inf(TH_ID, LS_MDL"[DYNALOADED]%s", mdlv_f()))
-                return blaze::RetCode_OK;
+                return vlg::RetCode_OK;
             }
         }
 
-        blaze::RetCode new_class_instance(unsigned int nclass_id,
+        vlg::RetCode new_class_instance(unsigned int nclass_id,
                                           nclass **ptr) const {
             IFLOG(trc(TH_ID, LS_OPN "%s(nclass_id:%u, ptr:%p)", __func__, nclass_id, ptr))
             const entity_desc **edptr = (const entity_desc **)entid_edesc_.get(&nclass_id);
@@ -955,14 +955,14 @@ class entity_manager_impl {
                               "%s(nclass_id:%u, classname:%s, new_inst:%p) - new failed - ", __func__,
                               nclass_id,
                               edesc->get_entity_name(), *ptr))
-                    return blaze::RetCode_MEMERR;
+                    return vlg::RetCode_MEMERR;
                 }
                 IFLOG(trc(TH_ID, LS_CLO "%s(nclass_id:%u, classname:%s, new_inst:%p)", __func__,
                           nclass_id, edesc->get_entity_name(), *ptr))
-                return blaze::RetCode_OK;
+                return vlg::RetCode_OK;
             }
             IFLOG(wrn(TH_ID, LS_CLO "%s(nclass_id:%u) - KO -", __func__, nclass_id))
-            return blaze::RetCode_KO;
+            return vlg::RetCode_KO;
         }
 
 
@@ -971,9 +971,9 @@ class entity_manager_impl {
         unsigned int    num_entity_;
         unsigned int    num_enum_;
         unsigned int    num_nclass_;
-        blaze::hash_map fakeid_edesc_; //key: a progressive fake id
-        blaze::hash_map entnm_edesc_;  //entity name --> entity desc
-        blaze::hash_map entid_edesc_;  //entity id --> entity desc
+        vlg::hash_map fakeid_edesc_; //key: a progressive fake id
+        vlg::hash_map entnm_edesc_;  //entity name --> entity desc
+        vlg::hash_map entid_edesc_;  //entity id --> entity desc
         int             fake_id_;
     protected:
         static unsigned int sid_;
@@ -998,18 +998,18 @@ entity_manager::~entity_manager()
     }
 }
 
-blaze::RetCode entity_manager::init()
+vlg::RetCode entity_manager::init()
 {
     return impl_->init();
 }
 
-blaze::RetCode entity_manager::get_entity_descriptor(unsigned int nclass_id,
+vlg::RetCode entity_manager::get_entity_descriptor(unsigned int nclass_id,
                                                      entity_desc const **edesc) const
 {
     return impl_->get_entity_desc(nclass_id, edesc);
 }
 
-blaze::RetCode entity_manager::get_entity_descriptor(const char *entityname,
+vlg::RetCode entity_manager::get_entity_descriptor(const char *entityname,
                                                      entity_desc const **edesc) const
 {
     return impl_->get_entity_desc(entityname, edesc);
@@ -1053,22 +1053,22 @@ const char *entity_manager::get_class_name(unsigned int nclass_id) const
     return impl_->get_class_name(nclass_id);
 }
 
-blaze::RetCode entity_manager::extend(const entity_desc *entity_desc)
+vlg::RetCode entity_manager::extend(const entity_desc *entity_desc)
 {
     return impl_->extend(entity_desc);
 }
 
-blaze::RetCode entity_manager::extend(entity_manager *emng)
+vlg::RetCode entity_manager::extend(entity_manager *emng)
 {
     return impl_->extend(emng->impl_);
 }
 
-blaze::RetCode entity_manager::extend(const char *model_name)
+vlg::RetCode entity_manager::extend(const char *model_name)
 {
     return impl_->extend(model_name);
 }
 
-blaze::RetCode entity_manager::new_class_instance(unsigned int entityid,
+vlg::RetCode entity_manager::new_class_instance(unsigned int entityid,
                                                   nclass **ptr) const
 {
     return impl_->new_class_instance(entityid, ptr);
@@ -1076,13 +1076,13 @@ blaze::RetCode entity_manager::new_class_instance(unsigned int entityid,
 
 //nclass MEMORY
 
-class net_class_inst_collector : public blaze::collector {
+class net_class_inst_collector : public vlg::collector {
     public:
-        net_class_inst_collector() : blaze::collector("nclass") {}
+        net_class_inst_collector() : vlg::collector("nclass") {}
 };
 
-blaze::collector *net_class_inst_coll_ = NULL;
-blaze::collector &net_class_get_instance_collector()
+vlg::collector *net_class_inst_coll_ = NULL;
+vlg::collector &net_class_get_instance_collector()
 {
     if(net_class_inst_coll_) {
         return *net_class_inst_coll_;
@@ -1093,7 +1093,7 @@ blaze::collector &net_class_get_instance_collector()
     return *net_class_inst_coll_;
 }
 
-blaze::collector &nclass::get_collector()
+vlg::collector &nclass::get_collector()
 {
     return net_class_get_instance_collector();
 }
@@ -1111,7 +1111,7 @@ nclass::nclass()
 
 nclass::~nclass()
 {
-    blaze::collector &c = get_collector();
+    vlg::collector &c = get_collector();
     if((c.is_instance_collected(this))) {
         IFLOG(cri(TH_ID, LS_DTR "%s(ptr:%p)" D_W_R_COLL LS_EXUNX, __func__, this))
     }
@@ -1184,7 +1184,7 @@ void *nclass::get_field_by_name_index(const char *fldname,
     return NULL;
 }
 
-blaze::RetCode nclass::set_field_by_id(unsigned int fldid,
+vlg::RetCode nclass::set_field_by_id(unsigned int fldid,
                                        const void *ptr,
                                        size_t maxlen)
 {
@@ -1196,12 +1196,12 @@ blaze::RetCode nclass::set_field_by_id(unsigned int fldid,
         memcpy(cptr, ptr, maxlen ? min(maxlen,
                                        (md->get_field_type_size()*md->get_field_nmemb())) :
                (md->get_field_type_size()*md->get_field_nmemb()));
-        return blaze::RetCode_OK;
+        return vlg::RetCode_OK;
     }
-    return blaze::RetCode_NOTFOUND;
+    return vlg::RetCode_NOTFOUND;
 }
 
-blaze::RetCode nclass::set_field_by_name(const char *fldname,
+vlg::RetCode nclass::set_field_by_name(const char *fldname,
                                          const void *ptr,
                                          size_t maxlen)
 {
@@ -1213,12 +1213,12 @@ blaze::RetCode nclass::set_field_by_name(const char *fldname,
         memcpy(cptr, ptr, maxlen ? min(maxlen,
                                        (md->get_field_type_size()*md->get_field_nmemb())) :
                (md->get_field_type_size()*md->get_field_nmemb()));
-        return blaze::RetCode_OK;
+        return vlg::RetCode_OK;
     }
-    return blaze::RetCode_NOTFOUND;
+    return vlg::RetCode_NOTFOUND;
 }
 
-blaze::RetCode nclass::set_field_by_id_index(unsigned int fldid,
+vlg::RetCode nclass::set_field_by_id_index(unsigned int fldid,
                                              const void *ptr,
                                              unsigned int index,
                                              size_t maxlen)
@@ -1231,12 +1231,12 @@ blaze::RetCode nclass::set_field_by_id_index(unsigned int fldid,
         memcpy(cptr, ptr, maxlen ? min(maxlen,
                                        (md->get_field_type_size()*md->get_field_nmemb())) :
                (md->get_field_type_size()*md->get_field_nmemb()));
-        return blaze::RetCode_OK;
+        return vlg::RetCode_OK;
     }
-    return blaze::RetCode_NOTFOUND;
+    return vlg::RetCode_NOTFOUND;
 }
 
-blaze::RetCode nclass::set_field_by_name_index(const char *fldname,
+vlg::RetCode nclass::set_field_by_name_index(const char *fldname,
                                                const void *ptr,
                                                unsigned int index,
                                                size_t maxlen)
@@ -1249,12 +1249,12 @@ blaze::RetCode nclass::set_field_by_name_index(const char *fldname,
         memcpy(cptr, ptr, maxlen ? min(maxlen,
                                        (md->get_field_type_size()*md->get_field_nmemb())) :
                (md->get_field_type_size()*md->get_field_nmemb()));
-        return blaze::RetCode_OK;
+        return vlg::RetCode_OK;
     }
-    return blaze::RetCode_NOTFOUND;
+    return vlg::RetCode_NOTFOUND;
 }
 
-blaze::RetCode nclass::is_field_zero_by_id(unsigned int fldid,
+vlg::RetCode nclass::is_field_zero_by_id(unsigned int fldid,
                                            bool &res) const
 {
     const entity_desc *ed = get_entity_descriptor();
@@ -1266,12 +1266,12 @@ blaze::RetCode nclass::is_field_zero_by_id(unsigned int fldid,
         zcptr += md->get_field_offset();
         res = (memcmp(cptr, zcptr,
                       (md->get_field_type_size()*md->get_field_nmemb())) == 0);
-        return blaze::RetCode_OK;
+        return vlg::RetCode_OK;
     }
-    return blaze::RetCode_NOTFOUND;
+    return vlg::RetCode_NOTFOUND;
 }
 
-blaze::RetCode nclass::is_field_zero_by_name(const char *fldname,
+vlg::RetCode nclass::is_field_zero_by_name(const char *fldname,
                                              bool &res) const
 {
     const entity_desc *ed = get_entity_descriptor();
@@ -1283,12 +1283,12 @@ blaze::RetCode nclass::is_field_zero_by_name(const char *fldname,
         zcptr += md->get_field_offset();
         res = (memcmp(cptr, zcptr,
                       (md->get_field_type_size()*md->get_field_nmemb())) == 0);
-        return blaze::RetCode_OK;
+        return vlg::RetCode_OK;
     }
-    return blaze::RetCode_NOTFOUND;
+    return vlg::RetCode_NOTFOUND;
 }
 
-blaze::RetCode nclass::is_field_zero_by_id_index(unsigned int fldid,
+vlg::RetCode nclass::is_field_zero_by_id_index(unsigned int fldid,
                                                  unsigned int index,
                                                  unsigned int nmenb,
                                                  bool &res) const
@@ -1301,12 +1301,12 @@ blaze::RetCode nclass::is_field_zero_by_id_index(unsigned int fldid,
         const char *zcptr = reinterpret_cast<const char *>(get_zero_object());
         zcptr += (md->get_field_offset() + md->get_field_type_size()*index);
         res = (memcmp(cptr, zcptr, (md->get_field_type_size()*nmenb)) == 0);
-        return blaze::RetCode_OK;
+        return vlg::RetCode_OK;
     }
-    return blaze::RetCode_NOTFOUND;
+    return vlg::RetCode_NOTFOUND;
 }
 
-blaze::RetCode nclass::is_field_zero_by_name_index(const char *fldname,
+vlg::RetCode nclass::is_field_zero_by_name_index(const char *fldname,
                                                    unsigned int index,
                                                    unsigned int nmenb,
                                                    bool &res) const
@@ -1319,12 +1319,12 @@ blaze::RetCode nclass::is_field_zero_by_name_index(const char *fldname,
         const char *zcptr = reinterpret_cast<const char *>(get_zero_object());
         zcptr += (md->get_field_offset() + md->get_field_type_size()*index);
         res = (memcmp(cptr, zcptr, (md->get_field_type_size()*nmenb)) == 0);
-        return blaze::RetCode_OK;
+        return vlg::RetCode_OK;
     }
-    return blaze::RetCode_NOTFOUND;
+    return vlg::RetCode_NOTFOUND;
 }
 
-blaze::RetCode nclass::set_field_zero_by_id(unsigned int fldid)
+vlg::RetCode nclass::set_field_zero_by_id(unsigned int fldid)
 {
     const entity_desc *ed = get_entity_descriptor();
     const member_desc *md = ed->get_member_desc_by_id(fldid);
@@ -1334,12 +1334,12 @@ blaze::RetCode nclass::set_field_zero_by_id(unsigned int fldid)
         const char *zcptr = reinterpret_cast<const char *>(get_zero_object());
         zcptr += md->get_field_offset();
         memcpy(cptr, zcptr, md->get_field_type_size()*md->get_field_nmemb());
-        return blaze::RetCode_OK;
+        return vlg::RetCode_OK;
     }
-    return blaze::RetCode_NOTFOUND;
+    return vlg::RetCode_NOTFOUND;
 }
 
-blaze::RetCode nclass::set_field_zero_by_name(const char *fldname)
+vlg::RetCode nclass::set_field_zero_by_name(const char *fldname)
 {
     const entity_desc *ed = get_entity_descriptor();
     const member_desc *md = ed->get_member_desc_by_name(fldname);
@@ -1349,12 +1349,12 @@ blaze::RetCode nclass::set_field_zero_by_name(const char *fldname)
         const char *zcptr = reinterpret_cast<const char *>(get_zero_object());
         zcptr += md->get_field_offset();
         memcpy(cptr, zcptr, md->get_field_type_size()*md->get_field_nmemb());
-        return blaze::RetCode_OK;
+        return vlg::RetCode_OK;
     }
-    return blaze::RetCode_NOTFOUND;
+    return vlg::RetCode_NOTFOUND;
 }
 
-blaze::RetCode nclass::set_field_zero_by_name_index(const char *fldname,
+vlg::RetCode nclass::set_field_zero_by_name_index(const char *fldname,
                                                     unsigned int index,
                                                     unsigned int nmenb)
 {
@@ -1366,12 +1366,12 @@ blaze::RetCode nclass::set_field_zero_by_name_index(const char *fldname,
         const char *zcptr = reinterpret_cast<const char *>(get_zero_object());
         zcptr += (md->get_field_offset() + md->get_field_type_size()*index);
         memcpy(cptr, zcptr, md->get_field_type_size()*nmenb);
-        return blaze::RetCode_OK;
+        return vlg::RetCode_OK;
     }
-    return blaze::RetCode_NOTFOUND;
+    return vlg::RetCode_NOTFOUND;
 }
 
-blaze::RetCode nclass::set_field_zero_by_id_index(unsigned int fldid,
+vlg::RetCode nclass::set_field_zero_by_id_index(unsigned int fldid,
                                                   unsigned int index,
                                                   unsigned int nmenb)
 {
@@ -1383,9 +1383,9 @@ blaze::RetCode nclass::set_field_zero_by_id_index(unsigned int fldid,
         const char *zcptr = reinterpret_cast<const char *>(get_zero_object());
         zcptr += (md->get_field_offset() + md->get_field_type_size()*index);
         memcpy(cptr, zcptr, md->get_field_type_size()*nmenb);
-        return blaze::RetCode_OK;
+        return vlg::RetCode_OK;
     }
-    return blaze::RetCode_NOTFOUND;
+    return vlg::RetCode_NOTFOUND;
 }
 
 /*************************************************************
@@ -1420,7 +1420,7 @@ struct ENM_FND_IDX_REC_UD {
     bool                    *res_valid_;
 };
 
-void enum_edesc_fnd_idx(const blaze::hash_map &map,
+void enum_edesc_fnd_idx(const vlg::hash_map &map,
                         const void *key,
                         const void *ptr,
                         void *ud,
@@ -1458,7 +1458,7 @@ void enum_edesc_fnd_idx(const blaze::hash_map &map,
             ENM_FND_IDX_REC_UD rrud = *rud;
             const entity_desc *edsc = NULL;
             if(!rud->bem_.get_entity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
-                const blaze::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
+                const vlg::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
                 if(mmbrd->get_field_nmemb() > 1) {
                     for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
                         rrud.obj_ptr_ = rud->obj_ptr_ +
@@ -1525,7 +1525,7 @@ char *nclass::get_term_field_ref_by_plain_idx(unsigned int plainidx,
     if(!mdesc) {
         return NULL;
     }
-    const blaze::hash_map &nm_mmdesc =
+    const vlg::hash_map &nm_mmdesc =
         get_entity_descriptor()->get_opaque()->GetMap_NM_MMBRDSC();
     bool res_valid = false;
     unsigned int current_plain_idx = 0;
@@ -1600,16 +1600,16 @@ struct prim_key_buff_value_rec_ud {
         max_out_len_(max_out_len),
         cur_idx_(0),
         out_(out),
-        res(blaze::RetCode_OK) {}
+        res(vlg::RetCode_OK) {}
 
     const char *obj_ptr_;
     unsigned int max_out_len_;
     int cur_idx_;
     char *out_;
-    blaze::RetCode res;
+    vlg::RetCode res;
 };
 
-void enum_keyset_prim_key_buff_value(const blaze::linked_list &list,
+void enum_keyset_prim_key_buff_value(const vlg::linked_list &list,
                                      const void *ptr,
                                      void *ud)
 {
@@ -1622,21 +1622,21 @@ void enum_keyset_prim_key_buff_value(const blaze::linked_list &list,
                                  &rud->out_[rud->cur_idx_],
                                  rud->max_out_len_);
     if(sout<0) {
-        rud->res = blaze::RetCode_KO;
+        rud->res = vlg::RetCode_KO;
     } else {
         rud->cur_idx_ += sout;
         rud->max_out_len_ -= sout;
     }
 }
 
-void enum_prim_key_buff_value(const blaze::hash_map &map,
+void enum_prim_key_buff_value(const vlg::hash_map &map,
                               const void *key,
                               const void *ptr,
                               void *ud)
 {
     prim_key_buff_value_rec_ud *rud = static_cast<prim_key_buff_value_rec_ud *>(ud);
     const key_desc *kdsc = *(const key_desc **)ptr;
-    const blaze::linked_list &kset = kdsc->get_opaque()->GetKeyFieldSet();
+    const vlg::linked_list &kset = kdsc->get_opaque()->GetKeyFieldSet();
     if(kdsc->is_primary()) {
         kset.enum_elements(enum_keyset_prim_key_buff_value, rud);
     } else {
@@ -1647,7 +1647,7 @@ void enum_prim_key_buff_value(const blaze::hash_map &map,
 inline void FillStr_FldValue(const void *fld_ptr,
                              Type btype,
                              size_t nmemb,
-                             blaze::ascii_string *out)
+                             vlg::ascii_string *out)
 {
     int max_out_len = 256;
     char buff[256] = { '\0' };
@@ -1704,17 +1704,17 @@ inline void FillStr_FldValue(const void *fld_ptr,
 }
 
 struct prim_key_str_value_rec_ud {
-    prim_key_str_value_rec_ud(const char *self, blaze::ascii_string *out) :
+    prim_key_str_value_rec_ud(const char *self, vlg::ascii_string *out) :
         obj_ptr_(self),
         out_(out),
-        res(blaze::RetCode_OK) {}
+        res(vlg::RetCode_OK) {}
 
     const char *obj_ptr_;
-    blaze::ascii_string *out_;
-    blaze::RetCode res;
+    vlg::ascii_string *out_;
+    vlg::RetCode res;
 };
 
-void enum_keyset_prim_key_str_value(const blaze::linked_list &list,
+void enum_keyset_prim_key_str_value(const vlg::linked_list &list,
                                     const void *ptr,
                                     void *ud)
 {
@@ -1726,14 +1726,14 @@ void enum_keyset_prim_key_str_value(const blaze::linked_list &list,
                      mmbrd->get_field_nmemb(), rud->out_);
 }
 
-void enum_prim_key_str_value(const blaze::hash_map &map,
+void enum_prim_key_str_value(const vlg::hash_map &map,
                              const void *key,
                              const void *ptr,
                              void *ud)
 {
     prim_key_str_value_rec_ud *rud = static_cast<prim_key_str_value_rec_ud *>(ud);
     const key_desc *kdsc = *(const key_desc **)ptr;
-    const blaze::linked_list &kset = kdsc->get_opaque()->GetKeyFieldSet();
+    const vlg::linked_list &kset = kdsc->get_opaque()->GetKeyFieldSet();
     if(kdsc->is_primary()) {
         kset.enum_elements(enum_keyset_prim_key_str_value, rud);
     } else {
@@ -1741,9 +1741,9 @@ void enum_prim_key_str_value(const blaze::hash_map &map,
     }
 }
 
-blaze::RetCode nclass::primary_key_string_value(blaze::ascii_string *out)
+vlg::RetCode nclass::primary_key_string_value(vlg::ascii_string *out)
 {
-    const blaze::hash_map &idk_desc =
+    const vlg::hash_map &idk_desc =
         get_entity_descriptor()->get_opaque()->GetMap_KEYID_KDESC();
     prim_key_str_value_rec_ud rud((const char *)this, out);
     idk_desc.enum_elements(enum_prim_key_str_value, &rud);

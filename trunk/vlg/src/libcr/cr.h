@@ -20,7 +20,7 @@
  */
 
 /** @file cr_global.h
-    @brief Main definition header for blaze-core library.
+    @brief Main definition header for vlg-core library.
 */
 
 /** @cond UNDOC */
@@ -31,7 +31,7 @@
 /** @endcond */
 
 #if defined(__cplusplus)
-namespace blaze {
+namespace vlg {
 #endif
 
 /**

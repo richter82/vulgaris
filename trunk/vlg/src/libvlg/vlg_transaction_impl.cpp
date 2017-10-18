@@ -23,19 +23,19 @@
 #include "blz_connection_int.h"
 #include "blz_transaction_int.h"
 
-namespace blaze {
+namespace vlg {
 
 // BLZ_TRANSACTION CTORS - INIT - DESTROY
 
 //BLZ_TRANSACTION MEMORY
 
-class transaction_inst_collector : public blaze::collector {
+class transaction_inst_collector : public vlg::collector {
     public:
-        transaction_inst_collector() : blaze::collector("transaction_int") {}
+        transaction_inst_collector() : vlg::collector("transaction_int") {}
 };
 
-blaze::collector *inst_coll_ = NULL;
-blaze::collector &tx_inst_collector()
+vlg::collector *inst_coll_ = NULL;
+vlg::collector &tx_inst_collector()
 {
     if(inst_coll_) {
         return *inst_coll_;
@@ -46,7 +46,7 @@ blaze::collector &tx_inst_collector()
     return *inst_coll_;
 }
 
-blaze::collector &transaction_int::get_collector()
+vlg::collector &transaction_int::get_collector()
 {
     return tx_inst_collector();
 }
@@ -83,7 +83,7 @@ transaction_int::transaction_int(connection_int &conn) :
 
 transaction_int::~transaction_int()
 {
-    blaze::collector &c = get_collector();
+    vlg::collector &c = get_collector();
     if(c.is_instance_collected(this)) {
         IFLOG(cri(TH_ID, LS_DTR "%s(ptr:%p)" D_W_R_COLL LS_EXUNX, __func__, this))
     }
@@ -99,13 +99,13 @@ transaction_int::~transaction_int()
     IFLOG(trc(TH_ID, LS_DTR "%s(ptr:%p)", __func__, this))
 }
 
-blaze::RetCode transaction_int::objs_release()
+vlg::RetCode transaction_int::objs_release()
 {
     if(request_obj_) {
         /************************
         RELEASE_ID: TRX_SOJ_01
         ************************/
-        blaze::collector &c = request_obj_->get_collector();
+        vlg::collector &c = request_obj_->get_collector();
         c.release(request_obj_);
         request_obj_ = NULL;
     }
@@ -113,7 +113,7 @@ blaze::RetCode transaction_int::objs_release()
         /************************
         RELEASE_ID: TRX_COJ_01
         ************************/
-        blaze::collector &c = current_obj_->get_collector();
+        vlg::collector &c = current_obj_->get_collector();
         c.release(current_obj_);
         current_obj_ = NULL;
     }
@@ -121,38 +121,38 @@ blaze::RetCode transaction_int::objs_release()
         /************************
         RELEASE_ID: TRX_ROJ_01
         ************************/
-        blaze::collector &c = result_obj_->get_collector();
+        vlg::collector &c = result_obj_->get_collector();
         c.release(result_obj_);
         result_obj_ = NULL;
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode transaction_int::init()
+vlg::RetCode transaction_int::init()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     set_status(TransactionStatus_INITIALIZED);
     IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode transaction_int::re_new()
+vlg::RetCode transaction_int::re_new()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ < TransactionStatus_PREPARED) {
         IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     if(status_ == TransactionStatus_FLYING) {
         IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p) - transaction is flying, cannot renew.",
                   __func__, this))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     objs_release();
     conn_.next_tx_id(txid_);
     set_status(TransactionStatus_INITIALIZED);
     IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 //-----------------------------
@@ -209,7 +209,7 @@ unsigned int transaction_int::tx_res_class_id()
     return res_classid_;
 }
 
-blaze::Encode transaction_int::tx_res_class_encode()
+vlg::Encode transaction_int::tx_res_class_encode()
 {
     return res_clsenc_;
 }
@@ -295,13 +295,13 @@ void transaction_int::set_request_obj(const nclass *val)
         /************************
         RELEASE_ID: TRX_SOJ_01
         ************************/
-        blaze::collector &c = request_obj_->get_collector();
+        vlg::collector &c = request_obj_->get_collector();
         c.release(request_obj_);
         request_obj_ = NULL;
     }
     if(val) {
         if((request_obj_ = val->clone())) {
-            blaze::collector &c = request_obj_->get_collector();
+            vlg::collector &c = request_obj_->get_collector();
             /************************
             RETAIN_ID: TRX_SOJ_01
             ************************/
@@ -321,13 +321,13 @@ void transaction_int::set_current_obj(const nclass *val)
         /************************
         RELEASE_ID: TRX_COJ_01
         ************************/
-        blaze::collector &c = current_obj_->get_collector();
+        vlg::collector &c = current_obj_->get_collector();
         c.release(current_obj_);
         current_obj_ = NULL;
     }
     if(val) {
         if((current_obj_ = val->clone())) {
-            blaze::collector &c = current_obj_->get_collector();
+            vlg::collector &c = current_obj_->get_collector();
             /************************
             RETAIN_ID: TRX_COJ_01
             ************************/
@@ -343,13 +343,13 @@ void transaction_int::set_result_obj(const nclass *val)
         /************************
         RELEASE_ID: TRX_ROJ_01
         ************************/
-        blaze::collector &c = result_obj_->get_collector();
+        vlg::collector &c = result_obj_->get_collector();
         c.release(result_obj_);
         result_obj_ = NULL;
     }
     if(val) {
         if((result_obj_ = val->clone())) {
-            blaze::collector &c = result_obj_->get_collector();
+            vlg::collector &c = result_obj_->get_collector();
             /************************
             RETAIN_ID: TRX_ROJ_01
             ************************/
@@ -372,12 +372,12 @@ void transaction_int::set_request_obj_on_request(nclass *val)
         /************************
         RELEASE_ID: TRX_SOJ_01
         ************************/
-        blaze::collector &c = request_obj_->get_collector();
+        vlg::collector &c = request_obj_->get_collector();
         c.release(request_obj_);
         request_obj_ = NULL;
     }
     if((request_obj_ = val)) {
-        blaze::collector &c = request_obj_->get_collector();
+        vlg::collector &c = request_obj_->get_collector();
         /************************
         RETAIN_ID: TRX_SOJ_01
         ************************/
@@ -391,12 +391,12 @@ void transaction_int::set_result_obj_on_response(nclass *val)
         /************************
         RELEASE_ID: TRX_ROJ_01
         ************************/
-        blaze::collector &c = result_obj_->get_collector();
+        vlg::collector &c = result_obj_->get_collector();
         c.release(result_obj_);
         result_obj_ = NULL;
     }
     if((result_obj_ = val)) {
-        blaze::collector &c = result_obj_->get_collector();
+        vlg::collector &c = result_obj_->get_collector();
         /************************
         RETAIN_ID: TRX_ROJ_01
         ************************/
@@ -481,19 +481,19 @@ void transaction_int::set_transaction_closure_handler(transaction_closure_hndlr
 //
 //-----------------------------
 
-blaze::RetCode transaction_int::prepare()
+vlg::RetCode transaction_int::prepare()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ != TransactionStatus_INITIALIZED) {
         IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     set_status(TransactionStatus_PREPARED);
     IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode transaction_int::prepare(TransactionRequestType txtype,
+vlg::RetCode transaction_int::prepare(TransactionRequestType txtype,
                                         Action txactn,
                                         Encode clsenc,
                                         bool rsclrq,
@@ -503,7 +503,7 @@ blaze::RetCode transaction_int::prepare(TransactionRequestType txtype,
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ != TransactionStatus_INITIALIZED) {
         IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     txtype_ = txtype;
     txactn_ = txactn;
@@ -513,7 +513,7 @@ blaze::RetCode transaction_int::prepare(TransactionRequestType txtype,
     set_current_obj(current_obj);
     set_status(TransactionStatus_PREPARED);
     IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 //-----------------------------
@@ -521,21 +521,21 @@ blaze::RetCode transaction_int::prepare(TransactionRequestType txtype,
 //
 //-----------------------------
 
-blaze::RetCode transaction_int::send()
+vlg::RetCode transaction_int::send()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     if(status_ != TransactionStatus_PREPARED) {
         IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     //client side adoption to avoid user-space deletion.
     /************************
     RETAIN_ID: TRX_CLI_01
     ************************/
-    blaze::collector &c = get_collector();
+    vlg::collector &c = get_collector();
     c.retain(this);
-    blaze::rt_mark_time(&start_mark_tim_);
+    vlg::rt_mark_time(&start_mark_tim_);
     set_flying();
     transaction_int *self = this;
     if((cdrs_res = conn_.client_fly_tx_map().put(&txid_, &self))) {
@@ -579,13 +579,13 @@ blaze::RetCode transaction_int::send()
     return cdrs_res;
 }
 
-blaze::RetCode transaction_int::send_response()
+vlg::RetCode transaction_int::send_response()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     if(status_ != TransactionStatus_FLYING) {
         IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     DECLINITH_GBB(gbb, BLZ_BUFF_DEF_SZ)
     build_PKT_TXRESP(tx_res_,
@@ -617,13 +617,13 @@ blaze::RetCode transaction_int::send_response()
 //
 //-----------------------------
 
-blaze::RetCode transaction_int::set_flying()
+vlg::RetCode transaction_int::set_flying()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(conn_.conn_type() == ConnectionType_INGOING) {
         if(status_ != TransactionStatus_INITIALIZED) {
             IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
-            return blaze::RetCode_BADSTTS;
+            return vlg::RetCode_BADSTTS;
         }
         IFLOG(dbg(TH_ID, LS_TXI"[%08x%08x%08x%08x][FLYING]",
                   txid_.txplid,
@@ -633,7 +633,7 @@ blaze::RetCode transaction_int::set_flying()
     } else {
         if(status_ != TransactionStatus_PREPARED) {
             IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
-            return blaze::RetCode_BADSTTS;
+            return vlg::RetCode_BADSTTS;
         }
         IFLOG(dbg(TH_ID, LS_TXO"[%08x%08x%08x%08x][FLYING]",
                   txid_.txplid,
@@ -643,15 +643,15 @@ blaze::RetCode transaction_int::set_flying()
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
     set_status(TransactionStatus_FLYING);
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 inline void transaction_int::trace_tx_closure(const char *tx_res_str)
 {
     char tim_buf[32];
     rt_time_t fin_mark_tim, dt_mark_tim;
-    blaze::rt_mark_time(&fin_mark_tim);
-    dt_mark_tim = blaze::rt_diff_time(start_mark_tim_, fin_mark_tim);
+    vlg::rt_mark_time(&fin_mark_tim);
+    dt_mark_tim = vlg::rt_diff_time(start_mark_tim_, fin_mark_tim);
     snprintf(tim_buf, 32, "%14llu", dt_mark_tim);
     if(conn_.conn_type() == ConnectionType_INGOING) {
         if(request_obj_) {
@@ -740,12 +740,12 @@ inline void transaction_int::trace_tx_closure(const char *tx_res_str)
               tim_buf))
 }
 
-blaze::RetCode transaction_int::set_closed()
+vlg::RetCode transaction_int::set_closed()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ != TransactionStatus_FLYING) {
         IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     const char *tx_res_str = (tx_res_ == TransactionResult_COMMITTED) ?
                              TX_RES_COMMT : TX_RES_FAIL;
@@ -756,10 +756,10 @@ blaze::RetCode transaction_int::set_closed()
         tres_hndl_(*this, tres_hndl_ud_);
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode transaction_int::set_aborted()
+vlg::RetCode transaction_int::set_aborted()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     set_tx_res(TransactionResult_ABORTED);
@@ -771,10 +771,10 @@ blaze::RetCode transaction_int::set_aborted()
         tres_hndl_(*this, tres_hndl_ud_);
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode transaction_int::set_status(TransactionStatus status)
+vlg::RetCode transaction_int::set_status(TransactionStatus status)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, status:%d)", __func__, this, status))
     CHK_MON_ERR_0(lock)
@@ -785,10 +785,10 @@ blaze::RetCode transaction_int::set_status(TransactionStatus status)
     CHK_MON_ERR_0(notify_all)
     CHK_MON_ERR_0(unlock)
     IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode transaction_int::await_for_status_reached_or_outdated(
+vlg::RetCode transaction_int::await_for_status_reached_or_outdated(
     TransactionStatus test,
     TransactionStatus &current,
     time_t sec,
@@ -799,20 +799,20 @@ blaze::RetCode transaction_int::await_for_status_reached_or_outdated(
     if(status_ < TransactionStatus_INITIALIZED) {
         CHK_MON_ERR_0(unlock)
         IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     while(status_ < test) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res = blaze::RetCode_TIMEOUT;
+                cdrs_res = vlg::RetCode_TIMEOUT;
                 break;
             }
         }
     }
     current = status_;
-    IFLOG(log(cdrs_res ? blaze::TL_WRN : blaze::TL_DBG, TH_ID,
+    IFLOG(log(cdrs_res ? vlg::TL_WRN : vlg::TL_DBG, TH_ID,
               LS_CLO "%s(ptr:%p, res:%d) - test:%d [reached or outdated] current:%d",
               __func__, this, cdrs_res,
               test, status_))
@@ -820,26 +820,26 @@ blaze::RetCode transaction_int::await_for_status_reached_or_outdated(
     return cdrs_res;
 }
 
-blaze::RetCode transaction_int::await_for_closure(time_t sec, long nsec)
+vlg::RetCode transaction_int::await_for_closure(time_t sec, long nsec)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     CHK_MON_ERR_0(lock)
     if(status_ < TransactionStatus_INITIALIZED) {
         CHK_MON_ERR_0(unlock)
         IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     while(status_ < TransactionStatus_CLOSED) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res = blaze::RetCode_TIMEOUT;
+                cdrs_res = vlg::RetCode_TIMEOUT;
                 break;
             }
         }
     }
-    IFLOG(log(cdrs_res ? blaze::TL_WRN : blaze::TL_DBG, TH_ID,
+    IFLOG(log(cdrs_res ? vlg::TL_WRN : vlg::TL_DBG, TH_ID,
               LS_CLO "%s(ptr:%p, res:%d) - [closed %s]", __func__, this, cdrs_res,
               cdrs_res ? "not reached" : "reached"))
     CHK_MON_ERR_0(unlock)

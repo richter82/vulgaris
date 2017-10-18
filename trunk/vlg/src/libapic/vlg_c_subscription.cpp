@@ -22,7 +22,7 @@
 #include "blaze_c_subscription.h"
 #include "blaze_subscription.h"
 
-namespace blaze {
+namespace vlg {
 
 class c_subscription : public subscription {
     private:

@@ -21,10 +21,10 @@
 
 #ifndef BLZ_C_LOG_H_
 #define BLZ_C_LOG_H_
-#include "blaze.h"
+#include "vlg.h"
 
 #if defined(__cplusplus)
-using namespace blaze;
+using namespace vlg;
 extern "C" {
 #endif
 
@@ -38,7 +38,7 @@ RetCode logger_load_logger_config_by_name(const char *fname);
 #endif
 
 #if defined(__cplusplus)
-using namespace blaze;
+using namespace vlg;
 extern "C" {
 #endif
 

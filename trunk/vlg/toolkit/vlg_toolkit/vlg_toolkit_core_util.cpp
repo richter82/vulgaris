@@ -24,69 +24,69 @@
 
 #define LG_BUF_LEN_16K 16384
 
-namespace blaze {
+namespace vlg {
 TraceLVL get_trace_level_enum(const char *str);
 const char *get_trace_level_string(TraceLVL lvl);
 }
 
 void FillQstring_FldValue(const char *fld_ptr,
-                          const blaze::member_desc *mdesc,
+                          const vlg::member_desc *mdesc,
                           QString &out)
 {
     switch(mdesc->get_field_blz_type()) {
-        case blaze::Type_ENTITY: {
-            if(mdesc->get_field_entity_type() == blaze::EntityType_ENUM) {
+        case vlg::Type_ENTITY: {
+            if(mdesc->get_field_entity_type() == vlg::EntityType_ENUM) {
                 int val = *(int *)fld_ptr;
                 out = QString("%1").arg(val);
             }
         }
         break;
-        case blaze::Type_BOOL: {
+        case vlg::Type_BOOL: {
             bool val = *(bool *)fld_ptr;
             out = QString("%1").arg(val);
         }
         break;
-        case blaze::Type_INT16: {
+        case vlg::Type_INT16: {
             short val = *(short *)fld_ptr;
             out = QString("%1").arg(val);
         }
         break;
-        case blaze::Type_UINT16: {
+        case vlg::Type_UINT16: {
             unsigned short val = *(unsigned short *)fld_ptr;
             out = QString("%1").arg(val);
         }
         break;
-        case blaze::Type_INT32: {
+        case vlg::Type_INT32: {
             int val = *(int *)fld_ptr;
             out = QString("%1").arg(val);
         }
         break;
-        case blaze::Type_UINT32: {
+        case vlg::Type_UINT32: {
             unsigned int val = *(unsigned int *)fld_ptr;
             out = QString("%1").arg(val);
         }
         break;
-        case blaze::Type_INT64: {
+        case vlg::Type_INT64: {
             int64_t val = *(int64_t *)fld_ptr;
             out = QString("%1").arg(val);
         }
         break;
-        case blaze::Type_UINT64: {
+        case vlg::Type_UINT64: {
             uint64_t val = *(uint64_t *)fld_ptr;
             out = QString("%1").arg(val);
         }
         break;
-        case blaze::Type_FLOAT32: {
+        case vlg::Type_FLOAT32: {
             float val = *(float *)fld_ptr;
             out = QString("%1").arg(val);
         }
         break;
-        case blaze::Type_FLOAT64: {
+        case vlg::Type_FLOAT64: {
             double val = *(double *)fld_ptr;
             out = QString("%1").arg(val);
         }
         break;
-        case blaze::Type_ASCII: {
+        case vlg::Type_ASCII: {
             char val = *fld_ptr;
             out = QString("%1").arg(val);
         }
@@ -97,43 +97,43 @@ void FillQstring_FldValue(const char *fld_ptr,
 }
 
 void FillFldValue_Qstring(const QVariant &value,
-                          const blaze::member_desc *mdesc,
+                          const vlg::member_desc *mdesc,
                           char *fld_ptr)
 {
     switch(mdesc->get_field_blz_type()) {
-        case blaze::Type_ENTITY:
-            if(mdesc->get_field_entity_type() == blaze::EntityType_ENUM) {
+        case vlg::Type_ENTITY:
+            if(mdesc->get_field_entity_type() == vlg::EntityType_ENUM) {
                 *(int *)fld_ptr = value.toInt();
             }
             break;
-        case blaze::Type_BOOL:
+        case vlg::Type_BOOL:
             *(bool *)fld_ptr = value.toBool();
             break;
-        case blaze::Type_INT16:
+        case vlg::Type_INT16:
             *(short *)fld_ptr = value.toInt();
             break;
-        case blaze::Type_UINT16:
+        case vlg::Type_UINT16:
             *(unsigned short *)fld_ptr = value.toUInt();
             break;
-        case blaze::Type_INT32:
+        case vlg::Type_INT32:
             *(int *)fld_ptr = value.toInt();
             break;
-        case blaze::Type_UINT32:
+        case vlg::Type_UINT32:
             *(unsigned int *)fld_ptr = value.toUInt();
             break;
-        case blaze::Type_INT64:
+        case vlg::Type_INT64:
             *(int64_t *)fld_ptr = value.toLongLong();
             break;
-        case blaze::Type_UINT64:
+        case vlg::Type_UINT64:
             *(uint64_t *)fld_ptr = value.toULongLong();
             break;
-        case blaze::Type_FLOAT32:
+        case vlg::Type_FLOAT32:
             *(float *)fld_ptr = value.toFloat();
             break;
-        case blaze::Type_FLOAT64:
+        case vlg::Type_FLOAT64:
             *(double *)fld_ptr = value.toDouble();
             break;
-        case blaze::Type_ASCII:
+        case vlg::Type_ASCII:
             if(mdesc->get_field_nmemb() > 1) {
                 strncpy(fld_ptr, value.toString().toLatin1().data(), mdesc->get_field_nmemb());
             } else {
@@ -159,13 +159,13 @@ QPlainTextEditApnd::QPlainTextEditApnd(blz_toolkit_MainWindow *btmw) :
 void QPlainTextEditApnd::flush()
 {}
 
-size_t QPlainTextEditApnd::put_msg(blaze::TraceLVL tlvl,
+size_t QPlainTextEditApnd::put_msg(vlg::TraceLVL tlvl,
                                    const char *sign,
                                    uint16_t sign_len,
                                    uint32_t id,
                                    const char *msg)
 {
-    const char *lvl_str = blaze::get_trace_level_string(tlvl);
+    const char *lvl_str = vlg::get_trace_level_string(tlvl);
     char msg_b[LG_BUF_LEN_16K] = {0};
     uint16_t msg_b_idx = 0;
     memset(msg_b, 0, LG_BUF_LEN_16K);
@@ -182,18 +182,18 @@ size_t QPlainTextEditApnd::put_msg_plain(const char *msg)
     memset(msg_b, 0, LG_BUF_LEN_16K);
     render_msg_pln(msg, msg_b, &msg_b_idx);
     msg_b[msg_b_idx-1] = '\0';
-    emit messageReady(blaze::TL_PLN, tr(msg_b));
+    emit messageReady(vlg::TL_PLN, tr(msg_b));
     return msg_b_idx;
 }
 
-size_t QPlainTextEditApnd::put_msg_va(blaze::TraceLVL tlvl,
+size_t QPlainTextEditApnd::put_msg_va(vlg::TraceLVL tlvl,
                                       const char *sign,
                                       uint16_t sign_len,
                                       uint32_t id,
                                       const char *msg,
                                       va_list args)
 {
-    const char *lvl_str = blaze::get_trace_level_string(tlvl);
+    const char *lvl_str = vlg::get_trace_level_string(tlvl);
     char msg_b[LG_BUF_LEN_16K] = {0};
     uint16_t msg_b_idx = 0;
     render_msg_va(lvl_str, sign, sign_len, id, msg, msg_b, &msg_b_idx, args);
@@ -208,7 +208,7 @@ size_t QPlainTextEditApnd::put_msg_va_plain(const char *msg, va_list args)
     uint16_t msg_b_idx = 0;
     render_msg_va_pln(msg, msg_b, &msg_b_idx, args);
     msg_b[msg_b_idx-1] = '\0';
-    emit messageReady(blaze::TL_PLN, tr(msg_b));
+    emit messageReady(vlg::TL_PLN, tr(msg_b));
     return msg_b_idx;
 }
 

@@ -31,7 +31,7 @@
 #include "blz_peer_int.h"
 #include "blz_connection_int.h"
 
-namespace blaze {
+namespace vlg {
 
 selector_event::selector_event(BLZ_SELECTOR_Evt evt, connection_int *conn) :
     evt_(evt),
@@ -49,13 +49,13 @@ selector_event::selector_event(BLZ_SELECTOR_Evt evt, connection_int *conn) :
 
 //for non critical errors
 #define RETURNZERO_ACT return 0
-#define RETURRetCodeKO_ACT return blaze::RetCode_KO
+#define RETURRetCodeKO_ACT return vlg::RetCode_KO
 
 //for critical errors
 #define SET_ERROR_AND_RETURNZERO_ACT set_status(BLZ_ASYNCH_SELECTOR_STATUS_ERROR); return 0;
-#define SET_ERROR_AND_RETURRetCodeKO_ACT set_status(BLZ_ASYNCH_SELECTOR_STATUS_ERROR); return blaze::RetCode_KO;
+#define SET_ERROR_AND_RETURRetCodeKO_ACT set_status(BLZ_ASYNCH_SELECTOR_STATUS_ERROR); return vlg::RetCode_KO;
 
-blaze::logger *selector::log_ = NULL;
+vlg::logger *selector::log_ = NULL;
 
 selector::selector(peer_int &peer,
                    unsigned int id) :
@@ -63,20 +63,20 @@ selector::selector(peer_int &peer,
     id_(id),
     status_(BLZ_ASYNCH_SELECTOR_STATUS_TO_INIT),
     nfds_(-1),
-    last_err_(blaze::RetCode_OK),
+    last_err_(vlg::RetCode_OK),
     sel_res_(-1),
     udp_ntfy_srv_socket_(INVALID_SOCKET),
     udp_ntfy_cli_socket_(INVALID_SOCKET),
     srv_listen_socket_(INVALID_SOCKET),
     srv_acceptor_(peer),
-    srv_incoming_sock_map_(blaze::sngl_ptr_obj_mng(), sizeof(unsigned int)),
+    srv_incoming_sock_map_(vlg::sngl_ptr_obj_mng(), sizeof(unsigned int)),
     srv_exec_serv_(id*4, true),
-    cli_early_outgoing_sock_map_(blaze::sngl_ptr_obj_mng(), sizeof(SOCKET)),
-    cli_outgoing_sock_map_(blaze::sngl_ptr_obj_mng(), sizeof(unsigned int)),
+    cli_early_outgoing_sock_map_(vlg::sngl_ptr_obj_mng(), sizeof(SOCKET)),
+    cli_outgoing_sock_map_(vlg::sngl_ptr_obj_mng(), sizeof(unsigned int)),
     cli_exec_serv_(id*5, true),
-    write_pending_sockets_(blaze::sngl_ptr_obj_mng(), sizeof(SOCKET))
+    write_pending_sockets_(vlg::sngl_ptr_obj_mng(), sizeof(SOCKET))
 {
-    log_ = blaze::logger::get_logger("asynch_selector");
+    log_ = vlg::logger::get_logger("asynch_selector");
     IFLOG(trc(TH_ID, LS_CTR "%s(selid:%d)", __func__, id))
     memset(&udp_ntfy_sa_in_, 0, sizeof(udp_ntfy_sa_in_));
     udp_ntfy_sa_in_.sin_family = AF_INET;
@@ -102,7 +102,7 @@ selector::~selector()
     }
 }
 
-blaze::RetCode selector::init(unsigned int srv_executors,
+vlg::RetCode selector::init(unsigned int srv_executors,
                               unsigned int srv_pkt_q_len,
                               unsigned int cli_executors,
                               unsigned int cli_pkt_q_len)
@@ -125,23 +125,23 @@ blaze::RetCode selector::init(unsigned int srv_executors,
     RETURN_IF_NOT_OK(write_pending_sockets_.init(HM_SIZE_SMALL))
     set_status(BLZ_ASYNCH_SELECTOR_STATUS_INIT);
     IFLOG(trc(TH_ID, LS_CLO "%s(selid:%d)", __func__, id_))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode selector::on_peer_start_actions()
+vlg::RetCode selector::on_peer_start_actions()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(selid:%d)", __func__, id_))
     RETURN_IF_NOT_OK(last_err_ = start_exec_services())
     IFLOG(trc(TH_ID, LS_CLO "%s(selid:%d)", __func__, id_))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode selector::on_peer_move_running_actions()
+vlg::RetCode selector::on_peer_move_running_actions()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(selid:%d)", __func__, id_))
     RETURN_IF_NOT_OK(last_err_ = start_conn_objs())
     IFLOG(trc(TH_ID, LS_CLO "%s(selid:%d)", __func__, id_))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 peer_int &selector::peer()
@@ -154,7 +154,7 @@ BLZ_ASYNCH_SELECTOR_STATUS selector::status() const
     return status_;
 }
 
-blaze::RetCode selector::set_status(BLZ_ASYNCH_SELECTOR_STATUS status)
+vlg::RetCode selector::set_status(BLZ_ASYNCH_SELECTOR_STATUS status)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(selid:%d, status:%d)", __func__, id_, status))
     CHK_MON_ERR_0(lock)
@@ -162,10 +162,10 @@ blaze::RetCode selector::set_status(BLZ_ASYNCH_SELECTOR_STATUS status)
     CHK_MON_ERR_0(notify_all)
     CHK_MON_ERR_0(unlock)
     IFLOG(trc(TH_ID, LS_CLO "%s(selid:%d, status:%d)", __func__, id_, status))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode selector::await_for_status_reached_or_outdated(
+vlg::RetCode selector::await_for_status_reached_or_outdated(
     BLZ_ASYNCH_SELECTOR_STATUS test,
     BLZ_ASYNCH_SELECTOR_STATUS &current,
     time_t sec,
@@ -176,20 +176,20 @@ blaze::RetCode selector::await_for_status_reached_or_outdated(
     if(status_ <BLZ_ASYNCH_SELECTOR_STATUS_INIT) {
         CHK_MON_ERR_0(unlock)
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     while(status_ < test) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res =  blaze::RetCode_TIMEOUT;
+                cdrs_res =  vlg::RetCode_TIMEOUT;
                 break;
             }
         }
     }
     current = status_;
-    IFLOG(log(cdrs_res ? blaze::TL_WRN : blaze::TL_DBG, TH_ID,
+    IFLOG(log(cdrs_res ? vlg::TL_WRN : vlg::TL_DBG, TH_ID,
               LS_CLO "%s(selid:%d) - test:%d [reached or outdated] current:%d", __func__,
               id_, test, status_))
     CHK_MON_ERR_0(unlock)
@@ -236,7 +236,7 @@ uint32_t selector::outg_conn_count()
     return cli_early_outgoing_sock_map_.size() + cli_outgoing_sock_map_.size();
 }
 
-blaze::RetCode selector::create_UDP_notify_srv_sock()
+vlg::RetCode selector::create_UDP_notify_srv_sock()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(selid:%d)", __func__, id_))
     int res = 0, err = 0;
@@ -254,7 +254,7 @@ blaze::RetCode selector::create_UDP_notify_srv_sock()
                 err = WSAGetLastError();
                 IFLOG(cri(TH_ID, LS_CLO "%s(udp_ntfy_srv_socket_:%d, err:%d) -ioctlsocket KO-",
                           __func__, udp_ntfy_srv_socket_, err))
-                return blaze::RetCode_SYSERR;
+                return vlg::RetCode_SYSERR;
             } else {
                 IFLOG(dbg(TH_ID, LS_TRL "%s(udp_ntfy_srv_socket_:%d) -ioctlsocket OK- ",
                           __func__, udp_ntfy_srv_socket_))
@@ -262,14 +262,14 @@ blaze::RetCode selector::create_UDP_notify_srv_sock()
 #else
             int flags = fcntl(udp_ntfy_srv_socket_, F_GETFL, 0);
             if(flags < 0) {
-                return blaze::RetCode_KO;
+                return vlg::RetCode_KO;
             }
             flags = (flags|O_NONBLOCK);
             if((res = fcntl(udp_ntfy_srv_socket_, F_SETFL, flags))) {
                 IFLOG(cri(TH_ID, LS_CLO "%s(udp_ntfy_srv_socket_:%d, err:%d) -fcntl KO-",
                           __func__, udp_ntfy_srv_socket_,
                           errno))
-                return blaze::RetCode_SYSERR;
+                return vlg::RetCode_SYSERR;
             } else {
                 IFLOG(dbg(TH_ID, LS_TRL "%s(udp_ntfy_srv_socket_:%d) -fcntl OK-", __func__,
                           udp_ntfy_srv_socket_))
@@ -283,17 +283,17 @@ blaze::RetCode selector::create_UDP_notify_srv_sock()
 #endif
             IFLOG(cri(TH_ID, LS_CLO "%s(udp_ntfy_srv_socket_:%d, err:%d) -bind KO-",
                       __func__, udp_ntfy_srv_socket_, err))
-            return blaze::RetCode_SYSERR;
+            return vlg::RetCode_SYSERR;
         }
     } else {
         IFLOG(cri(TH_ID, LS_CLO "%s(err:) -socket KO-", __func__, err))
-        return blaze::RetCode_SYSERR;
+        return vlg::RetCode_SYSERR;
     }
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode selector::connect_UDP_notify_cli_sock()
+vlg::RetCode selector::connect_UDP_notify_cli_sock()
 {
     int err = 0;
     socklen_t len = sizeof(udp_ntfy_sa_in_);
@@ -314,27 +314,27 @@ blaze::RetCode selector::connect_UDP_notify_cli_sock()
 #endif
             IFLOG(cri(TH_ID, LS_CLO "%s(udp_ntfy_cli_socket_:%d, err:%d) -connect KO-",
                       __func__, udp_ntfy_cli_socket_, err))
-            return blaze::RetCode_SYSERR;
+            return vlg::RetCode_SYSERR;
         }
     } else {
         IFLOG(cri(TH_ID, LS_CLO "%s() -socket KO-", __func__))
-        return blaze::RetCode_SYSERR;
+        return vlg::RetCode_SYSERR;
     }
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode selector::evt_enqueue_and_notify(const selector_event *evt)
+vlg::RetCode selector::evt_enqueue_and_notify(const selector_event *evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, evt:%p, connid:%u)", __func__, this, evt,
               evt->connid_))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     cdrs_res = asynch_notify(evt);
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
     return cdrs_res;
 }
 
-blaze::RetCode selector::interrupt()
+vlg::RetCode selector::interrupt()
 {
     selector_event *interrupt = new selector_event(
         BLZ_SELECTOR_Evt_Interrupt,
@@ -342,7 +342,7 @@ blaze::RetCode selector::interrupt()
     return asynch_notify(interrupt);
 }
 
-blaze::RetCode selector::asynch_notify(const selector_event *evt)
+vlg::RetCode selector::asynch_notify(const selector_event *evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(evt:%p, connid:%u)", __func__, evt, evt->connid_))
     long bsent = 0;
@@ -368,20 +368,20 @@ blaze::RetCode selector::asynch_notify(const selector_event *evt)
             IFLOG(err(TH_ID, LS_CLO "%s(errcode:%d, udp_ntfy_cli_socket_:%d)", __func__,
                       err,
                       udp_ntfy_cli_socket_))
-            return blaze::RetCode_KO;
+            return vlg::RetCode_KO;
         } else {
             perror(__func__);
             IFLOG(cri(TH_ID, LS_CLO "%s(errno: %d, err:%d)", __func__, errno, err))
-            return blaze::RetCode_SYSERR;
+            return vlg::RetCode_SYSERR;
         }
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(bytesent:%d)", __func__, bsent))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode selector::start_exec_services()
+vlg::RetCode selector::start_exec_services()
 {
-    blaze::PEXEC_SERVICE_STATUS current = blaze::PEXEC_SERVICE_STATUS_ZERO;
+    vlg::PEXEC_SERVICE_STATUS current = vlg::PEXEC_SERVICE_STATUS_ZERO;
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     if(peer_.personality_ == PeerPersonality_PURE_SERVER ||
             peer_.personality_ == PeerPersonality_BOTH) {
@@ -393,7 +393,7 @@ blaze::RetCode selector::start_exec_services()
             SET_ERROR_AND_RETURRetCodeKO_ACT
         }
         srv_exec_serv_.await_for_status_reached_or_outdated(
-            blaze::PEXEC_SERVICE_STATUS_STARTED, current);
+            vlg::PEXEC_SERVICE_STATUS_STARTED, current);
         IFLOG(dbg(TH_ID, LS_TRL "%s() - server side executor service started.",
                   __func__))
     }
@@ -407,15 +407,15 @@ blaze::RetCode selector::start_exec_services()
             SET_ERROR_AND_RETURRetCodeKO_ACT
         }
         cli_exec_serv_.await_for_status_reached_or_outdated(
-            blaze::PEXEC_SERVICE_STATUS_STARTED, current);
+            vlg::PEXEC_SERVICE_STATUS_STARTED, current);
         IFLOG(dbg(TH_ID, LS_TRL "%s() - client side executor service started.",
                   __func__))
     }
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode selector::start_conn_objs()
+vlg::RetCode selector::start_conn_objs()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     if(peer_.personality_ == PeerPersonality_PURE_SERVER ||
@@ -437,16 +437,16 @@ blaze::RetCode selector::start_conn_objs()
     FD_SET(udp_ntfy_srv_socket_, &excep_FDs_);
     nfds_ = ((int)udp_ntfy_srv_socket_ > nfds_) ? (int)udp_ntfy_srv_socket_ : nfds_;
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode selector::process_inco_sock_inco_events()
+vlg::RetCode selector::process_inco_sock_inco_events()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     SOCKET srv_cli_sock = INVALID_SOCKET;
     connection_int *srv_cli_conn = NULL;
     unsigned int connid = 0;
-    blaze::RetCode cdrs_res = blaze::RetCode_OK, sub_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK, sub_res = vlg::RetCode_OK;
     //**** HANDLE INCOMING EVENTS BEGIN****
     if(sel_res_) {
         srv_incoming_sock_map_.start_iteration();
@@ -471,7 +471,7 @@ blaze::RetCode selector::process_inco_sock_inco_events()
                 DECLINITH_GBB(pkt_body, BLZ_RECV_BUFF_SZ)
                 //read data from socket.
                 if(!(cdrs_res = srv_cli_conn->recv_single_pkt(pkt_hdr, pkt_body))) {
-                    blaze::p_task *task = NULL;
+                    vlg::p_task *task = NULL;
                     pkt_body->flip();
                     if((task = peer_.new_peer_recv_task(*srv_cli_conn, pkt_hdr, pkt_body))) {
                         IFLOG(trc(TH_ID, LS_TRL
@@ -509,13 +509,13 @@ blaze::RetCode selector::process_inco_sock_inco_events()
     }
     //**** HANDLE INCOMING EVENTS END****
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode selector::process_sock_outg_events()
+vlg::RetCode selector::process_sock_outg_events()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     SOCKET write_pending_sock = INVALID_SOCKET;
     connection_int *wp_conn = NULL;
     write_pending_sockets_.start_iteration();
@@ -525,7 +525,7 @@ blaze::RetCode selector::process_sock_outg_events()
             IFLOG(trc(TH_ID, LS_TRL "%s(sockid:%d, connid:%d) - is writepending.", __func__,
                       write_pending_sock,
                       wp_conn->connid()))
-            blaze::grow_byte_buffer *sending_pkt = NULL;
+            vlg::grow_byte_buffer *sending_pkt = NULL;
             if(wp_conn->pkt_snd_q().get(&sending_pkt)) {
                 IFLOG(cri(TH_ID, LS_CLO "%s() - reading from packet queue.", __func__))
                 SET_ERROR_AND_RETURRetCodeKO_ACT
@@ -555,17 +555,17 @@ blaze::RetCode selector::process_sock_outg_events()
     }
     //**** HANDLE OUTGOING EVENTS END****
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode selector::process_outg_sock_inco_events()
+vlg::RetCode selector::process_outg_sock_inco_events()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     SOCKET outg_sock = INVALID_SOCKET;
     connection_int *outg_conn = NULL;
-    blaze::p_task *task = NULL;
+    vlg::p_task *task = NULL;
     unsigned int connid = 0;
-    blaze::RetCode cdrs_res = blaze::RetCode_OK, sub_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK, sub_res = vlg::RetCode_OK;
     //**** HANDLE INCOMING EVENTS BEGIN****
     //EARLY CONNECTIONS
     if(sel_res_) {
@@ -680,10 +680,10 @@ blaze::RetCode selector::process_outg_sock_inco_events()
         //**** HANDLE INCOMING EVENTS END****
     }
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-inline blaze::RetCode selector::consume_inco_sock_events()
+inline vlg::RetCode selector::consume_inco_sock_events()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     connection_int *inc_conn = NULL;
@@ -730,10 +730,10 @@ inline blaze::RetCode selector::consume_inco_sock_events()
         }
     }
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-inline blaze::RetCode selector::FDSET_sockets()
+inline vlg::RetCode selector::FDSET_sockets()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     FD_ZERO(&read_FDs_);
@@ -752,10 +752,10 @@ inline blaze::RetCode selector::FDSET_sockets()
     FD_SET(udp_ntfy_srv_socket_, &excep_FDs_);
     nfds_ = ((int)udp_ntfy_srv_socket_ > nfds_) ? (int)udp_ntfy_srv_socket_ : nfds_;
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-inline blaze::RetCode selector::FDSET_write_pending_sockets()
+inline vlg::RetCode selector::FDSET_write_pending_sockets()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     SOCKET write_pending_sock = INVALID_SOCKET;
@@ -777,10 +777,10 @@ inline blaze::RetCode selector::FDSET_write_pending_sockets()
         }
     }
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-inline blaze::RetCode selector::FDSET_incoming_sockets()
+inline vlg::RetCode selector::FDSET_incoming_sockets()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     srv_incoming_sock_map_.start_iteration();
@@ -819,7 +819,7 @@ inline blaze::RetCode selector::FDSET_incoming_sockets()
             /************************
             RELEASE_ID: CONN_SRV_01
             ************************/
-            blaze::collector &c = inco_conn->get_collector();
+            vlg::collector &c = inco_conn->get_collector();
             c.release(inco_conn);
         }
     }
@@ -828,9 +828,9 @@ inline blaze::RetCode selector::FDSET_incoming_sockets()
     FD_SET(srv_listen_socket_, &excep_FDs_);
     nfds_ = ((int)srv_listen_socket_ > nfds_) ? (int)srv_listen_socket_ : nfds_;
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
-inline blaze::RetCode selector::FDSET_outgoing_sockets()
+inline vlg::RetCode selector::FDSET_outgoing_sockets()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     connection_int *outg_conn = NULL;
@@ -869,7 +869,7 @@ inline blaze::RetCode selector::FDSET_outgoing_sockets()
             /************************
              RELEASE_ID: CONN_CLI_01
             ************************/
-            blaze::collector &c = outg_conn->get_collector();
+            vlg::collector &c = outg_conn->get_collector();
             c.release(outg_conn);
         }
     }
@@ -907,20 +907,20 @@ inline blaze::RetCode selector::FDSET_outgoing_sockets()
             /************************
              RELEASE_ID: CONN_CLI_01
             ************************/
-            blaze::collector &c = outg_conn->get_collector();
+            vlg::collector &c = outg_conn->get_collector();
             c.release(outg_conn);
         }
     }
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-inline blaze::RetCode selector::manage_disconnect_conn(
+inline vlg::RetCode selector::manage_disconnect_conn(
     selector_event *conn_evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
-    blaze::grow_byte_buffer *sending_pkt = NULL;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::grow_byte_buffer *sending_pkt = NULL;
     if(conn_evt->conn_->pkt_snd_q().get(&sending_pkt)) {
         IFLOG(cri(TH_ID, LS_CLO "%s() - reading from queue.", __func__))
         SET_ERROR_AND_RETURRetCodeKO_ACT
@@ -930,7 +930,7 @@ inline blaze::RetCode selector::manage_disconnect_conn(
                   __func__,
                   conn_evt->conn_->get_socket()))
         delete sending_pkt;
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
     delete sending_pkt;
     conn_evt->conn_->clean_best_effort();
@@ -945,11 +945,11 @@ inline blaze::RetCode selector::manage_disconnect_conn(
 }
 
 
-inline blaze::RetCode selector::add_early_outg_conn(selector_event *conn_evt)
+inline vlg::RetCode selector::add_early_outg_conn(selector_event *conn_evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
-    blaze::grow_byte_buffer *sending_pkt = NULL;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::grow_byte_buffer *sending_pkt = NULL;
     if((cdrs_res = conn_evt->conn_->establish_connection(conn_evt->saddr_))) {
         if(conn_evt->conn_->pkt_snd_q().get(&sending_pkt)) {
             IFLOG(cri(TH_ID, LS_CLO "%s() - reading from queue.", __func__))
@@ -983,7 +983,7 @@ inline blaze::RetCode selector::add_early_outg_conn(selector_event *conn_evt)
     return cdrs_res;
 }
 
-inline blaze::RetCode selector::promote_early_outg_conn(connection_int *conn)
+inline vlg::RetCode selector::promote_early_outg_conn(connection_int *conn)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     SOCKET conn_socket = conn->get_socket();
@@ -999,10 +999,10 @@ inline blaze::RetCode selector::promote_early_outg_conn(connection_int *conn)
         SET_ERROR_AND_RETURRetCodeKO_ACT
     }
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-inline blaze::RetCode selector::delete_early_outg_conn(connection_int *conn)
+inline vlg::RetCode selector::delete_early_outg_conn(connection_int *conn)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     SOCKET conn_socket = conn->get_socket();
@@ -1012,7 +1012,7 @@ inline blaze::RetCode selector::delete_early_outg_conn(connection_int *conn)
         SET_ERROR_AND_RETURRetCodeKO_ACT
     }
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 inline bool selector::is_still_valid_connection(const selector_event
@@ -1020,20 +1020,20 @@ inline bool selector::is_still_valid_connection(const selector_event
 {
     if(evt->con_type_ == ConnectionType_INGOING) {
         return (srv_incoming_sock_map_.contains_key(&evt->connid_) ==
-                blaze::RetCode_OK);
+                vlg::RetCode_OK);
     } else {
         if(evt->evt_ == BLZ_SELECTOR_Evt_ConnReqAccepted ||
                 evt->evt_ == BLZ_SELECTOR_Evt_ConnReqRefused) {
             return (cli_early_outgoing_sock_map_.contains_key(&evt->socket_) ==
-                    blaze::RetCode_OK);
+                    vlg::RetCode_OK);
         } else {
             return (cli_outgoing_sock_map_.contains_key(&evt->connid_) ==
-                    blaze::RetCode_OK);
+                    vlg::RetCode_OK);
         }
     }
 }
 
-blaze::RetCode selector::consume_asynch_events()
+vlg::RetCode selector::consume_asynch_events()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     long brecv = 0, recv_buf_sz = sizeof(void *);
@@ -1043,7 +1043,7 @@ blaze::RetCode selector::consume_asynch_events()
                         0)) > 0) {
         if(brecv != recv_buf_sz) {
             IFLOG(cri(TH_ID, LS_CLO "%s() - (brecv != recv_buf_sz)", __func__))
-            return blaze::RetCode_GENERR;
+            return vlg::RetCode_GENERR;
         }
         IFLOG(trc(TH_ID,
                   LS_TRL"ASYNCH-EVENT:[evt:%p, evt_type:%d, conn:%p, socket:%d, connid:%u]",
@@ -1112,21 +1112,21 @@ blaze::RetCode selector::consume_asynch_events()
         } else if(errno == ECONNRESET) {
 #endif
             IFLOG(err(TH_ID, LS_CLO "%s(err:%d)", __func__, err))
-            return blaze::RetCode_KO;
+            return vlg::RetCode_KO;
         } else {
             perror(__func__);
             IFLOG(cri(TH_ID, LS_CLO "%s(err:%d)", __func__, err))
-            return blaze::RetCode_SYSERR;
+            return vlg::RetCode_SYSERR;
         }
     }
     if(!brecv) {
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-inline blaze::RetCode selector::consume_events()
+inline vlg::RetCode selector::consume_events()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     if(FD_ISSET(udp_ntfy_srv_socket_, &read_FDs_)) {
@@ -1150,10 +1150,10 @@ inline blaze::RetCode selector::consume_events()
         RETURN_IF_NOT_OK(process_sock_outg_events())
     }
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode selector::server_socket_shutdown()
+vlg::RetCode selector::server_socket_shutdown()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sockid:%d)", __func__, srv_listen_socket_))
     int last_err_ = 0;
@@ -1184,13 +1184,13 @@ blaze::RetCode selector::server_socket_shutdown()
 #endif
 #endif
     IFLOG(trc(TH_ID, LS_CLO "%s(sockid:%d)", __func__, srv_listen_socket_))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode selector::stop_and_clean()
+vlg::RetCode selector::stop_and_clean()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     connection_int *conn = NULL;
     if(peer_.personality_ == PeerPersonality_PURE_SERVER ||
             peer_.personality_ == PeerPersonality_BOTH) {
@@ -1210,7 +1210,7 @@ blaze::RetCode selector::stop_and_clean()
             /************************
             RELEASE_ID: CONN_SRV_01
             ************************/
-            blaze::collector &c = conn->get_collector();
+            vlg::collector &c = conn->get_collector();
             c.release(conn);
             srv_incoming_sock_map_.remove_in_iteration();
         }
@@ -1237,7 +1237,7 @@ blaze::RetCode selector::stop_and_clean()
             /************************
              RELEASE_ID: CONN_CLI_01
             ************************/
-            blaze::collector &c = conn->get_collector();
+            vlg::collector &c = conn->get_collector();
             c.release(conn);
             cli_outgoing_sock_map_.remove_in_iteration();
         }
@@ -1257,7 +1257,7 @@ blaze::RetCode selector::stop_and_clean()
             /************************
              RELEASE_ID: CONN_CLI_01
             ************************/
-            blaze::collector &c = conn->get_collector();
+            vlg::collector &c = conn->get_collector();
             c.release(conn);
             cli_early_outgoing_sock_map_.remove_in_iteration();
         }

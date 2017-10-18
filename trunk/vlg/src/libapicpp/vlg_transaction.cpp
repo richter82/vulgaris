@@ -24,21 +24,21 @@
 #include "blz_connection_int.h"
 #include "blz_transaction_int.h"
 
-namespace blaze {
+namespace vlg {
 
-extern blaze::synch_hash_map &int_publ_peer_map();
-extern blaze::synch_hash_map &int_publ_srv_conn_map();
+extern vlg::synch_hash_map &int_publ_peer_map();
+extern vlg::synch_hash_map &int_publ_srv_conn_map();
 
-blaze::synch_hash_map *int_publ_srv_tx_map_ =
+vlg::synch_hash_map *int_publ_srv_tx_map_ =
     NULL;  //transaction_int --> transaction
-blaze::synch_hash_map &int_publ_srv_tx_map()
+vlg::synch_hash_map &int_publ_srv_tx_map()
 {
     if(int_publ_srv_tx_map_) {
         return *int_publ_srv_tx_map_;
     }
-    if(!(int_publ_srv_tx_map_ = new blaze::synch_hash_map(
-        blaze::sngl_ptr_obj_mng(),
-        blaze::sngl_ptr_obj_mng()))) {
+    if(!(int_publ_srv_tx_map_ = new vlg::synch_hash_map(
+        vlg::sngl_ptr_obj_mng(),
+        vlg::sngl_ptr_obj_mng()))) {
         EXIT_ACTION("failed creating int_publ_srv_tx_map_\n")
     }
     int_publ_srv_tx_map_->init(HM_SIZE_NORM);
@@ -99,7 +99,7 @@ class transaction_impl {
             clh_ud_(NULL) {}
         ~transaction_impl() {
             if(int_ && int_->get_connection().conn_type() == ConnectionType_OUTGOING) {
-                blaze::collector &c = int_->get_collector();
+                vlg::collector &c = int_->get_collector();
                 c.release(int_);
             }
         }
@@ -146,16 +146,16 @@ class transaction_impl {
             clh_ud_ = val;
         }
 
-        blaze::RetCode bind_internal(connection &conn) {
-            blaze::RetCode cdrs_res = blaze::RetCode_OK;
+        vlg::RetCode bind_internal(connection &conn) {
+            vlg::RetCode cdrs_res = vlg::RetCode_OK;
             if(conn.get_connection_type() == ConnectionType_OUTGOING) {
                 transaction_int *t_int = NULL;
                 if((cdrs_res = conn.get_internal()->new_transaction(&t_int,
                                                                     blz_client_tx_factory_timpl,
                                                                     true,
-                                                                    &publ_)) == blaze::RetCode_OK) {
+                                                                    &publ_)) == vlg::RetCode_OK) {
                     int_ = t_int;
-                    blaze::collector &c = int_->get_collector();
+                    vlg::collector &c = int_->get_collector();
                     c.retain(int_);
                 }
             }
@@ -178,13 +178,13 @@ class transaction_impl {
 //transaction MEMORY MNGMENT BEGIN
 //*************************************
 
-class transaction_collector : public blaze::collector {
+class transaction_collector : public vlg::collector {
     public:
-        transaction_collector() : blaze::collector("transaction") {}
+        transaction_collector() : vlg::collector("transaction") {}
 };
 
-blaze::collector *inst_transaction_collector = NULL;
-blaze::collector &get_inst_transaction_collector()
+vlg::collector *inst_transaction_collector = NULL;
+vlg::collector &get_inst_transaction_collector()
 {
     if(inst_transaction_collector) {
         return *inst_transaction_collector;
@@ -195,7 +195,7 @@ blaze::collector &get_inst_transaction_collector()
     return *inst_transaction_collector;
 }
 
-blaze::collector &transaction::get_collector()
+vlg::collector &transaction::get_collector()
 {
     return get_inst_transaction_collector();
 }
@@ -215,7 +215,7 @@ transaction::transaction()
 
 transaction::~transaction()
 {
-    blaze::collector &c = get_collector();
+    vlg::collector &c = get_collector();
     if((c.is_instance_collected(this))) {
         IFLOG(cri(TH_ID, LS_DTR "%s(ptr:%p)" D_W_R_COLL LS_EXUNX, __func__, this))
     }
@@ -225,7 +225,7 @@ transaction::~transaction()
     IFLOG(trc(TH_ID, LS_DTR "%s(ptr:%p)", __func__, this))
 }
 
-blaze::RetCode transaction::bind(connection &conn)
+vlg::RetCode transaction::bind(connection &conn)
 {
     impl_->set_conn(conn);
     return impl_->bind_internal(conn);
@@ -367,7 +367,7 @@ TransactionStatus transaction::get_status()
     return impl_->get_tx()->status();
 }
 
-blaze::RetCode transaction::await_for_status_reached_or_outdated(
+vlg::RetCode transaction::await_for_status_reached_or_outdated(
     TransactionStatus
     test,
     TransactionStatus &current,
@@ -378,7 +378,7 @@ blaze::RetCode transaction::await_for_status_reached_or_outdated(
                                                                  nsec);
 }
 
-blaze::RetCode transaction::await_for_closure(time_t sec, long nsec)
+vlg::RetCode transaction::await_for_closure(time_t sec, long nsec)
 {
     return  impl_->get_tx()->await_for_closure(sec, nsec);
 }
@@ -447,17 +447,17 @@ void transaction::set_transaction_id_PRID(unsigned int prid)
     impl_->get_tx()->set_tx_id_PRID(prid);
 }
 
-blaze::RetCode transaction::renew()
+vlg::RetCode transaction::renew()
 {
     return impl_->get_tx()->re_new();
 }
 
-blaze::RetCode transaction::prepare()
+vlg::RetCode transaction::prepare()
 {
     return impl_->get_tx()->prepare();
 }
 
-blaze::RetCode transaction::prepare(TransactionRequestType
+vlg::RetCode transaction::prepare(TransactionRequestType
                                     tx_request_type,
                                     Action tx_action,
                                     const nclass *sending_obj,
@@ -471,7 +471,7 @@ blaze::RetCode transaction::prepare(TransactionRequestType
                                     current_obj);
 }
 
-blaze::RetCode transaction::send()
+vlg::RetCode transaction::send()
 {
     return impl_->get_tx()->send();
 }
@@ -508,7 +508,7 @@ class timpl_transaction_int_server : public transaction_int {
             /************************
             RELEASE_ID: TPB_SRV_01
             ************************/
-            blaze::collector &c = publ_.get_collector();
+            vlg::collector &c = publ_.get_collector();
             c.release(&publ_);
         }
         virtual void on_request() {
@@ -546,7 +546,7 @@ transaction_int *transaction_factory::tx_factory_int_f(connection_int &conn,
         EXIT_ACTION("failed get instance from int_publ_srv_conn_map\n")
     }
     transaction *publ = tsf->new_transaction(*c_publ);
-    blaze::collector &c = publ->get_collector();
+    vlg::collector &c = publ->get_collector();
     /************************
     RETAIN_ID: TPB_SRV_01
     ************************/

@@ -175,10 +175,10 @@ CPP_ONLY_BEGIN
 /***********************************
 GLOB DEFS
 ***********************************/
-namespace blaze {
+namespace vlg {
 
-blaze::RetCode str_from_EntityType(EntityType etype,
-                                    blaze::ascii_string &out);
+vlg::RetCode str_from_EntityType(EntityType etype,
+                                    vlg::ascii_string &out);
 
 enum BLZ_COMP_ARCH {
     BLZ_COMP_ARCH_Undef,
@@ -186,7 +186,7 @@ enum BLZ_COMP_ARCH {
 };
 
 BLZ_COMP_ARCH   arch_from_str(const char *str);
-blaze::RetCode  str_from_arch(BLZ_COMP_ARCH arch, blaze::ascii_string &out);
+vlg::RetCode  str_from_arch(BLZ_COMP_ARCH arch, vlg::ascii_string &out);
 
 enum BLZ_COMP_OS {
     BLZ_COMP_OS_Undef,
@@ -204,7 +204,7 @@ enum BLZ_COMP_LANG {
 };
 
 BLZ_COMP_LANG   lang_from_str(const char *str);
-blaze::RetCode  str_from_lang(BLZ_COMP_LANG lang, blaze::ascii_string &out);
+vlg::RetCode  str_from_lang(BLZ_COMP_LANG lang, vlg::ascii_string &out);
 
 enum BLZ_COMP_TCOMP {
     BLZ_COMP_TCOMP_Undef,
@@ -213,18 +213,18 @@ enum BLZ_COMP_TCOMP {
 };
 
 BLZ_COMP_TCOMP  tcomp_from_str(const char *str);
-blaze::RetCode  str_from_tcomp(BLZ_COMP_TCOMP tcomp, blaze::ascii_string &out);
+vlg::RetCode  str_from_tcomp(BLZ_COMP_TCOMP tcomp, vlg::ascii_string &out);
 
 /***********************************
 compiler_config
 ***********************************/
 struct compiler_config {
     compiler_config();
-    blaze::RetCode init();
+    vlg::RetCode init();
     int verblvl;
     BLZ_COMP_LANG lang;
-    blaze::linked_list path_list;
-    blaze::linked_list file_list;
+    vlg::linked_list path_list;
+    vlg::linked_list file_list;
     const char *out_dir;
 };
 
@@ -238,24 +238,24 @@ class compile_unit {
         compile_unit();
         ~compile_unit();
 
-        blaze::RetCode init(const char *fname);
+        vlg::RetCode init(const char *fname);
 
-        blaze::RetCode parse();
-        blaze::RetCode compile();
+        vlg::RetCode parse();
+        vlg::RetCode compile();
 
         const char *get_file_name();
         const char *model_name() const;
         const char *model_version() const;
 
-        blaze::hash_map &get_define_map();
-        blaze::hash_map &get_entity_map();
+        vlg::hash_map &get_define_map();
+        vlg::hash_map &get_entity_map();
 
     private:
         char *fname_;
         char *model_name_;
         char *model_version_;
-        blaze::hash_map define_map_;
-        blaze::hash_map entity_map_;
+        vlg::hash_map define_map_;
+        vlg::hash_map entity_map_;
 };
 
 /***********************************
@@ -275,7 +275,7 @@ struct member_desc_comp {
                      long enum_value);
 
     //---meths
-    blaze::RetCode  init();
+    vlg::RetCode  init();
     /*
     Member section
     */
@@ -329,8 +329,8 @@ struct member_desc_comp {
     //field type when applicable
     Type            fild_type_;
 
-    blaze::hash_map fild_offset_map_;
-    blaze::hash_map fild_type_size_map_;
+    vlg::hash_map fild_offset_map_;
+    vlg::hash_map fild_type_size_map_;
 
     //1 for single element
     //N for arrays, as calloc()
@@ -368,20 +368,20 @@ public:
 
 public:
     //---meths
-    blaze::RetCode      init();
-    blaze::RetCode      init(blaze::linked_list *member_set);
-    blaze::RetCode      add_member_desc(const member_desc_comp *member_descriptor);
+    vlg::RetCode      init();
+    vlg::RetCode      init(vlg::linked_list *member_set);
+    vlg::RetCode      add_member_desc(const member_desc_comp *member_descriptor);
 
     unsigned short      get_key_id() const;
     bool                is_primary() const;
-    const blaze::linked_list   &get_key_member_set() const;
-    blaze::linked_list         &get_key_member_set_m();
+    const vlg::linked_list   &get_key_member_set() const;
+    vlg::linked_list         &get_key_member_set_m();
 
     
 private:
     unsigned short      keyid_;
     bool                primary_;
-    blaze::linked_list  fildset_;   //members being part of this key.
+    vlg::linked_list  fildset_;   //members being part of this key.
 };
 
 /***********************************
@@ -395,14 +395,14 @@ struct entity_desc_comp {
                          EntityType entitytype,
                          const char *nmspace,
                          const char *entityname,
-                         blaze::alloc_func afun,
+                         vlg::alloc_func afun,
                          unsigned int fild_num,
                          bool persistent);
         //---meths
-        blaze::RetCode  init();
-        blaze::RetCode  extend(blaze::hash_map *mmbrmap,
-                                             blaze::hash_map *keymap);
-        blaze::RetCode  add_key_desc(const key_desc_comp *keydesc);
+        vlg::RetCode  init();
+        vlg::RetCode  extend(vlg::hash_map *mmbrmap,
+                                             vlg::hash_map *keymap);
+        vlg::RetCode  add_key_desc(const key_desc_comp *keydesc);
 
         unsigned int    get_entityid()  const;
 
@@ -419,16 +419,16 @@ struct entity_desc_comp {
         EntityType          get_entity_type()       const;
         const char          *get_entity_namespace() const;
         const char          *get_entity_name()      const;
-        blaze::alloc_func   get_entity_alloc_f()    const;
+        vlg::alloc_func   get_entity_alloc_f()    const;
         unsigned int        get_field_num()         const;
         bool                is_persistent()         const;
 
-        blaze::hash_map         &get_map_id_MMBRDSC();
-        const blaze::hash_map   &get_map_name_MMBRDSC() const;
-        const blaze::hash_map   &get_map_keyid_KDESC()  const;
+        vlg::hash_map         &get_map_id_MMBRDSC();
+        const vlg::hash_map   &get_map_name_MMBRDSC() const;
+        const vlg::hash_map   &get_map_keyid_KDESC()  const;
 
 
-        blaze::hash_map         &get_map_keyid_KDESC_mod();
+        vlg::hash_map         &get_map_keyid_KDESC_mod();
 
         const member_desc_comp  *get_member_desc_by_id(unsigned int mmbrid) const;
         const member_desc_comp  *get_member_desc_by_name(const char *name)  const;
@@ -451,35 +451,35 @@ struct entity_desc_comp {
     public:
         unsigned int        entityid_;
 
-        blaze::hash_map     entity_size_map_;
-        blaze::hash_map     entity_max_align_map_;
+        vlg::hash_map     entity_size_map_;
+        vlg::hash_map     entity_max_align_map_;
 
         EntityType          entitytype_;
         const char          *nmspace_;
         const char          *entityname_;
-        blaze::alloc_func   afun_;
+        vlg::alloc_func   afun_;
         unsigned int        fild_num_;
-        blaze::hash_map     mmbrid_mdesc_;  //mmbrid --> mmbrdesc
-        blaze::hash_map     mmbrnm_mdesc_;  //mmbrname --> mmbrdesc
+        vlg::hash_map     mmbrid_mdesc_;  //mmbrid --> mmbrdesc
+        vlg::hash_map     mmbrnm_mdesc_;  //mmbrname --> mmbrdesc
 
         //persistence
         bool                persistent_;
-        blaze::hash_map     keyid_kdesc_;  //keyid --> keydesc
+        vlg::hash_map     keyid_kdesc_;  //keyid --> keydesc
 };
 
 /***********************************
 GLOB FUNCTIONS
 ***********************************/
-blaze::RetCode    open_input_file(const char *fname,
+vlg::RetCode    open_input_file(const char *fname,
                               FILE **fdesc);
 
-blaze::RetCode    open_output_file(const char *fname,
+vlg::RetCode    open_output_file(const char *fname,
                                FILE **fdesc);
 
-blaze::RetCode    parse_data(const char *fname,
-                         blaze::ascii_string &data,
-                         blaze::hash_map &definemap,
-                         blaze::hash_map &entitymap,
+vlg::RetCode    parse_data(const char *fname,
+                         vlg::ascii_string &data,
+                         vlg::hash_map &definemap,
+                         vlg::hash_map &entitymap,
                          char **modname,
                          char **modver);
 
@@ -524,29 +524,29 @@ On Network-protocol dependant type size (in bytes)
 */
 size_t  get_network_type_size(Type type);
 
-blaze::RetCode    compile_C(compile_unit &cunit);
-blaze::RetCode    compile_CPP(compile_unit &cunit);
-blaze::RetCode    compile_Java(compile_unit &cunit);
-blaze::RetCode    compile_ObjC(compile_unit &cunit);
+vlg::RetCode    compile_C(compile_unit &cunit);
+vlg::RetCode    compile_CPP(compile_unit &cunit);
+vlg::RetCode    compile_Java(compile_unit &cunit);
+vlg::RetCode    compile_ObjC(compile_unit &cunit);
 
-blaze::RetCode    get_zero_val_for_BLZ_TYPE(Type type, blaze::ascii_string &out);
+vlg::RetCode    get_zero_val_for_BLZ_TYPE(Type type, vlg::ascii_string &out);
 
-blaze::RetCode    target_type_from_builtin_BLZ_TYPE(member_desc_comp &mdsc,
-                                                blaze::ascii_string &out);
+vlg::RetCode    target_type_from_builtin_BLZ_TYPE(member_desc_comp &mdsc,
+                                                vlg::ascii_string &out);
 
-blaze::RetCode    target_type_from_BLZ_TYPE(member_desc_comp &mdsc,
-                                        blaze::hash_map &entitymap,
-                                        blaze::ascii_string &out);
+vlg::RetCode    target_type_from_BLZ_TYPE(member_desc_comp &mdsc,
+                                        vlg::hash_map &entitymap,
+                                        vlg::ascii_string &out);
 
-blaze::RetCode    printf_percent_from_BLZ_TYPE(member_desc_comp &mdsc,
-                                           blaze::ascii_string &out,
+vlg::RetCode    printf_percent_from_BLZ_TYPE(member_desc_comp &mdsc,
+                                           vlg::ascii_string &out,
                                            bool strict_linux = false);
 
-blaze::RetCode get_local_date(char *out);
-blaze::RetCode put_newline(FILE *file);
+vlg::RetCode get_local_date(char *out);
+vlg::RetCode put_newline(FILE *file);
 
-blaze::RetCode render_hdr(compile_unit &cunit,
-                      blaze::ascii_string &fname,
+vlg::RetCode render_hdr(compile_unit &cunit,
+                      vlg::ascii_string &fname,
                       FILE *file);
 
 }

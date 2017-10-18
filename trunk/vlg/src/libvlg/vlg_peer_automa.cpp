@@ -22,17 +22,17 @@
 #include "cr.h"
 #include "blz_peer_automa.h"
 
-namespace blaze {
+namespace vlg {
 
 //-----------------------------
 // BLZ_PEER_LFCYC_PTHD
 //-----------------------------
-class peer_automa_th : public blaze::p_thread {
+class peer_automa_th : public vlg::p_thread {
     public:
         peer_automa_th(unsigned int id, peer_automa &peer) :
             id_(id),
             peer_(peer) {
-            log_ = blaze::logger::get_logger("peer_lifecyc_th");
+            log_ = vlg::logger::get_logger("peer_lifecyc_th");
             IFLOG(trc(TH_ID, LS_CTR "%s(id:%d)", __func__, id))
         }
 
@@ -51,22 +51,22 @@ class peer_automa_th : public blaze::p_thread {
         peer_automa &peer_;
 
     protected:
-        static blaze::logger *log_;
+        static vlg::logger *log_;
 };
 
-blaze::logger *peer_automa_th::log_ = NULL;
+vlg::logger *peer_automa_th::log_ = NULL;
 
 //-----------------------------
 // BLZ_PEER_LFCYC
 //-----------------------------
 
-blaze::logger *peer_automa::peer_log_ = NULL;
+vlg::logger *peer_automa::peer_log_ = NULL;
 
 void peer_automa::blz_peer_param_clbk_ud(int pnum, const char *param,
                                          const char *value, void *ud)
 {
     peer_automa *peer = static_cast<peer_automa *>(ud);
-    blaze::RetCode res = peer->peer_load_cfg_usr(pnum, param, value);
+    vlg::RetCode res = peer->peer_load_cfg_usr(pnum, param, value);
     if(res) {
         peer->peer_last_error_ = res;
     }
@@ -86,13 +86,13 @@ peer_automa::peer_automa(unsigned int peer_id) :
     peer_argc_(0),
     peer_argv_(NULL),
     configured_(false),
-    peer_last_error_(blaze::RetCode_OK),
+    peer_last_error_(vlg::RetCode_OK),
     peer_exit_required_(false),
     psc_hndl_(NULL),
     psc_hndl_ud_(NULL),
     force_disconnect_on_stop_(false)
 {
-    peer_log_ = blaze::logger::get_logger("peer_lifecyc");
+    peer_log_ = vlg::logger::get_logger("peer_lifecyc");
     IFLOG2(peer_log_, trc(TH_ID, LS_CTR "%s", __func__))
     memset(&peer_name_[0], 0, sizeof(peer_name_));
     memset(&peer_ver_[0], 0, sizeof(peer_ver_));
@@ -111,13 +111,13 @@ peer_automa::~peer_automa()
     }
 }
 
-blaze::RetCode peer_automa::set_params_file_path_name(const char *file_path)
+vlg::RetCode peer_automa::set_params_file_path_name(const char *file_path)
 {
     strncpy(peer_cfg_file_path_name_,file_path, BLZ_PEER_CFG_FILE_PATH_NAME_LEN);
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode peer_automa::early_init()
+vlg::RetCode peer_automa::early_init()
 {
     IFLOG2(peer_log_, trc(TH_ID, LS_OPN "%s(peer_id:%d)", __func__, peer_id_))
     if((peer_last_error_ = peer_early_init_usr())) {
@@ -128,7 +128,7 @@ blaze::RetCode peer_automa::early_init()
     peer_status_ = PeerStatus_EARLY;
     IFLOG2(peer_log_, inf(TH_ID, LS_APL"[EARLY INIT]"))
     IFLOG2(peer_log_, trc(TH_ID, LS_CLO "%s(peer_id:%d)", __func__, peer_id_))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 const char *peer_automa::peer_name()
@@ -193,7 +193,7 @@ void peer_automa::set_peer_status_change_hndlr(peer_lfcyc_status_change_hndlr
     psc_hndl_ud_ = ud;
 }
 
-blaze::RetCode peer_automa::set_peer_status(PeerStatus peer_status)
+vlg::RetCode peer_automa::set_peer_status(PeerStatus peer_status)
 {
     IFLOG2(peer_log_, dbg(TH_ID, LS_OPN "%s(peer_id:%d, status:%d)", __func__,
                           peer_id_, peer_status))
@@ -206,10 +206,10 @@ blaze::RetCode peer_automa::set_peer_status(PeerStatus peer_status)
     CHK_CUST_MON_ERR(peer_mon_, unlock)
     IFLOG2(peer_log_, dbg(TH_ID, LS_CLO "%s(peer_id:%d, status:%d)", __func__,
                           peer_id_, peer_status))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode peer_automa::await_for_peer_status_reached_or_outdated(
+vlg::RetCode peer_automa::await_for_peer_status_reached_or_outdated(
     PeerStatus test,
     PeerStatus &current,
     time_t sec,
@@ -221,14 +221,14 @@ blaze::RetCode peer_automa::await_for_peer_status_reached_or_outdated(
     if(peer_status_ < PeerStatus_INITIALIZED) {
         CHK_CUST_MON_ERR(peer_mon_, unlock)
         IFLOG2(peer_log_, err(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     while(peer_status_ < test) {
         int pthres;
         if((pthres = peer_mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res =  blaze::RetCode_TIMEOUT;
+                cdrs_res =  vlg::RetCode_TIMEOUT;
                 break;
             }
         }
@@ -244,7 +244,7 @@ blaze::RetCode peer_automa::await_for_peer_status_reached_or_outdated(
     return cdrs_res;
 }
 
-blaze::RetCode peer_automa::await_for_peer_status_condition(
+vlg::RetCode peer_automa::await_for_peer_status_condition(
     peer_lfcyc_eval_condition
     cond_cllbk,
     time_t sec,
@@ -257,14 +257,14 @@ blaze::RetCode peer_automa::await_for_peer_status_condition(
         CHK_CUST_MON_ERR(peer_mon_, unlock)
         IFLOG2(peer_log_, err(TH_ID, LS_CLO "%s(peer_id:%d, callback:%p)", __func__,
                               peer_id_, cond_cllbk))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     while(!cond_cllbk(this)) {
         int pthres;
         if((pthres = peer_mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res =  blaze::RetCode_TIMEOUT;
+                cdrs_res =  vlg::RetCode_TIMEOUT;
                 break;
             }
         }
@@ -277,7 +277,7 @@ blaze::RetCode peer_automa::await_for_peer_status_condition(
     return cdrs_res;
 }
 
-blaze::RetCode peer_automa::await_for_peer_status_change(PeerStatus
+vlg::RetCode peer_automa::await_for_peer_status_change(PeerStatus
                                                          &peer_status,
                                                          time_t sec,
                                                          long nsec)
@@ -288,14 +288,14 @@ blaze::RetCode peer_automa::await_for_peer_status_change(PeerStatus
     if(peer_status_ < PeerStatus_INITIALIZED) {
         CHK_CUST_MON_ERR(peer_mon_, unlock)
         IFLOG2(peer_log_, err(TH_ID, LS_CLO "%s", __func__))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     while(peer_status == peer_status_) {
         int pthres;
         if((pthres = peer_mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res =  blaze::RetCode_TIMEOUT;
+                cdrs_res =  vlg::RetCode_TIMEOUT;
                 break;
             }
         }
@@ -317,7 +317,7 @@ blaze::RetCode peer_automa::await_for_peer_status_change(PeerStatus
 
 //ACTIONS
 
-blaze::RetCode peer_automa::start_peer(int argc,
+vlg::RetCode peer_automa::start_peer(int argc,
                                        char *argv[],
                                        bool spawn_new_thread)
 {
@@ -325,23 +325,23 @@ blaze::RetCode peer_automa::start_peer(int argc,
     if(peer_status_ != PeerStatus_EARLY &&
             peer_status_ != PeerStatus_STOPPED) {
         IFLOG2(peer_log_, err(TH_ID, LS_CLO "%s(curstatus:%d)", __func__, peer_status_))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     peer_argc_ = argc;
     peer_argv_ = argv;
-    blaze::RetCode handlers_res = blaze::RetCode_OK;
-    peer_last_error_ = blaze::RetCode_OK;
+    vlg::RetCode handlers_res = vlg::RetCode_OK;
+    peer_last_error_ = vlg::RetCode_OK;
     if(peer_status_ == PeerStatus_EARLY) {
         const char *peer_name = peer_name_usr();
         if(!peer_name) {
             IFLOG2(peer_log_, fat(TH_ID, LS_APL"[EARLY FAIL: INVALID PEERNAME]"))
-            return blaze::RetCode_EXIT;
+            return vlg::RetCode_EXIT;
         }
         strncpy(peer_name_, peer_name, BLZ_PEER_NAME_LEN-1);
         const unsigned int *peer_ver = peer_ver_usr();
         if(!peer_ver) {
             IFLOG2(peer_log_, fat(TH_ID, LS_APL"[EARLY FAIL: INVALID PEERVER]"))
-            return blaze::RetCode_EXIT;
+            return vlg::RetCode_EXIT;
         }
         memcpy(peer_ver_, peer_ver, sizeof(peer_ver_));
         if((peer_last_error_ = peer_welcome())) {
@@ -351,7 +351,7 @@ blaze::RetCode peer_automa::start_peer(int argc,
                 IFLOG2(peer_log_, cri(TH_ID, LS_APL"[DYING BREATH FAIL WITH RES:%d]",
                                       handlers_res))
             }
-            return blaze::RetCode_EXIT;
+            return vlg::RetCode_EXIT;
         }
         if((peer_last_error_ = peer_init())) {
             IFLOG2(peer_log_, fat(TH_ID, LS_APL"[INIT FAIL WITH RES:%d]", peer_last_error_))
@@ -359,7 +359,7 @@ blaze::RetCode peer_automa::start_peer(int argc,
                 IFLOG2(peer_log_, cri(TH_ID, LS_APL"[DYING BREATH FAIL WITH RES:%d]",
                                       handlers_res))
             }
-            return blaze::RetCode_EXIT;
+            return vlg::RetCode_EXIT;
         }
     } else {
         set_peer_status(PeerStatus_RESTART_REQUESTED);
@@ -371,7 +371,7 @@ blaze::RetCode peer_automa::start_peer(int argc,
             IFLOG2(peer_log_, cri(TH_ID, LS_APL"[DYING BREATH FAIL WITH RES:%d]",
                                   handlers_res))
         }
-        return blaze::RetCode_EXIT;
+        return vlg::RetCode_EXIT;
     }
     peer_automa_th *peer_thd = NULL;
     if(spawn_new_thread) {
@@ -383,18 +383,18 @@ blaze::RetCode peer_automa::start_peer(int argc,
         peer_last_error_ = peer_life_cycle();
     }
     IFLOG2(peer_log_, trc(TH_ID, LS_CLO "%s(peer_id:%d)", __func__, peer_id_))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode peer_automa::stop_peer(bool force_disconnect)
+vlg::RetCode peer_automa::stop_peer(bool force_disconnect)
 {
     IFLOG2(peer_log_, trc(TH_ID, LS_OPN "%s(peer_id:%d)", __func__, peer_id_))
     if(peer_status_ != PeerStatus_RUNNING) {
         IFLOG2(peer_log_, err(TH_ID, LS_CLO "%s(curstatus:%d)", __func__, peer_status_))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     force_disconnect_on_stop_ = force_disconnect;
-    blaze::RetCode cdrs_res = set_peer_stop_request();
+    vlg::RetCode cdrs_res = set_peer_stop_request();
     IFLOG2(peer_log_, trc(TH_ID, LS_CLO "%s(peer_id:%d, res:%d)", __func__,
                           peer_id_, cdrs_res))
     return cdrs_res;
@@ -402,10 +402,10 @@ blaze::RetCode peer_automa::stop_peer(bool force_disconnect)
 
 //LIFECYCL
 
-blaze::RetCode peer_automa::peer_life_cycle()
+vlg::RetCode peer_automa::peer_life_cycle()
 {
     IFLOG2(peer_log_, trc(TH_ID, LS_OPN "%s(peer_id:%d)", __func__, peer_id_))
-    blaze::RetCode handlers_res = blaze::RetCode_OK;
+    vlg::RetCode handlers_res = vlg::RetCode_OK;
     PeerStatus p_status = PeerStatus_ZERO;
     bool transit_on_air = true;
     do {
@@ -417,7 +417,7 @@ blaze::RetCode peer_automa::peer_life_cycle()
                     IFLOG2(peer_log_, cri(TH_ID, LS_APL"[DYING BREATH FAIL WITH RES:%d]",
                                           handlers_res))
                 }
-                return blaze::RetCode_EXIT;
+                return vlg::RetCode_EXIT;
             }
             //here we are RUNNING
             p_status = PeerStatus_RUNNING;
@@ -433,7 +433,7 @@ blaze::RetCode peer_automa::peer_life_cycle()
                         IFLOG2(peer_log_, cri(TH_ID, LS_APL"[DYING BREATH FAIL WITH RES:%d]",
                                               handlers_res))
                     }
-                    return blaze::RetCode_EXIT;
+                    return vlg::RetCode_EXIT;
                 }
                 break;
             case PeerStatus_ERROR:
@@ -445,11 +445,11 @@ blaze::RetCode peer_automa::peer_life_cycle()
                         IFLOG2(peer_log_, cri(TH_ID, LS_APL"[DYING BREATH FAIL WITH RES:%d]",
                                               handlers_res))
                     }
-                    return blaze::RetCode_EXIT;
+                    return vlg::RetCode_EXIT;
                 }
                 if(peer_exit_required_) {
                     IFLOG2(peer_log_, fat(TH_ID, LS_APL"[ERROR HANDLER REQUIRED PEER TO EXIT]"))
-                    return blaze::RetCode_EXIT;
+                    return vlg::RetCode_EXIT;
                 } else {
                     IFLOG2(peer_log_, wrn(TH_ID, LS_APL"[PEER RECOVERED - CHECK IS NEEDED]"))
                     transit_on_air = true;
@@ -461,11 +461,11 @@ blaze::RetCode peer_automa::peer_life_cycle()
                     IFLOG2(peer_log_, cri(TH_ID, LS_APL"[DYING BREATH FAIL WITH RES:%d]",
                                           handlers_res))
                 }
-                return blaze::RetCode_EXIT;
+                return vlg::RetCode_EXIT;
         }
     } while(peer_status() != PeerStatus_STOPPED);
     IFLOG2(peer_log_, trc(TH_ID, LS_CLO "%s(peer_id:%d)", __func__, peer_id_))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 const char *peer_welcome_fmt =
@@ -473,11 +473,11 @@ const char *peer_welcome_fmt =
     "@%s %u.%u.%u"
     "@%s %s";
 
-blaze::RetCode peer_automa::peer_welcome()
+vlg::RetCode peer_automa::peer_welcome()
 {
     if(peer_status_ > PeerStatus_EARLY) {
         IFLOG2(peer_log_, err(TH_ID, LS_CLO "%s(curstatus:%d)", __func__, peer_status_))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     IFLOG2(peer_log_, inf(TH_ID, peer_welcome_fmt, "PEER:",
                           peer_name_,
@@ -486,17 +486,17 @@ blaze::RetCode peer_automa::peer_welcome()
                           peer_ver_[1],
                           peer_ver_[2],
                           "ARCH:",
-                          blaze::get_arch()))
+                          vlg::get_arch()))
     set_peer_status(PeerStatus_WELCOMED);
     IFLOG2(peer_log_, inf(TH_ID, LS_APL"[WELCOMED]"))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode peer_automa::peer_init()
+vlg::RetCode peer_automa::peer_init()
 {
     if(peer_status_ > PeerStatus_INITIALIZED) {
         IFLOG2(peer_log_, err(TH_ID, LS_CLO "%s(curstatus:%d)", __func__, peer_status_))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     IFLOG2(peer_log_, inf(TH_ID, LS_APL"[INITIALIZING]"))
     set_peer_status(PeerStatus_INITIALIZING);
@@ -513,19 +513,19 @@ blaze::RetCode peer_automa::peer_init()
                                                        peer_cfg_file_path_name_ : "params"))) {
                 IFLOG2(peer_log_, err(TH_ID,
                                       LS_APL"[INIT FAIL][LOADING FILE PARAMS] ERRCODE:%d", peer_last_error_))
-                return blaze::RetCode_BADCFG;
+                return vlg::RetCode_BADCFG;
             }
         } else {
             if((peer_last_error_ = peer_conf_ldr_.init(peer_argc_, peer_argv_))) {
                 IFLOG2(peer_log_, err(TH_ID,
                                       LS_APL"[INIT FAIL][LOADING ARGV PARAMS] ERRCODE:%d", peer_last_error_))
-                return blaze::RetCode_BADCFG;
+                return vlg::RetCode_BADCFG;
             }
         }
         if((peer_last_error_ = peer_conf_ldr_.load_config())) {
             IFLOG2(peer_log_, err(TH_ID, LS_APL"[INIT FAIL][READING PARAMS] ERRCODE:%d",
                                   peer_last_error_))
-            return blaze::RetCode_BADCFG;
+            return vlg::RetCode_BADCFG;
         }
         peer_conf_ldr_.enum_params(blz_peer_param_clbk_ud, this);
     } else {
@@ -534,7 +534,7 @@ blaze::RetCode peer_automa::peer_init()
     }
     if(peer_last_error_) {
         IFLOG2(peer_log_, err(TH_ID, LS_APL"[INIT FAIL][BAD CFG]"))
-        return blaze::RetCode_BADCFG;
+        return vlg::RetCode_BADCFG;
     }
     if((peer_last_error_ = peer_init_usr())) {
         IFLOG2(peer_log_, err(TH_ID, LS_APL"[INIT FAIL][USR HNDLR]"))
@@ -542,14 +542,14 @@ blaze::RetCode peer_automa::peer_init()
     }
     IFLOG2(peer_log_, inf(TH_ID, LS_APL"[INIT]"))
     set_peer_status(PeerStatus_INITIALIZED);
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode peer_automa::peer_start()
+vlg::RetCode peer_automa::peer_start()
 {
     if(peer_status_ > PeerStatus_STARTED) {
         IFLOG2(peer_log_, err(TH_ID, LS_CLO "%s(curstatus:%d)", __func__, peer_status_))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     IFLOG2(peer_log_, inf(TH_ID, LS_APL"[STARTING]"))
     set_peer_status(PeerStatus_STARTING);
@@ -559,14 +559,14 @@ blaze::RetCode peer_automa::peer_start()
     }
     IFLOG2(peer_log_, inf(TH_ID, LS_APL"[STARTED]"))
     set_peer_status(PeerStatus_STARTED);
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode peer_automa::peer_move_running()
+vlg::RetCode peer_automa::peer_move_running()
 {
     if(peer_status_ != PeerStatus_STARTED) {
         IFLOG2(peer_log_, err(TH_ID, LS_CLO "%s(curstatus:%d)", __func__, peer_status_))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     IFLOG2(peer_log_, inf(TH_ID, LS_APL"[MOVE RUNNING]"))
     if((peer_last_error_ = peer_move_running_usr())) {
@@ -576,22 +576,22 @@ blaze::RetCode peer_automa::peer_move_running()
     return set_peer_running();
 }
 
-blaze::RetCode peer_automa::set_peer_running()
+vlg::RetCode peer_automa::set_peer_running()
 {
     if(peer_status_ > PeerStatus_RUNNING) {
         IFLOG2(peer_log_, err(TH_ID, LS_CLO "%s(curstatus:%d)", __func__, peer_status_))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     IFLOG2(peer_log_, inf(TH_ID, LS_APL"[RUNNING]"))
     set_peer_status(PeerStatus_RUNNING);
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode peer_automa::peer_stop()
+vlg::RetCode peer_automa::peer_stop()
 {
     if(peer_status_ > PeerStatus_STOPPED) {
         IFLOG2(peer_log_, err(TH_ID, LS_CLO "%s(curstatus:%d)", __func__, peer_status_))
-        return blaze::RetCode_BADSTTS;
+        return vlg::RetCode_BADSTTS;
     }
     IFLOG2(peer_log_, inf(TH_ID, LS_APL"[STOPPING]"))
     set_peer_status(PeerStatus_STOPPING);
@@ -601,28 +601,28 @@ blaze::RetCode peer_automa::peer_stop()
     }
     IFLOG2(peer_log_, inf(TH_ID, LS_APL"[STOPPED]"))
     set_peer_status(PeerStatus_STOPPED);
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode peer_automa::set_peer_stop_request()
+vlg::RetCode peer_automa::set_peer_stop_request()
 {
     IFLOG2(peer_log_, inf(TH_ID, LS_APL"[STOP REQUEST]"))
     set_peer_status(PeerStatus_STOP_REQUESTED);
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode peer_automa::set_peer_error()
+vlg::RetCode peer_automa::set_peer_error()
 {
     IFLOG2(peer_log_, err(TH_ID, LS_APL"[ERROR]"))
     set_peer_status(PeerStatus_ERROR);
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode peer_automa::peer_dying_breath()
+vlg::RetCode peer_automa::peer_dying_breath()
 {
     IFLOG2(peer_log_, inf(TH_ID, LS_APL"[DYING BREATH]"))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
-    if((cdrs_res = peer_dying_breath_handler()) == blaze::RetCode_OK) {
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    if((cdrs_res = peer_dying_breath_handler()) == vlg::RetCode_OK) {
         IFLOG2(peer_log_, inf(TH_ID, LS_APL"[DYING BREATH EMITTED]"))
     } else {
         IFLOG2(peer_log_, cri(TH_ID, LS_APL"[DYING BREATH EMITTED][%d]",
@@ -647,53 +647,53 @@ const unsigned int *peer_automa::peer_ver_usr()
     return BLZ_STD_PEER_VER;
 }
 
-blaze::RetCode peer_automa::peer_load_cfg_usr(int pnum, const char *param,
+vlg::RetCode peer_automa::peer_load_cfg_usr(int pnum, const char *param,
                                               const char *value)
 {
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode peer_automa::peer_early_init_usr()
+vlg::RetCode peer_automa::peer_early_init_usr()
 {
     IFLOG2(peer_log_, dbg(TH_ID, LS_APL"[CALLED DEFAULT EARLYINIT HNDL]"))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode peer_automa::peer_init_usr()
+vlg::RetCode peer_automa::peer_init_usr()
 {
     IFLOG2(peer_log_, dbg(TH_ID, LS_APL"[CALLED DEFAULT PEERINIT HNDL]"))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode peer_automa::peer_start_usr()
+vlg::RetCode peer_automa::peer_start_usr()
 {
     IFLOG2(peer_log_, dbg(TH_ID, LS_APL"[CALLED DEFAULT PEERSTART HNDL]"))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode peer_automa::peer_move_running_usr()
+vlg::RetCode peer_automa::peer_move_running_usr()
 {
     IFLOG2(peer_log_, dbg(TH_ID, LS_APL"[CALLED DEFAULT TRNSTONAIR HNDL]"))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode peer_automa::peer_stop_usr()
+vlg::RetCode peer_automa::peer_stop_usr()
 {
     IFLOG2(peer_log_, dbg(TH_ID, LS_APL"[CALLED DEFAULT PEERSTOP HNDL]"))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode peer_automa::peer_error_handler()
+vlg::RetCode peer_automa::peer_error_handler()
 {
     IFLOG2(peer_log_, inf(TH_ID, LS_APL"[CALLED DEFAULT PEERERROR HNDL]"))
     peer_exit_required_ = true;
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
-blaze::RetCode peer_automa::peer_dying_breath_handler()
+vlg::RetCode peer_automa::peer_dying_breath_handler()
 {
     IFLOG2(peer_log_, inf(TH_ID, LS_APL"[CALLED DEFAULT DYINGBRTH HNDL]"))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 }

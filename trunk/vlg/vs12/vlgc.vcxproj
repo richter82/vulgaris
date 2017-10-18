@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>blzc</ProjectName>
+    <ProjectName>vlgc</ProjectName>
     <ProjectGuid>{C547BD3F-6B6D-44DF-B6D6-8EECB1F56752}</ProjectGuid>
     <RootNamespace>blz_compiler</RootNamespace>
     <Keyword>Win32Proj</Keyword>

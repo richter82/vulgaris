@@ -43,7 +43,7 @@
 #define BLZ_PERS_DRIV_SQLITE_ID     101
 #define BLZ_PERS_DRIV_SQLITE_NAME   "sqlite"
 
-namespace blaze {
+namespace vlg {
 
 /***************************
 BLZ_PERS_DRIV_SQLITE VERSION

@@ -23,7 +23,7 @@
 #define BLZ_SEL_H_
 #include "blz_acceptor_int.h"
 
-namespace blaze {
+namespace vlg {
 
 class peer;
 class peer_int;
@@ -72,24 +72,24 @@ enum BLZ_ASYNCH_SELECTOR_STATUS {
 //-----------------------------
 // selector
 //-----------------------------
-class selector : public blaze::p_thread {
+class selector : public vlg::p_thread {
     public:
         //---ctors
         selector(peer_int &peer, unsigned int id);
         ~selector();
 
     public:
-        blaze::RetCode    init(unsigned int srv_executors,
+        vlg::RetCode    init(unsigned int srv_executors,
                                unsigned int srv_pkt_q_len,
                                unsigned int cli_executors,
                                unsigned int cli_pkt_q_len);
 
 
-        blaze::RetCode    on_peer_start_actions();
-        blaze::RetCode    on_peer_move_running_actions();
+        vlg::RetCode    on_peer_start_actions();
+        vlg::RetCode    on_peer_move_running_actions();
 
     public:
-        blaze::RetCode
+        vlg::RetCode
         await_for_status_reached_or_outdated(
             BLZ_ASYNCH_SELECTOR_STATUS
             test,
@@ -97,12 +97,12 @@ class selector : public blaze::p_thread {
             time_t sec = -1,
             long nsec = 0);
 
-        blaze::RetCode    evt_enqueue_and_notify(const selector_event *evt);
-        blaze::RetCode    interrupt();
+        vlg::RetCode    evt_enqueue_and_notify(const selector_event *evt);
+        vlg::RetCode    interrupt();
 
     public:
         BLZ_ASYNCH_SELECTOR_STATUS  status() const;
-        blaze::RetCode              set_status(BLZ_ASYNCH_SELECTOR_STATUS status);
+        vlg::RetCode              set_status(BLZ_ASYNCH_SELECTOR_STATUS status);
 
     public:
         peer_int        &peer();
@@ -121,35 +121,35 @@ class selector : public blaze::p_thread {
         virtual void   *run();
 
     private:
-        blaze::RetCode  create_UDP_notify_srv_sock();
-        blaze::RetCode  connect_UDP_notify_cli_sock();
+        vlg::RetCode  create_UDP_notify_srv_sock();
+        vlg::RetCode  connect_UDP_notify_cli_sock();
         bool            is_still_valid_connection(const selector_event *evt);
-        blaze::RetCode  asynch_notify(const selector_event *evt);
-        blaze::RetCode  consume_asynch_events();
+        vlg::RetCode  asynch_notify(const selector_event *evt);
+        vlg::RetCode  consume_asynch_events();
 
-        blaze::RetCode  start_exec_services();
-        blaze::RetCode  process_inco_sock_inco_events();
-        blaze::RetCode  process_outg_sock_inco_events();
-        blaze::RetCode  process_sock_outg_events();
+        vlg::RetCode  start_exec_services();
+        vlg::RetCode  process_inco_sock_inco_events();
+        vlg::RetCode  process_outg_sock_inco_events();
+        vlg::RetCode  process_sock_outg_events();
 
-        blaze::RetCode  start_conn_objs();
+        vlg::RetCode  start_conn_objs();
 
-        blaze::RetCode  FDSET_sockets();
-        blaze::RetCode  FDSET_incoming_sockets();   //for server side sockets
-        blaze::RetCode  FDSET_outgoing_sockets();   //for client side sockets
-        blaze::RetCode  FDSET_write_pending_sockets();
-        blaze::RetCode  server_socket_shutdown();
+        vlg::RetCode  FDSET_sockets();
+        vlg::RetCode  FDSET_incoming_sockets();   //for server side sockets
+        vlg::RetCode  FDSET_outgoing_sockets();   //for client side sockets
+        vlg::RetCode  FDSET_write_pending_sockets();
+        vlg::RetCode  server_socket_shutdown();
 
-        blaze::RetCode  consume_events();
-        blaze::RetCode  consume_inco_sock_events();
+        vlg::RetCode  consume_events();
+        vlg::RetCode  consume_inco_sock_events();
 
-        blaze::RetCode  add_early_outg_conn(selector_event *conn_evt);
-        blaze::RetCode  promote_early_outg_conn(connection_int *conn);
-        blaze::RetCode  delete_early_outg_conn(connection_int *conn);
+        vlg::RetCode  add_early_outg_conn(selector_event *conn_evt);
+        vlg::RetCode  promote_early_outg_conn(connection_int *conn);
+        vlg::RetCode  delete_early_outg_conn(connection_int *conn);
 
-        blaze::RetCode  manage_disconnect_conn(selector_event *conn_evt);
+        vlg::RetCode  manage_disconnect_conn(selector_event *conn_evt);
 
-        blaze::RetCode  stop_and_clean();
+        vlg::RetCode  stop_and_clean();
 
     private:
         //---gen_rep
@@ -161,13 +161,13 @@ class selector : public blaze::p_thread {
                                     excep_FDs_;
 
         int                         nfds_;      //used in select
-        blaze::RetCode              last_err_;  //last generic error
+        vlg::RetCode              last_err_;  //last generic error
         int                         sel_res_;   //last select() result
         timeval                     sel_timeout_;
         sockaddr_in                 udp_ntfy_sa_in_;
         SOCKET                      udp_ntfy_srv_socket_;
         SOCKET                      udp_ntfy_cli_socket_;
-        mutable blaze::synch_monitor mon_;
+        mutable vlg::synch_monitor mon_;
 
         //---srv_rep
         SOCKET                      srv_listen_socket_;
@@ -175,22 +175,22 @@ class selector : public blaze::p_thread {
         acceptor                    srv_acceptor_;
 
         //SERVER MAP connid --> BLZ_CONNECTION
-        blaze::hash_map             srv_incoming_sock_map_;
-        blaze::p_executor_service   srv_exec_serv_; //srv executor service.
+        vlg::hash_map             srv_incoming_sock_map_;
+        vlg::p_executor_service   srv_exec_serv_; //srv executor service.
 
         //---cli_rep
         //CLIENT MAP socketid --> BLZ_CONNECTION
-        blaze::hash_map             cli_early_outgoing_sock_map_;
+        vlg::hash_map             cli_early_outgoing_sock_map_;
         //CLIENT MAP connid --> BLZ_CONNECTION
-        blaze::hash_map             cli_outgoing_sock_map_;
-        blaze::p_executor_service   cli_exec_serv_; //cli executor service.
+        vlg::hash_map             cli_outgoing_sock_map_;
+        vlg::p_executor_service   cli_exec_serv_; //cli executor service.
 
         //CLIENT MAP socket --> BLZ_CONNECTION
-        blaze::hash_map             write_pending_sockets_;
+        vlg::hash_map             write_pending_sockets_;
 
         //--logger
     protected:
-        static blaze::logger   *log_;
+        static vlg::logger   *log_;
 };
 
 }

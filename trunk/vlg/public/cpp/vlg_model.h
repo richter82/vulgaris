@@ -25,9 +25,9 @@
 #include "blaze_byte_buffer.h"
 #include "blaze_ascii_string.h"
 
-namespace blaze {
+namespace vlg {
 
-/** @brief member_desc describes a member of a blaze entity type.
+/** @brief member_desc describes a member of a vlg entity type.
 
     member_desc can describe both a field of a nclass type or a value of a
     blaze_enum type.
@@ -96,8 +96,8 @@ class key_desc {
         ~key_desc();
 
     public:
-        blaze::RetCode  init();
-        blaze::RetCode  add_member_desc(const member_desc *member_descriptor);
+        vlg::RetCode  init();
+        vlg::RetCode  add_member_desc(const member_desc *member_descriptor);
 
         unsigned short  get_key_id()        const;
         bool            is_primary()        const;
@@ -114,7 +114,7 @@ typedef void (*enum_member_desc)(const member_desc &member_descriptor,
                                  void *ud,
                                  bool &stop);
 
-/** @brief entity_desc describes blaze entity type.
+/** @brief entity_desc describes vlg entity type.
 
     entity_desc can describe both a nclass type or a blaze_enum type.
  */
@@ -127,16 +127,16 @@ class entity_desc {
                              EntityType         entity_type,
                              const char         *entity_namespace,
                              const char         *entity_name,
-                             blaze::alloc_func  entity_allocation_function,
+                             vlg::alloc_func  entity_allocation_function,
                              unsigned int       entity_member_num,
                              bool               persistent);
 
         ~entity_desc();
 
     public:
-        blaze::RetCode      init();
-        blaze::RetCode      add_member_desc(const member_desc *member_descriptor);
-        blaze::RetCode      add_key_desc(const key_desc *key_descriptor);
+        vlg::RetCode      init();
+        vlg::RetCode      add_member_desc(const member_desc *member_descriptor);
+        vlg::RetCode      add_key_desc(const key_desc *key_descriptor);
 
         unsigned int        get_nclass_id()                     const;
         size_t              get_entity_size()                   const;
@@ -144,7 +144,7 @@ class entity_desc {
         EntityType          get_entity_type()                   const;
         const char          *get_entity_namespace()             const;
         const char          *get_entity_name()                  const;
-        blaze::alloc_func   get_entity_allocation_function()    const;
+        vlg::alloc_func   get_entity_allocation_function()    const;
         unsigned int        get_entity_member_num()             const;
         bool                is_persistent()                     const;
 
@@ -170,14 +170,14 @@ class entity_desc {
 
 /** @brief nclass
  */
-class nclass : public blaze::collectable {
+class nclass : public vlg::collectable {
         friend class entity_manager;
 
     public:
         explicit nclass();
         virtual ~nclass();
 
-        virtual blaze::collector &get_collector();
+        virtual vlg::collector &get_collector();
 
     public:
         virtual unsigned int    get_nclass_id()             const = 0;
@@ -210,48 +210,48 @@ class nclass : public blaze::collectable {
         void            *get_field_by_name_index(const char *field_name,
                                                  unsigned int index);
 
-        blaze::RetCode  set_field_by_id(unsigned int field_id,
+        vlg::RetCode  set_field_by_id(unsigned int field_id,
                                         const void *ptr,
                                         size_t maxlen = 0);
 
-        blaze::RetCode  set_field_by_name(const char *field_name,
+        vlg::RetCode  set_field_by_name(const char *field_name,
                                           const void *ptr,
                                           size_t maxlen = 0);
 
-        blaze::RetCode  set_field_by_id_index(unsigned int field_id,
+        vlg::RetCode  set_field_by_id_index(unsigned int field_id,
                                               const void *ptr,
                                               unsigned int index,
                                               size_t maxlen = 0);
 
-        blaze::RetCode  set_field_by_name_index(const char *field_name,
+        vlg::RetCode  set_field_by_name_index(const char *field_name,
                                                 const void *ptr,
                                                 unsigned int index,
                                                 size_t maxlen = 0);
 
-        blaze::RetCode  is_field_zero_by_id(unsigned int field_id,
+        vlg::RetCode  is_field_zero_by_id(unsigned int field_id,
                                             bool &res) const;
 
-        blaze::RetCode  is_field_zero_by_name(const char *field_name,
+        vlg::RetCode  is_field_zero_by_name(const char *field_name,
                                               bool &res) const;
 
-        blaze::RetCode  is_field_zero_by_id_index(unsigned int field_id,
+        vlg::RetCode  is_field_zero_by_id_index(unsigned int field_id,
                                                   unsigned int index,
                                                   unsigned int nmenb,
                                                   bool &res) const;
 
-        blaze::RetCode  is_field_zero_by_name_index(const char *field_name,
+        vlg::RetCode  is_field_zero_by_name_index(const char *field_name,
                                                     unsigned int index,
                                                     unsigned int nmenb,
                                                     bool &res) const;
 
-        blaze::RetCode  set_field_zero_by_id(unsigned int field_id);
-        blaze::RetCode  set_field_zero_by_name(const char *field_name);
+        vlg::RetCode  set_field_zero_by_id(unsigned int field_id);
+        vlg::RetCode  set_field_zero_by_name(const char *field_name);
 
-        blaze::RetCode  set_field_zero_by_id_index(unsigned int field_id,
+        vlg::RetCode  set_field_zero_by_id_index(unsigned int field_id,
                                                    unsigned int index,
                                                    unsigned int nmenb);
 
-        blaze::RetCode  set_field_zero_by_name_index(const char *field_name,
+        vlg::RetCode  set_field_zero_by_name_index(const char *field_name,
                                                      unsigned int index,
                                                      unsigned int nmenb);
 
@@ -304,22 +304,22 @@ class nclass : public blaze::collectable {
     public:
         virtual int serialize(Encode class_encode_type,
                               const nclass *previous_image,
-                              blaze::grow_byte_buffer *obb) const = 0;
+                              vlg::grow_byte_buffer *obb) const = 0;
 
         /*************************************************************
         -Class Restore
         **************************************************************/
     public:
-        blaze::RetCode restore(const entity_manager *em,
+        vlg::RetCode restore(const entity_manager *em,
                                Encode class_encode_type,
-                               blaze::grow_byte_buffer *ibb);
+                               vlg::grow_byte_buffer *ibb);
 
         /*************************************************************
         -Class Persistence
         **************************************************************/
     public:
-        virtual blaze::RetCode
-        primary_key_string_value(blaze::ascii_string *out_str);
+        virtual vlg::RetCode
+        primary_key_string_value(vlg::ascii_string *out_str);
 
     protected:
         static nclass_logger *log_;
@@ -341,13 +341,13 @@ class entity_manager {
         explicit entity_manager();
         ~entity_manager();
 
-        blaze::RetCode init();
+        vlg::RetCode init();
 
-        blaze::RetCode
+        vlg::RetCode
         get_entity_descriptor(unsigned int nclass_id,
                               entity_desc const **entity_descriptor) const;
 
-        blaze::RetCode
+        vlg::RetCode
         get_entity_descriptor(const char *entity_name,
                               entity_desc const **entity_descriptor) const;
 
@@ -360,7 +360,7 @@ class entity_manager {
         void enum_nclass_descriptors(enum_entity_desc eedf,
                                      void *ud)                      const;
 
-        blaze::RetCode new_class_instance(unsigned int nclass_id,
+        vlg::RetCode new_class_instance(unsigned int nclass_id,
                                           nclass **new_class_obj) const;
 
         unsigned int    entity_count()  const;
@@ -369,9 +369,9 @@ class entity_manager {
 
         const char      *get_class_name(unsigned int nclass_id) const;
 
-        blaze::RetCode  extend(const entity_desc *entity_descriptor);
-        blaze::RetCode  extend(entity_manager *em);
-        blaze::RetCode  extend(const char *model_name);
+        vlg::RetCode  extend(const entity_desc *entity_descriptor);
+        vlg::RetCode  extend(entity_manager *em);
+        vlg::RetCode  extend(const char *model_name);
 
     public:
         const entity_manager_impl *get_opaque()                 const;

@@ -24,19 +24,19 @@
 #include "blaze_logger.h"
 #include "blz_glob_int.h"
 
-namespace blaze {
+namespace vlg {
 
 class persistence_query_int;
 
 //-----------------------------
 // subscription_event_int
 //-----------------------------
-class subscription_event_int : public blaze::collectable {
+class subscription_event_int : public vlg::collectable {
         friend class connection_int;
         friend class subscription_int;
 
     public:
-        static blaze::RetCode new_instance(subscription_event_int **sbs_evt);
+        static vlg::RetCode new_instance(subscription_event_int **sbs_evt);
 
     private:
         subscription_event_int();
@@ -44,7 +44,7 @@ class subscription_event_int : public blaze::collectable {
         virtual ~subscription_event_int();
 
     public:
-        virtual blaze::collector &get_collector();
+        virtual vlg::collector &get_collector();
 
         //--getters
     public:
@@ -115,7 +115,7 @@ enum BLZ_SBS_Evt {
 // BLZ_SUBSCRIPTION
 //-----------------------------
 
-class subscription_int : public blaze::collectable {
+class subscription_int : public vlg::collectable {
         friend class peer_int;
         friend class connection_int;
         friend class peer_sbs_task;
@@ -134,7 +134,7 @@ class subscription_int : public blaze::collectable {
         virtual ~subscription_int();
 
     public:
-        virtual blaze::collector &get_collector();
+        virtual vlg::collector &get_collector();
 
         //-----------------------------
         // GETTERS
@@ -176,17 +176,17 @@ class subscription_int : public blaze::collectable {
         // INIT
         //-----------------------------
     private:
-        blaze::RetCode  init();
+        vlg::RetCode  init();
 
         //-----------------------------
         // ACTIONS
         //-----------------------------
     public:
         //client side
-        blaze::RetCode start();
+        vlg::RetCode start();
 
         //client side
-        blaze::RetCode start(SubscriptionType sbscr_type,
+        vlg::RetCode start(SubscriptionType sbscr_type,
                              SubscriptionMode sbscr_mode,
                              SubscriptionFlowType sbscr_flow_type,
                              SubscriptionDownloadType sbscr_dwnld_type,
@@ -196,7 +196,7 @@ class subscription_int : public blaze::collectable {
                              unsigned int start_timestamp_1 = 0);
 
         /* this function must be called from same thread that called Start()*/
-        blaze::RetCode    await_for_start_result(SubscriptionResponse
+        vlg::RetCode    await_for_start_result(SubscriptionResponse
                                                  &sbs_start_result,
                                                  ProtocolCode &sbs_start_protocode,
                                                  time_t sec = -1,
@@ -211,10 +211,10 @@ class subscription_int : public blaze::collectable {
         This means that until you call connection.ReleaseSubscription()
         you cannot safedestroy this subscription.
         ***********************************/
-        blaze::RetCode stop();
+        vlg::RetCode stop();
 
         /* this function must be called from same thread that called Stop()*/
-        blaze::RetCode    await_for_stop_result(SubscriptionResponse
+        vlg::RetCode    await_for_stop_result(SubscriptionResponse
                                                 &sbs_stop_result,
                                                 ProtocolCode &sbs_stop_protocode,
                                                 time_t sec = -1,
@@ -222,13 +222,13 @@ class subscription_int : public blaze::collectable {
 
 
     private:
-        blaze::RetCode    notify_for_start_stop_result();
+        vlg::RetCode    notify_for_start_stop_result();
 
         //-----------------------------
         // STATUS SYNCHRO
         //-----------------------------
     public:
-        blaze::RetCode    await_for_status_reached_or_outdated(SubscriptionStatus
+        vlg::RetCode    await_for_status_reached_or_outdated(SubscriptionStatus
                                                                test,
                                                                SubscriptionStatus &current,
                                                                time_t sec = -1,
@@ -245,11 +245,11 @@ class subscription_int : public blaze::collectable {
         // EVENT NOTIFY SYNCHRO
         //-----------------------------
     public:
-        blaze::RetCode await_for_next_event(subscription_event_int **sbs_evt,
+        vlg::RetCode await_for_next_event(subscription_event_int **sbs_evt,
                                             time_t sec = -1,
                                             long nsec = 0);
 
-        blaze::RetCode  ack_event();
+        vlg::RetCode  ack_event();
 
         //-----------------------------
         // EVENT NOTIFY ASYNCHRO HNDLRS
@@ -269,16 +269,16 @@ class subscription_int : public blaze::collectable {
         //-----------------------------
         // AUTHORIZE EVENT (SERVER)
         //-----------------------------
-        virtual blaze::RetCode accept_event(subscription_event_int *sbs_evt);
+        virtual vlg::RetCode accept_event(subscription_event_int *sbs_evt);
 
         //-----------------------------
         // SEND
         //-----------------------------
     private:
-        blaze::RetCode send_start_request();
-        blaze::RetCode send_start_response();
-        blaze::RetCode send_event(const subscription_event_int *sbs_evt);
-        blaze::RetCode send_event_ack();
+        vlg::RetCode send_start_request();
+        vlg::RetCode send_start_response();
+        vlg::RetCode send_event(const subscription_event_int *sbs_evt);
+        vlg::RetCode send_event_ack();
 
         //-----------------------------
         // submit_live_event  - SERVER ONLY
@@ -290,27 +290,27 @@ class subscription_int : public blaze::collectable {
         When evt must be stored or send to the selector thread an adoption is needed.
         ***********************************/
     private:
-        blaze::RetCode submit_live_event(subscription_event_int *sbs_evt);
+        vlg::RetCode submit_live_event(subscription_event_int *sbs_evt);
 
         //-----------------------------
         // RECEIVE
         //-----------------------------
     private:
         /*Client only*/
-        blaze::RetCode receive_event(const blz_hdr_rec *pkt_hdr,
-                                     blaze::grow_byte_buffer *pkt_body,
+        vlg::RetCode receive_event(const blz_hdr_rec *pkt_hdr,
+                                     vlg::grow_byte_buffer *pkt_body,
                                      subscription_event_int *sbs_evt);
 
         /*Server only*/
-        blaze::RetCode receive_event_ack(const blz_hdr_rec *pkt_hdr);
+        vlg::RetCode receive_event_ack(const blz_hdr_rec *pkt_hdr);
 
         //-----------------------------
         // Sbs Initial Query  - SERVER ONLY
         //-----------------------------
     private:
-        blaze::RetCode execute_initial_query();
-        blaze::RetCode safe_submit_dwnl_event();
-        blaze::RetCode submit_dwnl_event();
+        vlg::RetCode execute_initial_query();
+        vlg::RetCode safe_submit_dwnl_event();
+        vlg::RetCode submit_dwnl_event();
         void release_initial_query();
 
         //-----------------------------
@@ -319,25 +319,25 @@ class subscription_int : public blaze::collectable {
     public:
         SubscriptionStatus  status();
 
-        blaze::RetCode    set_req_sent();
-        blaze::RetCode    set_started();
-        blaze::RetCode    set_stopped();
-        blaze::RetCode    set_released();
-        blaze::RetCode    set_error();
+        vlg::RetCode    set_req_sent();
+        vlg::RetCode    set_started();
+        vlg::RetCode    set_stopped();
+        vlg::RetCode    set_released();
+        vlg::RetCode    set_error();
 
     private:
-        blaze::RetCode    set_status(SubscriptionStatus status);
+        vlg::RetCode    set_status(SubscriptionStatus status);
 
         //-----------------------------
         // EVT INTER
         // All these func MUST be called inside a synch region.
         //-----------------------------
     private:
-        blaze::RetCode    consume_event(subscription_event_int **sbs_evt);
-        blaze::RetCode    ack_event_priv();
-        blaze::RetCode    evt_reset();
-        blaze::RetCode    evt_ready();
-        blaze::RetCode    evt_to_ack();
+        vlg::RetCode    consume_event(subscription_event_int **sbs_evt);
+        vlg::RetCode    ack_event_priv();
+        vlg::RetCode    evt_reset();
+        vlg::RetCode    evt_ready();
+        vlg::RetCode    evt_to_ack();
 
         //-----------------------------
         // REP
@@ -377,7 +377,7 @@ class subscription_int : public blaze::collectable {
 
     private:
         BLZ_SBS_Evt                 cli_evt_sts_;
-        blaze::blocking_queue       cli_evt_q_;
+        vlg::blocking_queue       cli_evt_q_;
         subscription_event_int      *cli_last_evt_;
 
         //****-----***********
@@ -397,13 +397,13 @@ class subscription_int : public blaze::collectable {
         /**Asyncro sbs rep - begin*/
     private:
         //srv sbs event global queue
-        blaze::blocking_queue srv_sbs_evt_glob_q_;
+        vlg::blocking_queue srv_sbs_evt_glob_q_;
         //[classkeyvalue] --> [classkeyvalue_instance_event_queue]
-        blaze::hash_map srv_sbs_classkey_evt_q_hm_;
+        vlg::hash_map srv_sbs_classkey_evt_q_hm_;
 
-        blaze::RetCode store_sbs_evt_srv_asynch(subscription_event_int *evt);
+        vlg::RetCode store_sbs_evt_srv_asynch(subscription_event_int *evt);
         /**returns OK if a new event is available. KO if not.*/
-        blaze::RetCode consume_sbs_evt_srv_asynch(subscription_event_int **evt_out);
+        vlg::RetCode consume_sbs_evt_srv_asynch(subscription_event_int **evt_out);
 
         //dedicated lock to synchro *asyncro sbs rep*
         mutable pthread_rwlock_t lock_srv_sbs_rep_asynch_;
@@ -418,7 +418,7 @@ class subscription_int : public blaze::collectable {
         //****-----***********
 
     private:
-        mutable blaze::synch_monitor mon_;
+        mutable vlg::synch_monitor mon_;
 
     protected:
         static nclass_logger *log_;

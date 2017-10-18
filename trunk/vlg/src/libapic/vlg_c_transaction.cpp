@@ -22,7 +22,7 @@
 #include "blaze_c_transaction.h"
 #include "blaze_transaction.h"
 
-namespace blaze {
+namespace vlg {
 class c_transaction : public transaction {
     private:
         static void transaction_status_change_c_transaction(transaction &tx,

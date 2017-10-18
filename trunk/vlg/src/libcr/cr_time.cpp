@@ -67,7 +67,7 @@ struct timespec {
 #endif
 #endif
 
-namespace blaze {
+namespace vlg {
 
 #ifdef WIN32
 LARGE_INTEGER frequency;
@@ -191,7 +191,7 @@ struct timezone {
 };
 #endif
 
-namespace blaze {
+namespace vlg {
 #if defined(_MSC_VER)
 /** get nanosecond timestamp. */
 uint64_t get_timestamp()

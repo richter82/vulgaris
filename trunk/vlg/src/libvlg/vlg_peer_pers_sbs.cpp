@@ -23,7 +23,7 @@
 #include "blz_connection_int.h"
 #include "blz_subscription_int.h"
 
-namespace blaze {
+namespace vlg {
 
 #define NOT_PERS_ENBL_PEER " peer is not persistence enabled."
 
@@ -34,7 +34,7 @@ namespace blaze {
 struct SPC_REC {
     peer_int *peer;
     PersistenceAlteringMode mode;
-    blaze::RetCode res;
+    vlg::RetCode res;
 };
 
 void peer_enum_em_classes_create_schema(const entity_desc &entity_desc,
@@ -53,13 +53,13 @@ void peer_enum_em_classes_create_schema(const entity_desc &entity_desc,
                 IFLOG2(pud->peer->logger(), wrn(TH_ID,
                                                 LS_TRL "%s() - no available persistence connection for nclass_id:%d", __func__,
                                                 entity_desc.get_nclass_id()))
-                pud->res = blaze::RetCode_KO;
+                pud->res = vlg::RetCode_KO;
             }
         } else {
             IFLOG2(pud->peer->logger(), wrn(TH_ID,
                                             LS_TRL "%s() - no available persistence driver for nclass_id:%d", __func__,
                                             entity_desc.get_nclass_id()))
-            pud->res = blaze::RetCode_KO;
+            pud->res = vlg::RetCode_KO;
         }
         if(pud->res) {
             IFLOG2(pud->peer->logger(), wrn(TH_ID,
@@ -67,7 +67,7 @@ void peer_enum_em_classes_create_schema(const entity_desc &entity_desc,
                                             __func__,
                                             entity_desc.get_nclass_id(),
                                             pud->res))
-            if(pud->res != blaze::RetCode_DBOPFAIL) {
+            if(pud->res != vlg::RetCode_DBOPFAIL) {
                 //if it is worst than RetCode_DBOPFAIL we break;
                 stop = true;
             }
@@ -75,32 +75,32 @@ void peer_enum_em_classes_create_schema(const entity_desc &entity_desc,
     }
 }
 
-blaze::RetCode peer_int::pers_schema_create(PersistenceAlteringMode mode)
+vlg::RetCode peer_int::pers_schema_create(PersistenceAlteringMode mode)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
     SPC_REC ud;
     ud.peer = this;
     ud.mode = mode;
-    ud.res = blaze::RetCode_OK;
+    ud.res = vlg::RetCode_OK;
     bem_.enum_nclass_descriptors(peer_enum_em_classes_create_schema, &ud);
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, ud.res))
     return ud.res;
 }
 
-blaze::RetCode peer_int::class_pers_schema_create(PersistenceAlteringMode
+vlg::RetCode peer_int::class_pers_schema_create(PersistenceAlteringMode
                                                   mode,
                                                   unsigned int nclass_id)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(mode:%d, nclass_id:%d)", __func__, nclass_id))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     const entity_desc *class_desc = NULL;
     if(!(cdrs_res = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
@@ -115,28 +115,28 @@ blaze::RetCode peer_int::class_pers_schema_create(PersistenceAlteringMode
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
                               __func__, nclass_id))
-                    cdrs_res = blaze::RetCode_KO;
+                    cdrs_res = vlg::RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-driver for nclass_id:%d",
                           __func__, nclass_id))
-                cdrs_res = blaze::RetCode_KO;
+                cdrs_res = vlg::RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "%s() - class is not persistable. [nclass_id:%u]",
                       __func__, nclass_id))
-            cdrs_res = blaze::RetCode_KO;
+            cdrs_res = vlg::RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "%s() - class descriptor not found. [nclass_id:%u]",
                   __func__, nclass_id))
-        cdrs_res = blaze::RetCode_KO;
+        cdrs_res = vlg::RetCode_KO;
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
     return cdrs_res;
 }
 
-blaze::RetCode peer_int::class_pers_load(unsigned short key,
+vlg::RetCode peer_int::class_pers_load(unsigned short key,
                                          unsigned int  &ts0_out,
                                          unsigned int  &ts1_out,
                                          nclass &in_out_obj)
@@ -144,9 +144,9 @@ blaze::RetCode peer_int::class_pers_load(unsigned short key,
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%u)", __func__, key))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     unsigned int nclass_id = in_out_obj.get_nclass_id();
     const entity_desc *class_desc = NULL;
     if(!(cdrs_res = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
@@ -159,35 +159,35 @@ blaze::RetCode peer_int::class_pers_load(unsigned short key,
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
                               __func__, nclass_id))
-                    cdrs_res = blaze::RetCode_KO;
+                    cdrs_res = vlg::RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-driver for nclass_id:%d",
                           __func__, nclass_id))
-                cdrs_res = blaze::RetCode_KO;
+                cdrs_res = vlg::RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "%s() - class is not persistable. [nclass_id:%u]",
                       __func__, nclass_id))
-            cdrs_res = blaze::RetCode_KO;
+            cdrs_res = vlg::RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "%s() - class descriptor not found. [nclass_id:%u]",
                   __func__, nclass_id))
-        cdrs_res = blaze::RetCode_KO;
+        cdrs_res = vlg::RetCode_KO;
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
     return cdrs_res;
 }
 
-blaze::RetCode peer_int::class_pers_save(const nclass &in_obj)
+vlg::RetCode peer_int::class_pers_save(const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in_obj.get_nclass_id();
@@ -208,36 +208,36 @@ blaze::RetCode peer_int::class_pers_save(const nclass &in_obj)
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
                               __func__, nclass_id))
-                    cdrs_res = blaze::RetCode_KO;
+                    cdrs_res = vlg::RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-driver for nclass_id:%d",
                           __func__, nclass_id))
-                cdrs_res = blaze::RetCode_KO;
+                cdrs_res = vlg::RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "%s() - class is not persistable. [nclass_id:%u]",
                       __func__, nclass_id))
-            cdrs_res = blaze::RetCode_KO;
+            cdrs_res = vlg::RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "%s() - class descriptor not found. [nclass_id:%u]",
                   __func__, nclass_id))
-        cdrs_res = blaze::RetCode_KO;
+        cdrs_res = vlg::RetCode_KO;
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
     return cdrs_res;
 }
 
-blaze::RetCode peer_int::class_pers_update(unsigned short key,
+vlg::RetCode peer_int::class_pers_update(unsigned short key,
                                            const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%u)", __func__, key))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in_obj.get_nclass_id();
@@ -259,36 +259,36 @@ blaze::RetCode peer_int::class_pers_update(unsigned short key,
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
                               __func__, nclass_id))
-                    cdrs_res = blaze::RetCode_KO;
+                    cdrs_res = vlg::RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-driver for nclass_id:%d",
                           __func__, nclass_id))
-                cdrs_res = blaze::RetCode_KO;
+                cdrs_res = vlg::RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "%s() - class is not persistable. [nclass_id:%u]",
                       __func__, nclass_id))
-            cdrs_res = blaze::RetCode_KO;
+            cdrs_res = vlg::RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "%s() - class descriptor not found. [nclass_id:%u]",
                   __func__, nclass_id))
-        cdrs_res = blaze::RetCode_KO;
+        cdrs_res = vlg::RetCode_KO;
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
     return cdrs_res;
 }
 
-blaze::RetCode peer_int::class_pers_update_or_save(unsigned short key,
+vlg::RetCode peer_int::class_pers_update_or_save(unsigned short key,
                                                    const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%u)", __func__, key))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     unsigned int ts0 = 0, ts1 = 0;
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int nclass_id = in_obj.get_nclass_id();
@@ -309,37 +309,37 @@ blaze::RetCode peer_int::class_pers_update_or_save(unsigned short key,
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
                               __func__, nclass_id))
-                    cdrs_res = blaze::RetCode_KO;
+                    cdrs_res = vlg::RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-driver for nclass_id:%d",
                           __func__, nclass_id))
-                cdrs_res = blaze::RetCode_KO;
+                cdrs_res = vlg::RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "%s() - class is not persistable. [nclass_id:%u]",
                       __func__, nclass_id))
-            cdrs_res = blaze::RetCode_KO;
+            cdrs_res = vlg::RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "%s() - class descriptor not found. [nclass_id:%u]",
                   __func__, nclass_id))
-        cdrs_res = blaze::RetCode_KO;
+        cdrs_res = vlg::RetCode_KO;
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
     return cdrs_res;
 }
 
-blaze::RetCode peer_int::class_pers_remove(unsigned short key,
+vlg::RetCode peer_int::class_pers_remove(unsigned short key,
                                            PersistenceDeletionMode mode,
                                            const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%u)", __func__, key))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in_obj.get_nclass_id();
@@ -360,22 +360,22 @@ blaze::RetCode peer_int::class_pers_remove(unsigned short key,
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
                               __func__, nclass_id))
-                    cdrs_res = blaze::RetCode_KO;
+                    cdrs_res = vlg::RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-driver for nclass_id:%d",
                           __func__, nclass_id))
-                cdrs_res = blaze::RetCode_KO;
+                cdrs_res = vlg::RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "%s() - class is not persistable. [nclass_id:%u]",
                       __func__, nclass_id))
-            cdrs_res = blaze::RetCode_KO;
+            cdrs_res = vlg::RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "%s() - class descriptor not found. [nclass_id:%u]",
                   __func__, nclass_id))
-        cdrs_res = blaze::RetCode_KO;
+        cdrs_res = vlg::RetCode_KO;
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
     return cdrs_res;
@@ -385,13 +385,13 @@ blaze::RetCode peer_int::class_pers_remove(unsigned short key,
 // DISTRIBUTION
 //-----------------------------
 
-blaze::RetCode peer_int::class_distribute(SubscriptionEventType evt_type,
+vlg::RetCode peer_int::class_distribute(SubscriptionEventType evt_type,
                                           ProtocolCode proto_code,
                                           Action act,
                                           const nclass &obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int ts0 = 0, ts1 = 0;
     if((cdrs_res = get_per_classid_helper_class(obj.get_nclass_id(), &sdr))) {
@@ -428,15 +428,15 @@ blaze::RetCode peer_int::class_distribute(SubscriptionEventType evt_type,
 // PERSISTENCE + DISTRIBUTION
 //-----------------------------
 
-blaze::RetCode peer_int::class_pers_save_and_distribute(
+vlg::RetCode peer_int::class_pers_save_and_distribute(
     const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in_obj.get_nclass_id();
@@ -457,22 +457,22 @@ blaze::RetCode peer_int::class_pers_save_and_distribute(
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
                               __func__, nclass_id))
-                    cdrs_res = blaze::RetCode_KO;
+                    cdrs_res = vlg::RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-driver for nclass_id:%d",
                           __func__, nclass_id))
-                cdrs_res = blaze::RetCode_KO;
+                cdrs_res = vlg::RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "%s() - class is not persistable. [nclass_id:%u]",
                       __func__, nclass_id))
-            cdrs_res = blaze::RetCode_KO;
+            cdrs_res = vlg::RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "%s() - class descriptor not found. [nclass_id:%u]",
                   __func__, nclass_id))
-        cdrs_res = blaze::RetCode_KO;
+        cdrs_res = vlg::RetCode_KO;
     }
     //**** SBS MNG BG
     if(!cdrs_res) {
@@ -496,15 +496,15 @@ blaze::RetCode peer_int::class_pers_save_and_distribute(
     return cdrs_res;
 }
 
-blaze::RetCode peer_int::class_pers_update_and_distribute(unsigned short key,
+vlg::RetCode peer_int::class_pers_update_and_distribute(unsigned short key,
                                                           const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%u)", __func__, key))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in_obj.get_nclass_id();
@@ -525,22 +525,22 @@ blaze::RetCode peer_int::class_pers_update_and_distribute(unsigned short key,
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
                               __func__, nclass_id))
-                    cdrs_res = blaze::RetCode_KO;
+                    cdrs_res = vlg::RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-driver for nclass_id:%d",
                           __func__, nclass_id))
-                cdrs_res = blaze::RetCode_KO;
+                cdrs_res = vlg::RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "%s() - class is not persistable. [nclass_id:%u]",
                       __func__, nclass_id))
-            cdrs_res = blaze::RetCode_KO;
+            cdrs_res = vlg::RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "%s() - class descriptor not found. [nclass_id:%u]",
                   __func__, nclass_id))
-        cdrs_res = blaze::RetCode_KO;
+        cdrs_res = vlg::RetCode_KO;
     }
     //**** SBS MNG BG
     if(!cdrs_res) {
@@ -563,16 +563,16 @@ blaze::RetCode peer_int::class_pers_update_and_distribute(unsigned short key,
     return cdrs_res;
 }
 
-blaze::RetCode peer_int::class_pers_update_or_save_and_distribute(
+vlg::RetCode peer_int::class_pers_update_or_save_and_distribute(
     unsigned short key,
     const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%u)", __func__, key))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     unsigned int ts0 = 0, ts1 = 0;
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int nclass_id = in_obj.get_nclass_id();
@@ -593,22 +593,22 @@ blaze::RetCode peer_int::class_pers_update_or_save_and_distribute(
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
                               __func__, nclass_id))
-                    cdrs_res = blaze::RetCode_KO;
+                    cdrs_res = vlg::RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-driver for nclass_id:%d",
                           __func__, nclass_id))
-                cdrs_res = blaze::RetCode_KO;
+                cdrs_res = vlg::RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "%s() - class is not persistable. [nclass_id:%u]",
                       __func__, nclass_id))
-            cdrs_res = blaze::RetCode_KO;
+            cdrs_res = vlg::RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "%s() - class descriptor not found. [nclass_id:%u]",
                   __func__, nclass_id))
-        cdrs_res = blaze::RetCode_KO;
+        cdrs_res = vlg::RetCode_KO;
     }
     //**** SBS MNG BG
     if(!cdrs_res) {
@@ -631,16 +631,16 @@ blaze::RetCode peer_int::class_pers_update_or_save_and_distribute(
     return cdrs_res;
 }
 
-blaze::RetCode peer_int::class_pers_remove_and_distribute(unsigned short key,
+vlg::RetCode peer_int::class_pers_remove_and_distribute(unsigned short key,
                                                           PersistenceDeletionMode mode,
                                                           const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%u)", __func__, key))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
-        return blaze::RetCode_KO;
+        return vlg::RetCode_KO;
     }
-    blaze::RetCode cdrs_res = blaze::RetCode_OK;
+    vlg::RetCode cdrs_res = vlg::RetCode_OK;
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in_obj.get_nclass_id();
@@ -661,22 +661,22 @@ blaze::RetCode peer_int::class_pers_remove_and_distribute(unsigned short key,
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
                               __func__, nclass_id))
-                    cdrs_res = blaze::RetCode_KO;
+                    cdrs_res = vlg::RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-driver for nclass_id:%d",
                           __func__, nclass_id))
-                cdrs_res = blaze::RetCode_KO;
+                cdrs_res = vlg::RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "%s() - class is not persistable. [nclass_id:%u]",
                       __func__, nclass_id))
-            cdrs_res = blaze::RetCode_KO;
+            cdrs_res = vlg::RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "%s() - class descriptor not found. [nclass_id:%u]",
                   __func__, nclass_id))
-        cdrs_res = blaze::RetCode_KO;
+        cdrs_res = vlg::RetCode_KO;
     }
     //**** SBS MNG BG
     if(!cdrs_res) {

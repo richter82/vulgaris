@@ -22,7 +22,7 @@
 #include "blaze_c_connection.h"
 #include "blaze_connection.h"
 
-namespace blaze {
+namespace vlg {
 
 class c_connection : public connection {
     private:

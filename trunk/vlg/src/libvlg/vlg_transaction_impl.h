@@ -23,7 +23,7 @@
 #define BLZ_TRANSACTION_H_
 #include "blz_glob_int.h"
 
-namespace blaze {
+namespace vlg {
 
 #define TX_RES_COMMT    "COMMITTED"
 #define TX_RES_FAIL     "FAILED"
@@ -34,7 +34,7 @@ namespace blaze {
 // BLZ_TRANSACTION
 //-----------------------------
 
-class transaction_int : public blaze::collectable {
+class transaction_int : public vlg::collectable {
         friend class peer_int;
         friend class connection_int;
 
@@ -50,7 +50,7 @@ class transaction_int : public blaze::collectable {
         virtual ~transaction_int();
 
     public:
-        virtual blaze::collector &get_collector();
+        virtual vlg::collector &get_collector();
 
         //-----------------------------
         // GETTERS
@@ -98,21 +98,21 @@ class transaction_int : public blaze::collectable {
         // INIT
         //-----------------------------
     private:
-        blaze::RetCode  init();
+        vlg::RetCode  init();
 
     public:
-        blaze::RetCode  re_new();
+        vlg::RetCode  re_new();
 
         //-----------------------------
         // STATUS SYNCHRO
         //-----------------------------
     public:
-        blaze::RetCode await_for_status_reached_or_outdated(TransactionStatus test,
+        vlg::RetCode await_for_status_reached_or_outdated(TransactionStatus test,
                                                             TransactionStatus &current,
                                                             time_t sec = -1,
                                                             long nsec = 0);
 
-        blaze::RetCode await_for_closure(time_t sec = -1, long nsec = 0);
+        vlg::RetCode await_for_closure(time_t sec = -1, long nsec = 0);
 
         //-----------------------------
         // STATUS ASYNCHRO HNDLRS
@@ -148,9 +148,9 @@ class transaction_int : public blaze::collectable {
         // TX PREPARE
         //-----------------------------
     public:
-        blaze::RetCode        prepare();
+        vlg::RetCode        prepare();
 
-        blaze::RetCode        prepare(TransactionRequestType    txtype,
+        vlg::RetCode        prepare(TransactionRequestType    txtype,
                                       Action  txactn,
                                       Encode  clsenc,
                                       bool    rsclrq,
@@ -161,8 +161,8 @@ class transaction_int : public blaze::collectable {
         // TX SEND
         //-----------------------------
     public:
-        blaze::RetCode        send();             //called by client peer
-        blaze::RetCode        send_response();    //called by server peer
+        vlg::RetCode        send();             //called by client peer
+        vlg::RetCode        send_response();    //called by server peer
 
 
         //-----------------------------
@@ -173,10 +173,10 @@ class transaction_int : public blaze::collectable {
 
 
     private:
-        blaze::RetCode  set_status(TransactionStatus status);
-        blaze::RetCode  set_flying();
-        blaze::RetCode  set_closed();
-        blaze::RetCode  set_aborted();
+        vlg::RetCode  set_status(TransactionStatus status);
+        vlg::RetCode  set_flying();
+        vlg::RetCode  set_closed();
+        vlg::RetCode  set_aborted();
         void            trace_tx_closure(const char *tx_res_str);
 
         //-----------------------------
@@ -187,7 +187,7 @@ class transaction_int : public blaze::collectable {
         virtual void on_close();
 
     private:
-        blaze::RetCode  objs_release();
+        vlg::RetCode  objs_release();
 
         //-----------------------------
         // REP
@@ -229,7 +229,7 @@ class transaction_int : public blaze::collectable {
         rt_time_t start_mark_tim_;
 
     private:
-        mutable blaze::synch_monitor mon_;
+        mutable vlg::synch_monitor mon_;
 
     protected:
         static nclass_logger *log_;

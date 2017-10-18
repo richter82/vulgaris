@@ -119,12 +119,12 @@ if(log){\
 #endif
 
 #define DECLINITH_GBB(bbuf, bsz)\
-blaze::grow_byte_buffer *bbuf = new blaze::grow_byte_buffer();\
+vlg::grow_byte_buffer *bbuf = new vlg::grow_byte_buffer();\
 bbuf->init(bsz);
 
 #define RETURN_IF_NOT_OK(fun)\
 {\
-    blaze::RetCode res;\
+    vlg::RetCode res;\
     if((res = fun)){\
         return res;\
     }\
@@ -181,7 +181,7 @@ bbuf->init(bsz);
 {\
     int pthres = 0;\
     if((pthres = mon_.meth())){\
-        return blaze::RetCode_PTHERR;\
+        return vlg::RetCode_PTHERR;\
     }\
 }
 
@@ -189,7 +189,7 @@ bbuf->init(bsz);
 {\
     int pthres = 0;\
     if((pthres = func(arg1))){\
-        return  blaze::RetCode_PTHERR;\
+        return  vlg::RetCode_PTHERR;\
         }\
 }
 
@@ -197,7 +197,7 @@ bbuf->init(bsz);
 {\
     int pthres = 0;\
     if((pthres = func(arg1, arg2))){\
-        return  blaze::RetCode_PTHERR;\
+        return  vlg::RetCode_PTHERR;\
     }\
 }
 
@@ -205,11 +205,11 @@ bbuf->init(bsz);
 {\
     int pthres = 0;\
     if((pthres = mon.meth())){\
-        return  blaze::RetCode_PTHERR;\
+        return  vlg::RetCode_PTHERR;\
     }\
 }
 
-namespace blaze {
+namespace vlg {
 /**
 @param buffer
 @param current_size

@@ -22,8 +22,8 @@
 #include "blz_toolkit_mainwindow.h"
 #include "ui_blz_toolkit_mainwindow.h"
 
-void blz_toolkit_peer_lfcyc_status_change_hndlr(blaze::peer_automa &peer,
-                                                blaze::PeerStatus status,
+void blz_toolkit_peer_lfcyc_status_change_hndlr(vlg::peer_automa &peer,
+                                                vlg::PeerStatus status,
                                                 void *ud)
 {
     blz_toolkit_MainWindow *btmw = (blz_toolkit_MainWindow *)ud;
@@ -47,7 +47,7 @@ blz_toolkit_MainWindow::blz_toolkit_MainWindow(QWidget *parent) :
     InitGuiConfig();
 
     //peer_ logger cfg bgn
-    blaze::logger::add_appender_to_all_loggers(&pte_apnd_);
+    vlg::logger::add_appender_to_all_loggers(&pte_apnd_);
     //peer_ logger cfg end
 
     //cfg peer models-view connection
@@ -67,7 +67,7 @@ blz_toolkit_MainWindow::blz_toolkit_MainWindow(QWidget *parent) :
     //settings end
 
     //peer_ e_init bgn
-    blaze::RetCode res = blaze::RetCode_OK;
+    vlg::RetCode res = vlg::RetCode_OK;
     peer_.set_peer_status_change_hndlr(blz_toolkit_peer_lfcyc_status_change_hndlr,
                                        this);
     if(res = peer_.early_init()) {
@@ -82,19 +82,19 @@ blz_toolkit_MainWindow::blz_toolkit_MainWindow(QWidget *parent) :
 
 blz_toolkit_MainWindow::~blz_toolkit_MainWindow()
 {
-    blaze::logger::remove_last_appender_from_all_loggers();
+    vlg::logger::remove_last_appender_from_all_loggers();
     delete ui;
 }
 
 void blz_toolkit_MainWindow::InitGuiConfig()
 {
-    qRegisterMetaType<blaze::TraceLVL>("blaze::TraceLVL");
+    qRegisterMetaType<vlg::TraceLVL>("vlg::TraceLVL");
     qRegisterMetaType<QTextCursor>("QTextCursor");
-    qRegisterMetaType<blaze::PeerStatus>("blaze::PeerStatus");
-    qRegisterMetaType<blaze::ConnectionStatus>("blaze::ConnectionStatus");
-    qRegisterMetaType<blaze::TransactionStatus>("blaze::TransactionStatus");
-    qRegisterMetaType<blaze::SubscriptionStatus>("blaze::SubscriptionStatus");
-    qRegisterMetaType<blaze::subscription_event_int *>("blaze::subscription_event_int");
+    qRegisterMetaType<vlg::PeerStatus>("vlg::PeerStatus");
+    qRegisterMetaType<vlg::ConnectionStatus>("vlg::ConnectionStatus");
+    qRegisterMetaType<vlg::TransactionStatus>("vlg::TransactionStatus");
+    qRegisterMetaType<vlg::SubscriptionStatus>("vlg::SubscriptionStatus");
+    qRegisterMetaType<vlg::subscription_event_int *>("vlg::subscription_event_int");
     qRegisterMetaType<BLZ_SBS_COL_DATA_ENTRY *>("BLZ_SBS_COL_DATA_ENTRY");
 
     ui->action_Start_Peer->setDisabled(true);
@@ -102,14 +102,14 @@ void blz_toolkit_MainWindow::InitGuiConfig()
     ui->actionConnect->setDisabled(true);
 
     connect(&pte_apnd_,
-            SIGNAL(messageReady(blaze::TraceLVL, const QString &)),
+            SIGNAL(messageReady(vlg::TraceLVL, const QString &)),
             this,
-            SLOT(OnLogEvent(blaze::TraceLVL, const QString &)));
+            SLOT(OnLogEvent(vlg::TraceLVL, const QString &)));
 
     connect(this,
-            SIGNAL(Peer_status_change(blaze::PeerStatus)),
+            SIGNAL(Peer_status_change(vlg::PeerStatus)),
             this,
-            SLOT(OnPeer_status_change(blaze::PeerStatus)));
+            SLOT(OnPeer_status_change(vlg::PeerStatus)));
 
     //timout
     connect(this,
@@ -146,8 +146,8 @@ void blz_toolkit_MainWindow::closeEvent(QCloseEvent *event)
         return;
     }
     peer_.stop_peer(true);
-    blaze::PeerStatus current = blaze::PeerStatus_ZERO;
-    peer_.await_for_peer_status_reached_or_outdated(blaze::PeerStatus_STOPPED,
+    vlg::PeerStatus current = vlg::PeerStatus_ZERO;
+    peer_.await_for_peer_status_reached_or_outdated(vlg::PeerStatus_STOPPED,
                                                     current);
     QSettings settings;
     settings.beginGroup(KEY_WINDOW);
@@ -173,7 +173,7 @@ void blz_toolkit_MainWindow::peer_params_clbk_ud(int pnum, const char *param,
 // blz_toolkit_MainWindow::PeerLoadCfgHndl
 //------------------------------------------------------------------------------
 
-blaze::RetCode blz_toolkit_MainWindow::PeerLoadCfgHndl(int pnum,
+vlg::RetCode blz_toolkit_MainWindow::PeerLoadCfgHndl(int pnum,
                                                        const char *param,
                                                        const char *value)
 {
@@ -189,7 +189,7 @@ blaze::RetCode blz_toolkit_MainWindow::PeerLoadCfgHndl(int pnum,
         if(value) {
             if(blzmodel_load_list_model_.stringList().contains(tr(value))) {
                 qDebug() << "[load_model] model already specified:" << value;
-                return blaze::RetCode_BADCFG;
+                return vlg::RetCode_BADCFG;
             } else {
                 int rowc = blzmodel_load_list_model_.rowCount();
                 blzmodel_load_list_model_.insertRow(rowc);
@@ -198,7 +198,7 @@ blaze::RetCode blz_toolkit_MainWindow::PeerLoadCfgHndl(int pnum,
             }
         } else {
             qDebug() << "[load_model] requires argument.";
-            return blaze::RetCode_BADCFG;
+            return vlg::RetCode_BADCFG;
         }
     }
 
@@ -207,7 +207,7 @@ blaze::RetCode blz_toolkit_MainWindow::PeerLoadCfgHndl(int pnum,
             ui->pp_cfg_srv_sin_addr->setText(tr(value));
         } else {
             qDebug() << "[srv_sin_addr] requires argument.";
-            return blaze::RetCode_BADCFG;
+            return vlg::RetCode_BADCFG;
         }
     }
 
@@ -216,7 +216,7 @@ blaze::RetCode blz_toolkit_MainWindow::PeerLoadCfgHndl(int pnum,
             ui->pp_cfg_srv_sin_port->setText(tr(value));
         } else {
             qDebug() << "[srv_sin_port] requires argument.";
-            return blaze::RetCode_BADCFG;
+            return vlg::RetCode_BADCFG;
         }
     }
 
@@ -225,7 +225,7 @@ blaze::RetCode blz_toolkit_MainWindow::PeerLoadCfgHndl(int pnum,
             ui->pp_cfg_srv_pkt_q_len->setText(tr(value));
         } else {
             qDebug() << "[srv_pkt_q_len] requires argument.";
-            return blaze::RetCode_BADCFG;
+            return vlg::RetCode_BADCFG;
         }
     }
 
@@ -234,7 +234,7 @@ blaze::RetCode blz_toolkit_MainWindow::PeerLoadCfgHndl(int pnum,
             ui->pp_cfg_srv_exectrs->setText(tr(value));
         } else {
             qDebug() << "[srv_exectrs] requires argument.";
-            return blaze::RetCode_BADCFG;
+            return vlg::RetCode_BADCFG;
         }
     }
 
@@ -243,7 +243,7 @@ blaze::RetCode blz_toolkit_MainWindow::PeerLoadCfgHndl(int pnum,
             ui->pp_cfg_cli_pkt_q_len->setText(tr(value));
         } else {
             qDebug() << "[cli_pkt_q_len] requires argument.";
-            return blaze::RetCode_BADCFG;
+            return vlg::RetCode_BADCFG;
         }
     }
 
@@ -252,7 +252,7 @@ blaze::RetCode blz_toolkit_MainWindow::PeerLoadCfgHndl(int pnum,
             ui->pp_cfg_cli_exectrs->setText(tr(value));
         } else {
             qDebug() << "[cli_exectrs] requires argument.";
-            return blaze::RetCode_BADCFG;
+            return vlg::RetCode_BADCFG;
         }
     }
 
@@ -261,7 +261,7 @@ blaze::RetCode blz_toolkit_MainWindow::PeerLoadCfgHndl(int pnum,
             ui->pp_cfg_srv_sbs_evt_q_len->setText(tr(value));
         } else {
             qDebug() << "[srv_sbs_evt_q_len] requires argument.";
-            return blaze::RetCode_BADCFG;
+            return vlg::RetCode_BADCFG;
         }
     }
 
@@ -270,7 +270,7 @@ blaze::RetCode blz_toolkit_MainWindow::PeerLoadCfgHndl(int pnum,
             ui->pp_cfg_srv_sbs_exectrs->setText(tr(value));
         } else {
             qDebug() << "[srv_sbs_exectrs] requires argument.";
-            return blaze::RetCode_BADCFG;
+            return vlg::RetCode_BADCFG;
         }
     }
 
@@ -290,7 +290,7 @@ blaze::RetCode blz_toolkit_MainWindow::PeerLoadCfgHndl(int pnum,
         if(value) {
             if(pers_dri_file_load_list_model_.stringList().contains(tr(value))) {
                 qDebug() << "[load_pers_driv] driver already specified:" << value;
-                return blaze::RetCode_BADCFG;
+                return vlg::RetCode_BADCFG;
             } else {
                 int rowc = pers_dri_file_load_list_model_.rowCount();
                 pers_dri_file_load_list_model_.insertRow(rowc);
@@ -299,16 +299,16 @@ blaze::RetCode blz_toolkit_MainWindow::PeerLoadCfgHndl(int pnum,
             }
         } else {
             qDebug() << "[load_pers_driv] requires argument.";
-            return blaze::RetCode_BADCFG;
+            return vlg::RetCode_BADCFG;
         }
     }
 
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 void blz_toolkit_MainWindow::on_action_Load_Config_triggered()
 {
-    blaze::RetCode res = blaze::RetCode_OK;
+    vlg::RetCode res = vlg::RetCode_OK;
     QString fileName = QFileDialog::getOpenFileName(this, tr("Load Config"),
                                                     QDir::currentPath(), tr("Blaze config (*.*)"));
     if(fileName.isEmpty()) {
@@ -317,7 +317,7 @@ void blz_toolkit_MainWindow::on_action_Load_Config_triggered()
     }
     QByteArray ba = fileName.toLocal8Bit();
     const char *fileName_cstr = ba.data();
-    blaze::config_loader peer_conf_ldr;
+    vlg::config_loader peer_conf_ldr;
     if((res = peer_conf_ldr.init(fileName_cstr))) {
         qDebug() << "peer_conf_ldr.Init() failed." << res;
         return;
@@ -333,13 +333,13 @@ void blz_toolkit_MainWindow::on_set_peer_params_button_clicked()
 {
     switch(ui->pp_cfg_peer_personality->currentIndex()) {
         case 0:
-            peer_.set_cfg_personality(blaze::PeerPersonality_PURE_CLIENT);
+            peer_.set_cfg_personality(vlg::PeerPersonality_PURE_CLIENT);
             break;
         case 1:
-            peer_.set_cfg_personality(blaze::PeerPersonality_PURE_SERVER);
+            peer_.set_cfg_personality(vlg::PeerPersonality_PURE_SERVER);
             break;
         case 2:
-            peer_.set_cfg_personality(blaze::PeerPersonality_BOTH);
+            peer_.set_cfg_personality(vlg::PeerPersonality_BOTH);
             break;
         default:
             break;
@@ -406,66 +406,66 @@ void blz_toolkit_MainWindow::on_action_Start_Peer_triggered()
     peer_.start_peer(0, 0, true);
 }
 
-void blz_toolkit_MainWindow::OnPeer_status_change(blaze::PeerStatus status)
+void blz_toolkit_MainWindow::OnPeer_status_change(vlg::PeerStatus status)
 {
     switch(status) {
-        case blaze::PeerStatus_ZERO:
+        case vlg::PeerStatus_ZERO:
             ui->peer_status_label_display->setText(QObject::tr("ZERO"));
             break;
-        case blaze::PeerStatus_EARLY:
+        case vlg::PeerStatus_EARLY:
             ui->peer_status_label_display->setText(QObject::tr("EARLY"));
             ui->peer_status_label_display->setStyleSheet(
                 QObject::tr("background-color : Beige; color : black;"));
             break;
-        case blaze::PeerStatus_WELCOMED:
+        case vlg::PeerStatus_WELCOMED:
             ui->peer_status_label_display->setText(QObject::tr("WELCOMED"));
             ui->peer_status_label_display->setStyleSheet(
                 QObject::tr("background-color : Cornsilk; color : black;"));
             break;
-        case blaze::PeerStatus_INITIALIZING:
+        case vlg::PeerStatus_INITIALIZING:
             ui->peer_status_label_display->setText(QObject::tr("INITIALIZING"));
             ui->peer_status_label_display->setStyleSheet(
                 QObject::tr("background-color : PowderBlue; color : black;"));
             break;
-        case blaze::PeerStatus_INITIALIZED:
+        case vlg::PeerStatus_INITIALIZED:
             ui->peer_status_label_display->setText(QObject::tr("INITIALIZED"));
             ui->peer_status_label_display->setStyleSheet(
                 QObject::tr("background-color : Aquamarine; color : black;"));
             break;
-        case blaze::PeerStatus_STARTING:
+        case vlg::PeerStatus_STARTING:
             ui->peer_status_label_display->setText(QObject::tr("STARTING"));
             ui->peer_status_label_display->setStyleSheet(
                 QObject::tr("background-color : Coral; color : black;"));
             break;
-        case blaze::PeerStatus_STARTED:
+        case vlg::PeerStatus_STARTED:
             ui->peer_status_label_display->setText(QObject::tr("STARTED"));
             ui->peer_status_label_display->setStyleSheet(
                 QObject::tr("background-color : DarkOrange; color : black;"));
             break;
-        case blaze::PeerStatus_RUNNING:
+        case vlg::PeerStatus_RUNNING:
             Status_RUNNING_Actions();
             break;
-        case blaze::PeerStatus_STOP_REQUESTED:
+        case vlg::PeerStatus_STOP_REQUESTED:
             ui->peer_status_label_display->setText(QObject::tr("STOP REQUESTED"));
             ui->peer_status_label_display->setStyleSheet(
                 QObject::tr("background-color : Indigo; color : white;"));
             ui->action_Stop_Peer->setEnabled(false);
             ui->actionConnect->setEnabled(false);
             break;
-        case blaze::PeerStatus_STOPPING:
+        case vlg::PeerStatus_STOPPING:
             ui->peer_status_label_display->setText(QObject::tr("STOPPING"));
             ui->peer_status_label_display->setStyleSheet(
                 QObject::tr("background-color : IndianRed; color : black;"));
             break;
-        case blaze::PeerStatus_STOPPED:
+        case vlg::PeerStatus_STOPPED:
             Status_STOPPED_Actions();
             break;
-        case blaze::PeerStatus_DIED:
+        case vlg::PeerStatus_DIED:
             ui->peer_status_label_display->setText(QObject::tr("DIED"));
             ui->peer_status_label_display->setStyleSheet(
                 QObject::tr("background-color : Black; color : white;"));
             break;
-        case blaze::PeerStatus_ERROR:
+        case vlg::PeerStatus_ERROR:
             ui->peer_status_label_display->setText(QObject::tr("ERROR"));
             ui->peer_status_label_display->setStyleSheet(
                 QObject::tr("background-color : Red; color : black;"));
@@ -513,7 +513,7 @@ void blz_toolkit_MainWindow::OnResetInfoMsg()
         QObject::tr("background-color : Azure; color : black;"));
 }
 
-void blz_toolkit_MainWindow::EmitPeerStatus(blaze::PeerStatus status)
+void blz_toolkit_MainWindow::EmitPeerStatus(vlg::PeerStatus status)
 {
     emit Peer_status_change(status);
 }
@@ -562,7 +562,7 @@ void blz_toolkit_MainWindow::AddNewModelTab()
     connect(this, SIGNAL(BLZ_MODEL_Update_event()), &mt_mod, SLOT(invalidate()));
 }
 
-void blz_toolkit_MainWindow::AddNewConnectionTab(blaze::connection_int
+void blz_toolkit_MainWindow::AddNewConnectionTab(vlg::connection_int
                                                  &new_conn,
                                                  const QString &host,
                                                  const QString &port,
@@ -578,16 +578,16 @@ void blz_toolkit_MainWindow::AddNewConnectionTab(blaze::connection_int
                                                             *this,
                                                             ui->peer_Tab);
     QIcon icon_flash;
-    blaze::ConnectivityEventResult con_evt_res =
-        blaze::ConnectivityEventResult_UNDEFINED;
-    blaze::ConnectivityEventType connectivity_evt_type =
-        blaze::ConnectivityEventType_UNDEFINED;
+    vlg::ConnectivityEventResult con_evt_res =
+        vlg::ConnectivityEventResult_UNDEFINED;
+    vlg::ConnectivityEventType connectivity_evt_type =
+        vlg::ConnectivityEventType_UNDEFINED;
     if(new_conn.await_for_connection_result(con_evt_res, connectivity_evt_type,
                                             BLZ_TKT_INT_AWT_TIMEOUT,
-                                            0) == blaze::RetCode_TIMEOUT) {
+                                            0) == vlg::RetCode_TIMEOUT) {
         emit SignalNewConnectionTimeout(QString("establishing new connection"));
     }
-    if(con_evt_res == blaze::ConnectivityEventResult_OK) {
+    if(con_evt_res == vlg::ConnectivityEventResult_OK) {
         icon_flash.addFile(QStringLiteral(":/icon/icons/flash_green.png"), QSize(),
                            QIcon::Normal, QIcon::Off);
     } else {
@@ -601,9 +601,9 @@ void blz_toolkit_MainWindow::AddNewConnectionTab(blaze::connection_int
 
 void blz_toolkit_MainWindow::LoadDefPeerCfgFile()
 {
-    blaze::RetCode res = blaze::RetCode_OK;
+    vlg::RetCode res = vlg::RetCode_OK;
     const char *fileName_cstr = "params";
-    blaze::config_loader peer_conf_ldr;
+    vlg::config_loader peer_conf_ldr;
     if((res = peer_conf_ldr.init(fileName_cstr))) {
         qDebug() << "peer_conf_ldr.Init() failed." << res;
         return;
@@ -628,7 +628,7 @@ void blz_toolkit_MainWindow::on_actionConnect_triggered()
                                           conn_dlg.ui->ln_edt_host->text().toLatin1().data());
         conn_params.sin_port = htons(atoi(
                                          conn_dlg.ui->ln_edt_port->text().toLatin1().data()));
-        blaze::connection_int *new_conn = NULL;
+        vlg::connection_int *new_conn = NULL;
         peer_.new_connection(&new_conn);
         new_conn->client_connect(conn_params);
         AddNewConnectionTab(*new_conn,
@@ -641,36 +641,36 @@ void blz_toolkit_MainWindow::on_actionConnect_triggered()
     }
 }
 
-void blz_toolkit_MainWindow::OnLogEvent(blaze::TraceLVL tlvl,
+void blz_toolkit_MainWindow::OnLogEvent(vlg::TraceLVL tlvl,
                                         const QString &msg)
 {
     QString beginHtml;
     switch(tlvl) {
-        case blaze::TL_PLN:
+        case vlg::TL_PLN:
             beginHtml = "<p style=\"color: Black; background-color: White\">";
             break;
-        case blaze::TL_LOW:
+        case vlg::TL_LOW:
             beginHtml = "<p style=\"color: Beige; background-color: Black\">";
             break;
-        case blaze::TL_TRC:
+        case vlg::TL_TRC:
             beginHtml = "<p style=\"color: Beige; background-color: Black\">";
             break;
-        case blaze::TL_DBG:
+        case vlg::TL_DBG:
             beginHtml = "<p style=\"color: Khaki; background-color: Black\">";
             break;
-        case blaze::TL_INF:
+        case vlg::TL_INF:
             beginHtml = "<p style=\"color: Lime; background-color: Black\">";
             break;
-        case blaze::TL_WRN:
+        case vlg::TL_WRN:
             beginHtml = "<p style=\"color: Orange; background-color: Black\">";
             break;
-        case blaze::TL_ERR:
+        case vlg::TL_ERR:
             beginHtml = "<p style=\"color: Red; background-color: Black\">";
             break;
-        case blaze::TL_CRI:
+        case vlg::TL_CRI:
             beginHtml = "<p style=\"color: White; background-color: Red\">";
             break;
-        case blaze::TL_FAT:
+        case vlg::TL_FAT:
             beginHtml = "<p style=\"color: Black; background-color: Red\">";
             break;
         default:
@@ -698,42 +698,42 @@ void blz_toolkit_MainWindow::on_peer_Tab_tabCloseRequested(int index)
 
 void blz_toolkit_MainWindow::on_actionLow_triggered()
 {
-    blaze::logger::set_level_for_all_loggers(blaze::TL_LOW);
+    vlg::logger::set_level_for_all_loggers(vlg::TL_LOW);
 }
 
 void blz_toolkit_MainWindow::on_actionTrace_triggered()
 {
-    blaze::logger::set_level_for_all_loggers(blaze::TL_TRC);
+    vlg::logger::set_level_for_all_loggers(vlg::TL_TRC);
 }
 
 void blz_toolkit_MainWindow::on_actionDebug_triggered()
 {
-    blaze::logger::set_level_for_all_loggers(blaze::TL_DBG);
+    vlg::logger::set_level_for_all_loggers(vlg::TL_DBG);
 }
 
 void blz_toolkit_MainWindow::on_actionInfo_triggered()
 {
-    blaze::logger::set_level_for_all_loggers(blaze::TL_INF);
+    vlg::logger::set_level_for_all_loggers(vlg::TL_INF);
 }
 
 void blz_toolkit_MainWindow::on_actionWarning_triggered()
 {
-    blaze::logger::set_level_for_all_loggers(blaze::TL_WRN);
+    vlg::logger::set_level_for_all_loggers(vlg::TL_WRN);
 }
 
 void blz_toolkit_MainWindow::on_actionError_triggered()
 {
-    blaze::logger::set_level_for_all_loggers(blaze::TL_ERR);
+    vlg::logger::set_level_for_all_loggers(vlg::TL_ERR);
 }
 
 void blz_toolkit_MainWindow::on_actionCritical_triggered()
 {
-    blaze::logger::set_level_for_all_loggers(blaze::TL_CRI);
+    vlg::logger::set_level_for_all_loggers(vlg::TL_CRI);
 }
 
 void blz_toolkit_MainWindow::on_actionFatal_triggered()
 {
-    blaze::logger::set_level_for_all_loggers(blaze::TL_FAT);
+    vlg::logger::set_level_for_all_loggers(vlg::TL_FAT);
 }
 
 void blz_toolkit_MainWindow::on_actionClean_Console_triggered()

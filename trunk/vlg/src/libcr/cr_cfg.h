@@ -23,7 +23,7 @@
 #define CR_CFG_H_
 #include "blaze_ascii_string.h"
 
-namespace blaze {
+namespace vlg {
 
 /** @brief config_loader class.
 

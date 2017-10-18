@@ -21,7 +21,7 @@
 
 #ifndef BLZ_C_CONNECTION_H_
 #define BLZ_C_CONNECTION_H_
-#include "blaze.h"
+#include "vlg.h"
 #ifdef WIN32
 #include <winsock2.h>
 #else
@@ -36,7 +36,7 @@
 #endif
 
 #if defined(__cplusplus)
-using namespace blaze;
+using namespace vlg;
 extern "C" {
 #endif
 

@@ -62,21 +62,21 @@ if(sprintf_dbg >= GEN_HDR_FIDX_BUFF){                    \
 #define BLZ_TKT_INT_SINGL_SHOT_TIMER_CAPTMSG_RST_MSEC 4000
 
 void FillQstring_FldValue(const char *fld_ptr,
-                          const blaze::member_desc *mdesc,
+                          const vlg::member_desc *mdesc,
                           QString &out);
 
 void FillFldValue_Qstring(const QVariant &value,
-                          const blaze::member_desc *mdesc,
+                          const vlg::member_desc *mdesc,
                           char *fld_ptr);
 
 //-----------------------------------------------------------------------------
 // entity_desc_impl, partial
 //-----------------------------------------------------------------------------
-namespace blaze {
+namespace vlg {
 class entity_desc_impl {
     public:
-        const blaze::hash_map &GetMap_NM_MMBRDSC() const;
-        const blaze::hash_map &GetMap_KEYID_KDESC() const;
+        const vlg::hash_map &GetMap_NM_MMBRDSC() const;
+        const vlg::hash_map &GetMap_KEYID_KDESC() const;
 };
 }
 

@@ -23,18 +23,18 @@
 #define BLZ_CPP_SUBSCRIPTION_H_
 #include "blaze_memory.h"
 
-namespace blaze {
+namespace vlg {
 
 /** @brief subscription_event class.
 */
 class subscription_event_impl;
-class subscription_event : public blaze::collectable {
+class subscription_event : public vlg::collectable {
 
     public:
         explicit subscription_event();
         ~subscription_event();
 
-        virtual blaze::collector &get_collector();
+        virtual vlg::collector &get_collector();
 
     public:
         subscription            *get_subscription();
@@ -74,7 +74,7 @@ class subscription_factory {
 /** @brief subscription class.
 */
 class subscription_impl;
-class subscription : public blaze::collectable {
+class subscription : public vlg::collectable {
     public:
         typedef void (*subscription_status_change)(subscription &sbs,
                                                    SubscriptionStatus status,
@@ -88,10 +88,10 @@ class subscription : public blaze::collectable {
         explicit subscription();
         virtual ~subscription();
 
-        virtual blaze::collector &get_collector();
+        virtual vlg::collector &get_collector();
 
     public:
-        blaze::RetCode bind(connection &conn);
+        vlg::RetCode bind(connection &conn);
 
     public:
         connection                  *get_connection();
@@ -123,7 +123,7 @@ class subscription : public blaze::collectable {
         void    set_open_timestamp_1(unsigned int ts1);
 
     public:
-        blaze::RetCode
+        vlg::RetCode
         await_for_status_reached_or_outdated(SubscriptionStatus test,
                                              SubscriptionStatus &current,
                                              time_t sec = -1,
@@ -138,9 +138,9 @@ class subscription : public blaze::collectable {
                                       void *ud);
 
     public:
-        blaze::RetCode start();
+        vlg::RetCode start();
 
-        blaze::RetCode start(SubscriptionType           sbs_type,
+        vlg::RetCode start(SubscriptionType           sbs_type,
                              SubscriptionMode           sbs_mode,
                              SubscriptionFlowType       sbs_flow_type,
                              SubscriptionDownloadType   sbs_dwnl_type,
@@ -150,16 +150,16 @@ class subscription : public blaze::collectable {
                              unsigned int               open_timestamp_1 = 0);
 
         /* this function must be called from same thread that called start()*/
-        blaze::RetCode
+        vlg::RetCode
         await_for_start_result(SubscriptionResponse     &start_result,
                                ProtocolCode             &start_protocode,
                                time_t                   sec = -1,
                                long                     nsec = 0);
 
-        blaze::RetCode stop();
+        vlg::RetCode stop();
 
         /* this function must be called from same thread that called stop()*/
-        blaze::RetCode
+        vlg::RetCode
         await_for_stop_result(SubscriptionResponse      &stop_result,
                               ProtocolCode              &stop_protocode,
                               time_t                    sec = -1,
@@ -171,7 +171,7 @@ class subscription : public blaze::collectable {
         virtual void on_event(subscription_event &sbs_evt);
 
     public:
-        virtual blaze::RetCode
+        virtual vlg::RetCode
         on_event_accept(const subscription_event &sbs_evt);
 
     public:

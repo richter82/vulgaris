@@ -25,7 +25,7 @@
     <ClCompile Include="..\test\sample_blz_model\blz_model_sample.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>sample_blz_model_static</ProjectName>
+    <ProjectName>vlg_test_smplmdl_sta</ProjectName>
     <ProjectGuid>{258D0D7E-F056-4CB8-A5DF-A77D35B802A0}</ProjectGuid>
     <RootNamespace>blz_test_model_dll</RootNamespace>
     <Keyword>Win32Proj</Keyword>

@@ -22,7 +22,7 @@
 #include "blz_glob_int.h"
 #include <ctype.h>
 
-namespace blaze {
+namespace vlg {
 
 bool is_new_line(ascii_string &str)
 {

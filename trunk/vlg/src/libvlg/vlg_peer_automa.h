@@ -27,7 +27,7 @@
 #define BLZ_PEER_NAME_LEN 256
 #define BLZ_PEER_CFG_FILE_PATH_NAME_LEN 512
 
-namespace blaze {
+namespace vlg {
 
 //-----------------------------
 // peer_automa
@@ -46,7 +46,7 @@ class peer_automa {
         peer_automa(unsigned int peer_id);
         virtual ~peer_automa();
 
-        blaze::RetCode set_params_file_path_name(const char *file_path);
+        vlg::RetCode set_params_file_path_name(const char *file_path);
 
         //-----------------------------
         // GETTERS
@@ -70,13 +70,13 @@ class peer_automa {
         // ACTIONS
         //-----------------------------
     public:
-        blaze::RetCode    early_init();
+        vlg::RetCode    early_init();
 
-        blaze::RetCode    start_peer(int argc,
+        vlg::RetCode    start_peer(int argc,
                                      char *argv[],
                                      bool spawn_new_thread);
 
-        blaze::RetCode    stop_peer(bool force_disconnect = false);
+        vlg::RetCode    stop_peer(bool force_disconnect = false);
 
         //-----------------------------
         // ASYNCHRO HNDLRS
@@ -89,17 +89,17 @@ class peer_automa {
         // SYNCHRO
         //-----------------------------
     public:
-        blaze::RetCode await_for_peer_status_reached_or_outdated(PeerStatus test,
+        vlg::RetCode await_for_peer_status_reached_or_outdated(PeerStatus test,
                                                                  PeerStatus &current,
                                                                  time_t sec = -1,
                                                                  long nsec = 0);
 
-        blaze::RetCode await_for_peer_status_condition(peer_lfcyc_eval_condition
+        vlg::RetCode await_for_peer_status_condition(peer_lfcyc_eval_condition
                                                        cond_cllbk,
                                                        time_t sec = -1,
                                                        long nsec = 0);
 
-        blaze::RetCode await_for_peer_status_change(PeerStatus &peer_status,
+        vlg::RetCode await_for_peer_status_change(PeerStatus &peer_status,
                                                     time_t sec = -1,
                                                     long nsec = 0);
 
@@ -109,30 +109,30 @@ class peer_automa {
     public:
         PeerStatus   peer_status();
     protected:
-        blaze::RetCode    set_peer_status(PeerStatus peer_status);
+        vlg::RetCode    set_peer_status(PeerStatus peer_status);
 
-        blaze::RetCode    set_peer_running();
-        blaze::RetCode    set_peer_stop_request();
-        blaze::RetCode    set_peer_error();
+        vlg::RetCode    set_peer_running();
+        vlg::RetCode    set_peer_stop_request();
+        vlg::RetCode    set_peer_error();
 
         //-----------------------------
         // LIFECYCLE
         //-----------------------------
     private:
-        blaze::RetCode    peer_life_cycle();
-        blaze::RetCode    peer_welcome();
-        blaze::RetCode    peer_init();
-        blaze::RetCode    peer_start();
-        blaze::RetCode    peer_stop();
-        blaze::RetCode    peer_move_running();
-        blaze::RetCode    peer_dying_breath();
+        vlg::RetCode    peer_life_cycle();
+        vlg::RetCode    peer_welcome();
+        vlg::RetCode    peer_init();
+        vlg::RetCode    peer_start();
+        vlg::RetCode    peer_stop();
+        vlg::RetCode    peer_move_running();
+        vlg::RetCode    peer_dying_breath();
 
         //-----------------------------
         // LIFECYCLE - Usr subclass entrypoints
         //-----------------------------
         virtual const char             *peer_name_usr();
         virtual const unsigned int     *peer_ver_usr();
-        virtual blaze::RetCode          peer_load_cfg_usr(int pnum,
+        virtual vlg::RetCode          peer_load_cfg_usr(int pnum,
                                                           const char *param,
                                                           const char *value);
 
@@ -140,17 +140,17 @@ class peer_automa {
         // LIFECYCLE - Usr opt. subclass entrypoints
         //-----------------------------
     public:
-        virtual blaze::RetCode    peer_early_init_usr();
-        virtual blaze::RetCode    peer_init_usr();
-        virtual blaze::RetCode    peer_start_usr();
-        virtual blaze::RetCode    peer_stop_usr();
-        virtual blaze::RetCode    peer_move_running_usr();
+        virtual vlg::RetCode    peer_early_init_usr();
+        virtual vlg::RetCode    peer_init_usr();
+        virtual vlg::RetCode    peer_start_usr();
+        virtual vlg::RetCode    peer_stop_usr();
+        virtual vlg::RetCode    peer_move_running_usr();
 
         //-----------------------------
         // LIFECYCLE - Usr opt. subclass handlers
         //-----------------------------
-        virtual blaze::RetCode    peer_error_handler();
-        virtual blaze::RetCode    peer_dying_breath_handler();
+        virtual vlg::RetCode    peer_error_handler();
+        virtual vlg::RetCode    peer_dying_breath_handler();
 
     protected:
         unsigned int    peer_id_;
@@ -163,9 +163,9 @@ class peer_automa {
         char        **peer_argv_;
         char        peer_cfg_file_path_name_[BLZ_PEER_CFG_FILE_PATH_NAME_LEN];
 
-        blaze::config_loader    peer_conf_ldr_;
+        vlg::config_loader    peer_conf_ldr_;
         bool                    configured_;
-        blaze::RetCode          peer_last_error_;
+        vlg::RetCode          peer_last_error_;
         bool                    peer_exit_required_;
 
         //--synch status
@@ -174,13 +174,13 @@ class peer_automa {
 
         // stop / dispose
         bool                            force_disconnect_on_stop_;
-        mutable blaze::synch_monitor    peer_mon_;
+        mutable vlg::synch_monitor    peer_mon_;
 
     private:
         static void blz_peer_param_clbk_ud(int pnum, const char *param,
                                            const char *value, void *ud);
     public:
-        static blaze::logger     *peer_log_;
+        static vlg::logger     *peer_log_;
 };
 
 

@@ -43,7 +43,7 @@ class blz_toolkit_sbs_model : public QSortFilterProxyModel {
         bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;
 
     public:
-        void offerEntry(blaze::nclass *entry);
+        void offerEntry(vlg::nclass *entry);
         blz_toolkit_sbs_blz_class_model &wrapped_mdl();
 
     private:
@@ -58,14 +58,14 @@ class blz_toolkit_sbs_window : public QMainWindow {
         Q_OBJECT
 
     public:
-        explicit blz_toolkit_sbs_window(const blaze::entity_desc &edesc,
-                                        const blaze::entity_manager &bem,
-                                        blaze::subscription_int &sbs,
+        explicit blz_toolkit_sbs_window(const vlg::entity_desc &edesc,
+                                        const vlg::entity_manager &bem,
+                                        vlg::subscription_int &sbs,
                                         blz_toolkit_sbs_blz_class_model &mdl,
                                         QWidget *parent = 0);
         ~blz_toolkit_sbs_window();
 
-        blaze::subscription_int &sbs() const;
+        vlg::subscription_int &sbs() const;
 
     protected:
         void closeEvent(QCloseEvent *event);
@@ -76,26 +76,26 @@ class blz_toolkit_sbs_window : public QMainWindow {
         void on_actionStop_SBS_triggered();
 
     public slots:
-        void OnSbsStatusChange(blaze::SubscriptionStatus status);
-        void OnSbsEvent(blaze::subscription_event_int *sbs_evt);
+        void OnSbsStatusChange(vlg::SubscriptionStatus status);
+        void OnSbsEvent(vlg::subscription_event_int *sbs_evt);
         void OnCustomMenuRequested(const QPoint &pos);
         void OnNewTxRequested();
 
     signals:
-        void SignalSbsStatusChange(blaze::SubscriptionStatus status);
-        void SignalSbsEvent(blaze::subscription_event_int *sbs_evt);
+        void SignalSbsStatusChange(vlg::SubscriptionStatus status);
+        void SignalSbsEvent(vlg::subscription_event_int *sbs_evt);
 
     public:
-        void EmitSbsStatus(blaze::SubscriptionStatus status);
-        void EmitSbsEvent(blaze::subscription_event_int *sbs_evt);
+        void EmitSbsStatus(vlg::SubscriptionStatus status);
+        void EmitSbsEvent(vlg::subscription_event_int *sbs_evt);
 
     public:
-        friend void sbs_status_change_hndlr(blaze::subscription_int &sbs,
-                                            blaze::SubscriptionStatus status,
+        friend void sbs_status_change_hndlr(vlg::subscription_int &sbs,
+                                            vlg::SubscriptionStatus status,
                                             void *ud);
 
-        friend void sbs_evt_notify_hndlr(blaze::subscription_int &sbs,
-                                         blaze::subscription_event_int &sbs_evt,
+        friend void sbs_evt_notify_hndlr(vlg::subscription_int &sbs,
+                                         vlg::subscription_event_int &sbs_evt,
                                          void *ud);
 
     private:
@@ -108,7 +108,7 @@ class blz_toolkit_sbs_window : public QMainWindow {
          ****/
 
     private:
-        blaze::subscription_int &sbs_;
+        vlg::subscription_int &sbs_;
         blz_toolkit_sbs_model sbs_mdl_;
 
 

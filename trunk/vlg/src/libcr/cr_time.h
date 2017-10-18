@@ -21,7 +21,7 @@
 
 #ifndef CR_TIME_H_
 #define CR_TIME_H_
-#include "blaze.h"
+#include "vlg.h"
 
 #ifdef WIN32
 typedef int64_t     rt_time_t;
@@ -42,7 +42,7 @@ int         gettimeofday(struct timeval *tv,
 
 #endif
 
-namespace blaze {
+namespace vlg {
 
 /**
 real time measurement initialization

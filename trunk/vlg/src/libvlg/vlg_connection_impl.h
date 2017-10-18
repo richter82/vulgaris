@@ -28,12 +28,12 @@
 
 #define BLZ_RECV_BUFF_SZ 512
 
-namespace blaze {
+namespace vlg {
 
 //-----------------------------
 // CONNECTION
 //-----------------------------
-class connection_int : public blaze::collectable {
+class connection_int : public vlg::collectable {
         friend class connection_impl;
         friend class acceptor;
         friend class selector;
@@ -70,47 +70,47 @@ class connection_int : public blaze::collectable {
         virtual ~connection_int();
 
     public:
-        virtual blaze::collector &get_collector();
+        virtual vlg::collector &get_collector();
 
         //-----------------------------
         // INIT
         //-----------------------------
     private:
-        blaze::RetCode    init(unsigned int pkt_sending_q_capcty = 0);
+        vlg::RetCode    init(unsigned int pkt_sending_q_capcty = 0);
 
         //-----------------------------
         // CLEAN BEST EFFORT
         //-----------------------------
     private:
-        blaze::RetCode  clean_best_effort();
+        vlg::RetCode  clean_best_effort();
         void            clean_packet_snd_q();
 
         //-----------------------------
         // CONNECTIVITY
         //-----------------------------
     public:
-        blaze::RetCode    server_send_connect_res();
-        blaze::RetCode    client_connect(sockaddr_in &params);
+        vlg::RetCode    server_send_connect_res();
+        vlg::RetCode    client_connect(sockaddr_in &params);
 
         /* this function must be called from same thread that called ClientConnect()*/
-        blaze::RetCode    await_for_connection_result(ConnectivityEventResult
+        vlg::RetCode    await_for_connection_result(ConnectivityEventResult
                                                       &con_evt_res,
                                                       ConnectivityEventType &connectivity_evt_type,
                                                       time_t sec = -1,
                                                       long nsec = 0);
 
     public:
-        blaze::RetCode    disconnect(DisconnectionResultReason disres);
+        vlg::RetCode    disconnect(DisconnectionResultReason disres);
 
         /* this function must be called from same thread that called Disconnect()*/
-        blaze::RetCode    await_for_disconnection_result(ConnectivityEventResult
+        vlg::RetCode    await_for_disconnection_result(ConnectivityEventResult
                                                          &con_evt_res,
                                                          ConnectivityEventType &connectivity_evt_type,
                                                          time_t sec = -1,
                                                          long nsec = 0);
 
     private:
-        blaze::RetCode    notify_for_connectivity_result(ConnectivityEventResult
+        vlg::RetCode    notify_for_connectivity_result(ConnectivityEventResult
                                                          con_evt_res,
                                                          ConnectivityEventType connectivity_evt_type);
 
@@ -128,9 +128,9 @@ class connection_int : public blaze::collectable {
         // TRANSACTIONAL
         //-----------------------------
     public:
-        blaze::RetCode    next_tx_id(tx_id &txid);
+        vlg::RetCode    next_tx_id(tx_id &txid);
 
-        blaze::RetCode    new_transaction(transaction_int **new_transaction,
+        vlg::RetCode    new_transaction(transaction_int **new_transaction,
                                           blz_tx_factory_func blz_tx_factory_f = NULL,
                                           bool compute_txid = true,
                                           void *ud = NULL);
@@ -142,19 +142,19 @@ class connection_int : public blaze::collectable {
         SERVER:
         it [auto] release-safedestroy related transaction.
         *******************************************************************/
-        blaze::RetCode    release_transaction(transaction_int *transaction);
+        vlg::RetCode    release_transaction(transaction_int *transaction);
 
         //-----------------------------
         // SUBSCRIPTION
         //-----------------------------
     public:
-        blaze::RetCode    new_subscription(subscription_int **new_subscription,
+        vlg::RetCode    new_subscription(subscription_int **new_subscription,
                                            blz_sbs_factory_func blz_sbs_factory_f = NULL,
                                            void *ud = NULL);
 
 
         //client only
-        blaze::RetCode    detach_subscription(subscription_int *subscription);
+        vlg::RetCode    detach_subscription(subscription_int *subscription);
 
         /*******************************************************************
         CLIENT:
@@ -166,7 +166,7 @@ class connection_int : public blaze::collectable {
         SERVER:
         same as client, but it also [auto] safedestroy related subscripion.
         *******************************************************************/
-        blaze::RetCode    release_subscription(subscription_int *subscription);
+        vlg::RetCode    release_subscription(subscription_int *subscription);
 
         //-----------------------------
         // GETTERS
@@ -183,12 +183,12 @@ class connection_int : public blaze::collectable {
         unsigned short              client_agrhbt() const;
         unsigned short              server_agrhbt() const;
         DisconnectionResultReason   discon_res_code() const;
-        blaze::blocking_queue       &pkt_snd_q();
-        blaze::synch_hash_map       &client_fly_tx_map();
-        blaze::synch_hash_map       &server_fly_tx_map();
-        blaze::synch_hash_map       &class_id_sbs_map();
-        blaze::synch_hash_map       &sbsid_sbs_map();
-        blaze::synch_hash_map       &reqid_sbs_map();
+        vlg::blocking_queue       &pkt_snd_q();
+        vlg::synch_hash_map       &client_fly_tx_map();
+        vlg::synch_hash_map       &server_fly_tx_map();
+        vlg::synch_hash_map       &class_id_sbs_map();
+        vlg::synch_hash_map       &sbsid_sbs_map();
+        vlg::synch_hash_map       &reqid_sbs_map();
         blz_tx_factory_func         tx_factory() const;
         void                        *tx_factory_ud() const;
         blz_sbs_factory_func        sbs_factory() const;
@@ -198,7 +198,7 @@ class connection_int : public blaze::collectable {
         // SETTERS
         //-----------------------------
     private:
-        blaze::RetCode  set_connid(unsigned int connid);
+        vlg::RetCode  set_connid(unsigned int connid);
         void            set_conn_response(ConnectionResult val);
         void            set_conn_res_code(ConnectionResultReason val);
         void            set_client_agrhbt(unsigned short val);
@@ -212,13 +212,13 @@ class connection_int : public blaze::collectable {
         // STATUS SYNCHRO
         //-----------------------------
     public:
-        blaze::RetCode    await_for_status_reached_or_outdated(ConnectionStatus
+        vlg::RetCode    await_for_status_reached_or_outdated(ConnectionStatus
                                                                test,
                                                                ConnectionStatus &current,
                                                                time_t sec = -1,
                                                                long nsec = 0);
 
-        blaze::RetCode    await_for_status_change(ConnectionStatus &status,
+        vlg::RetCode    await_for_status_change(ConnectionStatus &status,
                                                   time_t sec = -1,
                                                   long nsec = 0);
 
@@ -237,51 +237,51 @@ class connection_int : public blaze::collectable {
         ConnectionStatus status();
 
     private:
-        blaze::RetCode    set_connection_established();
-        blaze::RetCode    set_connection_established(SOCKET socket);
-        blaze::RetCode    set_proto_connected();
-        blaze::RetCode    set_appl_connected();
-        blaze::RetCode    set_disconnecting();
-        blaze::RetCode    set_socket_disconnected();
+        vlg::RetCode    set_connection_established();
+        vlg::RetCode    set_connection_established(SOCKET socket);
+        vlg::RetCode    set_proto_connected();
+        vlg::RetCode    set_appl_connected();
+        vlg::RetCode    set_disconnecting();
+        vlg::RetCode    set_socket_disconnected();
 
-        blaze::RetCode    set_proto_error(blaze::RetCode cause_res =
-                                              blaze::RetCode_UNKERR);
+        vlg::RetCode    set_proto_error(vlg::RetCode cause_res =
+                                              vlg::RetCode_UNKERR);
 
-        blaze::RetCode    set_socket_error(blaze::RetCode cause_res =
-                                               blaze::RetCode_UNKERR);
+        vlg::RetCode    set_socket_error(vlg::RetCode cause_res =
+                                               vlg::RetCode_UNKERR);
 
-        blaze::RetCode    set_internal_error(blaze::RetCode cause_res =
-                                                 blaze::RetCode_UNKERR);
+        vlg::RetCode    set_internal_error(vlg::RetCode cause_res =
+                                                 vlg::RetCode_UNKERR);
 
-        blaze::RetCode    set_status(ConnectionStatus status);
+        vlg::RetCode    set_status(ConnectionStatus status);
 
         //-----------------------------
-        // BLAZE PROTOCOL RCVNG INTERFACE
+        // vlg PROTOCOL RCVNG INTERFACE
         //-----------------------------
     private:
-        blaze::RetCode recv_connection_request(const blz_hdr_rec *pkt_hdr);
-        blaze::RetCode recv_connection_response(const blz_hdr_rec *pkt_hdr);
-        blaze::RetCode recv_test_request(const blz_hdr_rec *pkt_hdr);
-        blaze::RetCode recv_disconnection(const blz_hdr_rec *pkt_hdr);
+        vlg::RetCode recv_connection_request(const blz_hdr_rec *pkt_hdr);
+        vlg::RetCode recv_connection_response(const blz_hdr_rec *pkt_hdr);
+        vlg::RetCode recv_test_request(const blz_hdr_rec *pkt_hdr);
+        vlg::RetCode recv_disconnection(const blz_hdr_rec *pkt_hdr);
 
         //TX
     private:
-        blaze::RetCode recv_tx_req(const blz_hdr_rec *pkt_hdr,
-                                   blaze::grow_byte_buffer *pkt_body);
+        vlg::RetCode recv_tx_req(const blz_hdr_rec *pkt_hdr,
+                                   vlg::grow_byte_buffer *pkt_body);
 
-        blaze::RetCode recv_tx_res(const blz_hdr_rec *pkt_hdr,
-                                   blaze::grow_byte_buffer *pkt_body);
+        vlg::RetCode recv_tx_res(const blz_hdr_rec *pkt_hdr,
+                                   vlg::grow_byte_buffer *pkt_body);
 
         //SBS
-        blaze::RetCode recv_sbs_start_req(const blz_hdr_rec *pkt_hdr);
-        blaze::RetCode recv_sbs_start_res(const blz_hdr_rec *pkt_hdr);
+        vlg::RetCode recv_sbs_start_req(const blz_hdr_rec *pkt_hdr);
+        vlg::RetCode recv_sbs_start_res(const blz_hdr_rec *pkt_hdr);
 
-        blaze::RetCode recv_sbs_evt(const blz_hdr_rec *pkt_hdr,
-                                    blaze::grow_byte_buffer *pkt_body);
+        vlg::RetCode recv_sbs_evt(const blz_hdr_rec *pkt_hdr,
+                                    vlg::grow_byte_buffer *pkt_body);
 
-        blaze::RetCode recv_sbs_evt_ack(const blz_hdr_rec *hdr);
-        blaze::RetCode recv_sbs_stop_req(const blz_hdr_rec *pkt_hdr);
-        blaze::RetCode recv_sbs_stop_res(const blz_hdr_rec *pkt_hdr);
+        vlg::RetCode recv_sbs_evt_ack(const blz_hdr_rec *hdr);
+        vlg::RetCode recv_sbs_stop_req(const blz_hdr_rec *pkt_hdr);
+        vlg::RetCode recv_sbs_stop_res(const blz_hdr_rec *pkt_hdr);
 
         //-----------------------------
         // TCP/IP
@@ -294,26 +294,26 @@ class connection_int : public blaze::collectable {
 
         //TCP/IP SOCKET OPS
     private:
-        blaze::RetCode            set_socket_blocking_mode(bool blocking);
-        blaze::RetCode            establish_connection(sockaddr_in &params);
-        blaze::RetCode            socket_shutdown();
-        blaze::RetCode            socket_excptn_hndl(long sock_op_res);
+        vlg::RetCode            set_socket_blocking_mode(bool blocking);
+        vlg::RetCode            establish_connection(sockaddr_in &params);
+        vlg::RetCode            socket_shutdown();
+        vlg::RetCode            socket_excptn_hndl(long sock_op_res);
 
         //TCP/IP SENDING
     private:
-        blaze::RetCode            send_single_pkt(blaze::grow_byte_buffer *pkt_bbuf);
+        vlg::RetCode            send_single_pkt(vlg::grow_byte_buffer *pkt_bbuf);
 
         //TCP/IP RECEIVING
     private:
-        blaze::RetCode            recv_single_pkt(blz_hdr_rec *pkt_hdr,
-                                                  blaze::grow_byte_buffer *pkt_body);
+        vlg::RetCode            recv_single_pkt(blz_hdr_rec *pkt_hdr,
+                                                  vlg::grow_byte_buffer *pkt_body);
 
-        blaze::RetCode            recv_and_decode_hdr(blz_hdr_rec *pkt_hdr);
+        vlg::RetCode            recv_and_decode_hdr(blz_hdr_rec *pkt_hdr);
 
-        blaze::RetCode            recv_body(unsigned int bodylen,
-                                            blaze::grow_byte_buffer *pkt_body);
+        vlg::RetCode            recv_body(unsigned int bodylen,
+                                            vlg::grow_byte_buffer *pkt_body);
 
-        blaze::RetCode            recv_single_hdr_row(unsigned int *hdr_row);
+        vlg::RetCode            recv_single_hdr_row(unsigned int *hdr_row);
 
         //-----------------------------
         // REP
@@ -329,7 +329,7 @@ class connection_int : public blaze::collectable {
         ConnectivityEventType       connectivity_evt_type_;
 
     private:
-        //---blz proto rep
+        //---vlg proto rep
         unsigned int                connid_;
         ConnectionStatus            status_;
         ConnectionResult            conres_;
@@ -344,18 +344,18 @@ class connection_int : public blaze::collectable {
         bool                                connect_evt_occur_;
 
         //---packet sending queue
-        blaze::blocking_queue   pkt_sending_q_;
+        vlg::blocking_queue   pkt_sending_q_;
         //srv tx repo
-        blaze::synch_hash_map   srv_flytx_repo_; //server txid --> BLZ_TRANSACTION
+        vlg::synch_hash_map   srv_flytx_repo_; //server txid --> BLZ_TRANSACTION
         //cli tx repo
-        blaze::synch_hash_map   cli_flytx_repo_; //client txid --> BLZ_TRANSACTION
+        vlg::synch_hash_map   cli_flytx_repo_; //client txid --> BLZ_TRANSACTION
         //srv sbs repo
         //srv nclass_id --> BLZ_SUBSCRIPTION
-        blaze::synch_hash_map   srv_classid_sbs_repo_;
-        blaze::synch_hash_map   srv_sbsid_sbs_repo_; //srv sbsid --> BLZ_SUBSCRIPTION
+        vlg::synch_hash_map   srv_classid_sbs_repo_;
+        vlg::synch_hash_map   srv_sbsid_sbs_repo_; //srv sbsid --> BLZ_SUBSCRIPTION
         //cli sbs repo
-        blaze::synch_hash_map   cli_reqid_sbs_repo_; //cli reqid --> BLZ_SUBSCRIPTION
-        blaze::synch_hash_map   cli_sbsid_sbs_repo_; //cli sbsid --> BLZ_SUBSCRIPTION
+        vlg::synch_hash_map   cli_reqid_sbs_repo_; //cli reqid --> BLZ_SUBSCRIPTION
+        vlg::synch_hash_map   cli_sbsid_sbs_repo_; //cli sbsid --> BLZ_SUBSCRIPTION
 
         blz_tx_factory_func tx_factory_;  //factory for server tx
         void                *tx_factory_ud_; //factory for server tx ud
@@ -364,13 +364,13 @@ class connection_int : public blaze::collectable {
         void                 *sbs_factory_ud_; //factory for server sbs ud
 
     private:
-        mutable blaze::synch_monitor mon_;
+        mutable vlg::synch_monitor mon_;
         unsigned int                prid_;
         unsigned int                reqid_;
         unsigned int                sbsid_;
 
     protected:
-        static blaze::logger    *log_;
+        static vlg::logger    *log_;
 };
 
 }

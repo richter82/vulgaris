@@ -21,7 +21,7 @@
 
 #include "cr.h"
 
-namespace blaze {
+namespace vlg {
 
 //-----------------------------
 // #VER#

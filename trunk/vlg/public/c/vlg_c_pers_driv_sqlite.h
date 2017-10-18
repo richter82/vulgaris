@@ -21,10 +21,10 @@
 
 #ifndef BLZ_C_PERS_DRIV_SQLITE_H_
 #define BLZ_C_PERS_DRIV_SQLITE_H_
-#include "blaze.h"
+#include "vlg.h"
 
 #if defined(__cplusplus)
-using namespace blaze;
+using namespace vlg;
 extern "C" {
 #endif
 

@@ -21,9 +21,9 @@
 
 #ifndef BLZ_BBUF_H_
 #define BLZ_BBUF_H_
-#include "blaze.h"
+#include "vlg.h"
 
-namespace blaze {
+namespace vlg {
 
 /** @brief class grow_byte_buffer.
 */

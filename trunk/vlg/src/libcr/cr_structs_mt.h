@@ -24,7 +24,7 @@
 #include "cr_structs.h"
 #include "cr_concurrent.h"
 
-namespace blaze {
+namespace vlg {
 
 class synch_linked_list;
 

@@ -22,7 +22,7 @@
 #include "blaze_c_peer.h"
 #include "blaze_peer.h"
 
-namespace blaze {
+namespace vlg {
 
 class c_peer : public peer {
     private:

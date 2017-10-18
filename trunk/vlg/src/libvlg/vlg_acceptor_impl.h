@@ -24,14 +24,14 @@
 #include "blaze_logger.h"
 #include "blz_glob_int.h"
 
-namespace blaze {
+namespace vlg {
 
 class peer_int;
 class connection_int;
 
 #ifdef WIN32
-blaze::RetCode WSA_init(blaze::logger *log_);
-blaze::RetCode WSA_destroy(blaze::logger *log_);
+vlg::RetCode WSA_init(vlg::logger *log_);
+vlg::RetCode WSA_destroy(vlg::logger *log_);
 #endif
 
 //-----------------------------
@@ -46,11 +46,11 @@ class acceptor {
     public:
         peer_int   &peer();
 
-        blaze::RetCode  set_sockaddr_in(sockaddr_in &serv_sockaddr_in);
+        vlg::RetCode  set_sockaddr_in(sockaddr_in &serv_sockaddr_in);
 
-        blaze::RetCode  create_server_socket(SOCKET &serv_socket);
+        vlg::RetCode  create_server_socket(SOCKET &serv_socket);
 
-        blaze::RetCode  accept(unsigned int new_connid,
+        vlg::RetCode  accept(unsigned int new_connid,
                                connection_int **new_conn_desc);
 
     private:
@@ -59,7 +59,7 @@ class acceptor {
         sockaddr_in     serv_sockaddr_in_;
 
     protected:
-        static blaze::logger   *log_;
+        static vlg::logger   *log_;
 
 };
 

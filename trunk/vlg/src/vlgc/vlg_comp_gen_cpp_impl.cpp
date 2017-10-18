@@ -28,25 +28,25 @@
 
 #define BLZ_COMP_DPND_strict_linux "#if defined(__GNUG__) && defined(__linux)\n"
 
-namespace blaze {
+namespace vlg {
 
-extern blaze::RetCode BLZ_COMP_CPP_Calc_NMspc(entity_desc_comp &edesc,
-                                              blaze::ascii_string &out);
+extern vlg::RetCode BLZ_COMP_CPP_Calc_NMspc(entity_desc_comp &edesc,
+                                              vlg::ascii_string &out);
 
 /***********************************
 RENDER- BLZ_COMP_Render_Serialize_new__CPP_
 ***********************************/
-blaze::RetCode BLZ_COMP_Render_Serialize_new__CPP_(blaze::hash_map &entitymap,
+vlg::RetCode BLZ_COMP_Render_Serialize_new__CPP_(vlg::hash_map &entitymap,
                                                    entity_desc_comp &edesc,
                                                    FILE *file)
 {
     //fprintf(file, BLZ_COMP_1IND"unsigned short fidx = 0;\n");
     fprintf(file, CR_1IND"size_t tlen_offst = obb->position(), tlen = 0;\n");
     fprintf(file, CR_1IND"switch(enctyp){\n");
-    fprintf(file, CR_2IND"case blaze::Encode_INDEXED_NOT_ZERO:\n");
+    fprintf(file, CR_2IND"case vlg::Encode_INDEXED_NOT_ZERO:\n");
     fprintf(file,
             CR_3IND"obb->advance_pos_write(ENTLN_B_SZ); tlen = obb->position();\n");
-    blaze::hash_map &mmbr_map = edesc.get_map_id_MMBRDSC();
+    vlg::hash_map &mmbr_map = edesc.get_map_id_MMBRDSC();
     member_desc_comp *mdsc = NULL;
     mmbr_map.start_iteration();
     while(!mmbr_map.next(NULL, &mdsc)) {
@@ -168,14 +168,14 @@ blaze::RetCode BLZ_COMP_Render_Serialize_new__CPP_(blaze::hash_map &entitymap,
     fprintf(file, CR_2IND"default: return -1;\n");
     fprintf(file, CR_1IND"}\n");
     fprintf(file, CR_1IND "return (int)obb->position();\n");
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_Render_ScalarMember_Buff_CPP_
 ***********************************/
-blaze::RetCode BLZ_COMP_Render_ScalarMember_Buff_CPP_(member_desc_comp *mdsc,
-                                                      blaze::ascii_string &tmp,
+vlg::RetCode BLZ_COMP_Render_ScalarMember_Buff_CPP_(member_desc_comp *mdsc,
+                                                      vlg::ascii_string &tmp,
                                                       FILE *file)
 {
     if(mdsc->get_nmemb() > 1) {
@@ -192,7 +192,7 @@ blaze::RetCode BLZ_COMP_Render_ScalarMember_Buff_CPP_(member_desc_comp *mdsc,
                 mdsc->get_nmemb());
         if(mdsc->get_field_type() == Type_INT64 ||
                 mdsc->get_field_type() == Type_UINT64) {
-            blaze::ascii_string tmp_lnx;
+            vlg::ascii_string tmp_lnx;
             fprintf(file, "%s", BLZ_COMP_DPND_strict_linux);
             RETURN_IF_NOT_OK(printf_percent_from_BLZ_TYPE(*mdsc, tmp_lnx, true))
             fprintf(file,  CR_2IND
@@ -232,7 +232,7 @@ blaze::RetCode BLZ_COMP_Render_ScalarMember_Buff_CPP_(member_desc_comp *mdsc,
     } else {
         if(mdsc->get_field_type() == Type_INT64 ||
                 mdsc->get_field_type() == Type_UINT64) {
-            blaze::ascii_string tmp_lnx;
+            vlg::ascii_string tmp_lnx;
             fprintf(file, "%s", BLZ_COMP_DPND_strict_linux);
             RETURN_IF_NOT_OK(printf_percent_from_BLZ_TYPE(*mdsc, tmp_lnx, true))
             fprintf(file,
@@ -258,17 +258,17 @@ blaze::RetCode BLZ_COMP_Render_ScalarMember_Buff_CPP_(member_desc_comp *mdsc,
                     mdsc->get_member_name());
         }
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_Render_EntityMember_Buff_CPP_
 ***********************************/
-blaze::RetCode BLZ_COMP_Render_EntityMember_Buff_CPP_(entity_desc_comp
+vlg::RetCode BLZ_COMP_Render_EntityMember_Buff_CPP_(entity_desc_comp
                                                       &class_desc,
                                                       member_desc_comp *ent_mdsc,
                                                       entity_desc_comp *ent_desc,
-                                                      blaze::hash_map &entitymap,
+                                                      vlg::hash_map &entitymap,
                                                       FILE *file)
 {
     if(ent_mdsc->get_nmemb() > 1) {
@@ -298,14 +298,14 @@ blaze::RetCode BLZ_COMP_Render_EntityMember_Buff_CPP_(entity_desc_comp
                 ent_mdsc->get_member_name(),
                 ent_mdsc->get_member_name());
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_Render_ScalarMember_FILE__CPP_
 ***********************************/
-blaze::RetCode BLZ_COMP_Render_ScalarMember_FILE__CPP_(member_desc_comp *mdsc,
-                                                       blaze::ascii_string &tmp,
+vlg::RetCode BLZ_COMP_Render_ScalarMember_FILE__CPP_(member_desc_comp *mdsc,
+                                                       vlg::ascii_string &tmp,
                                                        FILE *file)
 {
     if(mdsc->get_nmemb() > 1) {
@@ -320,7 +320,7 @@ blaze::RetCode BLZ_COMP_Render_ScalarMember_FILE__CPP_(member_desc_comp *mdsc,
                 mdsc->get_nmemb());
         if(mdsc->get_field_type() == Type_INT64 ||
                 mdsc->get_field_type() == Type_UINT64) {
-            blaze::ascii_string tmp_lnx;
+            vlg::ascii_string tmp_lnx;
             fprintf(file, "%s", BLZ_COMP_DPND_strict_linux);
             RETURN_IF_NOT_OK(printf_percent_from_BLZ_TYPE(*mdsc, tmp_lnx, true))
             fprintf(file, CR_2IND CR_2IND CR_2IND
@@ -350,7 +350,7 @@ blaze::RetCode BLZ_COMP_Render_ScalarMember_FILE__CPP_(member_desc_comp *mdsc,
     } else {
         if(mdsc->get_field_type() == Type_INT64 ||
                 mdsc->get_field_type() == Type_UINT64) {
-            blaze::ascii_string tmp_lnx;
+            vlg::ascii_string tmp_lnx;
             fprintf(file, "%s", BLZ_COMP_DPND_strict_linux);
             RETURN_IF_NOT_OK(printf_percent_from_BLZ_TYPE(*mdsc, tmp_lnx, true))
             fprintf(file,
@@ -376,17 +376,17 @@ blaze::RetCode BLZ_COMP_Render_ScalarMember_FILE__CPP_(member_desc_comp *mdsc,
                     mdsc->get_member_name());
         }
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_Render_EntityMember_FILE__CPP_
 ***********************************/
-blaze::RetCode BLZ_COMP_Render_EntityMember_FILE__CPP_(entity_desc_comp
+vlg::RetCode BLZ_COMP_Render_EntityMember_FILE__CPP_(entity_desc_comp
                                                        &class_desc,
                                                        member_desc_comp *ent_mdsc,
                                                        entity_desc_comp *ent_desc,
-                                                       blaze::hash_map &entitymap,
+                                                       vlg::hash_map &entitymap,
                                                        FILE *file)
 {
     if(ent_mdsc->get_nmemb() > 1) {
@@ -416,19 +416,19 @@ blaze::RetCode BLZ_COMP_Render_EntityMember_FILE__CPP_(entity_desc_comp
                 ent_mdsc->get_member_name(),
                 ent_mdsc->get_member_name());
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_Render_EntityNotZeroMode_Buff__CPP_
 ***********************************/
-blaze::RetCode BLZ_COMP_Render_EntityNotZeroMode_Buff__CPP_(blaze::hash_map
+vlg::RetCode BLZ_COMP_Render_EntityNotZeroMode_Buff__CPP_(vlg::hash_map
                                                             &entitymap,
                                                             entity_desc_comp &ent_desc,
                                                             FILE *file)
 {
-    blaze::ascii_string tmp;
-    blaze::hash_map &mmbr_map = ent_desc.get_map_id_MMBRDSC();
+    vlg::ascii_string tmp;
+    vlg::hash_map &mmbr_map = ent_desc.get_map_id_MMBRDSC();
     member_desc_comp *mdsc = NULL;
     mmbr_map.start_iteration();
     while(!mmbr_map.next(NULL, &mdsc)) {
@@ -461,24 +461,24 @@ blaze::RetCode BLZ_COMP_Render_EntityNotZeroMode_Buff__CPP_(blaze::hash_map
                                                                                 entitymap, file))
                         break;
                     default:
-                        return blaze::RetCode_KO;
+                        return vlg::RetCode_KO;
                 }
             }
         }
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_Render_EntityNotZeroMode_FILE__CPP_
 ***********************************/
-blaze::RetCode BLZ_COMP_Render_EntityNotZeroMode_FILE__CPP_(blaze::hash_map
+vlg::RetCode BLZ_COMP_Render_EntityNotZeroMode_FILE__CPP_(vlg::hash_map
                                                             &entitymap,
                                                             entity_desc_comp &ent_desc,
                                                             FILE *file)
 {
-    blaze::ascii_string tmp;
-    blaze::hash_map &mmbr_map = ent_desc.get_map_id_MMBRDSC();
+    vlg::ascii_string tmp;
+    vlg::hash_map &mmbr_map = ent_desc.get_map_id_MMBRDSC();
     member_desc_comp *mdsc = NULL;
     mmbr_map.start_iteration();
     while(!mmbr_map.next(NULL, &mdsc)) {
@@ -511,18 +511,18 @@ blaze::RetCode BLZ_COMP_Render_EntityNotZeroMode_FILE__CPP_(blaze::hash_map
                                                                                  entitymap, file))
                         break;
                     default:
-                        return blaze::RetCode_KO;
+                        return vlg::RetCode_KO;
                 }
             }
         }
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_Render_EntitytPrintToBuff__CPP_
 ***********************************/
-blaze::RetCode BLZ_COMP_Render_EntitytPrintToBuff__CPP_(blaze::hash_map
+vlg::RetCode BLZ_COMP_Render_EntitytPrintToBuff__CPP_(vlg::hash_map
                                                         &entitymap,
                                                         entity_desc_comp &ent_desc,
                                                         FILE *file)
@@ -537,13 +537,13 @@ blaze::RetCode BLZ_COMP_Render_EntitytPrintToBuff__CPP_(blaze::hash_map
     //class closing curl brace
     fprintf(file, CR_1IND "blen += sprintf(&buff[blen], \"}\");\n");
     fprintf(file, CR_1IND "return blen;\n");
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_Render_EntityPrintToFile__CPP_
 ***********************************/
-blaze::RetCode BLZ_COMP_Render_EntityPrintToFile__CPP_(blaze::hash_map
+vlg::RetCode BLZ_COMP_Render_EntityPrintToFile__CPP_(vlg::hash_map
                                                        &entitymap,
                                                        entity_desc_comp &ent_desc,
                                                        FILE *file)
@@ -558,25 +558,25 @@ blaze::RetCode BLZ_COMP_Render_EntityPrintToFile__CPP_(blaze::hash_map
     //class closing curl brace
     fprintf(file, CR_1IND "blen += fprintf(f, \"}\");\n");
     fprintf(file, CR_1IND "return blen;\n");
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_Render_Allc__CPP_
 ***********************************/
-blaze::RetCode BLZ_COMP_Render_Allc__CPP_(compile_unit &cunit, FILE *file)
+vlg::RetCode BLZ_COMP_Render_Allc__CPP_(compile_unit &cunit, FILE *file)
 {
     fprintf(file,   OPN_CMMNT_LN
             "CLASS ALLOCATORS\n"
             CLS_CMMNT_LN);
-    blaze::hash_map &entitymap = cunit.get_entity_map();
+    vlg::hash_map &entitymap = cunit.get_entity_map();
     entitymap.start_iteration();
     entity_desc_comp *edsc = NULL;
     while(!entitymap.next(NULL, &edsc)) {
         if(edsc->get_entity_type() != EntityType_NCLASS) {
             continue;
         }
-        blaze::ascii_string nmsp;
+        vlg::ascii_string nmsp;
         RETURN_IF_NOT_OK(BLZ_COMP_CPP_Calc_NMspc(*edsc, nmsp))
         fprintf(file, "namespace %s{\n", nmsp.length() ? nmsp.internal_buff() : "");
         fprintf(file, "void* %s_alloc_func(size_t type_size, const void *copy)\n{\n"
@@ -593,11 +593,11 @@ blaze::RetCode BLZ_COMP_Render_Allc__CPP_(compile_unit &cunit, FILE *file)
         fprintf(file, "}");
         RETURN_IF_NOT_OK(put_newline(file))
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 #define BLZ_COMP_CPP_ENTDESC_DECL \
-"blaze::entity_desc %s_EntityDesc\n"\
+"vlg::entity_desc %s_EntityDesc\n"\
 "(\n"\
  CR_1IND "%u,\n"\
  CR_1IND "%lu,\n"\
@@ -611,7 +611,7 @@ blaze::RetCode BLZ_COMP_Render_Allc__CPP_(compile_unit &cunit, FILE *file)
 ");\n"
 
 #define BLZ_COMP_CPP_MMBRDESC_DECL \
-"blaze::member_desc %s\n"  \
+"vlg::member_desc %s\n"  \
 "(\n" \
  CR_1IND"%u,\n" \
  CR_1IND"%s,\n" \
@@ -630,21 +630,21 @@ blaze::RetCode BLZ_COMP_Render_Allc__CPP_(compile_unit &cunit, FILE *file)
 /***********************************
 RENDER- BLZ_COMP_Render_Descriptors__CPP_
 ***********************************/
-blaze::RetCode BLZ_COMP_Render_Descriptors__CPP_(compile_unit &cunit,
+vlg::RetCode BLZ_COMP_Render_Descriptors__CPP_(compile_unit &cunit,
                                                  FILE *file)
 {
-    blaze::hash_map &entitymap = cunit.get_entity_map();
+    vlg::hash_map &entitymap = cunit.get_entity_map();
     entitymap.start_iteration();
     entity_desc_comp *edsc = NULL;
     while(!entitymap.next(NULL, &edsc)) {
         //create ent desc
-        blaze::ascii_string ent_name, allcf;
+        vlg::ascii_string ent_name, allcf;
         const char *ent_type = NULL;
         ent_type = string_from_EntityType(edsc->get_entity_type());
         RETURN_IF_NOT_OK(ent_name.assign("\""))
         RETURN_IF_NOT_OK(ent_name.append(edsc->get_entity_name()))
         RETURN_IF_NOT_OK(ent_name.append("\""))
-        blaze::ascii_string nmsp;
+        vlg::ascii_string nmsp;
         RETURN_IF_NOT_OK(BLZ_COMP_CPP_Calc_NMspc(*edsc, nmsp))
         switch(edsc->get_entity_type()) {
             case EntityType_ENUM:
@@ -708,12 +708,12 @@ blaze::RetCode BLZ_COMP_Render_Descriptors__CPP_(compile_unit &cunit,
                 fprintf(file, "#endif\n");
                 break;
             default:
-                return blaze::RetCode_KO;
+                return vlg::RetCode_KO;
         }
         RETURN_IF_NOT_OK(put_newline(file))
         //create ent desc end
-        blaze::ascii_string mmbr_tmp_str;
-        blaze::hash_map &mmbr_map = edsc->get_map_id_MMBRDSC();
+        vlg::ascii_string mmbr_tmp_str;
+        vlg::hash_map &mmbr_map = edsc->get_map_id_MMBRDSC();
         mmbr_map.start_iteration();
         member_desc_comp *mdsc = NULL;
         while(!mmbr_map.next(NULL, &mdsc)) {
@@ -775,11 +775,11 @@ blaze::RetCode BLZ_COMP_Render_Descriptors__CPP_(compile_unit &cunit,
         }
         //key descriptors
         if(edsc->get_entity_type() == EntityType_NCLASS && edsc->is_persistent()) {
-            blaze::hash_map &kdesc_map = edsc->get_map_keyid_KDESC_mod();
+            vlg::hash_map &kdesc_map = edsc->get_map_keyid_KDESC_mod();
             kdesc_map.start_iteration();
             key_desc_comp *kdesc = NULL;
             while(!kdesc_map.next(NULL, &kdesc)) {
-                fprintf(file, "blaze::key_desc KEY_%s_%d", edsc->get_entity_name(),
+                fprintf(file, "vlg::key_desc KEY_%s_%d", edsc->get_entity_name(),
                         kdesc->get_key_id());
                 RETURN_IF_NOT_OK(put_newline(file))
                 fprintf(file, "(\n");
@@ -790,19 +790,19 @@ blaze::RetCode BLZ_COMP_Render_Descriptors__CPP_(compile_unit &cunit,
             }
         }
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_Render_GenMeths__CPP_
 ***********************************/
-blaze::RetCode BLZ_COMP_Render_GenMeths__CPP_(compile_unit &cunit,
+vlg::RetCode BLZ_COMP_Render_GenMeths__CPP_(compile_unit &cunit,
                                               entity_desc_comp &edsc,
                                               FILE *file)
 {
     fprintf(file, OPN_CMMNT_LN "Getter(s) / Setter(s) / is_zero(s)\n" CLS_CMMNT_LN);
-    blaze::hash_map &entitymap = cunit.get_entity_map();
-    blaze::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
+    vlg::hash_map &entitymap = cunit.get_entity_map();
+    vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
     member_desc_comp *mdsc = NULL;
     while(!mmbr_map.next(NULL, &mdsc)) {
@@ -812,11 +812,11 @@ blaze::RetCode BLZ_COMP_Render_GenMeths__CPP_(compile_unit &cunit,
         /******************************************
         Getter
         ******************************************/
-        blaze::ascii_string type_str;
+        vlg::ascii_string type_str;
         RETURN_IF_NOT_OK(target_type_from_BLZ_TYPE(*mdsc, entitymap, type_str))
-        blaze::ascii_string meth_name;
+        vlg::ascii_string meth_name;
         RETURN_IF_NOT_OK(meth_name.assign(BLZ_COMP_CPP_GETTER_PFX"_"))
-        blaze::ascii_string fld_name;
+        vlg::ascii_string fld_name;
         RETURN_IF_NOT_OK(fld_name.assign(mdsc->get_member_name()))
         //fld_name.first_char_uppercase();
         RETURN_IF_NOT_OK(meth_name.append(fld_name))
@@ -1034,7 +1034,7 @@ blaze::RetCode BLZ_COMP_Render_GenMeths__CPP_(compile_unit &cunit,
             entity_desc_comp *inner_desc = NULL;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &inner_desc)) {
                 if(inner_desc->get_entity_type() == EntityType_NCLASS) {
-                    blaze::ascii_string body;
+                    vlg::ascii_string body;
                     RETURN_IF_NOT_OK(body.append("{"))
                     if(mdsc->get_nmemb() > 1) {
                         RETURN_IF_NOT_OK(body.append("\n" CR_1IND"for(int i = 0; i<%d; i++){\n"))
@@ -1082,7 +1082,7 @@ blaze::RetCode BLZ_COMP_Render_GenMeths__CPP_(compile_unit &cunit,
                 entity_desc_comp *inner_desc = NULL;
                 if(!entitymap.get(mdsc->get_field_usr_str_type(), &inner_desc)) {
                     if(inner_desc->get_entity_type() == EntityType_NCLASS) {
-                        blaze::ascii_string body;
+                        vlg::ascii_string body;
                         RETURN_IF_NOT_OK(body.append("{\n"))
                         RETURN_IF_NOT_OK(body.append(CR_1IND"return %s[idx].is_zero();\n}\n"))
                         fprintf(file, body.internal_buff(), mdsc->get_member_name());
@@ -1111,13 +1111,13 @@ blaze::RetCode BLZ_COMP_Render_GenMeths__CPP_(compile_unit &cunit,
             }
         }
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_Render_ZeroObj__CPP_
 ***********************************/
-blaze::RetCode BLZ_COMP_Render_ZeroObj__CPP_(blaze::hash_map &entitymap,
+vlg::RetCode BLZ_COMP_Render_ZeroObj__CPP_(vlg::hash_map &entitymap,
                                              entity_desc_comp &class_desc,
                                              FILE *file)
 {
@@ -1126,14 +1126,14 @@ blaze::RetCode BLZ_COMP_Render_ZeroObj__CPP_(blaze::hash_map &entitymap,
             CLS_CMMNT_LN, class_desc.get_entity_name());
     fprintf(file, "const %s %s::ZERO_OBJ;\n\n", class_desc.get_entity_name(),
             class_desc.get_entity_name());
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 
 /***********************************
 RENDER- BLZ_COMP_StructCtor__CPP_
 ***********************************/
-blaze::RetCode BLZ_COMP_Struct_Ctor__CPP_(entity_desc_comp *edsc,
+vlg::RetCode BLZ_COMP_Struct_Ctor__CPP_(entity_desc_comp *edsc,
                                           FILE *file)
 {
     fprintf(file,   OPN_CMMNT_LN
@@ -1144,30 +1144,30 @@ blaze::RetCode BLZ_COMP_Struct_Ctor__CPP_(entity_desc_comp *edsc,
             edsc->get_entity_name(),
             edsc->get_entity_name());
     RETURN_IF_NOT_OK(put_newline(file))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_Class_Ctor__CPP_
 ***********************************/
-blaze::RetCode BLZ_COMP_Class_Ctor__CPP_(compile_unit &cunit,
+vlg::RetCode BLZ_COMP_Class_Ctor__CPP_(compile_unit &cunit,
                                          entity_desc_comp *edsc,
                                          FILE *file)
 {
     fprintf(file,   OPN_CMMNT_LN
             "CLASS %s CTOR\n"
             CLS_CMMNT_LN, edsc->get_entity_name());
-    blaze::hash_map &entitymap = cunit.get_entity_map();
+    vlg::hash_map &entitymap = cunit.get_entity_map();
     //class_rep ctor BEGIN
-    blaze::hash_map &mmbr_map = edsc->get_map_id_MMBRDSC();
+    vlg::hash_map &mmbr_map = edsc->get_map_id_MMBRDSC();
     member_desc_comp *mdsc = NULL;
     mmbr_map.start_iteration();
     //ctor
-    blaze::ascii_string ctor_init_lst, def_val;
+    vlg::ascii_string ctor_init_lst, def_val;
     bool first = true, put_coma = false;
     RETURN_IF_NOT_OK(ctor_init_lst.assign("()"))
     while(!mmbr_map.next(NULL, &mdsc)) {
-        blaze::RetCode res = blaze::RetCode_OK;
+        vlg::RetCode res = vlg::RetCode_OK;
         if(mdsc->get_member_type() != MemberType_FIELD) {
             continue;
         }
@@ -1191,7 +1191,7 @@ blaze::RetCode BLZ_COMP_Class_Ctor__CPP_(compile_unit &cunit,
             RETURN_IF_NOT_OK(ctor_init_lst.append("("))
             RETURN_IF_NOT_OK(ctor_init_lst.append(def_val))
             RETURN_IF_NOT_OK(ctor_init_lst.append(")"))
-        } else if(res == blaze::RetCode_KO) {
+        } else if(res == vlg::RetCode_KO) {
             //entity
             //no need to explicit call def ctor.
         }
@@ -1199,7 +1199,7 @@ blaze::RetCode BLZ_COMP_Class_Ctor__CPP_(compile_unit &cunit,
     fprintf(file, EXPORT_SYMBOL"%s::%s%s\n", edsc->get_entity_name(),
             edsc->get_entity_name(),
             ctor_init_lst.internal_buff());
-    blaze::ascii_string ctor_body;
+    vlg::ascii_string ctor_body;
     RETURN_IF_NOT_OK(ctor_body.append("{"))
     mmbr_map.start_iteration();
     first = true;
@@ -1248,29 +1248,29 @@ blaze::RetCode BLZ_COMP_Class_Ctor__CPP_(compile_unit &cunit,
     RETURN_IF_NOT_OK(ctor_body.append("}"))
     fprintf(file, "%s", ctor_body.internal_buff());
     RETURN_IF_NOT_OK(put_newline(file))
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_Class_Dtor__CPP_
 ***********************************/
-blaze::RetCode BLZ_COMP_Class_Dtor__CPP_(compile_unit &cunit,
+vlg::RetCode BLZ_COMP_Class_Dtor__CPP_(compile_unit &cunit,
                                          entity_desc_comp *edsc,
                                          FILE *file)
 {
     fprintf(file, EXPORT_SYMBOL"%s::~%s(){}\n", edsc->get_entity_name(),
             edsc->get_entity_name());
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_Render_IsZero_Body__CPP_
 ***********************************/
-blaze::RetCode BLZ_COMP_Render_IsZero_Body__CPP_(blaze::hash_map &entitymap,
+vlg::RetCode BLZ_COMP_Render_IsZero_Body__CPP_(vlg::hash_map &entitymap,
                                                  entity_desc_comp &class_desc,
                                                  FILE *file)
 {
-    blaze::hash_map &mmbr_map = class_desc.get_map_id_MMBRDSC();
+    vlg::hash_map &mmbr_map = class_desc.get_map_id_MMBRDSC();
     member_desc_comp *mdsc = NULL;
     mmbr_map.start_iteration();
     while(!mmbr_map.next(NULL, &mdsc)) {
@@ -1281,13 +1281,13 @@ blaze::RetCode BLZ_COMP_Render_IsZero_Body__CPP_(blaze::hash_map &entitymap,
         fprintf(file, CR_2IND"return false;\n");
     }
     fprintf(file, CR_1IND"return true;\n");
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_Render_VirtualMeths__CPP_
 ***********************************/
-blaze::RetCode BLZ_COMP_Render_VirtualMeths__CPP_(blaze::hash_map &entitymap,
+vlg::RetCode BLZ_COMP_Render_VirtualMeths__CPP_(vlg::hash_map &entitymap,
                                                   entity_desc_comp &class_desc,
                                                   FILE *file)
 {
@@ -1366,7 +1366,7 @@ blaze::RetCode BLZ_COMP_Render_VirtualMeths__CPP_(blaze::hash_map &entitymap,
             "CLASS %s get_entity_descriptor.\n"
             CLS_CMMNT_LN, class_desc.get_entity_name());
     fprintf(file,
-            EXPORT_SYMBOL"const blaze::entity_desc* %s::get_entity_descriptor() const\n{\n",
+            EXPORT_SYMBOL"const vlg::entity_desc* %s::get_entity_descriptor() const\n{\n",
             class_desc.get_entity_name());
     fprintf(file, CR_1IND"return &%s_EntityDesc;\n", class_desc.get_entity_name());
     fprintf(file, "}\n");
@@ -1392,27 +1392,27 @@ blaze::RetCode BLZ_COMP_Render_VirtualMeths__CPP_(blaze::hash_map &entitymap,
             "CLASS %s serialize.\n"
             CLS_CMMNT_LN, class_desc.get_entity_name());
     fprintf(file,
-            EXPORT_SYMBOL"int %s::serialize(blaze::Encode enctyp, const nclass *prev_image, blaze::grow_byte_buffer *obb) const\n{\n",
+            EXPORT_SYMBOL"int %s::serialize(vlg::Encode enctyp, const nclass *prev_image, vlg::grow_byte_buffer *obb) const\n{\n",
             class_desc.get_entity_name());
     RETURN_IF_NOT_OK(BLZ_COMP_Render_Serialize_new__CPP_(entitymap, class_desc,
                                                          file))
     fprintf(file, "}\n");
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_Render_ClassImpl__CPP_
 ***********************************/
-blaze::RetCode BLZ_COMP_Render_ClassImpl__CPP_(compile_unit &cunit, FILE *file)
+vlg::RetCode BLZ_COMP_Render_ClassImpl__CPP_(compile_unit &cunit, FILE *file)
 {
-    blaze::hash_map &entitymap = cunit.get_entity_map();
+    vlg::hash_map &entitymap = cunit.get_entity_map();
     entitymap.start_iteration();
     entity_desc_comp *edsc = NULL;
     while(!entitymap.next(NULL, &edsc)) {
         if(edsc->get_entity_type() != EntityType_NCLASS) {
             continue;
         }
-        blaze::ascii_string nmsp;
+        vlg::ascii_string nmsp;
         RETURN_IF_NOT_OK(BLZ_COMP_CPP_Calc_NMspc(*edsc, nmsp))
         fprintf(file, "namespace %s{\n", nmsp.internal_buff());
         //ctor
@@ -1431,7 +1431,7 @@ blaze::RetCode BLZ_COMP_Render_ClassImpl__CPP_(compile_unit &cunit, FILE *file)
         RETURN_IF_NOT_OK(BLZ_COMP_Render_VirtualMeths__CPP_(entitymap, *edsc, file))
         fprintf(file, "}\n");
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 extern int comp_ver[4];
@@ -1439,7 +1439,7 @@ extern int comp_ver[4];
 /***********************************
 RENDER- BLZ_COMP_Render_ModelVersion__CPP_
 ***********************************/
-blaze::RetCode BLZ_COMP_Render_ModelVersion__CPP_(compile_unit &cunit,
+vlg::RetCode BLZ_COMP_Render_ModelVersion__CPP_(compile_unit &cunit,
                                                   FILE *file)
 {
     fprintf(file,   OPN_CMMNT_LN
@@ -1459,28 +1459,28 @@ blaze::RetCode BLZ_COMP_Render_ModelVersion__CPP_(compile_unit &cunit,
             __DATE__);
     fprintf(file, "}\n");
     fprintf(file, "}\n\n");
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_Render_ClassManager
 ***********************************/
-blaze::RetCode BLZ_COMP_Render_ClassManager__CPP_(compile_unit &cunit,
+vlg::RetCode BLZ_COMP_Render_ClassManager__CPP_(compile_unit &cunit,
                                                   FILE *file)
 {
-    blaze::ascii_string name;
-    blaze::ascii_string_tok tknz;
+    vlg::ascii_string name;
+    vlg::ascii_string_tok tknz;
     RETURN_IF_NOT_OK(tknz.init(cunit.get_file_name()))
     RETURN_IF_NOT_OK(tknz.next_token(name, BLZ_COMP_DOT))
     fprintf(file,   OPN_CMMNT_LN
             "MODEL:%s BEM\n"
             CLS_CMMNT_LN, cunit.model_name());
-    fprintf(file, "blaze::entity_manager BEM_%s;\n", cunit.model_name());
-    return blaze::RetCode_OK;
+    fprintf(file, "vlg::entity_manager BEM_%s;\n", cunit.model_name());
+    return vlg::RetCode_OK;
 }
 
 #define BLZ_COMP_CPP_ENTRY_PT_OPN \
-"blaze::entity_manager* get_em_%s()\n"\
+"vlg::entity_manager* get_em_%s()\n"\
 "{\n"\
  CR_1IND "COMMAND_IF_NOT_OK(BEM_%s.init(), exit(1))\n"
 
@@ -1500,10 +1500,10 @@ blaze::RetCode BLZ_COMP_Render_ClassManager__CPP_(compile_unit &cunit,
 /***********************************
 RENDER- BLZ_COMP_Render_EntryPoint
 ***********************************/
-blaze::RetCode BLZ_COMP_Render_EntryPoint__CPP_(compile_unit &cunit, FILE *file)
+vlg::RetCode BLZ_COMP_Render_EntryPoint__CPP_(compile_unit &cunit, FILE *file)
 {
-    blaze::ascii_string name;
-    blaze::ascii_string_tok tknz;
+    vlg::ascii_string name;
+    vlg::ascii_string_tok tknz;
     RETURN_IF_NOT_OK(tknz.init(cunit.get_file_name()))
     RETURN_IF_NOT_OK(tknz.next_token(name, BLZ_COMP_DOT))
     fprintf(file,   OPN_CMMNT_LN
@@ -1512,19 +1512,19 @@ blaze::RetCode BLZ_COMP_Render_EntryPoint__CPP_(compile_unit &cunit, FILE *file)
     fprintf(file, "extern \"C\"{\n");
     fprintf(file, EXPORT_SYMBOL BLZ_COMP_CPP_ENTRY_PT_OPN, cunit.model_name(),
             cunit.model_name());
-    blaze::hash_map &entitymap = cunit.get_entity_map();
+    vlg::hash_map &entitymap = cunit.get_entity_map();
     entitymap.start_iteration();
     entity_desc_comp *edsc = NULL;
     while(!entitymap.next(NULL, &edsc)) {
         fprintf(file, BLZ_COMP_CPP_ENTDESC_INIT, edsc->get_entity_name());
-        blaze::hash_map &mmbr_map = edsc->get_map_id_MMBRDSC();
+        vlg::hash_map &mmbr_map = edsc->get_map_id_MMBRDSC();
         mmbr_map.start_iteration();
         member_desc_comp *mdsc = NULL;
         while(!mmbr_map.next(NULL, &mdsc)) {
             if(mdsc->get_member_type() != MemberType_FIELD) {
                 continue;
             }
-            blaze::ascii_string mmbr_name;
+            vlg::ascii_string mmbr_name;
             RETURN_IF_NOT_OK(mmbr_name.assign(edsc->get_entity_name()))
             RETURN_IF_NOT_OK(mmbr_name.append("_"))
             RETURN_IF_NOT_OK(mmbr_name.append(mdsc->get_member_name()))
@@ -1533,7 +1533,7 @@ blaze::RetCode BLZ_COMP_Render_EntryPoint__CPP_(compile_unit &cunit, FILE *file)
         }
         //key descriptors
         if(edsc->get_entity_type() == EntityType_NCLASS && edsc->is_persistent()) {
-            blaze::hash_map &kdesc_map = edsc->get_map_keyid_KDESC_mod();
+            vlg::hash_map &kdesc_map = edsc->get_map_keyid_KDESC_mod();
             kdesc_map.start_iteration();
             key_desc_comp *kdesc = NULL;
             while(!kdesc_map.next(NULL, &kdesc)) {
@@ -1541,10 +1541,10 @@ blaze::RetCode BLZ_COMP_Render_EntryPoint__CPP_(compile_unit &cunit, FILE *file)
                         edsc->get_entity_name(),
                         kdesc->get_key_id());
                 member_desc_comp *k_mdsc = NULL;
-                blaze::linked_list &kset = kdesc->get_key_member_set_m();
+                vlg::linked_list &kset = kdesc->get_key_member_set_m();
                 kset.start_iteration();
                 while(!kset.next(&k_mdsc)) {
-                    blaze::ascii_string k_mmbr_name;
+                    vlg::ascii_string k_mmbr_name;
                     RETURN_IF_NOT_OK(k_mmbr_name.assign(edsc->get_entity_name()))
                     RETURN_IF_NOT_OK(k_mmbr_name.append("_"))
                     RETURN_IF_NOT_OK(k_mmbr_name.append(k_mdsc->get_member_name()))
@@ -1566,13 +1566,13 @@ blaze::RetCode BLZ_COMP_Render_EntryPoint__CPP_(compile_unit &cunit, FILE *file)
     }
     fprintf(file, BLZ_COMP_CPP_ENTRY_PT_CLS, cunit.model_name());
     fprintf(file, "}\n\n");
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_Render_EntryPoint_C__CPP_
 ***********************************/
-blaze::RetCode BLZ_COMP_Render_EntryPoint_C__CPP_(compile_unit &cunit,
+vlg::RetCode BLZ_COMP_Render_EntryPoint_C__CPP_(compile_unit &cunit,
                                                   FILE *file)
 {
     fprintf(file,   OPN_CMMNT_LN
@@ -1585,7 +1585,7 @@ blaze::RetCode BLZ_COMP_Render_EntryPoint_C__CPP_(compile_unit &cunit,
             cunit.model_name());
     fprintf(file, "}\n");
     fprintf(file, "}\n\n");
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 #define BLZ_SER_SZS "\
@@ -1617,10 +1617,10 @@ blaze::RetCode BLZ_COMP_Render_EntryPoint_C__CPP_(compile_unit &cunit,
 /***********************************
 RENDER- BLZ_COMP_Render__CPP_
 ***********************************/
-blaze::RetCode BLZ_COMP_Render__CPP_(compile_unit &cunit)
+vlg::RetCode BLZ_COMP_Render__CPP_(compile_unit &cunit)
 {
-    blaze::ascii_string fname;
-    blaze::ascii_string_tok tknz;
+    vlg::ascii_string fname;
+    vlg::ascii_string_tok tknz;
     RETURN_IF_NOT_OK(tknz.init(cunit.get_file_name()))
     RETURN_IF_NOT_OK(tknz.next_token(fname, BLZ_COMP_DOT))
     RETURN_IF_NOT_OK(fname.append(BLZ_COMP_DOT))
@@ -1631,8 +1631,8 @@ blaze::RetCode BLZ_COMP_Render__CPP_(compile_unit &cunit)
     //header
     RETURN_IF_NOT_OK(render_hdr(cunit, fname, file))
     RETURN_IF_NOT_OK(put_newline(file))
-    blaze::ascii_string hname;
-    blaze::ascii_string_tok htknz;
+    vlg::ascii_string hname;
+    vlg::ascii_string_tok htknz;
     RETURN_IF_NOT_OK(htknz.init(cunit.get_file_name()))
     RETURN_IF_NOT_OK(htknz.next_token(hname, BLZ_COMP_DOT))
     RETURN_IF_NOT_OK(hname.append(BLZ_COMP_DOT))
@@ -1667,7 +1667,7 @@ blaze::RetCode BLZ_COMP_Render__CPP_(compile_unit &cunit)
     RETURN_IF_NOT_OK(BLZ_COMP_Render_EntryPoint_C__CPP_(cunit, file))
     RETURN_IF_NOT_OK(put_newline(file))
     fclose(file);
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 }

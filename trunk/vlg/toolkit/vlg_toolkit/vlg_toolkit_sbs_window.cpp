@@ -42,7 +42,7 @@ bool blz_toolkit_sbs_model::filterAcceptsRow(int sourceRow,
     return true;
 }
 
-void blz_toolkit_sbs_model::offerEntry(blaze::nclass *entry)
+void blz_toolkit_sbs_model::offerEntry(vlg::nclass *entry)
 {
     wrapped_mdl_.offerEntry(entry);
 }
@@ -57,16 +57,16 @@ blz_toolkit_sbs_blz_class_model &blz_toolkit_sbs_model::wrapped_mdl()
 // blz_toolkit_sbs_window
 //------------------------------------------------------------------------------
 
-void sbs_status_change_hndlr(blaze::subscription_int &sbs,
-                             blaze::SubscriptionStatus status, void *ud)
+void sbs_status_change_hndlr(vlg::subscription_int &sbs,
+                             vlg::SubscriptionStatus status, void *ud)
 {
     blz_toolkit_sbs_window *sbw = (blz_toolkit_sbs_window *)ud;
     qDebug() << "sbs status:" << status;
     sbw->EmitSbsStatus(status);
 }
 
-void sbs_evt_notify_hndlr(blaze::subscription_int &sbs,
-                          blaze::subscription_event_int &sbs_evt,
+void sbs_evt_notify_hndlr(vlg::subscription_int &sbs,
+                          vlg::subscription_event_int &sbs_evt,
                           void *ud)
 {
     blz_toolkit_sbs_window *sbw = (blz_toolkit_sbs_window *)ud;
@@ -74,9 +74,9 @@ void sbs_evt_notify_hndlr(blaze::subscription_int &sbs,
     sbw->EmitSbsEvent(&sbs_evt);
 }
 
-blz_toolkit_sbs_window::blz_toolkit_sbs_window(const blaze::entity_desc &edesc,
-                                               const blaze::entity_manager &bem,
-                                               blaze::subscription_int &sbs,
+blz_toolkit_sbs_window::blz_toolkit_sbs_window(const vlg::entity_desc &edesc,
+                                               const vlg::entity_manager &bem,
+                                               vlg::subscription_int &sbs,
                                                blz_toolkit_sbs_blz_class_model &mdl,
                                                QWidget *parent) :
     sbs_(sbs),
@@ -93,11 +93,11 @@ blz_toolkit_sbs_window::blz_toolkit_sbs_window(const blaze::entity_desc &edesc,
 
     SbsStoppedActions();
 
-    connect(this, SIGNAL(SignalSbsStatusChange(blaze::SubscriptionStatus)),
+    connect(this, SIGNAL(SignalSbsStatusChange(vlg::SubscriptionStatus)),
             this,
-            SLOT(OnSbsStatusChange(blaze::SubscriptionStatus)));
-    connect(this, SIGNAL(SignalSbsEvent(blaze::subscription_event_int *)), this,
-            SLOT(OnSbsEvent(blaze::subscription_event_int *)));
+            SLOT(OnSbsStatusChange(vlg::SubscriptionStatus)));
+    connect(this, SIGNAL(SignalSbsEvent(vlg::subscription_event_int *)), this,
+            SLOT(OnSbsEvent(vlg::subscription_event_int *)));
     connect(ui->blz_class_sbs_table_view,
             SIGNAL(customContextMenuRequested(const QPoint &)), this,
             SLOT(OnCustomMenuRequested(const QPoint &)));
@@ -110,12 +110,12 @@ blz_toolkit_sbs_window::blz_toolkit_sbs_window(const blaze::entity_desc &edesc,
 blz_toolkit_sbs_window::~blz_toolkit_sbs_window()
 {
     qDebug() << "~blz_toolkit_sbs_window()";
-    blaze::SubscriptionStatus current =
-        blaze::SubscriptionStatus_UNDEFINED;
-    blaze::SubscriptionResponse sbs_stop_result =
-        blaze::SubscriptionResponse_UNDEFINED;
-    blaze::ProtocolCode sbs_stop_protocode = blaze::ProtocolCode_SUCCESS;
-    if(sbs_.status() == blaze::SubscriptionStatus_STARTED) {
+    vlg::SubscriptionStatus current =
+        vlg::SubscriptionStatus_UNDEFINED;
+    vlg::SubscriptionResponse sbs_stop_result =
+        vlg::SubscriptionResponse_UNDEFINED;
+    vlg::ProtocolCode sbs_stop_protocode = vlg::ProtocolCode_SUCCESS;
+    if(sbs_.status() == vlg::SubscriptionStatus_STARTED) {
         sbs_.stop();
         sbs_.await_for_stop_result(sbs_stop_result, sbs_stop_protocode);
     }
@@ -124,7 +124,7 @@ blz_toolkit_sbs_window::~blz_toolkit_sbs_window()
     sbs_.get_connection().release_subscription(&sbs_);
 
     /*
-    blaze::collector &c = sbs_.get_collector();
+    vlg::collector &c = sbs_.get_collector();
     c.release(&sbs_);
     */
 
@@ -135,10 +135,10 @@ void blz_toolkit_sbs_window::on_actionStart_SBS_triggered()
 {
     switch(ui->cfg_sbs_type_cb->currentIndex()) {
         case 0:
-            sbs_.set_sbstyp(blaze::SubscriptionType_SNAPSHOT);
+            sbs_.set_sbstyp(vlg::SubscriptionType_SNAPSHOT);
             break;
         case 1:
-            sbs_.set_sbstyp(blaze::SubscriptionType_INCREMENTAL);
+            sbs_.set_sbstyp(vlg::SubscriptionType_INCREMENTAL);
             break;
         default:
             break;
@@ -146,13 +146,13 @@ void blz_toolkit_sbs_window::on_actionStart_SBS_triggered()
 
     switch(ui->cfg_sbs_mode_cb->currentIndex()) {
         case 0:
-            sbs_.set_sbsmod(blaze::SubscriptionMode_ALL);
+            sbs_.set_sbsmod(vlg::SubscriptionMode_ALL);
             break;
         case 1:
-            sbs_.set_sbsmod(blaze::SubscriptionMode_DOWNLOAD);
+            sbs_.set_sbsmod(vlg::SubscriptionMode_DOWNLOAD);
             break;
         case 2:
-            sbs_.set_sbsmod(blaze::SubscriptionMode_LIVE);
+            sbs_.set_sbsmod(vlg::SubscriptionMode_LIVE);
             break;
         default:
             break;
@@ -160,10 +160,10 @@ void blz_toolkit_sbs_window::on_actionStart_SBS_triggered()
 
     switch(ui->cfg_sbs_flow_type_cb->currentIndex()) {
         case 0:
-            sbs_.set_flotyp(blaze::SubscriptionFlowType_ALL);
+            sbs_.set_flotyp(vlg::SubscriptionFlowType_ALL);
             break;
         case 1:
-            sbs_.set_flotyp(blaze::SubscriptionFlowType_LAST);
+            sbs_.set_flotyp(vlg::SubscriptionFlowType_LAST);
             break;
         default:
             break;
@@ -171,10 +171,10 @@ void blz_toolkit_sbs_window::on_actionStart_SBS_triggered()
 
     switch(ui->cfg_sbs_dwnld_type_cb->currentIndex()) {
         case 0:
-            sbs_.set_dwltyp(blaze::SubscriptionDownloadType_ALL);
+            sbs_.set_dwltyp(vlg::SubscriptionDownloadType_ALL);
             break;
         case 1:
-            sbs_.set_dwltyp(blaze::SubscriptionDownloadType_PARTIAL);
+            sbs_.set_dwltyp(vlg::SubscriptionDownloadType_PARTIAL);
             break;
         default:
             break;
@@ -182,10 +182,10 @@ void blz_toolkit_sbs_window::on_actionStart_SBS_triggered()
 
     switch(ui->cfg_sbs_class_encode_cb->currentIndex()) {
         case 0:
-            sbs_.set_enctyp(blaze::Encode_INDEXED_NOT_ZERO);
+            sbs_.set_enctyp(vlg::Encode_INDEXED_NOT_ZERO);
             break;
         case 1:
-            sbs_.set_enctyp(blaze::Encode_INDEXED_DELTA);
+            sbs_.set_enctyp(vlg::Encode_INDEXED_DELTA);
             break;
         default:
             break;
@@ -201,48 +201,48 @@ void blz_toolkit_sbs_window::on_actionStop_SBS_triggered()
     sbs_.stop();
 }
 
-void blz_toolkit_sbs_window::OnSbsStatusChange(blaze::SubscriptionStatus
+void blz_toolkit_sbs_window::OnSbsStatusChange(vlg::SubscriptionStatus
                                                status)
 {
     switch(status) {
-        case blaze::SubscriptionStatus_UNDEFINED:
+        case vlg::SubscriptionStatus_UNDEFINED:
             ui->sbs_status_label_disp->setText(QObject::tr("UNDEFINED"));
             ui->sbs_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : Beige; color : black;"));
             break;
-        case blaze::SubscriptionStatus_EARLY:
+        case vlg::SubscriptionStatus_EARLY:
             ui->sbs_status_label_disp->setText(QObject::tr("EARLY"));
             ui->sbs_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : Beige; color : black;"));
             break;
-        case blaze::SubscriptionStatus_INITIALIZED:
+        case vlg::SubscriptionStatus_INITIALIZED:
             ui->sbs_status_label_disp->setText(QObject::tr("INITIALIZED"));
             ui->sbs_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : IndianRed; color : black;"));
             break;
-        case blaze::SubscriptionStatus_STOPPED:
+        case vlg::SubscriptionStatus_STOPPED:
             ui->sbs_status_label_disp->setText(QObject::tr("STOPPED"));
             ui->sbs_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : RosyBrown; color : black;"));
             SbsStoppedActions();
             break;
-        case blaze::SubscriptionStatus_REQUEST_SENT:
+        case vlg::SubscriptionStatus_REQUEST_SENT:
             ui->sbs_status_label_disp->setText(QObject::tr("REQUEST SENT"));
             ui->sbs_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : LightGreen; color : black;"));
             break;
-        case blaze::SubscriptionStatus_STARTED:
+        case vlg::SubscriptionStatus_STARTED:
             ui->sbs_status_label_disp->setText(QObject::tr("STARTED"));
             ui->sbs_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : LawnGreen; color : black;"));
             SbsStartedActions();
             break;
-        case blaze::SubscriptionStatus_RELEASED:
+        case vlg::SubscriptionStatus_RELEASED:
             ui->sbs_status_label_disp->setText(QObject::tr("RELEASED"));
             ui->sbs_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : black; color : white;"));
             break;
-        case blaze::SubscriptionStatus_ERROR:
+        case vlg::SubscriptionStatus_ERROR:
             ui->sbs_status_label_disp->setText(QObject::tr("ERROR"));
             ui->sbs_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : Red; color : black;"));
@@ -252,15 +252,15 @@ void blz_toolkit_sbs_window::OnSbsStatusChange(blaze::SubscriptionStatus
     }
 }
 
-void blz_toolkit_sbs_window::OnSbsEvent(blaze::subscription_event_int *sbs_evt)
+void blz_toolkit_sbs_window::OnSbsEvent(vlg::subscription_event_int *sbs_evt)
 {
     //qDebug() << "OnSbsEvent slot called";
     if(sbs_evt->get_evttype() !=
-            blaze::SubscriptionEventType_DOWNLOAD_END) {
+            vlg::SubscriptionEventType_DOWNLOAD_END) {
         sbs_mdl_.offerEntry(sbs_evt->get_obj());
     } else {
     }
-    blaze::collector &c = sbs_evt->get_collector();
+    vlg::collector &c = sbs_evt->get_collector();
     c.release(sbs_evt);
 }
 
@@ -268,7 +268,7 @@ void blz_toolkit_sbs_window::OnCustomMenuRequested(const QPoint &pos)
 {
     QModelIndex proxy_index = ui->blz_class_sbs_table_view->indexAt(pos);
     QModelIndex index = sbs_mdl_.mapToSource(proxy_index);
-    blaze::nclass *item = static_cast<blaze::nclass *>
+    vlg::nclass *item = static_cast<vlg::nclass *>
                           (index.internalPointer());
     if(!item) {
         return;
@@ -291,14 +291,14 @@ void blz_toolkit_sbs_window::OnNewTxRequested()
 
     QModelIndex proxy_index = indexes.at(0);
     QModelIndex index = sbs_mdl_.mapToSource(proxy_index);
-    blaze::nclass *item =
-        static_cast<blaze::nclass *>(index.internalPointer());
+    vlg::nclass *item =
+        static_cast<vlg::nclass *>(index.internalPointer());
 
     if(!item) {
         return;
     }
 
-    const blaze::entity_desc *edesc = NULL;
+    const vlg::entity_desc *edesc = NULL;
     sbs_.get_connection().peer().get_em().get_entity_descriptor(
         item->get_nclass_id(),
         &edesc);
@@ -307,7 +307,7 @@ void blz_toolkit_sbs_window::OnNewTxRequested()
         return;
     }
 
-    blaze::transaction_int *new_tx = NULL;
+    vlg::transaction_int *new_tx = NULL;
     sbs_.get_connection().new_transaction(&new_tx);
     new_tx->set_request_obj(item);
 
@@ -334,16 +334,16 @@ void blz_toolkit_sbs_window::OnNewTxRequested()
     //new_tx_window->activateWindow();
 }
 
-void blz_toolkit_sbs_window::EmitSbsStatus(blaze::SubscriptionStatus
+void blz_toolkit_sbs_window::EmitSbsStatus(vlg::SubscriptionStatus
                                            status)
 {
     emit SignalSbsStatusChange(status);
 }
 
-void blz_toolkit_sbs_window::EmitSbsEvent(blaze::subscription_event_int
+void blz_toolkit_sbs_window::EmitSbsEvent(vlg::subscription_event_int
                                           *sbs_evt)
 {
-    blaze::collector &c = sbs_evt->get_collector();
+    vlg::collector &c = sbs_evt->get_collector();
     c.retain(sbs_evt);
     emit SignalSbsEvent(sbs_evt);
 }
@@ -364,7 +364,7 @@ void blz_toolkit_sbs_window::SbsStoppedActions()
     ui->sbsid_label_disp->setText(QString("%1").arg(sbs_.sbsid()));
 }
 
-blaze::subscription_int &blz_toolkit_sbs_window::sbs() const
+vlg::subscription_int &blz_toolkit_sbs_window::sbs() const
 {
     return sbs_;
 }

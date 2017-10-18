@@ -22,7 +22,7 @@
 #include "blaze_c_pers_driv_sqlite.h"
 #include "blz_drv_sqlite.h"
 
-namespace blaze {
+namespace vlg {
 extern "C" {
 
     persistence_driver_int_wr persistence_driver_sqlite_get_instance()

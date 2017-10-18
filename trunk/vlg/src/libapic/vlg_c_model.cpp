@@ -24,7 +24,7 @@
 #include "blaze_model.h"
 #include "blz_glob_int.h"
 
-namespace blaze {
+namespace vlg {
 extern "C" {
     // BLZ_MEMBER_DESC
 
@@ -702,7 +702,7 @@ extern "C" {
 
     blaze_logger_wr get_blaze_logger_wr(const char *logger_name)
     {
-        return (blaze_logger_wr)blaze::get_nclass_logger(logger_name);
+        return (blaze_logger_wr)vlg::get_nclass_logger(logger_name);
     }
 
 }

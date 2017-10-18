@@ -24,9 +24,9 @@
 #define BLZ_COMP_JAVA_GETTER_PFX         "get"
 #define BLZ_COMP_JAVA_SETTER_PFX         "set"
 
-namespace blaze {
+namespace vlg {
 
-extern blaze::ascii_string unit_nmspace;
+extern vlg::ascii_string unit_nmspace;
 
 /***********************************
 - isJavaStringType
@@ -52,7 +52,7 @@ const char *rec_brackets_cond(member_desc_comp *mdsc)
 /***********************************
 RENDER- BLZ_COMP_JAVA_BLZ_Entity_Ctor
 ***********************************/
-blaze::RetCode BLZ_COMP_JAVA_BLZ_Entity_Ctor(compile_unit &cunit,
+vlg::RetCode BLZ_COMP_JAVA_BLZ_Entity_Ctor(compile_unit &cunit,
                                              entity_desc_comp &edsc,
                                              FILE *file)
 {
@@ -60,8 +60,8 @@ blaze::RetCode BLZ_COMP_JAVA_BLZ_Entity_Ctor(compile_unit &cunit,
             "ctor\n"
             "*****************************************************/\n");
     fprintf(file, "public %s(){\n", edsc.get_entity_name());
-    blaze::hash_map &entitymap = cunit.get_entity_map();
-    blaze::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
+    vlg::hash_map &entitymap = cunit.get_entity_map();
+    vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
     member_desc_comp *mdsc = NULL;
     while(!mmbr_map.next(NULL, &mdsc)) {
@@ -107,7 +107,7 @@ blaze::RetCode BLZ_COMP_JAVA_BLZ_Entity_Ctor(compile_unit &cunit,
             }
         } else if(mdsc->get_nmemb() == 1) {
             //primitive type nmemb == 1
-            blaze::ascii_string ttype, zero_val;
+            vlg::ascii_string ttype, zero_val;
             RETURN_IF_NOT_OK(target_type_from_builtin_BLZ_TYPE(*mdsc, ttype))
             RETURN_IF_NOT_OK(get_zero_val_for_BLZ_TYPE(mdsc->get_field_type(), zero_val))
             fprintf(file, CR_1IND"%s = new %s(%s);\n", mdsc->get_member_name(),
@@ -120,7 +120,7 @@ blaze::RetCode BLZ_COMP_JAVA_BLZ_Entity_Ctor(compile_unit &cunit,
                 fprintf(file, CR_1IND"%s = new String();\n", mdsc->get_member_name());
             } else {
                 //primitive type nmemb > 1
-                blaze::ascii_string ttype, zero_val;
+                vlg::ascii_string ttype, zero_val;
                 RETURN_IF_NOT_OK(target_type_from_builtin_BLZ_TYPE(*mdsc, ttype))
                 RETURN_IF_NOT_OK(get_zero_val_for_BLZ_TYPE(mdsc->get_field_type(), zero_val))
                 fprintf(file, CR_1IND"%s = new %s[%lu];\n", mdsc->get_member_name(),
@@ -136,7 +136,7 @@ blaze::RetCode BLZ_COMP_JAVA_BLZ_Entity_Ctor(compile_unit &cunit,
         }
     }
     fprintf(file, "}");
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /*************************************************************
@@ -162,7 +162,7 @@ java BlazeClass abstract meths
 /***********************************
 RENDER- ABSR_METH_ENT_COPY__Body_impl
 ***********************************/
-blaze::RetCode ABSR_METH_ENT_COPY__Body_impl(compile_unit &cunit,
+vlg::RetCode ABSR_METH_ENT_COPY__Body_impl(compile_unit &cunit,
                                              entity_desc_comp &edsc,
                                              FILE *file)
 {
@@ -171,8 +171,8 @@ blaze::RetCode ABSR_METH_ENT_COPY__Body_impl(compile_unit &cunit,
             CR_1IND"}\n", edsc.get_entity_name(), edsc.get_entity_name());
     fprintf(file, CR_1IND"%s cstout = (%s)out;\n", edsc.get_entity_name(),
             edsc.get_entity_name());
-    blaze::hash_map &entitymap = cunit.get_entity_map();
-    blaze::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
+    vlg::hash_map &entitymap = cunit.get_entity_map();
+    vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
     member_desc_comp *mdsc = NULL;
     while(!mmbr_map.next(NULL, &mdsc)) {
@@ -230,32 +230,32 @@ blaze::RetCode ABSR_METH_ENT_COPY__Body_impl(compile_unit &cunit,
             }
         }
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- ABSR_METH_ENT_CLONE__Body_impl
 ***********************************/
-blaze::RetCode ABSR_METH_ENT_CLONE__Body_impl(compile_unit &cunit,
+vlg::RetCode ABSR_METH_ENT_CLONE__Body_impl(compile_unit &cunit,
                                               entity_desc_comp &edsc,
                                               FILE *file)
 {
     fprintf(file, CR_1IND"BlazeEntity ne = new %s();\n", edsc.get_entity_name());
     fprintf(file, CR_1IND"ne.set(this);\n");
     fprintf(file, CR_1IND"return ne;\n");
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- ABSR_METH_ENT_ISZERO__Body_impl
 ***********************************/
-blaze::RetCode ABSR_METH_ENT_ISZERO__Body_impl(compile_unit &cunit,
+vlg::RetCode ABSR_METH_ENT_ISZERO__Body_impl(compile_unit &cunit,
                                                entity_desc_comp &edsc,
                                                FILE *file)
 {
-    blaze::ascii_string zero_val;
-    blaze::hash_map &entitymap = cunit.get_entity_map();
-    blaze::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
+    vlg::ascii_string zero_val;
+    vlg::hash_map &entitymap = cunit.get_entity_map();
+    vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
     member_desc_comp *mdsc = NULL;
     while(!mmbr_map.next(NULL, &mdsc)) {
@@ -316,19 +316,19 @@ blaze::RetCode ABSR_METH_ENT_ISZERO__Body_impl(compile_unit &cunit,
         }
     }
     fprintf(file, CR_1IND"return true;\n");
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- ABSR_METH_ENT_SETZERO__Body_impl
 ***********************************/
-blaze::RetCode ABSR_METH_ENT_SETZERO__Body_impl(compile_unit &cunit,
+vlg::RetCode ABSR_METH_ENT_SETZERO__Body_impl(compile_unit &cunit,
                                                 entity_desc_comp &edsc,
                                                 FILE *file)
 {
-    blaze::ascii_string zero_val;
-    blaze::hash_map &entitymap = cunit.get_entity_map();
-    blaze::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
+    vlg::ascii_string zero_val;
+    vlg::hash_map &entitymap = cunit.get_entity_map();
+    vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
     member_desc_comp *mdsc = NULL;
     while(!mmbr_map.next(NULL, &mdsc)) {
@@ -383,13 +383,13 @@ blaze::RetCode ABSR_METH_ENT_SETZERO__Body_impl(compile_unit &cunit,
             }
         }
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- ABSR_METH_ENT_SET__Body_impl
 ***********************************/
-blaze::RetCode ABSR_METH_ENT_SET__Body_impl(compile_unit &cunit,
+vlg::RetCode ABSR_METH_ENT_SET__Body_impl(compile_unit &cunit,
                                             entity_desc_comp &edsc,
                                             FILE *file)
 {
@@ -398,8 +398,8 @@ blaze::RetCode ABSR_METH_ENT_SET__Body_impl(compile_unit &cunit,
             CR_1IND"}\n", edsc.get_entity_name(), edsc.get_entity_name());
     fprintf(file, CR_1IND"%s cstin = (%s)in;\n", edsc.get_entity_name(),
             edsc.get_entity_name());
-    blaze::hash_map &entitymap = cunit.get_entity_map();
-    blaze::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
+    vlg::hash_map &entitymap = cunit.get_entity_map();
+    vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
     member_desc_comp *mdsc = NULL;
     while(!mmbr_map.next(NULL, &mdsc)) {
@@ -457,45 +457,45 @@ blaze::RetCode ABSR_METH_ENT_SET__Body_impl(compile_unit &cunit,
             }
         }
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- ABSR_METH_ENT_GCOMPVER__Body_impl
 ***********************************/
-blaze::RetCode ABSR_METH_ENT_GCOMPVER__Body_impl(compile_unit &cunit,
+vlg::RetCode ABSR_METH_ENT_GCOMPVER__Body_impl(compile_unit &cunit,
                                                  entity_desc_comp &edsc,
                                                  FILE *file)
 {
     fprintf(file, CR_1IND"return 0;\n");
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- ABSR_METH_ENT_GENTDSC__Body_impl
 ***********************************/
-blaze::RetCode ABSR_METH_ENT_GENTDSC__Body_impl(compile_unit &cunit,
+vlg::RetCode ABSR_METH_ENT_GENTDSC__Body_impl(compile_unit &cunit,
                                                 entity_desc_comp &edsc,
                                                 FILE *file)
 {
-    blaze::ascii_string ep_nm;
+    vlg::ascii_string ep_nm;
     ep_nm.append(cunit.model_name());
     fprintf(file, CR_1IND"return %s.getBem().getEntityDesc(\"%s\");\n",
             ep_nm.internal_buff(),
             edsc.get_entity_name());
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- ABSR_METH_ENT_PTOBUF__NotZeroMode
 ***********************************/
-blaze::RetCode ABSR_METH_ENT_PTOBUF__NotZeroMode(compile_unit &cunit,
+vlg::RetCode ABSR_METH_ENT_PTOBUF__NotZeroMode(compile_unit &cunit,
                                                  entity_desc_comp &edsc,
                                                  FILE *file)
 {
-    blaze::ascii_string mb_nm;
-    blaze::hash_map &entitymap = cunit.get_entity_map();
-    blaze::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
+    vlg::ascii_string mb_nm;
+    vlg::hash_map &entitymap = cunit.get_entity_map();
+    vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
     member_desc_comp *mdsc = NULL;
     while(!mmbr_map.next(NULL, &mdsc)) {
@@ -591,18 +591,18 @@ blaze::RetCode ABSR_METH_ENT_PTOBUF__NotZeroMode(compile_unit &cunit,
             }
         }
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- ABSR_METH_ENT_PTOBUF__AllFildMode
 ***********************************/
-blaze::RetCode ABSR_METH_ENT_PTOBUF__AllFildMode(compile_unit &cunit,
+vlg::RetCode ABSR_METH_ENT_PTOBUF__AllFildMode(compile_unit &cunit,
                                                  entity_desc_comp &edsc,
                                                  FILE *file)
 {
-    blaze::hash_map &entitymap = cunit.get_entity_map();
-    blaze::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
+    vlg::hash_map &entitymap = cunit.get_entity_map();
+    vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
     member_desc_comp *mdsc = NULL;
     while(!mmbr_map.next(NULL, &mdsc)) {
@@ -678,13 +678,13 @@ blaze::RetCode ABSR_METH_ENT_PTOBUF__AllFildMode(compile_unit &cunit,
             }
         }
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- ABSR_METH_ENT_PTOBUF__Body_impl
 ***********************************/
-blaze::RetCode ABSR_METH_ENT_PTOBUF__Body_impl(compile_unit &cunit,
+vlg::RetCode ABSR_METH_ENT_PTOBUF__Body_impl(compile_unit &cunit,
                                                entity_desc_comp &edsc,
                                                FILE *file)
 {
@@ -709,13 +709,13 @@ blaze::RetCode ABSR_METH_ENT_PTOBUF__Body_impl(compile_unit &cunit,
     //class closing curl brace
     fprintf(file, CR_1IND "buff.append(\"}\");\n");
     fprintf(file, CR_1IND "return 0;\n");
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- ABSR_METH_ENT_SER__IndexedNotZero
 ***********************************/
-blaze::RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
+vlg::RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
                                                  entity_desc_comp &edsc,
                                                  FILE *file)
 {
@@ -725,9 +725,9 @@ blaze::RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
     fprintf(file, CR_3IND"out_buf.mvPos(BlazeFramework.ENTLN_B_SZ);\n");
     fprintf(file,
             CR_3IND"tlen = out_buf.getPos();  //we are reserving 4 bytes for total entity len.\n");
-    blaze::ascii_string mb_nm;
-    blaze::hash_map &entitymap = cunit.get_entity_map();
-    blaze::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
+    vlg::ascii_string mb_nm;
+    vlg::hash_map &entitymap = cunit.get_entity_map();
+    vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
     member_desc_comp *mdsc = NULL;
     while(!mmbr_map.next(NULL, &mdsc)) {
@@ -844,7 +844,7 @@ blaze::RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
                             CR_4IND"bb.clear();\n", mdsc->get_member_name());
                     break;
                 default:
-                    return blaze::RetCode_KO;
+                    return vlg::RetCode_KO;
             }
         } else {
             //primitive type nmemb > 1
@@ -864,11 +864,11 @@ blaze::RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
                                 CR_4IND"}catch(UnsupportedEncodingException e){ e.printStackTrace(); }\n");
                         break;
                     default:
-                        return blaze::RetCode_KO;
+                        return vlg::RetCode_KO;
                 }
             } else {
                 //primitive type nmemb > 1
-                blaze::ascii_string zero_val;
+                vlg::ascii_string zero_val;
                 RETURN_IF_NOT_OK(get_zero_val_for_BLZ_TYPE(mdsc->get_field_type(), zero_val))
                 fprintf(file, CR_4IND"int alen = 0, alen_offst = out_buf.getPos();\n");
                 fprintf(file, CR_4IND"out_buf.mvPos(BlazeFramework.ARRAY_B_SZ);\n");
@@ -917,7 +917,7 @@ blaze::RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
                                 CR_6IND"bb.clear();\n", mdsc->get_member_name());
                         break;
                     default:
-                        return blaze::RetCode_KO;
+                        return vlg::RetCode_KO;
                 }
                 fprintf(file, CR_5IND"}\n");
                 fprintf(file, CR_4IND"}\n");
@@ -933,14 +933,14 @@ blaze::RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
     fprintf(file,
             CR_3IND"out_buf.putByteBuffer(bb, tlen_offst, BlazeFramework.ENTLN_B_SZ);\n");
     fprintf(file, CR_3IND"bb.clear();\n");
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 
 /***********************************
 RENDER- ABSR_METH_ENT_SER__Body_impl -*-SERIALIZE-*-
 ***********************************/
-blaze::RetCode ABSR_METH_ENT_SER__Body_impl(compile_unit &cunit,
+vlg::RetCode ABSR_METH_ENT_SER__Body_impl(compile_unit &cunit,
                                             entity_desc_comp &edsc,
                                             FILE *file)
 {
@@ -952,14 +952,14 @@ blaze::RetCode ABSR_METH_ENT_SER__Body_impl(compile_unit &cunit,
     fprintf(file, CR_2IND"default: return -1;\n");
     fprintf(file, CR_1IND"}\n");
     fprintf(file, CR_1IND"return out_buf.getPos();\n");
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 
 /***********************************
 RENDER- BLZ_COMP_JAVA_BLZ_Entity_abs_meths
 ***********************************/
-blaze::RetCode BLZ_COMP_JAVA_BLZ_Entity_abs_meths(compile_unit &cunit,
+vlg::RetCode BLZ_COMP_JAVA_BLZ_Entity_abs_meths(compile_unit &cunit,
                                                   entity_desc_comp &edsc,
                                                   FILE *file)
 {
@@ -993,13 +993,13 @@ blaze::RetCode BLZ_COMP_JAVA_BLZ_Entity_abs_meths(compile_unit &cunit,
     fprintf(file,  ABSR_METH_ENT_SER"\n");
     RETURN_IF_NOT_OK(ABSR_METH_ENT_SER__Body_impl(cunit, edsc, file))
     fprintf(file, "}\n");
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_JAVA_BLZ_Class_abs_meths
 ***********************************/
-blaze::RetCode BLZ_COMP_JAVA_BLZ_Class_abs_meths(compile_unit &cunit,
+vlg::RetCode BLZ_COMP_JAVA_BLZ_Class_abs_meths(compile_unit &cunit,
                                                  entity_desc_comp &edsc,
                                                  FILE *file)
 {
@@ -1009,21 +1009,21 @@ blaze::RetCode BLZ_COMP_JAVA_BLZ_Class_abs_meths(compile_unit &cunit,
     fprintf(file,  ABSR_METH_GETENTID"\n");
     fprintf(file,  CR_1IND"return %d;\n", edsc.get_entityid());
     fprintf(file, "}\n");
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_JAVA_getter_setter
 ***********************************/
-blaze::RetCode BLZ_COMP_JAVA_getter_setter(compile_unit &cunit,
+vlg::RetCode BLZ_COMP_JAVA_getter_setter(compile_unit &cunit,
                                            entity_desc_comp &edsc,
                                            FILE *file)
 {
     fprintf(file,  "/*****************************************************\n"
             "getter / setter / iszero\n"
             "*****************************************************/\n");
-    blaze::hash_map &entitymap = cunit.get_entity_map();
-    blaze::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
+    vlg::hash_map &entitymap = cunit.get_entity_map();
+    vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
     member_desc_comp *mdsc = NULL;
     while(!mmbr_map.next(NULL, &mdsc)) {
@@ -1031,11 +1031,11 @@ blaze::RetCode BLZ_COMP_JAVA_getter_setter(compile_unit &cunit,
             continue;
         }
         //getter
-        blaze::ascii_string type_str;
+        vlg::ascii_string type_str;
         RETURN_IF_NOT_OK(target_type_from_BLZ_TYPE(*mdsc, entitymap, type_str))
-        blaze::ascii_string meth_name;
+        vlg::ascii_string meth_name;
         RETURN_IF_NOT_OK(meth_name.assign(BLZ_COMP_JAVA_GETTER_PFX))
-        blaze::ascii_string cameled_fld_name;
+        vlg::ascii_string cameled_fld_name;
         RETURN_IF_NOT_OK(cameled_fld_name.assign(mdsc->get_member_name()))
         cameled_fld_name.first_char_uppercase();
         RETURN_IF_NOT_OK(meth_name.append(cameled_fld_name))
@@ -1126,7 +1126,7 @@ blaze::RetCode BLZ_COMP_JAVA_getter_setter(compile_unit &cunit,
                         CR_1IND"%s = val.substring(0, Math.min(val.length(), mdsc.getNmemb()));\n",
                         mdsc->get_member_name());
             } else {
-                blaze::ascii_string ttype;
+                vlg::ascii_string ttype;
                 RETURN_IF_NOT_OK(target_type_from_builtin_BLZ_TYPE(*mdsc, ttype))
                 //primitive type nmemb > 1
                 fprintf(file, "public void %s(%s[] val){\n", meth_name.internal_buff(),
@@ -1139,7 +1139,7 @@ blaze::RetCode BLZ_COMP_JAVA_getter_setter(compile_unit &cunit,
         fprintf(file, "}\n");
         //zero method
         fprintf(file, "public boolean isZero%s(){\n", cameled_fld_name.internal_buff());
-        blaze::ascii_string zero_val;
+        vlg::ascii_string zero_val;
         if(mdsc->get_field_type() == Type_ENTITY) {
             entity_desc_comp *edsc = NULL;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &edsc)) {
@@ -1177,7 +1177,7 @@ blaze::RetCode BLZ_COMP_JAVA_getter_setter(compile_unit &cunit,
             if(isJavaStringType(mdsc)) {
                 fprintf(file, CR_1IND"return \"\".equals(%s);\n", mdsc->get_member_name());
             } else {
-                blaze::ascii_string ttype;
+                vlg::ascii_string ttype;
                 RETURN_IF_NOT_OK(target_type_from_builtin_BLZ_TYPE(*mdsc, ttype))
                 RETURN_IF_NOT_OK(get_zero_val_for_BLZ_TYPE(mdsc->get_field_type(), zero_val))
                 //primitive type nmemb > 1
@@ -1190,14 +1190,14 @@ blaze::RetCode BLZ_COMP_JAVA_getter_setter(compile_unit &cunit,
         }
         fprintf(file, "}\n");
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 
 /***********************************
 RENDER- BLZ_COMP_JAVA_rep
 ***********************************/
-blaze::RetCode BLZ_COMP_JAVA_rep(compile_unit &cunit,
+vlg::RetCode BLZ_COMP_JAVA_rep(compile_unit &cunit,
                                  entity_desc_comp &edsc,
                                  FILE *file)
 {
@@ -1207,7 +1207,7 @@ blaze::RetCode BLZ_COMP_JAVA_rep(compile_unit &cunit,
             "BlazeEntity.restore() method.\n"
             "**USE GETTERS AND SETTERS TO ACCESS REP FIELDS.**\n"
             "*****************************************************/\n");
-    blaze::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
+    vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     member_desc_comp *mdsc = NULL;
     mmbr_map.start_iteration();
     //rep
@@ -1215,7 +1215,7 @@ blaze::RetCode BLZ_COMP_JAVA_rep(compile_unit &cunit,
         if(mdsc->get_member_type() != MemberType_FIELD) {
             continue;
         }
-        blaze::ascii_string type_str;
+        vlg::ascii_string type_str;
         RETURN_IF_NOT_OK(target_type_from_BLZ_TYPE(*mdsc, cunit.get_entity_map(),
                                                    type_str))
         if(mdsc->get_nmemb() > 1) {
@@ -1229,33 +1229,33 @@ blaze::RetCode BLZ_COMP_JAVA_rep(compile_unit &cunit,
         }
         RETURN_IF_NOT_OK(put_newline(file))
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_JAVA_package_decl
 ***********************************/
-blaze::RetCode BLZ_COMP_JAVA_package_decl(FILE *file, const char *nmsp)
+vlg::RetCode BLZ_COMP_JAVA_package_decl(FILE *file, const char *nmsp)
 {
     fprintf(file, "package %s;", nmsp);
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_JAVA_blz_import
 ***********************************/
-blaze::RetCode BLZ_COMP_JAVA_blz_import(FILE *file)
+vlg::RetCode BLZ_COMP_JAVA_blz_import(FILE *file)
 {
     fprintf(file, "import java.io.*;\n");
     fprintf(file, "import java.nio.*;\n");
-    fprintf(file, "import com.blaze.interf.*;\n");
-    return blaze::RetCode_OK;
+    fprintf(file, "import com.vlg.interf.*;\n");
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_JAVA_BlzEnum
 ***********************************/
-blaze::RetCode BLZ_COMP_JAVA_BlzEnum(compile_unit &cunit,
+vlg::RetCode BLZ_COMP_JAVA_BlzEnum(compile_unit &cunit,
                                      entity_desc_comp &edsc,
                                      FILE *efile)
 {
@@ -1263,7 +1263,7 @@ blaze::RetCode BLZ_COMP_JAVA_BlzEnum(compile_unit &cunit,
     fprintf(efile, "/*****************************************************\n"
             "Enum values\n"
             "*****************************************************/\n");
-    blaze::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
+    vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
     member_desc_comp *mdsc = NULL;
     while(!mmbr_map.next(NULL, &mdsc)) {
@@ -1271,13 +1271,13 @@ blaze::RetCode BLZ_COMP_JAVA_BlzEnum(compile_unit &cunit,
                 mdsc->get_member_name(), mdsc->get_enum_value());
     }
     fprintf(efile, "}");
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_JAVA_BlzClass
 ***********************************/
-blaze::RetCode BLZ_COMP_JAVA_BlzClass(compile_unit &cunit,
+vlg::RetCode BLZ_COMP_JAVA_BlzClass(compile_unit &cunit,
                                       entity_desc_comp &edsc,
                                       FILE *efile)
 {
@@ -1298,13 +1298,13 @@ blaze::RetCode BLZ_COMP_JAVA_BlzClass(compile_unit &cunit,
     RETURN_IF_NOT_OK(BLZ_COMP_JAVA_rep(cunit, edsc, efile))
     RETURN_IF_NOT_OK(put_newline(efile))
     fprintf(efile, "}");
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_JAVA_BlzStruct
 ***********************************/
-blaze::RetCode BLZ_COMP_JAVA_BlzStruct(compile_unit &cunit,
+vlg::RetCode BLZ_COMP_JAVA_BlzStruct(compile_unit &cunit,
                                        entity_desc_comp &edsc,
                                        FILE *efile)
 {
@@ -1320,13 +1320,13 @@ blaze::RetCode BLZ_COMP_JAVA_BlzStruct(compile_unit &cunit,
     RETURN_IF_NOT_OK(BLZ_COMP_JAVA_rep(cunit, edsc, efile))
     RETURN_IF_NOT_OK(put_newline(efile))
     fprintf(efile, "}");
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_JAVA_BlzEntityDesc
 ***********************************/
-blaze::RetCode BLZ_COMP_JAVA_BlzEntityDesc(compile_unit &cunit,
+vlg::RetCode BLZ_COMP_JAVA_BlzEntityDesc(compile_unit &cunit,
                                            entity_desc_comp &edsc,
                                            FILE *file)
 {
@@ -1346,7 +1346,7 @@ blaze::RetCode BLZ_COMP_JAVA_BlzEntityDesc(compile_unit &cunit,
             edsc.get_entity_name(),
             edsc.get_field_num(),
             edsc.is_persistent() ? "true" : "false");
-    blaze::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
+    vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
     member_desc_comp *mdsc = NULL;
     while(!mmbr_map.next(NULL, &mdsc)) {
@@ -1381,7 +1381,7 @@ blaze::RetCode BLZ_COMP_JAVA_BlzEntityDesc(compile_unit &cunit,
                 mdsc->get_member_name());
     }
     if(edsc.is_persistent()) {
-        blaze::hash_map &kdesc_map = edsc.get_map_keyid_KDESC_mod();
+        vlg::hash_map &kdesc_map = edsc.get_map_keyid_KDESC_mod();
         kdesc_map.start_iteration();
         key_desc_comp *kdesc = NULL;
         while(!kdesc_map.next(NULL, &kdesc)) {
@@ -1392,7 +1392,7 @@ blaze::RetCode BLZ_COMP_JAVA_BlzEntityDesc(compile_unit &cunit,
                     kdesc->get_key_id(),
                     kdesc->is_primary() ? "true" : "false");
             member_desc_comp *k_mdsc = NULL;
-            blaze::linked_list &kset = kdesc->get_key_member_set_m();
+            vlg::linked_list &kset = kdesc->get_key_member_set_m();
             kset.start_iteration();
             while(!kset.next(&k_mdsc)) {
                 fprintf(file, CR_1IND"%s_%d_kdesc.addMemberDesc(%s_%s_mdesc);\n",
@@ -1407,7 +1407,7 @@ blaze::RetCode BLZ_COMP_JAVA_BlzEntityDesc(compile_unit &cunit,
                     kdesc->get_key_id());
         }
     }
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 extern int comp_ver[4];
@@ -1415,7 +1415,7 @@ extern int comp_ver[4];
 /***********************************
 RENDER- BLZ_COMP_Render_ModelVersion__Java_
 ***********************************/
-blaze::RetCode BLZ_COMP_Render_ModelVersion__Java_(compile_unit &cunit,
+vlg::RetCode BLZ_COMP_Render_ModelVersion__Java_(compile_unit &cunit,
                                                    FILE *file)
 {
     fprintf(file,   "/*****************************************************\n"
@@ -1433,18 +1433,18 @@ blaze::RetCode BLZ_COMP_Render_ModelVersion__Java_(compile_unit &cunit,
             comp_ver[3],
             __DATE__);
     fprintf(file, "}\n");
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 /***********************************
 RENDER- BLZ_COMP_JAVA_EntryPoint
 ***********************************/
-blaze::RetCode BLZ_COMP_JAVA_EntryPoint(compile_unit &cunit,
-                                        blaze::ascii_string &dfile_nm,
+vlg::RetCode BLZ_COMP_JAVA_EntryPoint(compile_unit &cunit,
+                                        vlg::ascii_string &dfile_nm,
                                         FILE *file)
 {
-    blaze::ascii_string_tok tknz;
-    blaze::ascii_string ep_name;
+    vlg::ascii_string_tok tknz;
+    vlg::ascii_string ep_name;
     RETURN_IF_NOT_OK(tknz.init(dfile_nm))
     RETURN_IF_NOT_OK(tknz.next_token(ep_name, BLZ_COMP_DOT))
     fprintf(file, "/*****************************************************\n"
@@ -1459,7 +1459,7 @@ blaze::RetCode BLZ_COMP_JAVA_EntryPoint(compile_unit &cunit,
             CR_2IND"return bem;\n"
             CR_1IND"}\n");
     fprintf(file, CR_1IND"bem = new BlazeEntityManager();\n");
-    blaze::hash_map &entitymap = cunit.get_entity_map();
+    vlg::hash_map &entitymap = cunit.get_entity_map();
     entitymap.start_iteration();
     entity_desc_comp *edsc = NULL;
     while(!entitymap.next(NULL, &edsc)) {
@@ -1470,19 +1470,19 @@ blaze::RetCode BLZ_COMP_JAVA_EntryPoint(compile_unit &cunit,
     fprintf(file, "}\n");
     RETURN_IF_NOT_OK(BLZ_COMP_Render_ModelVersion__Java_(cunit, file))
     fprintf(file, "}");
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 
 /***********************************
 ENTRYPOINT- BLZ_COMP_Compile_Java
 ***********************************/
-blaze::RetCode compile_Java(compile_unit &cunit)
+vlg::RetCode compile_Java(compile_unit &cunit)
 {
-    blaze::hash_map &entitymap = cunit.get_entity_map();
+    vlg::hash_map &entitymap = cunit.get_entity_map();
     entitymap.start_iteration();
     entity_desc_comp *edsc = NULL;
-    blaze::ascii_string efile_n;
+    vlg::ascii_string efile_n;
     FILE *efile = NULL;
     //render entities
     while(!entitymap.next(NULL, &edsc)) {
@@ -1505,13 +1505,13 @@ blaze::RetCode compile_Java(compile_unit &cunit)
                 RETURN_IF_NOT_OK(BLZ_COMP_JAVA_BlzClass(cunit, *edsc, efile))
                 break;
             default:
-                return blaze::RetCode_KO;
+                return vlg::RetCode_KO;
         }
         RETURN_IF_NOT_OK(put_newline(efile))
         fclose(efile);
     }
     //render entities descriptors
-    blaze::ascii_string dfile_nm;
+    vlg::ascii_string dfile_nm;
     dfile_nm.append(cunit.model_name());
     RETURN_IF_NOT_OK(dfile_nm.append(".java"));
     FILE *dfile = NULL;
@@ -1526,7 +1526,7 @@ blaze::RetCode compile_Java(compile_unit &cunit)
     RETURN_IF_NOT_OK(put_newline(dfile))
     RETURN_IF_NOT_OK(BLZ_COMP_JAVA_EntryPoint(cunit, dfile_nm, dfile))
     fclose(dfile);
-    return blaze::RetCode_OK;
+    return vlg::RetCode_OK;
 }
 
 }

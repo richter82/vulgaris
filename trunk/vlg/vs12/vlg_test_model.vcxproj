@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>test_blz_model</ProjectName>
+    <ProjectName>vlg_test_model</ProjectName>
     <ProjectGuid>{8F4C04B8-FED3-4036-ACFD-7C199FB8654C}</ProjectGuid>
     <RootNamespace>blz_test_model</RootNamespace>
     <Keyword>Win32Proj</Keyword>

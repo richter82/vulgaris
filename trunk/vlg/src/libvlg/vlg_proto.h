@@ -23,12 +23,12 @@
 #define BLZ_PROTO_H_
 
 /*****************************************
-BLAZE PROTOCOL PUBLIC INTERFACE
+vlg PROTOCOL PUBLIC INTERFACE
 
 VER: 000001
 ******************************************/
 
-namespace blaze {
+namespace vlg {
 
 class tx_id;
 
@@ -320,7 +320,7 @@ int dump_blz_hdr_rec(const blz_hdr_ptr hdr,
 
 const char *dump_raw_pkt(bool all, const unsigned char *pkt,
                          size_t pkt_sz,
-                         blaze::ascii_string &out);
+                         vlg::ascii_string &out);
 
 /*****************************************
  GLOB PROTO UTILS
@@ -335,28 +335,28 @@ typedef unsigned int time_stamp;
 //TEST REQUEST
 void build_PKT_TSTREQ(time_stamp                tstamp,
                       unsigned int              connid,
-                      blaze::grow_byte_buffer   *obb);
+                      vlg::grow_byte_buffer   *obb);
 
 //HEARTBEAT
 void build_PKT_HRTBET(time_stamp                tstamp,
                       unsigned int              connid,
-                      blaze::grow_byte_buffer   *obb);
+                      vlg::grow_byte_buffer   *obb);
 
 //CONNECTION REQUEST
 void build_PKT_CONREQ(unsigned short            clihbt,
-                      blaze::grow_byte_buffer   *obb);
+                      vlg::grow_byte_buffer   *obb);
 
 //CONNECTION RESPONSE
 void build_PKT_CONRES(ConnectionResult          conres,
                       ConnectionResultReason    errcod,
                       unsigned short            agrhbt,
                       unsigned int              connid,
-                      blaze::grow_byte_buffer   *obb);
+                      vlg::grow_byte_buffer   *obb);
 
 //DISCONNECTED
 void build_PKT_DSCOND(DisconnectionResultReason disres,
                       unsigned int              connid,
-                      blaze::grow_byte_buffer   *obb);
+                      vlg::grow_byte_buffer   *obb);
 
 //TRANSACTION REQUEST
 void build_PKT_TXRQST(TransactionRequestType    txtype,
@@ -366,7 +366,7 @@ void build_PKT_TXRQST(TransactionRequestType    txtype,
                       Encode                    enctyp,
                       unsigned int              nclsid,
                       unsigned int              connid,
-                      blaze::grow_byte_buffer   *obb);
+                      vlg::grow_byte_buffer   *obb);
 
 //TRANSACTION RESPONSE
 void build_PKT_TXRESP(TransactionResult         txresl,
@@ -375,7 +375,7 @@ void build_PKT_TXRESP(TransactionResult         txresl,
                       bool                      rescls,
                       Encode                    enctyp,
                       unsigned int              nclsid,
-                      blaze::grow_byte_buffer   *obb);
+                      vlg::grow_byte_buffer   *obb);
 
 //SUBSCRIPTION REQUEST
 void build_PKT_SBSREQ(SubscriptionType          sbstyp,
@@ -388,14 +388,14 @@ void build_PKT_SBSREQ(SubscriptionType          sbstyp,
                       unsigned int              rqstid,
                       unsigned int              tmstp0,
                       unsigned int              tmstp1,
-                      blaze::grow_byte_buffer   *obb);
+                      vlg::grow_byte_buffer   *obb);
 
 //SUBSCRIPTION RESPONSE
 void build_PKT_SBSRES(SubscriptionResponse      sbresl,
                       ProtocolCode              blzcod,
                       unsigned int              rqstid,
                       unsigned int              sbsrid,
-                      blaze::grow_byte_buffer   *obb);
+                      vlg::grow_byte_buffer   *obb);
 
 //SUBSCRIPTION EVENT
 void build_PKT_SBSEVT(unsigned int              sbsrid,
@@ -405,22 +405,22 @@ void build_PKT_SBSEVT(unsigned int              sbsrid,
                       unsigned int              sevtid,
                       unsigned int              tmstp0,
                       unsigned int              tmstp1,
-                      blaze::grow_byte_buffer   *obb);
+                      vlg::grow_byte_buffer   *obb);
 
 //SUBSCRIPTION EVENT ACK
 void build_PKT_SBSACK(unsigned int              sbsrid,
                       unsigned int              sevtid,
-                      blaze::grow_byte_buffer   *obb);
+                      vlg::grow_byte_buffer   *obb);
 
 //SUBSCRIPTION STOP REQUEST
 void build_PKT_SBSTOP(unsigned int              sbsrid,
-                      blaze::grow_byte_buffer   *obb);
+                      vlg::grow_byte_buffer   *obb);
 
 //SUBSCRIPTION STOP RESPONSE
 void build_PKT_SBSSPR(SubscriptionResponse      sbresl,
                       ProtocolCode              blzcod,
                       unsigned int              sbsrid,
-                      blaze::grow_byte_buffer   *obb);
+                      vlg::grow_byte_buffer   *obb);
 
 }
 

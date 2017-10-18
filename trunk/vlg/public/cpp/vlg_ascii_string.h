@@ -21,9 +21,9 @@
 
 #ifndef BLZ_ASCIISTR_H_
 #define BLZ_ASCIISTR_H_
-#include "blaze.h"
+#include "vlg.h"
 
-namespace blaze {
+namespace vlg {
 
 /** @brief Basic ascii string class.
 */

@@ -22,7 +22,7 @@
 #ifndef CR_DL_H_
 #define CR_DL_H_
 
-namespace blaze {
+namespace vlg {
 
 /**
 dynamic lib loading

@@ -56,9 +56,9 @@ class blz_toolkit_tx_window : public QMainWindow {
         Q_OBJECT
 
     public:
-        explicit blz_toolkit_tx_window(const blaze::entity_desc &edesc,
-                                       const blaze::entity_manager &bem,
-                                       blaze::transaction_int &tx,
+        explicit blz_toolkit_tx_window(const vlg::entity_desc &edesc,
+                                       const vlg::entity_manager &bem,
+                                       vlg::transaction_int &tx,
                                        blz_toolkit_tx_blz_class_model &mdl,
                                        QWidget *parent = 0);
         ~blz_toolkit_tx_window();
@@ -68,7 +68,7 @@ class blz_toolkit_tx_window : public QMainWindow {
 
 
     public slots:
-        void OnTxStatusChange(blaze::TransactionStatus status);
+        void OnTxStatusChange(vlg::TransactionStatus status);
         void OnTxClosure();
 
     private slots:
@@ -76,11 +76,11 @@ class blz_toolkit_tx_window : public QMainWindow {
         void on_actionReNew_TX_triggered();
 
     public:
-        void EmitTxStatus(blaze::TransactionStatus status);
+        void EmitTxStatus(vlg::TransactionStatus status);
         void EmitTxClosure();
 
     signals:
-        void SignalTxStatusChange(blaze::TransactionStatus status);
+        void SignalTxStatusChange(vlg::TransactionStatus status);
         void SignalTxClosure();
 
 
@@ -93,8 +93,8 @@ class blz_toolkit_tx_window : public QMainWindow {
          ****/
 
     private:
-        const blaze::entity_manager &bem_;
-        blaze::transaction_int &tx_;
+        const vlg::entity_manager &bem_;
+        vlg::transaction_int &tx_;
         blz_toolkit_tx_model tx_mdl_wrp_;
 
 

@@ -21,7 +21,7 @@
 
 #include "cr_dl.h"
 
-namespace blaze {
+namespace vlg {
 
 #if defined(WIN32)
 #include <windows.h>

@@ -21,9 +21,9 @@
 
 #ifndef BLZ_LOG_H_
 #define BLZ_LOG_H_
-#include "blaze.h"
+#include "vlg.h"
 
-namespace blaze {
+namespace vlg {
 
 /** @brief class appender.
 */
@@ -159,12 +159,12 @@ class logger {
 
 }
 
-namespace blaze {
+namespace vlg {
 
 /** @brief  nclass_logger is a convenient logger with specialized methods
             accepting nclass objects.
 */
-class nclass_logger : public blaze::logger {
+class nclass_logger : public vlg::logger {
     public:
         //---ctors
         explicit nclass_logger();

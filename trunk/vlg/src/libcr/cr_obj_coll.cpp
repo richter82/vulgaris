@@ -23,7 +23,7 @@
 #include "blaze_logger.h"
 #include "blz_glob_int.h"
 
-namespace blaze {
+namespace vlg {
 
 // Collectable
 collectable::~collectable() {}

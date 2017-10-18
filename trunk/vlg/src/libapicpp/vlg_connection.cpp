@@ -26,19 +26,19 @@
 #include "blz_peer_int.h"
 #include "blz_connection_int.h"
 
-namespace blaze {
+namespace vlg {
 
-extern blaze::synch_hash_map &int_publ_peer_map();
+extern vlg::synch_hash_map &int_publ_peer_map();
 
-blaze::synch_hash_map *int_publ_srv_conn_map_ = NULL;  //int --> publ
-blaze::synch_hash_map &int_publ_srv_conn_map()
+vlg::synch_hash_map *int_publ_srv_conn_map_ = NULL;  //int --> publ
+vlg::synch_hash_map &int_publ_srv_conn_map()
 {
     if(int_publ_srv_conn_map_) {
         return *int_publ_srv_conn_map_;
     }
-    if(!(int_publ_srv_conn_map_ = new blaze::synch_hash_map(
-        blaze::sngl_ptr_obj_mng(),
-        blaze::sngl_ptr_obj_mng()))) {
+    if(!(int_publ_srv_conn_map_ = new vlg::synch_hash_map(
+        vlg::sngl_ptr_obj_mng(),
+        vlg::sngl_ptr_obj_mng()))) {
         EXIT_ACTION("failed creating int_publ_srv_conn_map_\n")
     }
     int_publ_srv_conn_map_->init(HM_SIZE_SMALL);
@@ -109,7 +109,7 @@ class connection_impl {
                         int_->disconnect(DisconnectionResultReason_APPLICATIVE);
                         int_->await_for_disconnection_result(cres, cevttyp);
                     }
-                    blaze::collector &c = int_->get_collector();
+                    vlg::collector &c = int_->get_collector();
                     c.release(int_);
                 } else {
                 }
@@ -164,17 +164,17 @@ class connection_impl {
             int_->set_sbs_factory_ud(sbs_factory_);
         }
 
-        blaze::RetCode bind_internal(peer &p) {
-            blaze::RetCode cdrs_res = blaze::RetCode_OK;
+        vlg::RetCode bind_internal(peer &p) {
+            vlg::RetCode cdrs_res = vlg::RetCode_OK;
             if(!int_) { //ugly test to detect outgoing/ingoing connection type..
                 connection_int *c_int = NULL;
                 if((cdrs_res = p.get_internal()->new_connection(&c_int,
                                                                 blz_conn_factory_cimpl,
                                                                 ConnectionType_OUTGOING,
                                                                 0,
-                                                                &publ_)) == blaze::RetCode_OK) {
+                                                                &publ_)) == vlg::RetCode_OK) {
                     int_ = c_int;
-                    blaze::collector &c = int_->get_collector();
+                    vlg::collector &c = int_->get_collector();
                     c.retain(int_);
                 }
             } else {
@@ -198,13 +198,13 @@ class connection_impl {
 //connection MEMORY MNGMENT BEGIN
 //*************************************
 
-class connection_collector : public blaze::collector {
+class connection_collector : public vlg::collector {
     public:
-        connection_collector() : blaze::collector("connection") {}
+        connection_collector() : vlg::collector("connection") {}
 };
 
-blaze::collector *inst_connection_collector = NULL;
-blaze::collector &get_inst_connection_collector()
+vlg::collector *inst_connection_collector = NULL;
+vlg::collector &get_inst_connection_collector()
 {
     if(inst_connection_collector) {
         return *inst_connection_collector;
@@ -215,7 +215,7 @@ blaze::collector &get_inst_connection_collector()
     return *inst_connection_collector;
 }
 
-blaze::collector &connection::get_collector()
+vlg::collector &connection::get_collector()
 {
     return get_inst_connection_collector();
 }
@@ -235,7 +235,7 @@ connection::connection()
 
 connection::~connection()
 {
-    blaze::collector &c = get_collector();
+    vlg::collector &c = get_collector();
     if((c.is_instance_collected(this))) {
         IFLOG(cri(TH_ID, LS_DTR "%s(ptr:%p)" D_W_R_COLL LS_EXUNX,
                   __func__,
@@ -247,7 +247,7 @@ connection::~connection()
     IFLOG(trc(TH_ID, LS_DTR "%s(ptr:%p)", __func__, this))
 }
 
-blaze::RetCode connection::bind(peer &p)
+vlg::RetCode connection::bind(peer &p)
 {
     impl_->set_peer(p);
     return impl_->bind_internal(p);
@@ -299,7 +299,7 @@ ConnectionStatus connection::get_status()
     return impl_->get_conn()->status();
 }
 
-blaze::RetCode connection::await_for_status_reached_or_outdated(
+vlg::RetCode connection::await_for_status_reached_or_outdated(
     ConnectionStatus test, ConnectionStatus &current,
     time_t sec, long nsec)
 {
@@ -309,7 +309,7 @@ blaze::RetCode connection::await_for_status_reached_or_outdated(
                                                                    nsec);
 }
 
-blaze::RetCode connection::await_for_status_change(ConnectionStatus
+vlg::RetCode connection::await_for_status_change(ConnectionStatus
                                                    &status,
                                                    time_t sec,
                                                    long nsec)
@@ -324,12 +324,12 @@ void connection::set_connection_status_change_handler(connection_status_change
     impl_->set_csh_ud(ud);
 }
 
-blaze::RetCode connection::connect(sockaddr_in &connection_params)
+vlg::RetCode connection::connect(sockaddr_in &connection_params)
 {
     return impl_->get_conn()->client_connect(connection_params);
 }
 
-blaze::RetCode connection::await_for_connection_result(
+vlg::RetCode connection::await_for_connection_result(
     ConnectivityEventResult
     &con_evt_res,
     ConnectivityEventType &connectivity_evt_type,
@@ -340,13 +340,13 @@ blaze::RetCode connection::await_for_connection_result(
                                                           connectivity_evt_type, sec, nsec);
 }
 
-blaze::RetCode connection::disconnect(DisconnectionResultReason
+vlg::RetCode connection::disconnect(DisconnectionResultReason
                                       reason_code)
 {
     return impl_->get_conn()->disconnect(reason_code);
 }
 
-blaze::RetCode connection::await_for_disconnection_result(
+vlg::RetCode connection::await_for_disconnection_result(
     ConnectivityEventResult &con_evt_res,
     ConnectivityEventType &connectivity_evt_type,
     time_t sec,
@@ -428,7 +428,7 @@ class cimpl_conn_int_server : public connection_int {
             /************************
             RELEASE_ID: CPB_SRV_01
             ************************/
-            blaze::collector &c = publ_.get_collector();
+            vlg::collector &c = publ_.get_collector();
             c.release(&publ_);
         }
         virtual void on_connect(ConnectivityEventResult con_evt_res,
@@ -471,7 +471,7 @@ connection_int *connection_factory::conn_factory_int_f(peer_int &peer_internal,
         EXIT_ACTION("failed get instance from int_publ_peer_map\n")
     }
     connection *publ = csf->new_connection(*p_publ);
-    blaze::collector &c = publ->get_collector();
+    vlg::collector &c = publ->get_collector();
     /************************
     RETAIN_ID: CPB_SRV_01
     ************************/
