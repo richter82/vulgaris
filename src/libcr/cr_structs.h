@@ -189,7 +189,7 @@ class cstr_obj_mng : public obj_mng {
 
 */
 class int_obj_mng : public obj_mng {
-        friend int_obj_mng &sngl_int_obj_mng();
+        friend int_obj_mng &sngl_impl_obj_mng();
     public:
 
         /**
@@ -213,7 +213,7 @@ cstr_obj_mng &sngl_cstr_obj_mng();
 /**
 @return
 */
-int_obj_mng &sngl_int_obj_mng();
+int_obj_mng &sngl_impl_obj_mng();
 
 class linked_list;
 

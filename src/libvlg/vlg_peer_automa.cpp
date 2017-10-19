@@ -20,12 +20,12 @@
  */
 
 #include "cr.h"
-#include "blz_peer_automa.h"
+#include "vlg_peer_automa.h"
 
 namespace vlg {
 
 //-----------------------------
-// BLZ_PEER_LFCYC_PTHD
+// VLG_PEER_LFCYC_PTHD
 //-----------------------------
 class peer_automa_th : public vlg::p_thread {
     public:
@@ -57,12 +57,12 @@ class peer_automa_th : public vlg::p_thread {
 vlg::logger *peer_automa_th::log_ = NULL;
 
 //-----------------------------
-// BLZ_PEER_LFCYC
+// VLG_PEER_LFCYC
 //-----------------------------
 
 vlg::logger *peer_automa::peer_log_ = NULL;
 
-void peer_automa::blz_peer_param_clbk_ud(int pnum, const char *param,
+void peer_automa::vlg_peer_param_clbk_ud(int pnum, const char *param,
                                          const char *value, void *ud)
 {
     peer_automa *peer = static_cast<peer_automa *>(ud);
@@ -74,7 +74,7 @@ void peer_automa::blz_peer_param_clbk_ud(int pnum, const char *param,
 }
 
 //-----------------------------
-// BLZ_PEER_LFCYC CTORS - INIT - DESTROY
+// VLG_PEER_LFCYC CTORS - INIT - DESTROY
 //
 //-----------------------------
 
@@ -113,7 +113,7 @@ peer_automa::~peer_automa()
 
 vlg::RetCode peer_automa::set_params_file_path_name(const char *file_path)
 {
-    strncpy(peer_cfg_file_path_name_,file_path, BLZ_PEER_CFG_FILE_PATH_NAME_LEN);
+    strncpy(peer_cfg_file_path_name_,file_path, VLG_PEER_CFG_FILE_PATH_NAME_LEN);
     return vlg::RetCode_OK;
 }
 
@@ -278,9 +278,9 @@ vlg::RetCode peer_automa::await_for_peer_status_condition(
 }
 
 vlg::RetCode peer_automa::await_for_peer_status_change(PeerStatus
-                                                         &peer_status,
-                                                         time_t sec,
-                                                         long nsec)
+                                                       &peer_status,
+                                                       time_t sec,
+                                                       long nsec)
 {
     IFLOG2(peer_log_, trc(TH_ID, LS_OPN "%s(peer_id:%d, peer_status:%d)", __func__,
                           peer_id_, peer_status))
@@ -318,8 +318,8 @@ vlg::RetCode peer_automa::await_for_peer_status_change(PeerStatus
 //ACTIONS
 
 vlg::RetCode peer_automa::start_peer(int argc,
-                                       char *argv[],
-                                       bool spawn_new_thread)
+                                     char *argv[],
+                                     bool spawn_new_thread)
 {
     IFLOG2(peer_log_, trc(TH_ID, LS_OPN "%s(peer_id:%d)", __func__, peer_id_))
     if(peer_status_ != PeerStatus_EARLY &&
@@ -337,7 +337,7 @@ vlg::RetCode peer_automa::start_peer(int argc,
             IFLOG2(peer_log_, fat(TH_ID, LS_APL"[EARLY FAIL: INVALID PEERNAME]"))
             return vlg::RetCode_EXIT;
         }
-        strncpy(peer_name_, peer_name, BLZ_PEER_NAME_LEN-1);
+        strncpy(peer_name_, peer_name, VLG_PEER_NAME_LEN-1);
         const unsigned int *peer_ver = peer_ver_usr();
         if(!peer_ver) {
             IFLOG2(peer_log_, fat(TH_ID, LS_APL"[EARLY FAIL: INVALID PEERVER]"))
@@ -527,7 +527,7 @@ vlg::RetCode peer_automa::peer_init()
                                   peer_last_error_))
             return vlg::RetCode_BADCFG;
         }
-        peer_conf_ldr_.enum_params(blz_peer_param_clbk_ud, this);
+        peer_conf_ldr_.enum_params(vlg_peer_param_clbk_ud, this);
     } else {
         IFLOG2(peer_log_, inf(TH_ID,
                               LS_APL"[INIT][THIS PEER HAS ALREADY BEEN CONFIGURED]"))
@@ -640,15 +640,15 @@ const char *peer_automa::peer_name_usr()
     return "peer_standard_name";
 }
 
-unsigned int BLZ_STD_PEER_VER[] = {0,0,0,0};
+unsigned int VLG_STD_PEER_VER[] = {0,0,0,0};
 
 const unsigned int *peer_automa::peer_ver_usr()
 {
-    return BLZ_STD_PEER_VER;
+    return VLG_STD_PEER_VER;
 }
 
 vlg::RetCode peer_automa::peer_load_cfg_usr(int pnum, const char *param,
-                                              const char *value)
+                                            const char *value)
 {
     return vlg::RetCode_OK;
 }

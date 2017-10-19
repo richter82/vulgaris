@@ -19,9 +19,9 @@
  *
  */
 
-#include "blaze_memory.h"
-#include "blaze_logger.h"
-#include "blz_glob_int.h"
+#include "vlg_memory.h"
+#include "vlg_logger.h"
+#include "vlg_globint.h"
 
 namespace vlg {
 

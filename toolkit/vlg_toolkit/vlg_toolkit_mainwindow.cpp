@@ -19,27 +19,27 @@
  *
  */
 
-#include "blz_toolkit_mainwindow.h"
-#include "ui_blz_toolkit_mainwindow.h"
+#include "vlg_toolkit_mainwindow.h"
+#include "ui_vlg_toolkit_mainwindow.h"
 
-void blz_toolkit_peer_lfcyc_status_change_hndlr(vlg::peer_automa &peer,
+void vlg_toolkit_peer_lfcyc_status_change_hndlr(vlg::peer_automa &peer,
                                                 vlg::PeerStatus status,
                                                 void *ud)
 {
-    blz_toolkit_MainWindow *btmw = (blz_toolkit_MainWindow *)ud;
+    vlg_toolkit_MainWindow *btmw = (vlg_toolkit_MainWindow *)ud;
     qDebug() << "peer status:" << status;
     btmw->EmitPeerStatus(status);
 }
 
 
-blz_toolkit_MainWindow::blz_toolkit_MainWindow(QWidget *parent) :
+vlg_toolkit_MainWindow::vlg_toolkit_MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::blz_toolkit_MainWindow),
+    ui(new Ui::vlg_toolkit_MainWindow),
     peer_(77),
     view_model_loaded_(false),
     blzmodel_load_list_model_(this),
     pers_dri_file_load_list_model_(this),
-    blz_model_loaded_model_(peer_.get_em_m(), this),
+    vlg_model_loaded_model_(peer_.get_em_m(), this),
     pte_apnd_(this),
     flash_info_msg_val_(0)
 {
@@ -68,7 +68,7 @@ blz_toolkit_MainWindow::blz_toolkit_MainWindow(QWidget *parent) :
 
     //peer_ e_init bgn
     vlg::RetCode res = vlg::RetCode_OK;
-    peer_.set_peer_status_change_hndlr(blz_toolkit_peer_lfcyc_status_change_hndlr,
+    peer_.set_peer_status_change_hndlr(vlg_toolkit_peer_lfcyc_status_change_hndlr,
                                        this);
     if(res = peer_.early_init()) {
         qDebug() << "peer EarlyInit FAILED res:" << res;
@@ -80,13 +80,13 @@ blz_toolkit_MainWindow::blz_toolkit_MainWindow(QWidget *parent) :
     LoadDefPeerCfgFile();
 }
 
-blz_toolkit_MainWindow::~blz_toolkit_MainWindow()
+vlg_toolkit_MainWindow::~vlg_toolkit_MainWindow()
 {
     vlg::logger::remove_last_appender_from_all_loggers();
     delete ui;
 }
 
-void blz_toolkit_MainWindow::InitGuiConfig()
+void vlg_toolkit_MainWindow::InitGuiConfig()
 {
     qRegisterMetaType<vlg::TraceLVL>("vlg::TraceLVL");
     qRegisterMetaType<QTextCursor>("QTextCursor");
@@ -95,7 +95,7 @@ void blz_toolkit_MainWindow::InitGuiConfig()
     qRegisterMetaType<vlg::TransactionStatus>("vlg::TransactionStatus");
     qRegisterMetaType<vlg::SubscriptionStatus>("vlg::SubscriptionStatus");
     qRegisterMetaType<vlg::subscription_event_int *>("vlg::subscription_event_int");
-    qRegisterMetaType<BLZ_SBS_COL_DATA_ENTRY *>("BLZ_SBS_COL_DATA_ENTRY");
+    qRegisterMetaType<VLG_SBS_COL_DATA_ENTRY *>("VLG_SBS_COL_DATA_ENTRY");
 
     ui->action_Start_Peer->setDisabled(true);
     ui->action_Stop_Peer->setDisabled(true);
@@ -128,14 +128,14 @@ void blz_toolkit_MainWindow::InitGuiConfig()
     connect(ui->set_peer_cfg_all_button, SIGNAL(clicked()), this,
             SLOT(on_set_pers_driver_button_clicked()));
 
-    //blz_model
-    connect(this, SIGNAL(BLZ_MODEL_Update_event()), this,
-            SLOT(On_BLZ_MODEL_Update()));
-    connect(this, SIGNAL(BLZ_MODEL_Update_event()), &blz_model_loaded_model_,
+    //vlg_model
+    connect(this, SIGNAL(VLG_MODEL_Update_event()), this,
+            SLOT(On_VLG_MODEL_Update()));
+    connect(this, SIGNAL(VLG_MODEL_Update_event()), &vlg_model_loaded_model_,
             SLOT(OnModelUpdate_event()));
 }
 
-void blz_toolkit_MainWindow::closeEvent(QCloseEvent *event)
+void vlg_toolkit_MainWindow::closeEvent(QCloseEvent *event)
 {
     QString appName = qApp->applicationName();
     QString text = "<p>Confirm Exit?</p>";
@@ -157,25 +157,25 @@ void blz_toolkit_MainWindow::closeEvent(QCloseEvent *event)
     event->accept();
 }
 
-void blz_toolkit_MainWindow::on_action_Exit_triggered()
+void vlg_toolkit_MainWindow::on_action_Exit_triggered()
 {
     close();
 }
 
-void blz_toolkit_MainWindow::peer_params_clbk_ud(int pnum, const char *param,
+void vlg_toolkit_MainWindow::peer_params_clbk_ud(int pnum, const char *param,
                                                  const char *value, void *ud)
 {
-    blz_toolkit_MainWindow *mw = (blz_toolkit_MainWindow *)ud;
+    vlg_toolkit_MainWindow *mw = (vlg_toolkit_MainWindow *)ud;
     mw->PeerLoadCfgHndl(pnum, param, value);
 }
 
 //------------------------------------------------------------------------------
-// blz_toolkit_MainWindow::PeerLoadCfgHndl
+// vlg_toolkit_MainWindow::PeerLoadCfgHndl
 //------------------------------------------------------------------------------
 
-vlg::RetCode blz_toolkit_MainWindow::PeerLoadCfgHndl(int pnum,
-                                                       const char *param,
-                                                       const char *value)
+vlg::RetCode vlg_toolkit_MainWindow::PeerLoadCfgHndl(int pnum,
+                                                     const char *param,
+                                                     const char *value)
 {
     if(!strcmp(param, "pure_server")) {
         ui->pp_cfg_peer_personality->setCurrentIndex(1);
@@ -306,7 +306,7 @@ vlg::RetCode blz_toolkit_MainWindow::PeerLoadCfgHndl(int pnum,
     return vlg::RetCode_OK;
 }
 
-void blz_toolkit_MainWindow::on_action_Load_Config_triggered()
+void vlg_toolkit_MainWindow::on_action_Load_Config_triggered()
 {
     vlg::RetCode res = vlg::RetCode_OK;
     QString fileName = QFileDialog::getOpenFileName(this, tr("Load Config"),
@@ -329,7 +329,7 @@ void blz_toolkit_MainWindow::on_action_Load_Config_triggered()
     peer_conf_ldr.enum_params(peer_params_clbk_ud, this);
 }
 
-void blz_toolkit_MainWindow::on_set_peer_params_button_clicked()
+void vlg_toolkit_MainWindow::on_set_peer_params_button_clicked()
 {
     switch(ui->pp_cfg_peer_personality->currentIndex()) {
         case 0:
@@ -374,7 +374,7 @@ void blz_toolkit_MainWindow::on_set_peer_params_button_clicked()
     ui->action_Start_Peer->setEnabled(true);
 }
 
-void blz_toolkit_MainWindow::on_update_peer_model_button_clicked()
+void vlg_toolkit_MainWindow::on_update_peer_model_button_clicked()
 {
     int numRows = blzmodel_load_list_model_.rowCount();
     for(int row = 0; row < numRows; ++row) {
@@ -387,7 +387,7 @@ void blz_toolkit_MainWindow::on_update_peer_model_button_clicked()
         tr("background-color : LightGreen; color : black;"));
 }
 
-void blz_toolkit_MainWindow::on_set_pers_driver_button_clicked()
+void vlg_toolkit_MainWindow::on_set_pers_driver_button_clicked()
 {
     int numRows = pers_dri_file_load_list_model_.rowCount();
     for(int row = 0; row < numRows; ++row) {
@@ -400,13 +400,13 @@ void blz_toolkit_MainWindow::on_set_pers_driver_button_clicked()
         tr("background-color : LightGreen; color : black;"));
 }
 
-void blz_toolkit_MainWindow::on_action_Start_Peer_triggered()
+void vlg_toolkit_MainWindow::on_action_Start_Peer_triggered()
 {
     ui->peer_Tab->widget(0)->setEnabled(false);
     peer_.start_peer(0, 0, true);
 }
 
-void blz_toolkit_MainWindow::OnPeer_status_change(vlg::PeerStatus status)
+void vlg_toolkit_MainWindow::OnPeer_status_change(vlg::PeerStatus status)
 {
     switch(status) {
         case vlg::PeerStatus_ZERO:
@@ -475,21 +475,21 @@ void blz_toolkit_MainWindow::OnPeer_status_change(vlg::PeerStatus status)
     }
 }
 
-void blz_toolkit_MainWindow::On_BLZ_MODEL_Update()
+void vlg_toolkit_MainWindow::On_VLG_MODEL_Update()
 {
 
 }
 
-void blz_toolkit_MainWindow::OnSetInfoMsg(const QString &msg)
+void vlg_toolkit_MainWindow::OnSetInfoMsg(const QString &msg)
 {
     ui->main_info_label->setText(QObject::tr("TIMEOUT: [%1]").arg(msg));
     ui->main_info_label->setStyleSheet(
         QObject::tr("background-color : Red; color : black; font-weight: bold;"));
-    reset_info_msg_tim_.start(BLZ_TKT_INT_SINGL_SHOT_TIMER_CAPTMSG_RST_MSEC);
-    flash_info_msg_tim_.start(BLZ_TKT_INT_REPT_SHOT_TIMER_CAPTMSG_FLAS_MSEC);
+    reset_info_msg_tim_.start(VLG_TKT_INT_SINGL_SHOT_TIMER_CAPTMSG_RST_MSEC);
+    flash_info_msg_tim_.start(VLG_TKT_INT_REPT_SHOT_TIMER_CAPTMSG_FLAS_MSEC);
 }
 
-void blz_toolkit_MainWindow::OnFlashInfoMsg()
+void vlg_toolkit_MainWindow::OnFlashInfoMsg()
 {
     if(reset_info_msg_tim_.isActive()) {
         if(++flash_info_msg_val_ % 2) {
@@ -505,7 +505,7 @@ void blz_toolkit_MainWindow::OnFlashInfoMsg()
     }
 }
 
-void blz_toolkit_MainWindow::OnResetInfoMsg()
+void vlg_toolkit_MainWindow::OnResetInfoMsg()
 {
     reset_info_msg_tim_.stop();
     ui->main_info_label->setText("");
@@ -513,18 +513,18 @@ void blz_toolkit_MainWindow::OnResetInfoMsg()
         QObject::tr("background-color : Azure; color : black;"));
 }
 
-void blz_toolkit_MainWindow::EmitPeerStatus(vlg::PeerStatus status)
+void vlg_toolkit_MainWindow::EmitPeerStatus(vlg::PeerStatus status)
 {
     emit Peer_status_change(status);
 }
 
-void blz_toolkit_MainWindow::on_action_Stop_Peer_triggered()
+void vlg_toolkit_MainWindow::on_action_Stop_Peer_triggered()
 {
     peer_.stop_peer(true);
     //ui->peer_Tab->widget(0)->setEnabled(true);
 }
 
-void blz_toolkit_MainWindow::Status_RUNNING_Actions()
+void vlg_toolkit_MainWindow::Status_RUNNING_Actions()
 {
     ui->peer_status_label_display->setText(QObject::tr("RUNNING"));
     ui->peer_status_label_display->setStyleSheet(
@@ -535,11 +535,11 @@ void blz_toolkit_MainWindow::Status_RUNNING_Actions()
     if(!view_model_loaded_) {
         view_model_loaded_ = true;
         AddNewModelTab();
-        emit BLZ_MODEL_Update_event();
+        emit VLG_MODEL_Update_event();
     }
 }
 
-void blz_toolkit_MainWindow::Status_STOPPED_Actions()
+void vlg_toolkit_MainWindow::Status_STOPPED_Actions()
 {
     ui->peer_status_label_display->setText(QObject::tr("STOPPED"));
     ui->peer_status_label_display->setStyleSheet(
@@ -547,34 +547,34 @@ void blz_toolkit_MainWindow::Status_STOPPED_Actions()
     ui->action_Start_Peer->setEnabled(true);
 }
 
-void blz_toolkit_MainWindow::AddNewModelTab()
+void vlg_toolkit_MainWindow::AddNewModelTab()
 {
-    blz_toolkit_model_tab *mt = new blz_toolkit_model_tab(blz_model_loaded_model_,
+    vlg_toolkit_model_tab *mt = new vlg_toolkit_model_tab(vlg_model_loaded_model_,
                                                           ui->peer_Tab);
     QIcon icon_model;
     icon_model.addFile(QStringLiteral(":/icon/icons/social-buffer.png"), QSize(),
                        QIcon::Normal, QIcon::Off);
     QString tab_name = QString("Peer Model");
     ui->peer_Tab->addTab(mt, icon_model, tab_name);
-    connect(this, SIGNAL(BLZ_MODEL_Update_event()), mt,
-            SLOT(On_BLZ_MODEL_Update()));
+    connect(this, SIGNAL(VLG_MODEL_Update_event()), mt,
+            SLOT(On_VLG_MODEL_Update()));
     QSortFilterProxyModel &mt_mod = mt->b_mdl();
-    connect(this, SIGNAL(BLZ_MODEL_Update_event()), &mt_mod, SLOT(invalidate()));
+    connect(this, SIGNAL(VLG_MODEL_Update_event()), &mt_mod, SLOT(invalidate()));
 }
 
-void blz_toolkit_MainWindow::AddNewConnectionTab(vlg::connection_int
+void vlg_toolkit_MainWindow::AddNewConnectionTab(vlg::connection_int
                                                  &new_conn,
                                                  const QString &host,
                                                  const QString &port,
                                                  const QString &usr,
                                                  const QString &psswd)
 {
-    blz_toolkit_Connection *ct = new blz_toolkit_Connection(new_conn,
+    vlg_toolkit_Connection *ct = new vlg_toolkit_Connection(new_conn,
                                                             host,
                                                             port,
                                                             usr,
                                                             psswd,
-                                                            blz_model_loaded_model_,
+                                                            vlg_model_loaded_model_,
                                                             *this,
                                                             ui->peer_Tab);
     QIcon icon_flash;
@@ -583,7 +583,7 @@ void blz_toolkit_MainWindow::AddNewConnectionTab(vlg::connection_int
     vlg::ConnectivityEventType connectivity_evt_type =
         vlg::ConnectivityEventType_UNDEFINED;
     if(new_conn.await_for_connection_result(con_evt_res, connectivity_evt_type,
-                                            BLZ_TKT_INT_AWT_TIMEOUT,
+                                            VLG_TKT_INT_AWT_TIMEOUT,
                                             0) == vlg::RetCode_TIMEOUT) {
         emit SignalNewConnectionTimeout(QString("establishing new connection"));
     }
@@ -599,7 +599,7 @@ void blz_toolkit_MainWindow::AddNewConnectionTab(vlg::connection_int
     ct->setTab_idx(tab_idx);
 }
 
-void blz_toolkit_MainWindow::LoadDefPeerCfgFile()
+void vlg_toolkit_MainWindow::LoadDefPeerCfgFile()
 {
     vlg::RetCode res = vlg::RetCode_OK;
     const char *fileName_cstr = "params";
@@ -616,9 +616,9 @@ void blz_toolkit_MainWindow::LoadDefPeerCfgFile()
 }
 
 
-void blz_toolkit_MainWindow::on_actionConnect_triggered()
+void vlg_toolkit_MainWindow::on_actionConnect_triggered()
 {
-    blz_toolkit_NewConnDlg conn_dlg(this);
+    vlg_toolkit_NewConnDlg conn_dlg(this);
     conn_dlg.exec();
     if(conn_dlg.result() == QDialog::Accepted) {
         sockaddr_in conn_params;
@@ -641,7 +641,7 @@ void blz_toolkit_MainWindow::on_actionConnect_triggered()
     }
 }
 
-void blz_toolkit_MainWindow::OnLogEvent(vlg::TraceLVL tlvl,
+void vlg_toolkit_MainWindow::OnLogEvent(vlg::TraceLVL tlvl,
                                         const QString &msg)
 {
     QString beginHtml;
@@ -685,58 +685,58 @@ void blz_toolkit_MainWindow::OnLogEvent(vlg::TraceLVL tlvl,
     ui->logr_apnd_plainTextEdit->setTextCursor(cursor);
 }
 
-void blz_toolkit_MainWindow::on_peer_Tab_tabCloseRequested(int index)
+void vlg_toolkit_MainWindow::on_peer_Tab_tabCloseRequested(int index)
 {
     if(index == 0 || index == 1) {
         return;
     }
-    blz_toolkit_Connection *connwidg = static_cast<blz_toolkit_Connection *>
+    vlg_toolkit_Connection *connwidg = static_cast<vlg_toolkit_Connection *>
                                        (ui->peer_Tab->widget(index));
     ui->peer_Tab->removeTab(index);
     delete connwidg;
 }
 
-void blz_toolkit_MainWindow::on_actionLow_triggered()
+void vlg_toolkit_MainWindow::on_actionLow_triggered()
 {
     vlg::logger::set_level_for_all_loggers(vlg::TL_LOW);
 }
 
-void blz_toolkit_MainWindow::on_actionTrace_triggered()
+void vlg_toolkit_MainWindow::on_actionTrace_triggered()
 {
     vlg::logger::set_level_for_all_loggers(vlg::TL_TRC);
 }
 
-void blz_toolkit_MainWindow::on_actionDebug_triggered()
+void vlg_toolkit_MainWindow::on_actionDebug_triggered()
 {
     vlg::logger::set_level_for_all_loggers(vlg::TL_DBG);
 }
 
-void blz_toolkit_MainWindow::on_actionInfo_triggered()
+void vlg_toolkit_MainWindow::on_actionInfo_triggered()
 {
     vlg::logger::set_level_for_all_loggers(vlg::TL_INF);
 }
 
-void blz_toolkit_MainWindow::on_actionWarning_triggered()
+void vlg_toolkit_MainWindow::on_actionWarning_triggered()
 {
     vlg::logger::set_level_for_all_loggers(vlg::TL_WRN);
 }
 
-void blz_toolkit_MainWindow::on_actionError_triggered()
+void vlg_toolkit_MainWindow::on_actionError_triggered()
 {
     vlg::logger::set_level_for_all_loggers(vlg::TL_ERR);
 }
 
-void blz_toolkit_MainWindow::on_actionCritical_triggered()
+void vlg_toolkit_MainWindow::on_actionCritical_triggered()
 {
     vlg::logger::set_level_for_all_loggers(vlg::TL_CRI);
 }
 
-void blz_toolkit_MainWindow::on_actionFatal_triggered()
+void vlg_toolkit_MainWindow::on_actionFatal_triggered()
 {
     vlg::logger::set_level_for_all_loggers(vlg::TL_FAT);
 }
 
-void blz_toolkit_MainWindow::on_actionClean_Console_triggered()
+void vlg_toolkit_MainWindow::on_actionClean_Console_triggered()
 {
     ui->logr_apnd_plainTextEdit->clear();
 }

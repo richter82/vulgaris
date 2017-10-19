@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef BLZ_C_CONNECTION_H_
-#define BLZ_C_CONNECTION_H_
+#ifndef VLG_C_CONNECTION_H_
+#define VLG_C_CONNECTION_H_
 #include "vlg.h"
 #ifdef WIN32
 #include <winsock2.h>
@@ -54,7 +54,7 @@ typedef void(*on_disconnect_handler_wr)(connection_wr           conn,
                                         ConnectivityEventType   c_evt_type,
                                         void                    *ud);
 
-    connection_wr           connection_create(void);
+connection_wr           connection_create(void);
 void                    connection_destroy(connection_wr conn);
 
 RetCode                 connection_bind(connection_wr conn,

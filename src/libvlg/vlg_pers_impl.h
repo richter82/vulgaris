@@ -19,20 +19,20 @@
 *
 */
 
-#ifndef BLZ_MDL_UTL_H_
-#define BLZ_MDL_UTL_H_
-#include "blaze_logger.h"
-#include "blaze_model.h"
-#include "blz_glob_int.h"
+#ifndef VLG_MDL_UTL_H_
+#define VLG_MDL_UTL_H_
+#include "vlg_logger.h"
+#include "vlg_model.h"
+#include "vlg_globint.h"
 
-#define BLZ_DRV_NAME_LEN 64
+#define VLG_DRV_NAME_LEN 64
 
 namespace vlg {
 
-class persistence_connection_int;
-class persistence_driver_int;
-class persistence_query_int;
-class persistence_manager_int;
+class persistence_connection_impl;
+class persistence_driver_impl;
+class persistence_query_impl;
+class persistence_manager_impl;
 class persistence_worker;
 
 //-----------------------------
@@ -45,18 +45,18 @@ class persistence_worker;
 #define TMSTMP_BUFF_SZ 11
 
 typedef enum  {
-    BLZ_PERS_TASK_OP_UNDEFINED,
-    BLZ_PERS_TASK_OP_CONNECT,
-    BLZ_PERS_TASK_OP_CREATETABLE,
-    BLZ_PERS_TASK_OP_SELECT,
-    BLZ_PERS_TASK_OP_UPDATE,
-    BLZ_PERS_TASK_OP_DELETE,
-    BLZ_PERS_TASK_OP_INSERT,
-    BLZ_PERS_TASK_OP_EXECUTEQUERY,
-    BLZ_PERS_TASK_OP_RELEASEQUERY,
-    BLZ_PERS_TASK_OP_NEXTENTITYFROMQUERY,
-    BLZ_PERS_TASK_OP_EXECUTESTATEMENT,
-} BLZ_PERS_TASK_OP;
+    VLG_PERS_TASK_OP_UNDEFINED,
+    VLG_PERS_TASK_OP_CONNECT,
+    VLG_PERS_TASK_OP_CREATETABLE,
+    VLG_PERS_TASK_OP_SELECT,
+    VLG_PERS_TASK_OP_UPDATE,
+    VLG_PERS_TASK_OP_DELETE,
+    VLG_PERS_TASK_OP_INSERT,
+    VLG_PERS_TASK_OP_EXECUTEQUERY,
+    VLG_PERS_TASK_OP_RELEASEQUERY,
+    VLG_PERS_TASK_OP_NEXTENTITYFROMQUERY,
+    VLG_PERS_TASK_OP_EXECUTESTATEMENT,
+} VLG_PERS_TASK_OP;
 
 //-----------------------------
 // persistence_task
@@ -65,14 +65,14 @@ class persistence_task : public vlg::p_task {
 
     public:
         //---ctor
-        persistence_task(BLZ_PERS_TASK_OP op_code);
+        persistence_task(VLG_PERS_TASK_OP op_code);
 
     public:
         virtual vlg::RetCode execute();
 
     public:
-        BLZ_PERS_TASK_OP                op_code() const;
-        void                            op_code(BLZ_PERS_TASK_OP val);
+        VLG_PERS_TASK_OP                op_code() const;
+        void                            op_code(VLG_PERS_TASK_OP val);
         vlg::RetCode                  op_res() const;
         void                            op_res(vlg::RetCode val);
         void                            in_bem(const entity_manager &val);
@@ -88,8 +88,8 @@ class persistence_task : public vlg::p_task {
         void                            in_drop_if_exist(bool val);
         void                            in_out_ts0(unsigned int &val);
         void                            in_out_ts1(unsigned int &val);
-        persistence_query_int           *in_out_query() const;
-        void                            in_out_query(persistence_query_int *val);
+        persistence_query_impl           *in_out_query() const;
+        void                            in_out_query(persistence_query_impl *val);
         bool                            in_fail_is_error() const;
         void                            in_fail_is_error(bool val);
         void                            stmt_bf(vlg::ascii_string &stmt_bf);
@@ -110,7 +110,7 @@ class persistence_task : public vlg::p_task {
         //--rep
     protected:
         //--rep
-        BLZ_PERS_TASK_OP        op_code_;
+        VLG_PERS_TASK_OP        op_code_;
         vlg::RetCode          op_res_;
         const entity_manager    *in_bem_;
         PersistenceDeletionMode in_mode_;
@@ -122,7 +122,7 @@ class persistence_task : public vlg::p_task {
         bool                    in_drop_if_exist_;
         unsigned int            *in_out_ts0_;
         unsigned int            *in_out_ts1_;
-        persistence_query_int   *in_out_query_;
+        persistence_query_impl   *in_out_query_;
         bool                    in_fail_is_error_;
         vlg::ascii_string     *stmt_bf_;
 };
@@ -131,10 +131,10 @@ class persistence_task : public vlg::p_task {
 // persistence_connection_pool
 //-----------------------------
 class persistence_connection_pool {
-        friend class persistence_driver_int;
+        friend class persistence_driver_impl;
 
     private:
-        persistence_connection_pool(persistence_driver_int &driv,
+        persistence_connection_pool(persistence_driver_impl &driv,
                                     const char *url,
                                     const char *usr,
                                     const char *psswd,
@@ -144,7 +144,7 @@ class persistence_connection_pool {
         ~persistence_connection_pool();
 
     public:
-        persistence_driver_int &driver();
+        persistence_driver_impl &driver();
         const char *password() const;
         const char *user() const;
         const char *url() const;
@@ -152,7 +152,7 @@ class persistence_connection_pool {
     public:
         vlg::RetCode init();
         vlg::RetCode start();
-        persistence_connection_int *request_connection();
+        persistence_connection_impl *request_connection();
 
     public:
         persistence_worker *get_worker_rr_can_create_start();
@@ -165,7 +165,7 @@ class persistence_connection_pool {
         vlg::ascii_string psswd_;
 
     private:
-        persistence_driver_int &driv_;
+        persistence_driver_impl &driv_;
         unsigned int conn_pool_sz_; // connection pool size
         // current connection id used for round-robin
         unsigned int conn_pool_curr_idx_;
@@ -203,22 +203,22 @@ class persistence_worker : public vlg::p_thread {
 };
 
 //-----------------------------
-// persistence_connection_int
+// persistence_connection_impl
 //-----------------------------
-class persistence_connection_int {
-        friend class persistence_query_int;
+class persistence_connection_impl {
+        friend class persistence_query_impl;
 
     protected:
         //---ctors
-        persistence_connection_int(unsigned int id,
-                                   persistence_connection_pool &conn_pool);
-        virtual ~persistence_connection_int();
+        persistence_connection_impl(unsigned int id,
+                                    persistence_connection_pool &conn_pool);
+        virtual ~persistence_connection_impl();
 
         //getters
     public:
         PersistenceConnectionStatus status() const;
         unsigned int                      get_id() const;
-        persistence_driver_int           &get_driver();
+        persistence_driver_impl           &get_driver();
         persistence_connection_pool      &get_connection_pool();
 
         //business meths
@@ -227,49 +227,49 @@ class persistence_connection_int {
         vlg::RetCode    connect();
 
         vlg::RetCode    create_entity_schema(PersistenceAlteringMode mode,
-                                               const entity_manager &bem,
-                                               unsigned int nclass_id);
+                                             const entity_manager &bem,
+                                             unsigned int nclass_id);
 
         vlg::RetCode    create_entity_schema(PersistenceAlteringMode mode,
-                                               const entity_manager &bem,
-                                               const entity_desc &edesc);
+                                             const entity_manager &bem,
+                                             const entity_desc &edesc);
 
         vlg::RetCode    save_entity(const entity_manager &bem,
+                                    unsigned int ts0,
+                                    unsigned int ts1,
+                                    const nclass &in_obj);
+
+        vlg::RetCode    update_entity(unsigned short key,
+                                      const entity_manager &bem,
                                       unsigned int ts0,
                                       unsigned int ts1,
                                       const nclass &in_obj);
 
-        vlg::RetCode    update_entity(unsigned short key,
-                                        const entity_manager &bem,
-                                        unsigned int ts0,
-                                        unsigned int ts1,
-                                        const nclass &in_obj);
-
         vlg::RetCode    save_or_update_entity(unsigned short key,
-                                                const entity_manager &bem,
-                                                unsigned int ts0,
-                                                unsigned int ts1,
-                                                const nclass &in_obj);
+                                              const entity_manager &bem,
+                                              unsigned int ts0,
+                                              unsigned int ts1,
+                                              const nclass &in_obj);
 
         vlg::RetCode    remove_entity(unsigned short key,
-                                        const entity_manager &bem,
-                                        unsigned int ts0,
-                                        unsigned int ts1,
-                                        PersistenceDeletionMode mode,
-                                        const nclass &in_obj);
+                                      const entity_manager &bem,
+                                      unsigned int ts0,
+                                      unsigned int ts1,
+                                      PersistenceDeletionMode mode,
+                                      const nclass &in_obj);
 
         vlg::RetCode    load_entity(unsigned short key,
-                                      const entity_manager &bem,
-                                      unsigned int &ts0_out,
-                                      unsigned int &ts1_out,
-                                      nclass &in_out_obj);
+                                    const entity_manager &bem,
+                                    unsigned int &ts0_out,
+                                    unsigned int &ts1_out,
+                                    nclass &in_out_obj);
 
         vlg::RetCode    execute_query(const char *sql,
-                                        const entity_manager &bem,
-                                        persistence_query_int **query_out);
+                                      const entity_manager &bem,
+                                      persistence_query_impl **query_out);
 
-        vlg::RetCode    destroy_query(persistence_query_int *query,
-                                        bool release_before_destroy = false);
+        vlg::RetCode    destroy_query(persistence_query_impl *query,
+                                      bool release_before_destroy = false);
 
         vlg::RetCode    execute_statement(const char *sql);
 
@@ -279,44 +279,44 @@ class persistence_connection_int {
         virtual vlg::RetCode do_connect() = 0;
 
         virtual vlg::RetCode do_create_table(const entity_manager &bem,
-                                               const entity_desc &edesc,
-                                               bool drop_if_exist) = 0;
+                                             const entity_desc &edesc,
+                                             bool drop_if_exist) = 0;
 
         virtual vlg::RetCode do_select(unsigned int key,
-                                         const entity_manager &bem,
-                                         unsigned int &ts0_out,
-                                         unsigned int &ts1_out,
-                                         nclass &in_out_obj) = 0;
+                                       const entity_manager &bem,
+                                       unsigned int &ts0_out,
+                                       unsigned int &ts1_out,
+                                       nclass &in_out_obj) = 0;
 
         virtual vlg::RetCode do_update(unsigned int key,
-                                         const entity_manager &bem,
-                                         unsigned int ts0,
-                                         unsigned int ts1,
-                                         const nclass &in_obj) = 0;
+                                       const entity_manager &bem,
+                                       unsigned int ts0,
+                                       unsigned int ts1,
+                                       const nclass &in_obj) = 0;
 
         virtual vlg::RetCode do_delete(unsigned int key,
-                                         const entity_manager &bem,
-                                         unsigned int ts0,
-                                         unsigned int ts1,
-                                         PersistenceDeletionMode mode,
-                                         const nclass &in_obj) = 0;
+                                       const entity_manager &bem,
+                                       unsigned int ts0,
+                                       unsigned int ts1,
+                                       PersistenceDeletionMode mode,
+                                       const nclass &in_obj) = 0;
 
         virtual vlg::RetCode do_insert(const entity_manager &bem,
-                                         unsigned int ts0,
-                                         unsigned int ts1,
-                                         const nclass &in_obj,
-                                         bool fail_is_error = true) = 0;
+                                       unsigned int ts0,
+                                       unsigned int ts1,
+                                       const nclass &in_obj,
+                                       bool fail_is_error = true) = 0;
 
         virtual vlg::RetCode do_execute_query(const entity_manager &bem,
-                                                const char *sql,
-                                                persistence_query_int **qry_out) = 0;
+                                              const char *sql,
+                                              persistence_query_impl **qry_out) = 0;
 
-        virtual vlg::RetCode do_release_query(persistence_query_int *qry) = 0;
+        virtual vlg::RetCode do_release_query(persistence_query_impl *qry) = 0;
 
-        virtual vlg::RetCode do_next_entity_from_query(persistence_query_int *qry,
-                                                         unsigned int &ts0_out,
-                                                         unsigned int &ts1_out,
-                                                         nclass &out_obj) = 0;
+        virtual vlg::RetCode do_next_entity_from_query(persistence_query_impl *qry,
+                                                       unsigned int &ts0_out,
+                                                       unsigned int &ts1_out,
+                                                       nclass &out_obj) = 0;
 
         virtual vlg::RetCode do_execute_statement(const char *sql) = 0;
 
@@ -332,24 +332,24 @@ class persistence_connection_int {
 };
 
 //-----------------------------
-// persistence_driver_int
+// persistence_driver_impl
 //-----------------------------
 typedef const char *(*get_pers_driv_version)();
-typedef persistence_driver_int *(*load_pers_driver)();
+typedef persistence_driver_impl *(*load_pers_driver)();
 
-class persistence_driver_int {
+class persistence_driver_impl {
         friend class persistence_connection_pool;
-        friend class persistence_manager_int;
+        friend class persistence_manager_impl;
 
     public:
         /*dyna*/
         static vlg::RetCode load_driver_dyna(const char *drvname,
-                                               persistence_driver_int **driver);
+                                             persistence_driver_impl **driver);
 
     protected:
         //---ctors
-        persistence_driver_int(unsigned int id);
-        virtual ~persistence_driver_int();
+        persistence_driver_impl(unsigned int id);
+        virtual ~persistence_driver_impl();
 
     protected:
         vlg::RetCode init();
@@ -363,24 +363,24 @@ class persistence_driver_int {
         vlg::RetCode start_all_pools();
 
         //returns null if no connection is available.
-        persistence_connection_int  *available_connection(unsigned int nclass_id);
+        persistence_connection_impl  *available_connection(unsigned int nclass_id);
 
         /****USED BY MANAGER****/
     private:
         vlg::RetCode    add_pool(const char *conn_pool_name,
-                                   const char *url,
-                                   const char *usr,
-                                   const char *psswd,
-                                   unsigned int conn_pool_sz,
-                                   unsigned int conn_pool_th_max_sz);
+                                 const char *url,
+                                 const char *usr,
+                                 const char *psswd,
+                                 unsigned int conn_pool_sz,
+                                 unsigned int conn_pool_th_max_sz);
 
         vlg::RetCode   map_nclassid_to_pool(unsigned int nclass_id,
-                                              const char *conn_pool_name);
+                                            const char *conn_pool_name);
 
         virtual vlg::RetCode new_connection(persistence_connection_pool &conn_pool,
-                                              persistence_connection_int **new_conn) = 0;
+                                            persistence_connection_impl **new_conn) = 0;
 
-        virtual vlg::RetCode close_connection(persistence_connection_int &conn) = 0;
+        virtual vlg::RetCode close_connection(persistence_connection_impl &conn) = 0;
         /*******/
 
 
@@ -397,35 +397,35 @@ class persistence_driver_int {
 };
 
 //-----------------------------
-// persistence_query_int
+// persistence_query_impl
 //-----------------------------
-class persistence_query_int {
-        friend class persistence_connection_int;
+class persistence_query_impl {
+        friend class persistence_connection_impl;
 
     protected:
         //---ctors
-        persistence_query_int(unsigned int id,
-                              persistence_connection_int &conn,
-                              const entity_manager &bem);
+        persistence_query_impl(unsigned int id,
+                               persistence_connection_impl &conn,
+                               const entity_manager &bem);
 
-        virtual ~persistence_query_int();
+        virtual ~persistence_query_impl();
 
     public:
         unsigned int get_id() const;
         PersistenceQueryStatus status() const;
         const entity_manager &get_em() const;
-        persistence_connection_int &get_connection();
+        persistence_connection_impl &get_connection();
 
         vlg::RetCode    load_next_entity(unsigned int &ts0_out,
-                                           unsigned int &ts1_out,
-                                           nclass &out_obj);
+                                         unsigned int &ts1_out,
+                                         nclass &out_obj);
         vlg::RetCode    release();
 
 
     protected:
         unsigned int id_;
         PersistenceQueryStatus status_;
-        persistence_connection_int &conn_;
+        persistence_connection_impl &conn_;
         const entity_manager &bem_;
 
     protected:
@@ -433,29 +433,29 @@ class persistence_query_int {
 };
 
 //-----------------------------
-// persistence_manager_int
+// persistence_manager_impl
 //-----------------------------
-class persistence_manager_int {
+class persistence_manager_impl {
     public:
 
-        static persistence_manager_int &get_instance();
+        static persistence_manager_impl &get_instance();
         static vlg::RetCode set_cfg_file_dir(const char *dir);
         static vlg::RetCode set_cfg_file_path_name(const char *file_path);
 
         /*dyna*/
         static vlg::RetCode load_pers_driver_dyna(const char *drivers[],
-                                                    int drivers_num);
+                                                  int drivers_num);
 
         static vlg::RetCode load_pers_driver_dyna(vlg::hash_map &drivmap);
 
         /*static*/
-        static vlg::RetCode load_pers_driver(persistence_driver_int *drivers[],
-                                               int drivers_num);
+        static vlg::RetCode load_pers_driver(persistence_driver_impl *drivers[],
+                                             int drivers_num);
 
     private:
         //---ctors
-        persistence_manager_int();
-        ~persistence_manager_int();
+        persistence_manager_impl();
+        ~persistence_manager_impl();
         vlg::RetCode init();
 
     public:
@@ -464,41 +464,41 @@ class persistence_manager_int {
         vlg::RetCode start_all_drivers();
 
         //returns null if no driver is available.
-        persistence_driver_int *available_driver(unsigned int nclass_id);
+        persistence_driver_impl *available_driver(unsigned int nclass_id);
 
     private:
         vlg::RetCode    parse_data(vlg::ascii_string &data);
 
         vlg::RetCode    parse_conn_pool_cfg(unsigned long &lnum,
-                                              vlg::ascii_string_tok &tknz,
-                                              vlg::hash_map &conn_pool_name_to_driv);
+                                            vlg::ascii_string_tok &tknz,
+                                            vlg::hash_map &conn_pool_name_to_driv);
 
         vlg::RetCode    parse_single_conn_pool_cfg(unsigned long &lnum,
-                                                     vlg::ascii_string_tok &tknz,
-                                                     vlg::ascii_string &conn_pool_name,
-                                                     vlg::hash_map &conn_pool_name_to_driv);
+                                                   vlg::ascii_string_tok &tknz,
+                                                   vlg::ascii_string &conn_pool_name,
+                                                   vlg::hash_map &conn_pool_name_to_driv);
 
         vlg::RetCode    parse_URI(unsigned long &lnum,
-                                    vlg::ascii_string_tok &tknz,
-                                    vlg::ascii_string &url,
-                                    vlg::ascii_string &usr,
-                                    vlg::ascii_string &psswd);
+                                  vlg::ascii_string_tok &tknz,
+                                  vlg::ascii_string &url,
+                                  vlg::ascii_string &usr,
+                                  vlg::ascii_string &psswd);
 
-        vlg::RetCode    parse_int_after_colon(unsigned long &lnum,
-                                                vlg::ascii_string_tok &tknz,
-                                                unsigned int &pool_size);
+        vlg::RetCode    parse_impl_after_colon(unsigned long &lnum,
+                                               vlg::ascii_string_tok &tknz,
+                                               unsigned int &pool_size);
 
         vlg::RetCode    parse_class_mapping_cfg(unsigned long &lnum,
-                                                  vlg::ascii_string_tok &tknz,
-                                                  vlg::hash_map &conn_pool_name_to_driv);
+                                                vlg::ascii_string_tok &tknz,
+                                                vlg::hash_map &conn_pool_name_to_driv);
 
         vlg::RetCode    parse_single_class_map_cfg(unsigned long &lnum,
-                                                     vlg::ascii_string_tok &tknz,
-                                                     unsigned int nclass_id,
-                                                     vlg::hash_map &conn_pool_name_to_driv);
+                                                   vlg::ascii_string_tok &tknz,
+                                                   unsigned int nclass_id,
+                                                   vlg::hash_map &conn_pool_name_to_driv);
 
         vlg::RetCode    map_classid_driver(unsigned int nclass_id,
-                                             persistence_driver_int *driver);
+                                           persistence_driver_impl *driver);
 
 
     private:

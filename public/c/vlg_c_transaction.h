@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef BLZ_C_TRANSACTION_H_
-#define BLZ_C_TRANSACTION_H_
+#ifndef VLG_C_TRANSACTION_H_
+#define VLG_C_TRANSACTION_H_
 #include "vlg.h"
 
 #if defined(__cplusplus)
@@ -35,7 +35,7 @@ typedef void(*transaction_status_change_wr)(transaction_wr tx,
 typedef void(*transaction_closure_wr)(transaction_wr tx,
                                       void *ud);
 
-    transaction_wr transaction_create(void);
+transaction_wr transaction_create(void);
 
 void transaction_destroy(transaction_wr tx);
 

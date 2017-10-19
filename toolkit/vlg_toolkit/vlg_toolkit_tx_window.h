@@ -19,49 +19,49 @@
  *
  */
 
-#ifndef BLZ_TOOLKIT_TX_WINDOW_H
-#define BLZ_TOOLKIT_TX_WINDOW_H
+#ifndef VLG_TOOLKIT_TX_WINDOW_H
+#define VLG_TOOLKIT_TX_WINDOW_H
 
-#include "blz_toolkit_blz_model.h"
-#include "blz_toolkit_tx_blz_class_model.h"
+#include "vlg_toolkit_vlg_model.h"
+#include "vlg_toolkit_tx_vlg_class_model.h"
 
 namespace Ui {
-class blz_toolkit_tx_window;
+class vlg_toolkit_tx_window;
 }
 
 //------------------------------------------------------------------------------
-// blz_toolkit_tx_model
+// vlg_toolkit_tx_model
 //------------------------------------------------------------------------------
 
-class blz_toolkit_tx_model : public QSortFilterProxyModel {
+class vlg_toolkit_tx_model : public QSortFilterProxyModel {
 
     public:
-        blz_toolkit_tx_model(blz_toolkit_tx_blz_class_model &wrapped_mdl,
+        vlg_toolkit_tx_model(vlg_toolkit_tx_vlg_class_model &wrapped_mdl,
                              QObject *parent = 0);
 
 
         bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;
 
-        blz_toolkit_tx_blz_class_model &wrapped_mdl();
+        vlg_toolkit_tx_vlg_class_model &wrapped_mdl();
 
     private:
-        blz_toolkit_tx_blz_class_model &wrapped_mdl_;
+        vlg_toolkit_tx_vlg_class_model &wrapped_mdl_;
 };
 
 //------------------------------------------------------------------------------
-// blz_toolkit_tx_window
+// vlg_toolkit_tx_window
 //------------------------------------------------------------------------------
 
-class blz_toolkit_tx_window : public QMainWindow {
+class vlg_toolkit_tx_window : public QMainWindow {
         Q_OBJECT
 
     public:
-        explicit blz_toolkit_tx_window(const vlg::entity_desc &edesc,
+        explicit vlg_toolkit_tx_window(const vlg::entity_desc &edesc,
                                        const vlg::entity_manager &bem,
                                        vlg::transaction_int &tx,
-                                       blz_toolkit_tx_blz_class_model &mdl,
+                                       vlg_toolkit_tx_vlg_class_model &mdl,
                                        QWidget *parent = 0);
-        ~blz_toolkit_tx_window();
+        ~vlg_toolkit_tx_window();
 
     protected:
         void closeEvent(QCloseEvent *event);
@@ -95,11 +95,11 @@ class blz_toolkit_tx_window : public QMainWindow {
     private:
         const vlg::entity_manager &bem_;
         vlg::transaction_int &tx_;
-        blz_toolkit_tx_model tx_mdl_wrp_;
+        vlg_toolkit_tx_model tx_mdl_wrp_;
 
 
     private:
-        Ui::blz_toolkit_tx_window *ui;
+        Ui::vlg_toolkit_tx_window *ui;
 };
 
-#endif // BLZ_TOOLKIT_TX_WINDOW_H
+#endif // VLG_TOOLKIT_TX_WINDOW_H

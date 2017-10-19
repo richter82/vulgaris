@@ -19,8 +19,8 @@
  *
  */
 
-#include "blz_glob_int.h"
-#include "blaze_ascii_string.h"
+#include "vlg_globint.h"
+#include "vlg_ascii_string.h"
 
 namespace vlg {
 

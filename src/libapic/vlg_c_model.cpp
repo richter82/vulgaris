@@ -19,14 +19,14 @@
  *
  */
 
-#include "blaze_c_model.h"
-#include "blaze_logger.h"
-#include "blaze_model.h"
-#include "blz_glob_int.h"
+#include "vlg_c_model.h"
+#include "vlg_logger.h"
+#include "vlg_model.h"
+#include "vlg_globint.h"
 
 namespace vlg {
 extern "C" {
-    // BLZ_MEMBER_DESC
+    // VLG_MEMBER_DESC
 
     unsigned short member_desc_get_member_id(member_desc_wr mdesc)
     {
@@ -48,9 +48,9 @@ extern "C" {
         return static_cast<member_desc *>(mdesc)->get_member_description();
     }
 
-    Type member_desc_get_field_blz_type(member_desc_wr mdesc)
+    Type member_desc_get_field_vlg_type(member_desc_wr mdesc)
     {
-        return static_cast<member_desc *>(mdesc)->get_field_blz_type();
+        return static_cast<member_desc *>(mdesc)->get_field_vlg_type();
     }
 
     size_t member_desc_get_field_offset(member_desc_wr mdesc)
@@ -88,7 +88,7 @@ extern "C" {
         return static_cast<member_desc *>(mdesc)->get_enum_value();
     }
 
-    // BLZ_KEY_DESC
+    // VLG_KEY_DESC
 
     unsigned short key_desc_get_key_id(key_desc_wr kdesc)
     {
@@ -117,7 +117,7 @@ void enum_member_desc_wr_f(const member_desc &member_descriptor, void *ud,
 }
 
 extern "C" {
-    // BLZ_ENTITY_DESC
+    // VLG_ENTITY_DESC
 
     unsigned int entity_desc_get_class_id(entity_desc_wr edesc)
     {
@@ -448,7 +448,7 @@ void enum_entity_desc_wr_f(const entity_desc &entity_descriptor, void *ud,
 
 extern "C" {
 
-    // BLZ_ENTITY_MANAGER
+    // VLG_ENTITY_MANAGER
     RetCode entity_manager_get_entity_descriptor_by_classid(entity_manager_wr emng,
                                                             unsigned int nclass_id,
                                                             entity_desc_wr const *edesc)
@@ -535,9 +535,9 @@ extern "C" {
         return static_cast<entity_manager *>(emng)->extend((entity_manager *)em);
     }
 
-    // BLZ_LOGGER
+    // VLG_LOGGER
 
-    size_t log_pln(blaze_logger_wr l, const char *fmt, ...)
+    size_t log_pln(vlg_logger_wr l, const char *fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
@@ -546,7 +546,7 @@ extern "C" {
         return sz;
     }
 
-    size_t log_trc(blaze_logger_wr l, uint32_t id, const char *fmt, ...)
+    size_t log_trc(vlg_logger_wr l, uint32_t id, const char *fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
@@ -555,7 +555,7 @@ extern "C" {
         return sz;
     }
 
-    size_t log_dbg(blaze_logger_wr l, uint32_t id, const char *fmt, ...)
+    size_t log_dbg(vlg_logger_wr l, uint32_t id, const char *fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
@@ -564,7 +564,7 @@ extern "C" {
         return sz;
     }
 
-    size_t log_inf(blaze_logger_wr l, uint32_t id, const char *fmt, ...)
+    size_t log_inf(vlg_logger_wr l, uint32_t id, const char *fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
@@ -573,7 +573,7 @@ extern "C" {
         return sz;
     }
 
-    size_t log_wrn(blaze_logger_wr l, uint32_t id, const char *fmt, ...)
+    size_t log_wrn(vlg_logger_wr l, uint32_t id, const char *fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
@@ -582,7 +582,7 @@ extern "C" {
         return sz;
     }
 
-    size_t log_err(blaze_logger_wr l, uint32_t id, const char *fmt, ...)
+    size_t log_err(vlg_logger_wr l, uint32_t id, const char *fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
@@ -591,7 +591,7 @@ extern "C" {
         return sz;
     }
 
-    size_t log_cri(blaze_logger_wr l, uint32_t id, const char *fmt, ...)
+    size_t log_cri(vlg_logger_wr l, uint32_t id, const char *fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
@@ -600,7 +600,7 @@ extern "C" {
         return sz;
     }
 
-    size_t log_fat(blaze_logger_wr l, uint32_t id, const char *fmt, ...)
+    size_t log_fat(vlg_logger_wr l, uint32_t id, const char *fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
@@ -609,7 +609,7 @@ extern "C" {
         return sz;
     }
 
-    size_t log_trc_class(blaze_logger_wr l, uint32_t id, const net_class_wr obj,
+    size_t log_trc_class(vlg_logger_wr l, uint32_t id, const net_class_wr obj,
                          int print_class_name,
                          const char *fmt, ...)
     {
@@ -622,7 +622,7 @@ extern "C" {
         return sz;
     }
 
-    size_t log_dbg_class(blaze_logger_wr l, uint32_t id, const net_class_wr obj,
+    size_t log_dbg_class(vlg_logger_wr l, uint32_t id, const net_class_wr obj,
                          int print_class_name,
                          const char *fmt, ...)
     {
@@ -635,7 +635,7 @@ extern "C" {
         return sz;
     }
 
-    size_t log_inf_class(blaze_logger_wr l, uint32_t id, const net_class_wr obj,
+    size_t log_inf_class(vlg_logger_wr l, uint32_t id, const net_class_wr obj,
                          int print_class_name,
                          const char *fmt, ...)
     {
@@ -648,7 +648,7 @@ extern "C" {
         return sz;
     }
 
-    size_t log_wrn_class(blaze_logger_wr l, uint32_t id, const net_class_wr obj,
+    size_t log_wrn_class(vlg_logger_wr l, uint32_t id, const net_class_wr obj,
                          int print_class_name,
                          const char *fmt, ...)
     {
@@ -661,7 +661,7 @@ extern "C" {
         return sz;
     }
 
-    size_t log_err_class(blaze_logger_wr l, uint32_t id, const net_class_wr obj,
+    size_t log_err_class(vlg_logger_wr l, uint32_t id, const net_class_wr obj,
                          int print_class_name,
                          const char *fmt, ...)
     {
@@ -674,7 +674,7 @@ extern "C" {
         return sz;
     }
 
-    size_t log_cri_class(blaze_logger_wr l, uint32_t id, const net_class_wr obj,
+    size_t log_cri_class(vlg_logger_wr l, uint32_t id, const net_class_wr obj,
                          int print_class_name,
                          const char *fmt, ...)
     {
@@ -687,7 +687,7 @@ extern "C" {
         return sz;
     }
 
-    size_t log_fat_class(blaze_logger_wr l, uint32_t id, const net_class_wr obj,
+    size_t log_fat_class(vlg_logger_wr l, uint32_t id, const net_class_wr obj,
                          int print_class_name,
                          const char *fmt, ...)
     {
@@ -700,9 +700,9 @@ extern "C" {
         return sz;
     }
 
-    blaze_logger_wr get_blaze_logger_wr(const char *logger_name)
+    vlg_logger_wr get_vlg_logger_wr(const char *logger_name)
     {
-        return (blaze_logger_wr)vlg::get_nclass_logger(logger_name);
+        return (vlg_logger_wr)vlg::get_nclass_logger(logger_name);
     }
 
 }

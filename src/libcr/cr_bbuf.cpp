@@ -19,8 +19,8 @@
  *
  */
 
-#include "blz_glob_int.h"
-#include "blaze_byte_buffer.h"
+#include "vlg_globint.h"
+#include "vlg_byte_buffer.h"
 
 namespace vlg {
 

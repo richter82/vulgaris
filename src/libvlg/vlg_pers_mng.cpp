@@ -19,33 +19,33 @@
 *
 */
 
-#include "blz_persistence_int.h"
+#include "vlg_pers_impl.h"
 
 namespace vlg {
 
-#define BLZ_RWRD_CONN_CFG_BG    "connection_pool_config_begin"
-#define BLZ_RWRD_CONN_CFG_END   "connection_pool_config_end"
-#define BLZ_RWRD_MAP_CFG_BG     "map_config_begin"
-#define BLZ_RWRD_MAP_CFG_END    "map_config_end"
-#define BLZ_RWRD_URI            "uri"
-#define BLZ_RWRD_URL            "url"
-#define BLZ_RWRD_USR            "usr"
-#define BLZ_RWRD_PSSWD          "psswd"
-#define BLZ_RWRD_POOL_SIZE      "pool_size"
-#define BLZ_RWRD_POOL_TH_SIZE   "th_size"
+#define VLG_RWRD_CONN_CFG_BG    "connection_pool_config_begin"
+#define VLG_RWRD_CONN_CFG_END   "connection_pool_config_end"
+#define VLG_RWRD_MAP_CFG_BG     "map_config_begin"
+#define VLG_RWRD_MAP_CFG_END    "map_config_end"
+#define VLG_RWRD_URI            "uri"
+#define VLG_RWRD_URL            "url"
+#define VLG_RWRD_USR            "usr"
+#define VLG_RWRD_PSSWD          "psswd"
+#define VLG_RWRD_POOL_SIZE      "pool_size"
+#define VLG_RWRD_POOL_TH_SIZE   "th_size"
 
 /***********************************
-READ- BLZ_PERS_MNG_ReadUInt
+READ- VLG_PERS_MNG_ReadUInt
 ***********************************/
-vlg::RetCode BLZ_PERS_MNG_ReadUInt(unsigned long &lnum,
-                                     vlg::ascii_string_tok &tknz,
-                                     unsigned int &uint)
+vlg::RetCode VLG_PERS_MNG_ReadUInt(unsigned long &lnum,
+                                   vlg::ascii_string_tok &tknz,
+                                   unsigned int &uint)
 {
     vlg::ascii_string tkn;
     while(!tknz.next_token(tkn, CR_DF_DLMT, true)) {
         CR_SKIP_SP_TABS(tkn)
         CR_DO_CMD_ON_NEWLINE(tkn, return vlg::RetCode_BADCFG)
-        if(vlg::string_is_int_number(tkn.internal_buff())) {
+        if(vlg::string_is_impl_number(tkn.internal_buff())) {
             uint = atoi(tkn.internal_buff());
         } else {
             return vlg::RetCode_KO;
@@ -56,11 +56,11 @@ vlg::RetCode BLZ_PERS_MNG_ReadUInt(unsigned long &lnum,
 }
 
 /***********************************
-READ- BLZ_PERS_MNG_ReadString
+READ- VLG_PERS_MNG_ReadString
 ***********************************/
-vlg::RetCode BLZ_PERS_MNG_ReadString(unsigned long &lnum,
-                                       vlg::ascii_string_tok &tknz,
-                                       vlg::ascii_string &out)
+vlg::RetCode VLG_PERS_MNG_ReadString(unsigned long &lnum,
+                                     vlg::ascii_string_tok &tknz,
+                                     vlg::ascii_string &out)
 {
     vlg::ascii_string tkn;
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_TK_QT, true)) {
@@ -98,8 +98,8 @@ vlg::RetCode BLZ_PERS_MNG_ReadString(unsigned long &lnum,
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode BLZ_PERS_MNG_ReadColon(unsigned long &lnum,
-                                      vlg::ascii_string_tok &tknz)
+vlg::RetCode VLG_PERS_MNG_ReadColon(unsigned long &lnum,
+                                    vlg::ascii_string_tok &tknz)
 {
     vlg::ascii_string tkn;
     //read mandatory colon
@@ -116,8 +116,8 @@ vlg::RetCode BLZ_PERS_MNG_ReadColon(unsigned long &lnum,
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode BLZ_PERS_MNG_ReadRBL(unsigned long &lnum,
-                                    vlg::ascii_string_tok &tknz)
+vlg::RetCode VLG_PERS_MNG_ReadRBL(unsigned long &lnum,
+                                  vlg::ascii_string_tok &tknz)
 {
     vlg::ascii_string tkn;
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_TK_RBL, true)) {
@@ -133,8 +133,8 @@ vlg::RetCode BLZ_PERS_MNG_ReadRBL(unsigned long &lnum,
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode BLZ_PERS_MNG_ReadRBR(unsigned long &lnum,
-                                    vlg::ascii_string_tok &tknz)
+vlg::RetCode VLG_PERS_MNG_ReadRBR(unsigned long &lnum,
+                                  vlg::ascii_string_tok &tknz)
 {
     vlg::ascii_string tkn;
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_TK_RBR, true)) {
@@ -151,7 +151,7 @@ vlg::RetCode BLZ_PERS_MNG_ReadRBR(unsigned long &lnum,
 }
 
 //-----------------------------
-// BLZ_PERS_MANAGER
+// VLG_PERS_MANAGER
 //-----------------------------
 
 #define PERS_CFG_FILE_DIR_LEN 512
@@ -160,40 +160,40 @@ static char pers_cfg_file_dir[PERS_CFG_FILE_DIR_LEN] = {0};
 #define PERS_CFG_FILE_PATH_NAME_LEN 512
 static char pers_cfg_file_path_name[PERS_CFG_FILE_PATH_NAME_LEN] = {0};
 
-nclass_logger *persistence_manager_int::log_ = NULL;
+nclass_logger *persistence_manager_impl::log_ = NULL;
 
-persistence_manager_int *p_mng_snglt = NULL;
-persistence_manager_int &persistence_manager_int::get_instance()
+persistence_manager_impl *p_mng_snglt = NULL;
+persistence_manager_impl &persistence_manager_impl::get_instance()
 {
     if(p_mng_snglt) {
         return *p_mng_snglt;
     }
-    if(!(p_mng_snglt = new persistence_manager_int())) {
+    if(!(p_mng_snglt = new persistence_manager_impl())) {
         IFLOG(fat(TH_ID, LS_PRS "%s%s", __func__,
-                  "() - failed creating BLZ_PERS_MANAGER"))
+                  "() - failed creating VLG_PERS_MANAGER"))
         EXIT_ACTION("failed creating p_mng_snglt\n")
     }
     if(p_mng_snglt->init()) {
-        IFLOG(fat(TH_ID, LS_PRS "%s%s", __func__, "() - failed init BLZ_PERS_MANAGER"))
+        IFLOG(fat(TH_ID, LS_PRS "%s%s", __func__, "() - failed init VLG_PERS_MANAGER"))
         EXIT_ACTION("failed init p_mng_snglt\n")
     }
     return *p_mng_snglt;
 }
 
-vlg::RetCode persistence_manager_int::set_cfg_file_dir(const char *dir)
+vlg::RetCode persistence_manager_impl::set_cfg_file_dir(const char *dir)
 {
     strncpy(pers_cfg_file_dir,dir, PERS_CFG_FILE_DIR_LEN);
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode persistence_manager_int::set_cfg_file_path_name(
+vlg::RetCode persistence_manager_impl::set_cfg_file_path_name(
     const char *file_path)
 {
     strncpy(pers_cfg_file_path_name,file_path, PERS_CFG_FILE_PATH_NAME_LEN);
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode persistence_manager_int::load_pers_driver_dyna(
+vlg::RetCode persistence_manager_impl::load_pers_driver_dyna(
     const char *drivers[],
     int drivers_num)
 {
@@ -206,8 +206,8 @@ vlg::RetCode persistence_manager_int::load_pers_driver_dyna(
                       drivers[i]))
             continue;
         }
-        persistence_driver_int *driv = NULL;
-        if((cdrs_res = persistence_driver_int::load_driver_dyna(drivers[i], &driv))) {
+        persistence_driver_impl *driv = NULL;
+        if((cdrs_res = persistence_driver_impl::load_driver_dyna(drivers[i], &driv))) {
             IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - failed loading driver:%s", __func__,
                       cdrs_res, drivers[i]))
             return cdrs_res;
@@ -218,16 +218,16 @@ vlg::RetCode persistence_manager_int::load_pers_driver_dyna(
     return cdrs_res;
 }
 
-vlg::RetCode persistence_manager_int::load_pers_driver_dyna(
+vlg::RetCode persistence_manager_impl::load_pers_driver_dyna(
     vlg::hash_map &drivmap)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(drivers_num:%d)", __func__, drivmap.size()))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
-    char driv_name[BLZ_DRV_NAME_LEN] = {0};
+    char driv_name[VLG_DRV_NAME_LEN] = {0};
     drivmap.start_iteration();
     while(!drivmap.next(driv_name, NULL)) {
-        persistence_driver_int *driv = NULL;
-        if((cdrs_res = persistence_driver_int::load_driver_dyna(driv_name, &driv))) {
+        persistence_driver_impl *driv = NULL;
+        if((cdrs_res = persistence_driver_impl::load_driver_dyna(driv_name, &driv))) {
             IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - failed loading driver:%s", __func__,
                       cdrs_res, driv_name))
             return cdrs_res;
@@ -238,8 +238,8 @@ vlg::RetCode persistence_manager_int::load_pers_driver_dyna(
     return cdrs_res;
 }
 
-vlg::RetCode persistence_manager_int::load_pers_driver(persistence_driver_int
-                                                         *drivers[], int drivers_num)
+vlg::RetCode persistence_manager_impl::load_pers_driver(persistence_driver_impl
+                                                        *drivers[], int drivers_num)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(drivers_num:%d)", __func__, drivers_num))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
@@ -257,21 +257,21 @@ vlg::RetCode persistence_manager_int::load_pers_driver(persistence_driver_int
     return cdrs_res;
 }
 
-persistence_manager_int::persistence_manager_int() :
+persistence_manager_impl::persistence_manager_impl() :
     drivname_driv_hm_(vlg::sngl_ptr_obj_mng(), vlg::sngl_cstr_obj_mng()),
     nclassid_driv_hm_(vlg::sngl_ptr_obj_mng(), vlg::sngl_cstr_obj_mng())
 
 {
-    log_ = get_nclass_logger("persistence_manager_int");
+    log_ = get_nclass_logger("persistence_manager_impl");
     IFLOG(trc(TH_ID, LS_CTR "%s", __func__))
 }
 
-persistence_manager_int::~persistence_manager_int()
+persistence_manager_impl::~persistence_manager_impl()
 {
     IFLOG(trc(TH_ID, LS_DTR "%s", __func__))
 }
 
-vlg::RetCode persistence_manager_int::init()
+vlg::RetCode persistence_manager_impl::init()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     RETURN_IF_NOT_OK(drivname_driv_hm_.init(HM_SIZE_NANO))
@@ -280,19 +280,19 @@ vlg::RetCode persistence_manager_int::init()
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode persistence_manager_int::map_classid_driver(
+vlg::RetCode persistence_manager_impl::map_classid_driver(
     unsigned int nclass_id,
-    persistence_driver_int *driver)
+    persistence_driver_impl *driver)
 {
     return nclassid_driv_hm_.put(&nclass_id, &driver);
 }
 
-vlg::RetCode persistence_manager_int::start_all_drivers()
+vlg::RetCode persistence_manager_impl::start_all_drivers()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
     char driv_name[64];
-    persistence_driver_int *driver = NULL;
+    persistence_driver_impl *driver = NULL;
     drivname_driv_hm_.start_iteration();
     while(!drivname_driv_hm_.next(driv_name, &driver)) {
         if((cdrs_res = driver->start_all_pools())) {
@@ -305,10 +305,10 @@ vlg::RetCode persistence_manager_int::start_all_drivers()
     return cdrs_res;
 }
 
-persistence_driver_int *persistence_manager_int::available_driver(
+persistence_driver_impl *persistence_manager_impl::available_driver(
     unsigned int nclass_id)
 {
-    persistence_driver_int *driv_out = NULL;
+    persistence_driver_impl *driv_out = NULL;
     if(nclassid_driv_hm_.get(&nclass_id, &driv_out)) {
         IFLOG(err(TH_ID, LS_TRL "%s() - nclass_id:%d - no pers-driver available.",
                   __func__, nclass_id))
@@ -320,33 +320,33 @@ persistence_driver_int *persistence_manager_int::available_driver(
 PARSE- ParseData
 ***********************************/
 
-vlg::RetCode persistence_manager_int::parse_int_after_colon(
+vlg::RetCode persistence_manager_impl::parse_impl_after_colon(
     unsigned long &lnum,
     vlg::ascii_string_tok &tknz, unsigned int &integer)
 {
     vlg::ascii_string tkn;
     //read mandatory colon
-    RETURN_IF_NOT_OK(BLZ_PERS_MNG_ReadColon(lnum, tknz))
-    RETURN_IF_NOT_OK(BLZ_PERS_MNG_ReadUInt(lnum, tknz, integer))
+    RETURN_IF_NOT_OK(VLG_PERS_MNG_ReadColon(lnum, tknz))
+    RETURN_IF_NOT_OK(VLG_PERS_MNG_ReadUInt(lnum, tknz, integer))
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode persistence_manager_int::parse_URI(unsigned long &lnum,
-                                                  vlg::ascii_string_tok &tknz,
-                                                  vlg::ascii_string &url,
-                                                  vlg::ascii_string &usr,
-                                                  vlg::ascii_string &psswd)
+vlg::RetCode persistence_manager_impl::parse_URI(unsigned long &lnum,
+                                                 vlg::ascii_string_tok &tknz,
+                                                 vlg::ascii_string &url,
+                                                 vlg::ascii_string &usr,
+                                                 vlg::ascii_string &psswd)
 {
     vlg::ascii_string tkn;
     //read mandatory colon
-    RETURN_IF_NOT_OK(BLZ_PERS_MNG_ReadColon(lnum, tknz))
+    RETURN_IF_NOT_OK(VLG_PERS_MNG_ReadColon(lnum, tknz))
     //read mandatory [
-    RETURN_IF_NOT_OK(BLZ_PERS_MNG_ReadRBL(lnum, tknz))
+    RETURN_IF_NOT_OK(VLG_PERS_MNG_ReadRBL(lnum, tknz))
     //read url keyword
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_TK_COLON, true)) {
         CR_SKIP_SP_TABS(tkn)
         CR_DO_CMD_ON_NEWLINE(tkn, return vlg::RetCode_BADCFG)
-        if(tkn == BLZ_RWRD_URL) {
+        if(tkn == VLG_RWRD_URL) {
             break;
         } else {
             IFLOG(cri(TH_ID, LS_PRS "%s() - line:%d, unexpected token:%s", __func__, lnum,
@@ -355,14 +355,14 @@ vlg::RetCode persistence_manager_int::parse_URI(unsigned long &lnum,
         }
     }
     //read mandatory colon
-    RETURN_IF_NOT_OK(BLZ_PERS_MNG_ReadColon(lnum, tknz))
+    RETURN_IF_NOT_OK(VLG_PERS_MNG_ReadColon(lnum, tknz))
     //read url
-    RETURN_IF_NOT_OK(BLZ_PERS_MNG_ReadString(lnum, tknz, url))
+    RETURN_IF_NOT_OK(VLG_PERS_MNG_ReadString(lnum, tknz, url))
     //read usr keyword
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_TK_COLON, true)) {
         CR_SKIP_SP_TABS(tkn)
         CR_DO_CMD_ON_NEWLINE(tkn, return vlg::RetCode_BADCFG)
-        if(tkn == BLZ_RWRD_USR) {
+        if(tkn == VLG_RWRD_USR) {
             break;
         } else {
             IFLOG(cri(TH_ID, LS_PRS "%s() - line:%d, unexpected token:%s", __func__, lnum,
@@ -371,14 +371,14 @@ vlg::RetCode persistence_manager_int::parse_URI(unsigned long &lnum,
         }
     }
     //read mandatory colon
-    RETURN_IF_NOT_OK(BLZ_PERS_MNG_ReadColon(lnum, tknz))
+    RETURN_IF_NOT_OK(VLG_PERS_MNG_ReadColon(lnum, tknz))
     //read usr
-    RETURN_IF_NOT_OK(BLZ_PERS_MNG_ReadString(lnum, tknz, usr))
+    RETURN_IF_NOT_OK(VLG_PERS_MNG_ReadString(lnum, tknz, usr))
     //read psswd keyword
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_TK_COLON, true)) {
         CR_SKIP_SP_TABS(tkn)
         CR_DO_CMD_ON_NEWLINE(tkn, return vlg::RetCode_BADCFG)
-        if(tkn == BLZ_RWRD_PSSWD) {
+        if(tkn == VLG_RWRD_PSSWD) {
             break;
         } else {
             IFLOG(cri(TH_ID, LS_PRS "%s() - line:%d, unexpected token:%s", __func__, lnum,
@@ -387,22 +387,22 @@ vlg::RetCode persistence_manager_int::parse_URI(unsigned long &lnum,
         }
     }
     //read mandatory colon
-    RETURN_IF_NOT_OK(BLZ_PERS_MNG_ReadColon(lnum, tknz))
+    RETURN_IF_NOT_OK(VLG_PERS_MNG_ReadColon(lnum, tknz))
     //read passwd
-    RETURN_IF_NOT_OK(BLZ_PERS_MNG_ReadString(lnum, tknz, psswd))
+    RETURN_IF_NOT_OK(VLG_PERS_MNG_ReadString(lnum, tknz, psswd))
     //read mandatory ]
-    RETURN_IF_NOT_OK(BLZ_PERS_MNG_ReadRBR(lnum, tknz))
+    RETURN_IF_NOT_OK(VLG_PERS_MNG_ReadRBR(lnum, tknz))
     return vlg::RetCode_OK;
 }
 
 
-vlg::RetCode persistence_manager_int::parse_single_conn_pool_cfg(
+vlg::RetCode persistence_manager_impl::parse_single_conn_pool_cfg(
     unsigned long &lnum,
     vlg::ascii_string_tok &tknz,
     vlg::ascii_string &conn_pool_name,
     vlg::hash_map &conn_pool_name_to_driv)
 {
-    persistence_driver_int *driv = NULL;
+    persistence_driver_impl *driv = NULL;
     vlg::ascii_string tkn, url, usr, psswd;
     unsigned int pool_size = 0, th_size = 0;
     //read driver type
@@ -421,7 +421,7 @@ vlg::RetCode persistence_manager_int::parse_single_conn_pool_cfg(
                            CR_TK_COLON, true)) {
         CR_SKIP_SP_TABS(tkn)
         CR_DO_CMD_ON_NEWLINE(tkn, return vlg::RetCode_BADCFG)
-        if(tkn == BLZ_RWRD_URI) {
+        if(tkn == VLG_RWRD_URI) {
             RETURN_IF_NOT_OK(parse_URI(lnum, tknz, url, usr, psswd))
             break;
         } else {
@@ -435,8 +435,8 @@ vlg::RetCode persistence_manager_int::parse_single_conn_pool_cfg(
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_TK_COLON, true)) {
         CR_SKIP_SP_TABS(tkn)
         CR_DO_CMD_ON_NEWLINE(tkn, return vlg::RetCode_BADCFG)
-        if(tkn == BLZ_RWRD_POOL_SIZE) {
-            RETURN_IF_NOT_OK(parse_int_after_colon(lnum, tknz, pool_size))
+        if(tkn == VLG_RWRD_POOL_SIZE) {
+            RETURN_IF_NOT_OK(parse_impl_after_colon(lnum, tknz, pool_size))
             break;
         } else {
             IFLOG(cri(TH_ID, LS_PRS "%s() - line:%d, unexpected token:%s", __func__, lnum,
@@ -448,8 +448,8 @@ vlg::RetCode persistence_manager_int::parse_single_conn_pool_cfg(
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_TK_COLON, true)) {
         CR_SKIP_SP_TABS(tkn)
         CR_DO_CMD_ON_NEWLINE(tkn, return vlg::RetCode_BADCFG)
-        if(tkn == BLZ_RWRD_POOL_TH_SIZE) {
-            RETURN_IF_NOT_OK(parse_int_after_colon(lnum, tknz, th_size))
+        if(tkn == VLG_RWRD_POOL_TH_SIZE) {
+            RETURN_IF_NOT_OK(parse_impl_after_colon(lnum, tknz, th_size))
             break;
         } else {
             IFLOG(cri(TH_ID, LS_PRS "%s() - line:%d, unexpected token:%s", __func__, lnum,
@@ -468,15 +468,15 @@ vlg::RetCode persistence_manager_int::parse_single_conn_pool_cfg(
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode persistence_manager_int::parse_conn_pool_cfg(unsigned long &lnum,
-                                                            vlg::ascii_string_tok &tknz,
-                                                            vlg::hash_map &conn_pool_name_to_driv)
+vlg::RetCode persistence_manager_impl::parse_conn_pool_cfg(unsigned long &lnum,
+                                                           vlg::ascii_string_tok &tknz,
+                                                           vlg::hash_map &conn_pool_name_to_driv)
 {
     vlg::ascii_string tkn, conn_pool_name;
     while(!tknz.next_token(tkn, CR_DF_DLMT, true)) {
         CR_SKIP_SP_TABS(tkn)
         CR_DO_CMD_ON_NEWLINE(tkn, lnum++; continue)
-        if(tkn == BLZ_RWRD_CONN_CFG_END) {
+        if(tkn == VLG_RWRD_CONN_CFG_END) {
             break;
         } else {
             RETURN_IF_NOT_OK(conn_pool_name.assign(tkn))
@@ -489,14 +489,14 @@ vlg::RetCode persistence_manager_int::parse_conn_pool_cfg(unsigned long &lnum,
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode persistence_manager_int::parse_single_class_map_cfg(
+vlg::RetCode persistence_manager_impl::parse_single_class_map_cfg(
     unsigned long &lnum,
     vlg::ascii_string_tok &tknz,
     unsigned int nclass_id,
     vlg::hash_map &conn_pool_name_to_driv)
 {
     vlg::ascii_string tkn;
-    persistence_driver_int *driv = NULL;
+    persistence_driver_impl *driv = NULL;
     //read driver type
     while(!tknz.next_token(tkn, CR_DF_DLMT, true)) {
         CR_SKIP_SP_TABS(tkn)
@@ -513,7 +513,7 @@ vlg::RetCode persistence_manager_int::parse_single_class_map_cfg(
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode persistence_manager_int::parse_class_mapping_cfg(
+vlg::RetCode persistence_manager_impl::parse_class_mapping_cfg(
     unsigned long &lnum,
     vlg::ascii_string_tok &tknz,
     vlg::hash_map &conn_pool_name_to_driv)
@@ -522,11 +522,11 @@ vlg::RetCode persistence_manager_int::parse_class_mapping_cfg(
     while(!tknz.next_token(tkn, CR_DF_DLMT, true)) {
         CR_SKIP_SP_TABS(tkn)
         CR_DO_CMD_ON_NEWLINE(tkn, lnum++; continue)
-        if(tkn == BLZ_RWRD_MAP_CFG_END) {
+        if(tkn == VLG_RWRD_MAP_CFG_END) {
             break;
         } else {
             RETURN_IF_NOT_OK(nclass_id.assign(tkn))
-            if(!vlg::string_is_int_number(nclass_id.internal_buff())) {
+            if(!vlg::string_is_impl_number(nclass_id.internal_buff())) {
                 IFLOG(cri(TH_ID, LS_PRS "%s() - line:%d, bad nclass_id:%s", __func__, lnum,
                           nclass_id.internal_buff()))
                 return vlg::RetCode_BADCFG;
@@ -541,7 +541,7 @@ vlg::RetCode persistence_manager_int::parse_class_mapping_cfg(
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode persistence_manager_int::parse_data(vlg::ascii_string &data)
+vlg::RetCode persistence_manager_impl::parse_data(vlg::ascii_string &data)
 {
     bool conn_cfg_done = false, mapping_cfg_done = false;
     unsigned long lnum = 1;
@@ -550,26 +550,26 @@ vlg::RetCode persistence_manager_int::parse_data(vlg::ascii_string &data)
     vlg::ascii_string_tok tknz;
     RETURN_IF_NOT_OK(tknz.init(data))
     vlg::hash_map conn_pool_name_driv_hm(vlg::sngl_ptr_obj_mng(),
-                                           vlg::sngl_cstr_obj_mng());
+                                         vlg::sngl_cstr_obj_mng());
     conn_pool_name_driv_hm.init(HM_SIZE_NANO);
-    while(!tknz.next_token(tkn, CR_DF_DLMT BLZ_TK_COMMENT, true)) {
+    while(!tknz.next_token(tkn, CR_DF_DLMT VLG_TK_COMMENT, true)) {
         CR_SKIP_SP_TABS(tkn)
         CR_DO_CMD_ON_NEWLINE(tkn, parsing_comment = false; lnum++;
                              continue)
         if(!parsing_comment) {
-            if(tkn == BLZ_RWRD_CONN_CFG_BG) {
+            if(tkn == VLG_RWRD_CONN_CFG_BG) {
                 if(conn_cfg_done) {
                     return vlg::RetCode_BADCFG;
                 }
                 RETURN_IF_NOT_OK(parse_conn_pool_cfg(lnum, tknz, conn_pool_name_driv_hm))
                 conn_cfg_done = true;
-            } else if(tkn == BLZ_RWRD_MAP_CFG_BG) {
+            } else if(tkn == VLG_RWRD_MAP_CFG_BG) {
                 if(mapping_cfg_done) {
                     return vlg::RetCode_BADCFG;
                 }
                 RETURN_IF_NOT_OK(parse_class_mapping_cfg(lnum, tknz, conn_pool_name_driv_hm))
                 mapping_cfg_done = true;
-            } else if(tkn == BLZ_TK_COMMENT) {
+            } else if(tkn == VLG_TK_COMMENT) {
                 //comment begin
                 parsing_comment = true;
             } else {
@@ -586,7 +586,7 @@ vlg::RetCode persistence_manager_int::parse_data(vlg::ascii_string &data)
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode persistence_manager_int::load_cfg(const char *filename)
+vlg::RetCode persistence_manager_impl::load_cfg(const char *filename)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(filename:%s)", __func__, filename))
     vlg::ascii_string path;
@@ -608,7 +608,7 @@ vlg::RetCode persistence_manager_int::load_cfg(const char *filename)
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode persistence_manager_int::load_cfg()
+vlg::RetCode persistence_manager_impl::load_cfg()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s()", __func__))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;

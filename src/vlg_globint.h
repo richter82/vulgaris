@@ -19,16 +19,15 @@
  *
  */
 
-#ifndef BLZ_GLOB_INT_H_
-#define BLZ_GLOB_INT_H_
+#ifndef VLG_GLOB_INT_H_
+#define VLG_GLOB_INT_H_
 
 #include "cr_time.h"
 #include "cr_parse.h"
 #include "cr_dl.h"
 #include "cr_cfg.h"
 #include "cr_structs_mt.h"
-#include "blaze_byte_buffer.h"
-#include "blz_proto.h"
+#include "vlg_byte_buffer.h"
 
 #ifdef WIN32
 #include <winsock2.h>
@@ -61,8 +60,8 @@
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 #endif
 
-#define BLZ_TK_COMMENT      "#"
-#define BLZ_MDL_NAME_LEN    256
+#define VLG_TK_COMMENT      "#"
+#define VLG_MDL_NAME_LEN    256
 
 #define LS_CTR "CTR|"
 #define LS_DTR "~DR|"

@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef BLZ_CPP_PEER_H_
-#define BLZ_CPP_PEER_H_
+#ifndef VLG_CPP_PEER_H_
+#define VLG_CPP_PEER_H_
 #include "vlg.h"
 #ifdef WIN32
 #include <winsock2.h>
@@ -100,8 +100,8 @@ class peer {
         // AUTOMA - User opt. entrypoints
     public:
         virtual vlg::RetCode  on_load_config(int pnum,
-                                               const char *param,
-                                               const char *value);
+                                             const char *param,
+                                             const char *value);
 
         virtual vlg::RetCode  on_init();
         virtual vlg::RetCode  on_starting();
@@ -125,8 +125,8 @@ class peer {
                                              long nsec = 0);
 
         vlg::RetCode await_for_status_change(PeerStatus &peer_status,
-                                               time_t sec = -1,
-                                               long nsec = 0);
+                                             time_t sec = -1,
+                                             long nsec = 0);
         // SERVER-CONNECTIVITY
     public:
         connection_factory *get_connection_factory();
@@ -135,8 +135,8 @@ class peer {
         // ACTIONS
     public:
         vlg::RetCode start(int argc,
-                             char *argv[],
-                             bool spawn_new_thread);
+                           char *argv[],
+                           bool spawn_new_thread);
 
         vlg::RetCode stop(bool force_disconnect = false);
 
@@ -150,27 +150,27 @@ class peer {
                                         unsigned int nclass_id);
 
         vlg::RetCode class_persistent_load(unsigned short class_key,
-                                             unsigned int &ts_0_out,
-                                             unsigned int &ts_1_out,
-                                             nclass &in_out_obj);
+                                           unsigned int &ts_0_out,
+                                           unsigned int &ts_1_out,
+                                           nclass &in_out_obj);
 
         vlg::RetCode class_persistent_save(const nclass &in_obj);
 
         vlg::RetCode class_persistent_update(unsigned short class_key,
-                                               const nclass &in_obj);
+                                             const nclass &in_obj);
 
         vlg::RetCode class_persistent_update_or_save(unsigned short class_key,
-                                                       const nclass &in_obj);
+                                                     const nclass &in_obj);
 
         vlg::RetCode class_persistent_remove(unsigned short class_key,
-                                               PersistenceDeletionMode mode,
-                                               const nclass &in_obj);
+                                             PersistenceDeletionMode mode,
+                                             const nclass &in_obj);
 
         // DISTRIBUTION
     public:
         vlg::RetCode class_distribute(SubscriptionEventType event_type,
-                                        Action action,
-                                        const nclass &in_obj);
+                                      Action action,
+                                      const nclass &in_obj);
 
         // PERSISTENCE + DISTRIBUTION
     public:

@@ -19,15 +19,15 @@
  *
  */
 
-#ifndef BLZ_TOOLKIT_PEER_H
-#define BLZ_TOOLKIT_PEER_H
+#ifndef VLG_TOOLKIT_PEER_H
+#define VLG_TOOLKIT_PEER_H
 
-#include "blz_toolkit_glob.h"
+#include "vlg_toolkit_glob.h"
 
-namespace blz_tlkt {
+namespace vlg_tlkt {
 
 //------------------------------------------------------------------------------
-// ****BLZ_TOOLKIT_PEER****
+// ****VLG_TOOLKIT_PEER****
 //------------------------------------------------------------------------------
 class toolkit_peer : public vlg::peer_int {
     public:
@@ -35,11 +35,11 @@ class toolkit_peer : public vlg::peer_int {
         toolkit_peer(unsigned int id);
 
         //------------------------------------------------------------------------------
-        // BLZ_PEER_LFCYC ABS METHS
+        // VLG_PEER_LFCYC ABS METHS
         //------------------------------------------------------------------------------
     private:
         virtual vlg::RetCode peer_load_cfg_usr(int pnum, const char *param,
-                                                 const char *value);
+                                               const char *value);
         virtual vlg::RetCode peer_init_usr();
         virtual vlg::RetCode peer_start_usr();
         virtual vlg::RetCode peer_dying_breath_handler();
@@ -50,4 +50,4 @@ class toolkit_peer : public vlg::peer_int {
 
 }
 
-#endif // BLZ_TOOLKIT_PEER_H
+#endif // VLG_TOOLKIT_PEER_H

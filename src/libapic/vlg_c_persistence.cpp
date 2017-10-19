@@ -19,8 +19,8 @@
  *
  */
 
-#include "blaze_c_persistence.h"
-#include "blaze_persistence.h"
+#include "vlg_c_persistence.h"
+#include "vlg_persistence.h"
 
 namespace vlg {
 extern "C" {

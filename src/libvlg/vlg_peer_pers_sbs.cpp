@@ -19,9 +19,9 @@
  *
  */
 
-#include "blz_peer_int.h"
-#include "blz_connection_int.h"
-#include "blz_subscription_int.h"
+#include "vlg_peer_impl.h"
+#include "vlg_connection_impl.h"
+#include "vlg_subscription_impl.h"
 
 namespace vlg {
 
@@ -32,7 +32,7 @@ namespace vlg {
 //-----------------------------
 
 struct SPC_REC {
-    peer_int *peer;
+    peer_impl *peer;
     PersistenceAlteringMode mode;
     vlg::RetCode res;
 };
@@ -42,10 +42,10 @@ void peer_enum_em_classes_create_schema(const entity_desc &entity_desc,
 {
     SPC_REC *pud = static_cast<SPC_REC *>(ud);
     if(entity_desc.is_persistent()) {
-        persistence_driver_int *driv = NULL;
+        persistence_driver_impl *driv = NULL;
         if((driv = pud->peer->get_pers_mng().available_driver(
                        entity_desc.get_nclass_id()))) {
-            persistence_connection_int *conn = NULL;
+            persistence_connection_impl *conn = NULL;
             if((conn = driv->available_connection(entity_desc.get_nclass_id()))) {
                 pud->res = conn->create_entity_schema(pud->mode, pud->peer->get_em(),
                                                       entity_desc);
@@ -75,7 +75,7 @@ void peer_enum_em_classes_create_schema(const entity_desc &entity_desc,
     }
 }
 
-vlg::RetCode peer_int::pers_schema_create(PersistenceAlteringMode mode)
+vlg::RetCode peer_impl::pers_schema_create(PersistenceAlteringMode mode)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     if(!pers_enabled_) {
@@ -91,9 +91,9 @@ vlg::RetCode peer_int::pers_schema_create(PersistenceAlteringMode mode)
     return ud.res;
 }
 
-vlg::RetCode peer_int::class_pers_schema_create(PersistenceAlteringMode
-                                                  mode,
-                                                  unsigned int nclass_id)
+vlg::RetCode peer_impl::class_pers_schema_create(PersistenceAlteringMode
+                                                 mode,
+                                                 unsigned int nclass_id)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(mode:%d, nclass_id:%d)", __func__, nclass_id))
     if(!pers_enabled_) {
@@ -104,9 +104,9 @@ vlg::RetCode peer_int::class_pers_schema_create(PersistenceAlteringMode
     const entity_desc *class_desc = NULL;
     if(!(cdrs_res = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
-            persistence_driver_int *driv = NULL;
+            persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
-                persistence_connection_int *conn = NULL;
+                persistence_connection_impl *conn = NULL;
                 if((conn = driv->available_connection(nclass_id))) {
                     if((cdrs_res = conn->create_entity_schema(mode, bem_, *class_desc))) {
                         IFLOG(err(TH_ID, LS_TRL "%s() - create-schema failed for nclass_id:%d [res:%d]",
@@ -136,10 +136,10 @@ vlg::RetCode peer_int::class_pers_schema_create(PersistenceAlteringMode
     return cdrs_res;
 }
 
-vlg::RetCode peer_int::class_pers_load(unsigned short key,
-                                         unsigned int  &ts0_out,
-                                         unsigned int  &ts1_out,
-                                         nclass &in_out_obj)
+vlg::RetCode peer_impl::class_pers_load(unsigned short key,
+                                        unsigned int  &ts0_out,
+                                        unsigned int  &ts1_out,
+                                        nclass &in_out_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%u)", __func__, key))
     if(!pers_enabled_) {
@@ -151,9 +151,9 @@ vlg::RetCode peer_int::class_pers_load(unsigned short key,
     const entity_desc *class_desc = NULL;
     if(!(cdrs_res = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
-            persistence_driver_int *driv = NULL;
+            persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
-                persistence_connection_int *conn = NULL;
+                persistence_connection_impl *conn = NULL;
                 if((conn = driv->available_connection(nclass_id))) {
                     cdrs_res = conn->load_entity(key, bem_, ts0_out, ts1_out, in_out_obj);
                 } else {
@@ -180,7 +180,7 @@ vlg::RetCode peer_int::class_pers_load(unsigned short key,
     return cdrs_res;
 }
 
-vlg::RetCode peer_int::class_pers_save(const nclass &in_obj)
+vlg::RetCode peer_impl::class_pers_save(const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     if(!pers_enabled_) {
@@ -194,9 +194,9 @@ vlg::RetCode peer_int::class_pers_save(const nclass &in_obj)
     const entity_desc *class_desc = NULL;
     if(!(cdrs_res = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
-            persistence_driver_int *driv = NULL;
+            persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
-                persistence_connection_int *conn = NULL;
+                persistence_connection_impl *conn = NULL;
                 if((conn = driv->available_connection(nclass_id))) {
                     if((cdrs_res = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_CLO "%s() - failed get per-nclass_id helper class [res:%d]",
@@ -229,8 +229,8 @@ vlg::RetCode peer_int::class_pers_save(const nclass &in_obj)
     return cdrs_res;
 }
 
-vlg::RetCode peer_int::class_pers_update(unsigned short key,
-                                           const nclass &in_obj)
+vlg::RetCode peer_impl::class_pers_update(unsigned short key,
+                                          const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%u)", __func__, key))
     if(!pers_enabled_) {
@@ -244,9 +244,9 @@ vlg::RetCode peer_int::class_pers_update(unsigned short key,
     const entity_desc *class_desc = NULL;
     if(!(cdrs_res = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
-            persistence_driver_int *driv = NULL;
+            persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
-                persistence_connection_int *conn = NULL;
+                persistence_connection_impl *conn = NULL;
                 if((conn = driv->available_connection(nclass_id))) {
                     if((cdrs_res = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_CLO
@@ -280,8 +280,8 @@ vlg::RetCode peer_int::class_pers_update(unsigned short key,
     return cdrs_res;
 }
 
-vlg::RetCode peer_int::class_pers_update_or_save(unsigned short key,
-                                                   const nclass &in_obj)
+vlg::RetCode peer_impl::class_pers_update_or_save(unsigned short key,
+                                                  const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%u)", __func__, key))
     if(!pers_enabled_) {
@@ -295,9 +295,9 @@ vlg::RetCode peer_int::class_pers_update_or_save(unsigned short key,
     const entity_desc *class_desc = NULL;
     if(!(cdrs_res = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
-            persistence_driver_int *driv = NULL;
+            persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
-                persistence_connection_int *conn = NULL;
+                persistence_connection_impl *conn = NULL;
                 if((conn = driv->available_connection(nclass_id))) {
                     if((cdrs_res = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_TRL "%s() - failed get per-nclass_id helper class [res:%d]",
@@ -330,9 +330,9 @@ vlg::RetCode peer_int::class_pers_update_or_save(unsigned short key,
     return cdrs_res;
 }
 
-vlg::RetCode peer_int::class_pers_remove(unsigned short key,
-                                           PersistenceDeletionMode mode,
-                                           const nclass &in_obj)
+vlg::RetCode peer_impl::class_pers_remove(unsigned short key,
+                                          PersistenceDeletionMode mode,
+                                          const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%u)", __func__, key))
     if(!pers_enabled_) {
@@ -346,9 +346,9 @@ vlg::RetCode peer_int::class_pers_remove(unsigned short key,
     const entity_desc *class_desc = NULL;
     if(!(cdrs_res = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
-            persistence_driver_int *driv = NULL;
+            persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
-                persistence_connection_int *conn = NULL;
+                persistence_connection_impl *conn = NULL;
                 if((conn = driv->available_connection(nclass_id))) {
                     if((cdrs_res = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_TRL "%s() - failed get per-nclass_id helper class [res:%d]",
@@ -385,10 +385,10 @@ vlg::RetCode peer_int::class_pers_remove(unsigned short key,
 // DISTRIBUTION
 //-----------------------------
 
-vlg::RetCode peer_int::class_distribute(SubscriptionEventType evt_type,
-                                          ProtocolCode proto_code,
-                                          Action act,
-                                          const nclass &obj)
+vlg::RetCode peer_impl::class_distribute(SubscriptionEventType evt_type,
+                                         ProtocolCode proto_code,
+                                         Action act,
+                                         const nclass &obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
@@ -400,7 +400,7 @@ vlg::RetCode peer_int::class_distribute(SubscriptionEventType evt_type,
     } else {
         sdr->next_time_stamp(ts0, ts1);
         if(sdr->get_srv_connid_condesc_set().size()) {
-            subscription_event_int *new_sbs_event = NULL;
+            subscription_event_impl *new_sbs_event = NULL;
             if(!(cdrs_res = build_sbs_event(sdr->next_sbs_evt_id(),
                                             evt_type,
                                             proto_code,
@@ -428,7 +428,7 @@ vlg::RetCode peer_int::class_distribute(SubscriptionEventType evt_type,
 // PERSISTENCE + DISTRIBUTION
 //-----------------------------
 
-vlg::RetCode peer_int::class_pers_save_and_distribute(
+vlg::RetCode peer_impl::class_pers_save_and_distribute(
     const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
@@ -443,9 +443,9 @@ vlg::RetCode peer_int::class_pers_save_and_distribute(
     const entity_desc *class_desc = NULL;
     if(!(cdrs_res = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
-            persistence_driver_int *driv = NULL;
+            persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
-                persistence_connection_int *conn = NULL;
+                persistence_connection_impl *conn = NULL;
                 if((conn = driv->available_connection(nclass_id))) {
                     if((cdrs_res = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_CLO "%s() - failed get per-nclass_id helper class [res:%d]",
@@ -478,7 +478,7 @@ vlg::RetCode peer_int::class_pers_save_and_distribute(
     if(!cdrs_res) {
         if(sdr->get_srv_connid_condesc_set().size()) {
             unsigned int ts1 = 0;
-            subscription_event_int *new_sbs_event = NULL;
+            subscription_event_impl *new_sbs_event = NULL;
             RETURN_IF_NOT_OK(build_sbs_event(sdr->next_sbs_evt_id(),
                                              SubscriptionEventType_LIVE,
                                              ProtocolCode_SUCCESS,
@@ -496,8 +496,8 @@ vlg::RetCode peer_int::class_pers_save_and_distribute(
     return cdrs_res;
 }
 
-vlg::RetCode peer_int::class_pers_update_and_distribute(unsigned short key,
-                                                          const nclass &in_obj)
+vlg::RetCode peer_impl::class_pers_update_and_distribute(unsigned short key,
+                                                         const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%u)", __func__, key))
     if(!pers_enabled_) {
@@ -511,9 +511,9 @@ vlg::RetCode peer_int::class_pers_update_and_distribute(unsigned short key,
     const entity_desc *class_desc = NULL;
     if(!(cdrs_res = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
-            persistence_driver_int *driv = NULL;
+            persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
-                persistence_connection_int *conn = NULL;
+                persistence_connection_impl *conn = NULL;
                 if((conn = driv->available_connection(nclass_id))) {
                     if((cdrs_res = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_CLO "%s() - failed get per-nclass_id helper class [res:%d]",
@@ -545,7 +545,7 @@ vlg::RetCode peer_int::class_pers_update_and_distribute(unsigned short key,
     //**** SBS MNG BG
     if(!cdrs_res) {
         if(sdr->get_srv_connid_condesc_set().size()) {
-            subscription_event_int *new_sbs_event = NULL;
+            subscription_event_impl *new_sbs_event = NULL;
             RETURN_IF_NOT_OK(build_sbs_event(sdr->next_sbs_evt_id(),
                                              SubscriptionEventType_LIVE,
                                              ProtocolCode_SUCCESS,
@@ -563,7 +563,7 @@ vlg::RetCode peer_int::class_pers_update_and_distribute(unsigned short key,
     return cdrs_res;
 }
 
-vlg::RetCode peer_int::class_pers_update_or_save_and_distribute(
+vlg::RetCode peer_impl::class_pers_update_or_save_and_distribute(
     unsigned short key,
     const nclass &in_obj)
 {
@@ -579,9 +579,9 @@ vlg::RetCode peer_int::class_pers_update_or_save_and_distribute(
     const entity_desc *class_desc = NULL;
     if(!(cdrs_res = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
-            persistence_driver_int *driv = NULL;
+            persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
-                persistence_connection_int *conn = NULL;
+                persistence_connection_impl *conn = NULL;
                 if((conn = driv->available_connection(nclass_id))) {
                     if((cdrs_res = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_TRL "%s() - failed get per-nclass_id helper class [res:%d]",
@@ -613,7 +613,7 @@ vlg::RetCode peer_int::class_pers_update_or_save_and_distribute(
     //**** SBS MNG BG
     if(!cdrs_res) {
         if(sdr->get_srv_connid_condesc_set().size()) {
-            subscription_event_int *new_sbs_event = NULL;
+            subscription_event_impl *new_sbs_event = NULL;
             RETURN_IF_NOT_OK(build_sbs_event(sdr->next_sbs_evt_id(),
                                              SubscriptionEventType_LIVE,
                                              ProtocolCode_SUCCESS,
@@ -631,9 +631,9 @@ vlg::RetCode peer_int::class_pers_update_or_save_and_distribute(
     return cdrs_res;
 }
 
-vlg::RetCode peer_int::class_pers_remove_and_distribute(unsigned short key,
-                                                          PersistenceDeletionMode mode,
-                                                          const nclass &in_obj)
+vlg::RetCode peer_impl::class_pers_remove_and_distribute(unsigned short key,
+                                                         PersistenceDeletionMode mode,
+                                                         const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%u)", __func__, key))
     if(!pers_enabled_) {
@@ -647,9 +647,9 @@ vlg::RetCode peer_int::class_pers_remove_and_distribute(unsigned short key,
     const entity_desc *class_desc = NULL;
     if(!(cdrs_res = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
-            persistence_driver_int *driv = NULL;
+            persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
-                persistence_connection_int *conn = NULL;
+                persistence_connection_impl *conn = NULL;
                 if((conn = driv->available_connection(nclass_id))) {
                     if((cdrs_res = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_TRL "%s() - failed get per-nclass_id helper class [res:%d]",
@@ -681,7 +681,7 @@ vlg::RetCode peer_int::class_pers_remove_and_distribute(unsigned short key,
     //**** SBS MNG BG
     if(!cdrs_res) {
         if(sdr->get_srv_connid_condesc_set().size()) {
-            subscription_event_int *new_sbs_event = NULL;
+            subscription_event_impl *new_sbs_event = NULL;
             RETURN_IF_NOT_OK(build_sbs_event(sdr->next_sbs_evt_id(),
                                              SubscriptionEventType_LIVE,
                                              ProtocolCode_SUCCESS,

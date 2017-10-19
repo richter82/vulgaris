@@ -27,13 +27,13 @@
 #include <unistd.h>
 #include <fcntl.h>
 #endif
-#include "blz_selector.h"
-#include "blz_peer_int.h"
-#include "blz_connection_int.h"
+#include "vlg_selector.h"
+#include "vlg_peer_impl.h"
+#include "vlg_connection_impl.h"
 
 namespace vlg {
 
-selector_event::selector_event(BLZ_SELECTOR_Evt evt, connection_int *conn) :
+selector_event::selector_event(VLG_SELECTOR_Evt evt, connection_impl *conn) :
     evt_(evt),
     con_type_(conn ? conn->conn_type() : ConnectionType_UNDEFINED),
     conn_(conn),
@@ -52,16 +52,16 @@ selector_event::selector_event(BLZ_SELECTOR_Evt evt, connection_int *conn) :
 #define RETURRetCodeKO_ACT return vlg::RetCode_KO
 
 //for critical errors
-#define SET_ERROR_AND_RETURNZERO_ACT set_status(BLZ_ASYNCH_SELECTOR_STATUS_ERROR); return 0;
-#define SET_ERROR_AND_RETURRetCodeKO_ACT set_status(BLZ_ASYNCH_SELECTOR_STATUS_ERROR); return vlg::RetCode_KO;
+#define SET_ERROR_AND_RETURNZERO_ACT set_status(VLG_ASYNCH_SELECTOR_STATUS_ERROR); return 0;
+#define SET_ERROR_AND_RETURRetCodeKO_ACT set_status(VLG_ASYNCH_SELECTOR_STATUS_ERROR); return vlg::RetCode_KO;
 
 vlg::logger *selector::log_ = NULL;
 
-selector::selector(peer_int &peer,
+selector::selector(peer_impl &peer,
                    unsigned int id) :
     peer_(peer),
     id_(id),
-    status_(BLZ_ASYNCH_SELECTOR_STATUS_TO_INIT),
+    status_(VLG_ASYNCH_SELECTOR_STATUS_TO_INIT),
     nfds_(-1),
     last_err_(vlg::RetCode_OK),
     sel_res_(-1),
@@ -94,8 +94,8 @@ selector::selector(peer_int &peer,
 selector::~selector()
 {
     IFLOG(trc(TH_ID, LS_DTR "%s", __func__))
-    if(!(status_ <= BLZ_ASYNCH_SELECTOR_STATUS_INIT) &&
-            !(status_ >= BLZ_ASYNCH_SELECTOR_STATUS_STOPPED)) {
+    if(!(status_ <= VLG_ASYNCH_SELECTOR_STATUS_INIT) &&
+            !(status_ >= VLG_ASYNCH_SELECTOR_STATUS_STOPPED)) {
         IFLOG(cri(TH_ID, LS_DTR
                   "%s(ptr:%p) - [selector is not in a safe state:%d] " LS_EXUNX, __func__, this,
                   status_))
@@ -103,9 +103,9 @@ selector::~selector()
 }
 
 vlg::RetCode selector::init(unsigned int srv_executors,
-                              unsigned int srv_pkt_q_len,
-                              unsigned int cli_executors,
-                              unsigned int cli_pkt_q_len)
+                            unsigned int srv_pkt_q_len,
+                            unsigned int cli_executors,
+                            unsigned int cli_pkt_q_len)
 {
     IFLOG(trc(TH_ID, LS_OPN
               "%s(srv_executors:%u, srv_pkt_q_len:%u, cli_executors:%u, cli_pkt_q_len:%u)",
@@ -123,7 +123,7 @@ vlg::RetCode selector::init(unsigned int srv_executors,
     RETURN_IF_NOT_OK(create_UDP_notify_srv_sock())
     RETURN_IF_NOT_OK(connect_UDP_notify_cli_sock())
     RETURN_IF_NOT_OK(write_pending_sockets_.init(HM_SIZE_SMALL))
-    set_status(BLZ_ASYNCH_SELECTOR_STATUS_INIT);
+    set_status(VLG_ASYNCH_SELECTOR_STATUS_INIT);
     IFLOG(trc(TH_ID, LS_CLO "%s(selid:%d)", __func__, id_))
     return vlg::RetCode_OK;
 }
@@ -144,17 +144,17 @@ vlg::RetCode selector::on_peer_move_running_actions()
     return vlg::RetCode_OK;
 }
 
-peer_int &selector::peer()
+peer_impl &selector::peer()
 {
     return peer_;
 }
 
-BLZ_ASYNCH_SELECTOR_STATUS selector::status() const
+VLG_ASYNCH_SELECTOR_STATUS selector::status() const
 {
     return status_;
 }
 
-vlg::RetCode selector::set_status(BLZ_ASYNCH_SELECTOR_STATUS status)
+vlg::RetCode selector::set_status(VLG_ASYNCH_SELECTOR_STATUS status)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(selid:%d, status:%d)", __func__, id_, status))
     CHK_MON_ERR_0(lock)
@@ -166,14 +166,14 @@ vlg::RetCode selector::set_status(BLZ_ASYNCH_SELECTOR_STATUS status)
 }
 
 vlg::RetCode selector::await_for_status_reached_or_outdated(
-    BLZ_ASYNCH_SELECTOR_STATUS test,
-    BLZ_ASYNCH_SELECTOR_STATUS &current,
+    VLG_ASYNCH_SELECTOR_STATUS test,
+    VLG_ASYNCH_SELECTOR_STATUS &current,
     time_t sec,
     long nsec)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(selid:%d, status:%d)", __func__, id_, test))
     CHK_MON_ERR_0(lock)
-    if(status_ <BLZ_ASYNCH_SELECTOR_STATUS_INIT) {
+    if(status_ <VLG_ASYNCH_SELECTOR_STATUS_INIT) {
         CHK_MON_ERR_0(unlock)
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_BADSTTS;
@@ -337,7 +337,7 @@ vlg::RetCode selector::evt_enqueue_and_notify(const selector_event *evt)
 vlg::RetCode selector::interrupt()
 {
     selector_event *interrupt = new selector_event(
-        BLZ_SELECTOR_Evt_Interrupt,
+        VLG_SELECTOR_Evt_Interrupt,
         NULL);
     return asynch_notify(interrupt);
 }
@@ -444,7 +444,7 @@ vlg::RetCode selector::process_inco_sock_inco_events()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     SOCKET srv_cli_sock = INVALID_SOCKET;
-    connection_int *srv_cli_conn = NULL;
+    connection_impl *srv_cli_conn = NULL;
     unsigned int connid = 0;
     vlg::RetCode cdrs_res = vlg::RetCode_OK, sub_res = vlg::RetCode_OK;
     //**** HANDLE INCOMING EVENTS BEGIN****
@@ -467,8 +467,8 @@ vlg::RetCode selector::process_inco_sock_inco_events()
                               srv_cli_conn->status()))
                     break;
                 }
-                blz_hdr_rec *pkt_hdr = new blz_hdr_rec();
-                DECLINITH_GBB(pkt_body, BLZ_RECV_BUFF_SZ)
+                vlg_hdr_rec *pkt_hdr = new vlg_hdr_rec();
+                DECLINITH_GBB(pkt_body, VLG_RECV_BUFF_SZ)
                 //read data from socket.
                 if(!(cdrs_res = srv_cli_conn->recv_single_pkt(pkt_hdr, pkt_body))) {
                     vlg::p_task *task = NULL;
@@ -517,7 +517,7 @@ vlg::RetCode selector::process_sock_outg_events()
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
     SOCKET write_pending_sock = INVALID_SOCKET;
-    connection_int *wp_conn = NULL;
+    connection_impl *wp_conn = NULL;
     write_pending_sockets_.start_iteration();
     //**** HANDLE OUTGOING EVENTS BEGIN****
     while(!write_pending_sockets_.next(&write_pending_sock, &wp_conn)) {
@@ -562,7 +562,7 @@ vlg::RetCode selector::process_outg_sock_inco_events()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     SOCKET outg_sock = INVALID_SOCKET;
-    connection_int *outg_conn = NULL;
+    connection_impl *outg_conn = NULL;
     vlg::p_task *task = NULL;
     unsigned int connid = 0;
     vlg::RetCode cdrs_res = vlg::RetCode_OK, sub_res = vlg::RetCode_OK;
@@ -584,8 +584,8 @@ vlg::RetCode selector::process_outg_sock_inco_events()
                               outg_conn->status()))
                     break;
                 }
-                blz_hdr_rec *pkt_hdr = new blz_hdr_rec();
-                DECLINITH_GBB(pkt_body, BLZ_RECV_BUFF_SZ)
+                vlg_hdr_rec *pkt_hdr = new vlg_hdr_rec();
+                DECLINITH_GBB(pkt_body, VLG_RECV_BUFF_SZ)
                 //read data from socket.
                 if(!(cdrs_res = outg_conn->recv_single_pkt(pkt_hdr, pkt_body))) {
                     pkt_body->flip();
@@ -639,8 +639,8 @@ vlg::RetCode selector::process_outg_sock_inco_events()
                               outg_conn->status()))
                     break;
                 }
-                blz_hdr_rec *pkt_hdr = new blz_hdr_rec();
-                DECLINITH_GBB(pkt_body, BLZ_RECV_BUFF_SZ)
+                vlg_hdr_rec *pkt_hdr = new vlg_hdr_rec();
+                DECLINITH_GBB(pkt_body, VLG_RECV_BUFF_SZ)
                 //read data from socket.
                 if(!(cdrs_res = outg_conn->recv_single_pkt(pkt_hdr, pkt_body))) {
                     pkt_body->flip();
@@ -686,7 +686,7 @@ vlg::RetCode selector::process_outg_sock_inco_events()
 inline vlg::RetCode selector::consume_inco_sock_events()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    connection_int *inc_conn = NULL;
+    connection_impl *inc_conn = NULL;
     unsigned int new_connid = 0;
     if(FD_ISSET(srv_listen_socket_, &read_FDs_)) {
         if(peer_.next_connid(new_connid)) {
@@ -759,7 +759,7 @@ inline vlg::RetCode selector::FDSET_write_pending_sockets()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     SOCKET write_pending_sock = INVALID_SOCKET;
-    connection_int *wp_conn = NULL;
+    connection_impl *wp_conn = NULL;
     write_pending_sockets_.start_iteration();
     while(!write_pending_sockets_.next(&write_pending_sock, &wp_conn)) {
         if(wp_conn->pkt_snd_q().size()) {
@@ -784,7 +784,7 @@ inline vlg::RetCode selector::FDSET_incoming_sockets()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     srv_incoming_sock_map_.start_iteration();
-    connection_int *inco_conn = NULL;
+    connection_impl *inco_conn = NULL;
     while(!srv_incoming_sock_map_.next(NULL, &inco_conn)) {
         if(inco_conn->status() == ConnectionStatus_ESTABLISHED ||
                 inco_conn->status() == ConnectionStatus_PROTOCOL_HANDSHAKE ||
@@ -833,7 +833,7 @@ inline vlg::RetCode selector::FDSET_incoming_sockets()
 inline vlg::RetCode selector::FDSET_outgoing_sockets()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    connection_int *outg_conn = NULL;
+    connection_impl *outg_conn = NULL;
     SOCKET outg_sock = INVALID_SOCKET;
     cli_early_outgoing_sock_map_.start_iteration();
     while(!cli_early_outgoing_sock_map_.next(NULL, &outg_conn)) {
@@ -983,7 +983,7 @@ inline vlg::RetCode selector::add_early_outg_conn(selector_event *conn_evt)
     return cdrs_res;
 }
 
-inline vlg::RetCode selector::promote_early_outg_conn(connection_int *conn)
+inline vlg::RetCode selector::promote_early_outg_conn(connection_impl *conn)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     SOCKET conn_socket = conn->get_socket();
@@ -1002,7 +1002,7 @@ inline vlg::RetCode selector::promote_early_outg_conn(connection_int *conn)
     return vlg::RetCode_OK;
 }
 
-inline vlg::RetCode selector::delete_early_outg_conn(connection_int *conn)
+inline vlg::RetCode selector::delete_early_outg_conn(connection_impl *conn)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     SOCKET conn_socket = conn->get_socket();
@@ -1022,8 +1022,8 @@ inline bool selector::is_still_valid_connection(const selector_event
         return (srv_incoming_sock_map_.contains_key(&evt->connid_) ==
                 vlg::RetCode_OK);
     } else {
-        if(evt->evt_ == BLZ_SELECTOR_Evt_ConnReqAccepted ||
-                evt->evt_ == BLZ_SELECTOR_Evt_ConnReqRefused) {
+        if(evt->evt_ == VLG_SELECTOR_Evt_ConnReqAccepted ||
+                evt->evt_ == VLG_SELECTOR_Evt_ConnReqRefused) {
             return (cli_early_outgoing_sock_map_.contains_key(&evt->socket_) ==
                     vlg::RetCode_OK);
         } else {
@@ -1052,32 +1052,32 @@ vlg::RetCode selector::consume_asynch_events()
                   conn_evt->conn_,
                   conn_evt->socket_,
                   conn_evt->connid_))
-        if(conn_evt->evt_ != BLZ_SELECTOR_Evt_Interrupt) {
+        if(conn_evt->evt_ != VLG_SELECTOR_Evt_Interrupt) {
             /*check if we still have connection*/
-            if(conn_evt->evt_ != BLZ_SELECTOR_Evt_ConnectRequest) {
+            if(conn_evt->evt_ != VLG_SELECTOR_Evt_ConnectRequest) {
                 conn_still_valid = is_still_valid_connection(conn_evt);
             }
             if(conn_still_valid) {
                 switch(conn_evt->evt_) {
-                    case BLZ_SELECTOR_Evt_SendPacket:
+                    case VLG_SELECTOR_Evt_SendPacket:
                         if(write_pending_sockets_.put(&conn_evt->socket_, &(conn_evt->conn_))) {
                             IFLOG(cri(TH_ID, LS_CLO "%s() - storing new connection.", __func__))
                             SET_ERROR_AND_RETURRetCodeKO_ACT
                         }
                         break;
-                    case BLZ_SELECTOR_Evt_ConnectRequest:     /*can originate in client peer only*/
+                    case VLG_SELECTOR_Evt_ConnectRequest:     /*can originate in client peer only*/
                         add_early_outg_conn(conn_evt);
                         break;
-                    case BLZ_SELECTOR_Evt_Disconnect:         /*can originate in both peer*/
+                    case VLG_SELECTOR_Evt_Disconnect:         /*can originate in both peer*/
                         manage_disconnect_conn(conn_evt);
                         break;
-                    case BLZ_SELECTOR_Evt_ConnReqAccepted:    /*can originate in client peer only*/
+                    case VLG_SELECTOR_Evt_ConnReqAccepted:    /*can originate in client peer only*/
                         promote_early_outg_conn(conn_evt->conn_);
                         break;
-                    case BLZ_SELECTOR_Evt_ConnReqRefused:     /*can originate in client peer only*/
+                    case VLG_SELECTOR_Evt_ConnReqRefused:     /*can originate in client peer only*/
                         delete_early_outg_conn(conn_evt->conn_);
                         break;
-                    case BLZ_SELECTOR_Evt_Inactivity:         /*can originate in both peer*/
+                    case VLG_SELECTOR_Evt_Inactivity:         /*can originate in both peer*/
                         //@todo
                         break;
                     default:
@@ -1191,7 +1191,7 @@ vlg::RetCode selector::stop_and_clean()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
-    connection_int *conn = NULL;
+    connection_impl *conn = NULL;
     if(peer_.personality_ == PeerPersonality_PURE_SERVER ||
             peer_.personality_ == PeerPersonality_BOTH) {
         srv_incoming_sock_map_.start_iteration();
@@ -1274,27 +1274,27 @@ vlg::RetCode selector::stop_and_clean()
 
 void *selector::run()
 {
-    BLZ_ASYNCH_SELECTOR_STATUS current = BLZ_ASYNCH_SELECTOR_STATUS_UNDEF;
+    VLG_ASYNCH_SELECTOR_STATUS current = VLG_ASYNCH_SELECTOR_STATUS_UNDEF;
     IFLOG(trc(TH_ID, LS_OPN "%s(selid:%d)", __func__, id_))
-    if(status_ != BLZ_ASYNCH_SELECTOR_STATUS_INIT &&
-            status_ != BLZ_ASYNCH_SELECTOR_STATUS_REQUEST_READY) {
+    if(status_ != VLG_ASYNCH_SELECTOR_STATUS_INIT &&
+            status_ != VLG_ASYNCH_SELECTOR_STATUS_REQUEST_READY) {
         IFLOG(err(TH_ID, LS_CLO "%s(status_=%d, exp:2) - [BAD STATUS]", __func__,
                   status_))
         SET_ERROR_AND_RETURNZERO_ACT;
     }
     do {
         IFLOG(dbg(TH_ID, LS_TRL"[selector][wait for go-ready request]"))
-        await_for_status_reached_or_outdated(BLZ_ASYNCH_SELECTOR_STATUS_REQUEST_READY,
+        await_for_status_reached_or_outdated(VLG_ASYNCH_SELECTOR_STATUS_REQUEST_READY,
                                              current);
         IFLOG(dbg(TH_ID, LS_TRL"[selector][go ready requested, going ready]"))
-        set_status(BLZ_ASYNCH_SELECTOR_STATUS_READY);
+        set_status(VLG_ASYNCH_SELECTOR_STATUS_READY);
         IFLOG(dbg(TH_ID, LS_TRL"[selector][wait for go-select request]"))
-        await_for_status_reached_or_outdated(BLZ_ASYNCH_SELECTOR_STATUS_REQUEST_SELECT,
+        await_for_status_reached_or_outdated(VLG_ASYNCH_SELECTOR_STATUS_REQUEST_SELECT,
                                              current);
         IFLOG(dbg(TH_ID, LS_TRL"[selector][go-select requested, going select]"))
-        set_status(BLZ_ASYNCH_SELECTOR_STATUS_SELECT);
+        set_status(VLG_ASYNCH_SELECTOR_STATUS_SELECT);
         timeval sel_timeout = sel_timeout_;
-        while(status_ == BLZ_ASYNCH_SELECTOR_STATUS_SELECT) {
+        while(status_ == VLG_ASYNCH_SELECTOR_STATUS_SELECT) {
             IFLOG(low(TH_ID, LS_SEL"[selector][calling select() ..]"))
             if((sel_res_ = select(nfds_+1, &read_FDs_, &write_FDs_, &excep_FDs_, 0)) > 0) {
                 IFLOG(low(TH_ID, LS_SEL"[selector][select() return:%d]", sel_res_))
@@ -1305,24 +1305,24 @@ void *selector::run()
             } else {
                 //error
                 IFLOG(err(TH_ID, LS_SEL"[selector][select() error:%d]", sel_res_))
-                set_status(BLZ_ASYNCH_SELECTOR_STATUS_ERROR);
+                set_status(VLG_ASYNCH_SELECTOR_STATUS_ERROR);
             }
             FDSET_sockets();
             sel_timeout = sel_timeout_;
         }
-        if(status_ == BLZ_ASYNCH_SELECTOR_STATUS_REQUEST_STOP) {
+        if(status_ == VLG_ASYNCH_SELECTOR_STATUS_REQUEST_STOP) {
             IFLOG(dbg(TH_ID, LS_TRL"[selector][stop requested, clean initiated]"))
             stop_and_clean();
             break;
         }
-        if(status_ == BLZ_ASYNCH_SELECTOR_STATUS_ERROR) {
+        if(status_ == VLG_ASYNCH_SELECTOR_STATUS_ERROR) {
             IFLOG(err(TH_ID, LS_TRL"[selector][error occurred, clean initiated]"))
             stop_and_clean();
             peer_.set_peer_error();
             break;
         }
     } while(true);
-    set_status(BLZ_ASYNCH_SELECTOR_STATUS_STOPPED);
+    set_status(VLG_ASYNCH_SELECTOR_STATUS_STOPPED);
     int stop_res = stop();
     IFLOG(trc(TH_ID, LS_CLO "%s(selid:%d) - end, stop_res:%d -", __func__, id_,
               stop_res))

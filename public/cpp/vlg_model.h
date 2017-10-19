@@ -19,18 +19,18 @@
  *
  */
 
-#ifndef BLZ_CPP_MDL_H_
-#define BLZ_CPP_MDL_H_
-#include "blaze_memory.h"
-#include "blaze_byte_buffer.h"
-#include "blaze_ascii_string.h"
+#ifndef VLG_CPP_MDL_H_
+#define VLG_CPP_MDL_H_
+#include "vlg_memory.h"
+#include "vlg_byte_buffer.h"
+#include "vlg_ascii_string.h"
 
 namespace vlg {
 
 /** @brief member_desc describes a member of a vlg entity type.
 
     member_desc can describe both a field of a nclass type or a value of a
-    blaze_enum type.
+    vlg_enum type.
  */
 class member_desc_impl;
 class member_desc {
@@ -39,7 +39,7 @@ class member_desc {
                              MemberType     member_type,
                              const char     *member_name,
                              const char     *member_description,
-                             Type           field_blz_type,
+                             Type           field_vlg_type,
                              size_t         field_offset,
                              size_t         field_type_size,
                              size_t         field_nmemb,
@@ -62,7 +62,7 @@ class member_desc {
         /*
         Field section
         */
-        Type            get_field_blz_type()        const;
+        Type            get_field_vlg_type()        const;
         size_t          get_field_offset()          const;
         size_t          get_field_type_size()       const;
         size_t          get_field_nmemb()           const;
@@ -116,7 +116,7 @@ typedef void (*enum_member_desc)(const member_desc &member_descriptor,
 
 /** @brief entity_desc describes vlg entity type.
 
-    entity_desc can describe both a nclass type or a blaze_enum type.
+    entity_desc can describe both a nclass type or a vlg_enum type.
  */
 class entity_desc_impl;
 class entity_desc {
@@ -211,49 +211,49 @@ class nclass : public vlg::collectable {
                                                  unsigned int index);
 
         vlg::RetCode  set_field_by_id(unsigned int field_id,
+                                      const void *ptr,
+                                      size_t maxlen = 0);
+
+        vlg::RetCode  set_field_by_name(const char *field_name,
                                         const void *ptr,
                                         size_t maxlen = 0);
 
-        vlg::RetCode  set_field_by_name(const char *field_name,
-                                          const void *ptr,
-                                          size_t maxlen = 0);
-
         vlg::RetCode  set_field_by_id_index(unsigned int field_id,
+                                            const void *ptr,
+                                            unsigned int index,
+                                            size_t maxlen = 0);
+
+        vlg::RetCode  set_field_by_name_index(const char *field_name,
                                               const void *ptr,
                                               unsigned int index,
                                               size_t maxlen = 0);
 
-        vlg::RetCode  set_field_by_name_index(const char *field_name,
-                                                const void *ptr,
-                                                unsigned int index,
-                                                size_t maxlen = 0);
-
         vlg::RetCode  is_field_zero_by_id(unsigned int field_id,
-                                            bool &res) const;
+                                          bool &res) const;
 
         vlg::RetCode  is_field_zero_by_name(const char *field_name,
-                                              bool &res) const;
+                                            bool &res) const;
 
         vlg::RetCode  is_field_zero_by_id_index(unsigned int field_id,
+                                                unsigned int index,
+                                                unsigned int nmenb,
+                                                bool &res) const;
+
+        vlg::RetCode  is_field_zero_by_name_index(const char *field_name,
                                                   unsigned int index,
                                                   unsigned int nmenb,
                                                   bool &res) const;
-
-        vlg::RetCode  is_field_zero_by_name_index(const char *field_name,
-                                                    unsigned int index,
-                                                    unsigned int nmenb,
-                                                    bool &res) const;
 
         vlg::RetCode  set_field_zero_by_id(unsigned int field_id);
         vlg::RetCode  set_field_zero_by_name(const char *field_name);
 
         vlg::RetCode  set_field_zero_by_id_index(unsigned int field_id,
-                                                   unsigned int index,
-                                                   unsigned int nmenb);
+                                                 unsigned int index,
+                                                 unsigned int nmenb);
 
         vlg::RetCode  set_field_zero_by_name_index(const char *field_name,
-                                                     unsigned int index,
-                                                     unsigned int nmenb);
+                                                   unsigned int index,
+                                                   unsigned int nmenb);
 
         /**
         This method returns the memory address to the LEAF
@@ -262,11 +262,11 @@ class nclass : public vlg::collectable {
         for this nclass object, this function returns NULL.
         In case of success *member_descriptor points to the member_desc linked
         to the leaf-field-pointer returned.
-        Significant fields of member_desc struct are: get_field_blz_type() and
+        Significant fields of member_desc struct are: get_field_vlg_type() and
         get_field_type_size().
         *member_descriptor can never point to a descriptor for a
         EntityType field; instead it will always point to a primitive
-        BLZ_TYPE field.
+        VLG_TYPE field.
         The use of this function is *DISCOURAGED*
         because it is inherently inefficient.
         Anyway in some very peculiar cases it is necessary.
@@ -311,8 +311,8 @@ class nclass : public vlg::collectable {
         **************************************************************/
     public:
         vlg::RetCode restore(const entity_manager *em,
-                               Encode class_encode_type,
-                               vlg::grow_byte_buffer *ibb);
+                             Encode class_encode_type,
+                             vlg::grow_byte_buffer *ibb);
 
         /*************************************************************
         -Class Persistence
@@ -361,7 +361,7 @@ class entity_manager {
                                      void *ud)                      const;
 
         vlg::RetCode new_class_instance(unsigned int nclass_id,
-                                          nclass **new_class_obj) const;
+                                        nclass **new_class_obj) const;
 
         unsigned int    entity_count()  const;
         unsigned int    enum_count()    const;

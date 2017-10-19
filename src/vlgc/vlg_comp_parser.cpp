@@ -19,7 +19,7 @@
  *
  */
 
-#include "blz_compiler.h"
+#include "vlg_compiler.h"
 
 namespace vlg {
 
@@ -38,16 +38,16 @@ vlg::RetCode LoadTCompPackingMap(vlg::hash_map &map)
     size_t packing_value = 8;
     unsigned int key = 0;
     packing_value = 8;
-    key = TCOMP_DEP_GEN_KEY(BLZ_COMP_ARCH_x86_64,
-                            BLZ_COMP_OS_win,
-                            BLZ_COMP_LANG_CPP,
-                            BLZ_COMP_TCOMP_MSVC);
+    key = TCOMP_DEP_GEN_KEY(VLG_COMP_ARCH_x86_64,
+                            VLG_COMP_OS_win,
+                            VLG_COMP_LANG_CPP,
+                            VLG_COMP_TCOMP_MSVC);
     RETURN_IF_NOT_OK(map.put(&key, &packing_value))
     packing_value = 8;
-    key = TCOMP_DEP_GEN_KEY(BLZ_COMP_ARCH_x86_64,
-                            BLZ_COMP_OS_unix,
-                            BLZ_COMP_LANG_CPP,
-                            BLZ_COMP_TCOMP_GCC);
+    key = TCOMP_DEP_GEN_KEY(VLG_COMP_ARCH_x86_64,
+                            VLG_COMP_OS_unix,
+                            VLG_COMP_LANG_CPP,
+                            VLG_COMP_TCOMP_GCC);
     RETURN_IF_NOT_OK(map.put(&key, &packing_value))
     return vlg::RetCode_OK;
 }
@@ -56,7 +56,7 @@ vlg::hash_map &GetTCompPackingMap()
 {
     if(!tcomp_packing_map) {
         tcomp_packing_map = new vlg::hash_map(sizeof(size_t),
-                                                sizeof(unsigned int));
+                                              sizeof(unsigned int));
         if(!tcomp_packing_map) {
             EXIT_ACTION("failed creating tcomp_packing_map")
         }
@@ -77,18 +77,18 @@ static vlg::hash_map *rword_map = NULL;
 
 vlg::RetCode LoadResWordsMap(vlg::hash_map &map)
 {
-    RETURN_IF_NOT_OK(map.put(BLZ_RWRD_PFX BLZ_RWRD_ENUM, ""))
-    RETURN_IF_NOT_OK(map.put(BLZ_RWRD_PFX BLZ_RWRD_NCLASS, ""))
-    RETURN_IF_NOT_OK(map.put(BLZ_RWRD_PFX BLZ_RWRD_ID, ""))
-    RETURN_IF_NOT_OK(map.put(BLZ_RWRD_PFX BLZ_RWRD_PRIMARY, ""))
-    RETURN_IF_NOT_OK(map.put(BLZ_RWRD_PFX BLZ_RWRD_PERSISTENT, ""))
-    RETURN_IF_NOT_OK(map.put(BLZ_RWRD_PFX BLZ_RWRD_KEY, ""))
-    RETURN_IF_NOT_OK(map.put(BLZ_RWRD_PFX BLZ_RWRD_KEY_END, ""))
-    RETURN_IF_NOT_OK(map.put(BLZ_RWRD_PFX BLZ_RWRD_FILDSET, ""))
-    RETURN_IF_NOT_OK(map.put(BLZ_RWRD_PFX BLZ_RWRD_NAMESPACE, ""))
-    RETURN_IF_NOT_OK(map.put(BLZ_RWRD_PFX BLZ_RWRD_NAMESPACE_END, ""))
-    RETURN_IF_NOT_OK(map.put(BLZ_RWRD_PFX BLZ_RWRD_MODLNAME, ""))
-    RETURN_IF_NOT_OK(map.put(BLZ_RWRD_PFX BLZ_RWRD_MODLVER, ""))
+    RETURN_IF_NOT_OK(map.put(VLG_RWRD_PFX VLG_RWRD_ENUM, ""))
+    RETURN_IF_NOT_OK(map.put(VLG_RWRD_PFX VLG_RWRD_NCLASS, ""))
+    RETURN_IF_NOT_OK(map.put(VLG_RWRD_PFX VLG_RWRD_ID, ""))
+    RETURN_IF_NOT_OK(map.put(VLG_RWRD_PFX VLG_RWRD_PRIMARY, ""))
+    RETURN_IF_NOT_OK(map.put(VLG_RWRD_PFX VLG_RWRD_PERSISTENT, ""))
+    RETURN_IF_NOT_OK(map.put(VLG_RWRD_PFX VLG_RWRD_KEY, ""))
+    RETURN_IF_NOT_OK(map.put(VLG_RWRD_PFX VLG_RWRD_KEY_END, ""))
+    RETURN_IF_NOT_OK(map.put(VLG_RWRD_PFX VLG_RWRD_FILDSET, ""))
+    RETURN_IF_NOT_OK(map.put(VLG_RWRD_PFX VLG_RWRD_NAMESPACE, ""))
+    RETURN_IF_NOT_OK(map.put(VLG_RWRD_PFX VLG_RWRD_NAMESPACE_END, ""))
+    RETURN_IF_NOT_OK(map.put(VLG_RWRD_PFX VLG_RWRD_MODLNAME, ""))
+    RETURN_IF_NOT_OK(map.put(VLG_RWRD_PFX VLG_RWRD_MODLVER, ""))
     return vlg::RetCode_OK;
 }
 
@@ -96,7 +96,7 @@ vlg::hash_map &GetResWordsMap()
 {
     if(!rword_map) {
         rword_map = new vlg::hash_map(vlg::sngl_cstr_obj_mng(),
-                                        vlg::sngl_cstr_obj_mng());
+                                      vlg::sngl_cstr_obj_mng());
         if(!rword_map) {
             EXIT_ACTION_STDOUT("failed creating rword_map")
         }
@@ -114,16 +114,16 @@ static vlg::hash_map *types_map = NULL;
 
 vlg::RetCode LoadTypesMap(vlg::hash_map &map)
 {
-    RETURN_IF_NOT_OK(map.put(BLZ_RWORD_T_BOOL, ""))
-    RETURN_IF_NOT_OK(map.put(BLZ_RWORD_T_INT_16, ""))
-    RETURN_IF_NOT_OK(map.put(BLZ_RWORD_T_UINT_16, ""))
-    RETURN_IF_NOT_OK(map.put(BLZ_RWORD_T_INT_32, ""))
-    RETURN_IF_NOT_OK(map.put(BLZ_RWORD_T_UINT_32, ""))
-    RETURN_IF_NOT_OK(map.put(BLZ_RWORD_T_INT_64, ""))
-    RETURN_IF_NOT_OK(map.put(BLZ_RWORD_T_UINT_64, ""))
-    RETURN_IF_NOT_OK(map.put(BLZ_RWORD_T_FLOAT_32, ""))
-    RETURN_IF_NOT_OK(map.put(BLZ_RWORD_T_FLOAT_64, ""))
-    RETURN_IF_NOT_OK(map.put(BLZ_RWORD_T_ASCII, ""))
+    RETURN_IF_NOT_OK(map.put(VLG_RWORD_T_BOOL, ""))
+    RETURN_IF_NOT_OK(map.put(VLG_RWORD_T_INT_16, ""))
+    RETURN_IF_NOT_OK(map.put(VLG_RWORD_T_UINT_16, ""))
+    RETURN_IF_NOT_OK(map.put(VLG_RWORD_T_INT_32, ""))
+    RETURN_IF_NOT_OK(map.put(VLG_RWORD_T_UINT_32, ""))
+    RETURN_IF_NOT_OK(map.put(VLG_RWORD_T_INT_64, ""))
+    RETURN_IF_NOT_OK(map.put(VLG_RWORD_T_UINT_64, ""))
+    RETURN_IF_NOT_OK(map.put(VLG_RWORD_T_FLOAT_32, ""))
+    RETURN_IF_NOT_OK(map.put(VLG_RWORD_T_FLOAT_64, ""))
+    RETURN_IF_NOT_OK(map.put(VLG_RWORD_T_ASCII, ""))
     return vlg::RetCode_OK;
 }
 
@@ -131,7 +131,7 @@ vlg::hash_map &GetTypesMap()
 {
     if(!types_map) {
         types_map = new vlg::hash_map(vlg::sngl_cstr_obj_mng(),
-                                        vlg::sngl_cstr_obj_mng());
+                                      vlg::sngl_cstr_obj_mng());
         if(!types_map) {
             EXIT_ACTION_STDOUT("failed creating types_map")
         }
@@ -141,36 +141,36 @@ vlg::hash_map &GetTypesMap()
     return *types_map;
 }
 
-Type BLZ_COMP_StrToTYPE(const vlg::ascii_string &str)
+Type VLG_COMP_StrToTYPE(const vlg::ascii_string &str)
 {
-    if(str == BLZ_RWORD_T_BOOL) {
+    if(str == VLG_RWORD_T_BOOL) {
         return  Type_BOOL;
     }
-    if(str == BLZ_RWORD_T_INT_16) {
+    if(str == VLG_RWORD_T_INT_16) {
         return  Type_INT16;
     }
-    if(str == BLZ_RWORD_T_UINT_16) {
+    if(str == VLG_RWORD_T_UINT_16) {
         return  Type_UINT16;
     }
-    if(str == BLZ_RWORD_T_INT_32) {
+    if(str == VLG_RWORD_T_INT_32) {
         return  Type_INT32;
     }
-    if(str == BLZ_RWORD_T_UINT_32) {
+    if(str == VLG_RWORD_T_UINT_32) {
         return  Type_UINT32;
     }
-    if(str == BLZ_RWORD_T_INT_64) {
+    if(str == VLG_RWORD_T_INT_64) {
         return  Type_INT64;
     }
-    if(str == BLZ_RWORD_T_UINT_64) {
+    if(str == VLG_RWORD_T_UINT_64) {
         return  Type_UINT64;
     }
-    if(str == BLZ_RWORD_T_FLOAT_32) {
+    if(str == VLG_RWORD_T_FLOAT_32) {
         return  Type_FLOAT32;
     }
-    if(str == BLZ_RWORD_T_FLOAT_64) {
+    if(str == VLG_RWORD_T_FLOAT_64) {
         return  Type_FLOAT64;
     }
-    if(str == BLZ_RWORD_T_ASCII) {
+    if(str == VLG_RWORD_T_ASCII) {
         return  Type_ASCII;
     }
     return Type_UNDEFINED;
@@ -178,129 +178,129 @@ Type BLZ_COMP_StrToTYPE(const vlg::ascii_string &str)
 
 #define PARSE_ERR "\nERROR at line: %lu - "
 
-void BLZ_COMP_PARSE_FND_EXP(unsigned long line,
+void VLG_COMP_PARSE_FND_EXP(unsigned long line,
                             const char *fnd,
                             const char *exp)
 {
     fprintf(stderr, PARSE_ERR"found: %s, expected: %s.\n", line, fnd, exp);
 }
 
-void BLZ_COMP_PARSE_EXP(unsigned long line,
+void VLG_COMP_PARSE_EXP(unsigned long line,
                         const char *exp)
 {
     fprintf(stderr, PARSE_ERR"%s was expected.\n", line, exp);
 }
 
-void BLZ_COMP_PARSE_UNEXP(unsigned long line,
+void VLG_COMP_PARSE_UNEXP(unsigned long line,
                           const char *unexp)
 {
     fprintf(stderr, PARSE_ERR"unexpected token: %s.\n", line, unexp);
 }
 
-void BLZ_COMP_PARSE_SYMB_ALRDY_DECL(unsigned long line,
+void VLG_COMP_PARSE_SYMB_ALRDY_DECL(unsigned long line,
                                     const char *symb)
 {
     fprintf(stderr, PARSE_ERR"symbol already declared: %s.\n", line, symb);
 }
 
-void BLZ_COMP_PARSE_TYPE_UNRECOGN(unsigned long line,
+void VLG_COMP_PARSE_TYPE_UNRECOGN(unsigned long line,
                                   const char *symb)
 {
     fprintf(stderr, PARSE_ERR"unrecognized type: %s.\n", line, symb);
 }
 
-void BLZ_COMP_PARSE_EXP_INVALID(unsigned long line)
+void VLG_COMP_PARSE_EXP_INVALID(unsigned long line)
 {
     fprintf(stderr, PARSE_ERR"invalid expression.\n", line);
 }
 
-void BLZ_COMP_PARSE_CLASS_ID_NOT_DECL(unsigned long line,
+void VLG_COMP_PARSE_CLASS_ID_NOT_DECL(unsigned long line,
                                       const char *symb)
 {
     fprintf(stderr, PARSE_ERR"undeclared @id for class: %s.\n", line, symb);
 }
 
-void BLZ_COMP_PARSE_CLASS_ID_ALRDY_DECL(unsigned long line,
+void VLG_COMP_PARSE_CLASS_ID_ALRDY_DECL(unsigned long line,
                                         const char *symb)
 {
     fprintf(stderr, PARSE_ERR"@id already declared for class: %s.\n", line, symb);
 }
 
-void BLZ_COMP_PARSE_CLASS_NOT_PERSISTENT(unsigned long line,
+void VLG_COMP_PARSE_CLASS_NOT_PERSISTENT(unsigned long line,
                                          const char *symb)
 {
     fprintf(stderr, PARSE_ERR"class not persistent, found: %s.\n", line, symb);
 }
 
-void BLZ_COMP_PARSE_CLASS_ALRDY_PERSISTENT(unsigned long line,
+void VLG_COMP_PARSE_CLASS_ALRDY_PERSISTENT(unsigned long line,
                                            const char *symb)
 {
     fprintf(stderr, PARSE_ERR"class already tag as persistent, found: %s.\n", line,
             symb);
 }
 
-void BLZ_COMP_PARSE_KEYSET_INVALID(unsigned long line)
+void VLG_COMP_PARSE_KEYSET_INVALID(unsigned long line)
 {
     fprintf(stderr, PARSE_ERR"invalid class keyset.\n", line);
 }
 
 /***********************************
-CONSISTENCY- BLZ_COMP_CheckSymbol
+CONSISTENCY- VLG_COMP_CheckSymbol
 ***********************************/
 
 //@fixme: add separator check (,)
-vlg::RetCode BLZ_COMP_CheckSymbol(unsigned long &lnum,
-                                    vlg::ascii_string &tkn,
-                                    vlg::hash_map *definemap,
-                                    vlg::hash_map *entitymap,
-                                    vlg::hash_map *mmbrmap,
-                                    const char *FND_CGT,    //found category
-                                    const char *EXP_CTG     //expected category
-                                   )
+vlg::RetCode VLG_COMP_CheckSymbol(unsigned long &lnum,
+                                  vlg::ascii_string &tkn,
+                                  vlg::hash_map *definemap,
+                                  vlg::hash_map *entitymap,
+                                  vlg::hash_map *mmbrmap,
+                                  const char *FND_CGT,    //found category
+                                  const char *EXP_CTG     //expected category
+                                 )
 {
     //we expect symb name, so we return with error if newline found.
     if(is_new_line(tkn)) {
-        BLZ_COMP_PARSE_EXP(lnum, EXP_CTG);
+        VLG_COMP_PARSE_EXP(lnum, EXP_CTG);
         return vlg::RetCode_KO;
     }
     //check if this is a reserved word
     if(!GetResWordsMap().contains_key(tkn.internal_buff())) {
-        BLZ_COMP_PARSE_FND_EXP(lnum, tkn.internal_buff(), EXP_CTG);
+        VLG_COMP_PARSE_FND_EXP(lnum, tkn.internal_buff(), EXP_CTG);
         return vlg::RetCode_KO;
     }
     //check if this is a built-in compiler type
     if(!GetTypesMap().contains_key(tkn.internal_buff())) {
-        BLZ_COMP_PARSE_FND_EXP(lnum, tkn.internal_buff(), EXP_CTG);
+        VLG_COMP_PARSE_FND_EXP(lnum, tkn.internal_buff(), EXP_CTG);
         return vlg::RetCode_KO;
     }
     //if we have already seen this symbol (define), we return with error
     if(definemap && !definemap->contains_key(tkn.internal_buff())) {
-        BLZ_COMP_PARSE_SYMB_ALRDY_DECL(lnum, tkn.internal_buff());
+        VLG_COMP_PARSE_SYMB_ALRDY_DECL(lnum, tkn.internal_buff());
         return vlg::RetCode_KO;
     }
     //if we have already seen this symbol (entity), we return with error
     if(entitymap && !entitymap->contains_key(tkn.internal_buff())) {
-        BLZ_COMP_PARSE_SYMB_ALRDY_DECL(lnum, tkn.internal_buff());
+        VLG_COMP_PARSE_SYMB_ALRDY_DECL(lnum, tkn.internal_buff());
         return vlg::RetCode_KO;
     }
     //if we have already seen this symbol (member), we return with error
     if(mmbrmap && !mmbrmap->contains_key(tkn.internal_buff())) {
-        BLZ_COMP_PARSE_SYMB_ALRDY_DECL(lnum, tkn.internal_buff());
+        VLG_COMP_PARSE_SYMB_ALRDY_DECL(lnum, tkn.internal_buff());
         return vlg::RetCode_KO;
     }
     return vlg::RetCode_OK;
 }
 
 /***********************************
-CONSISTENCY- BLZ_COMP_CheckKeySymbol
+CONSISTENCY- VLG_COMP_CheckKeySymbol
 ***********************************/
 //@fixme: add separator check (,)
-vlg::RetCode BLZ_COMP_CheckKeySymbol(unsigned long &lnum,
-                                       vlg::ascii_string &tkn,
-                                       vlg::hash_map *mmbrmap,
-                                       const char *FND_CGT,    //found category
-                                       const char *EXP_CTG     //expected category
-                                      )
+vlg::RetCode VLG_COMP_CheckKeySymbol(unsigned long &lnum,
+                                     vlg::ascii_string &tkn,
+                                     vlg::hash_map *mmbrmap,
+                                     const char *FND_CGT,    //found category
+                                     const char *EXP_CTG     //expected category
+                                    )
 {
     vlg::ascii_string hint;
     COMMAND_IF_NOT_OK(hint.assign(FND_CGT), exit(1))
@@ -308,39 +308,39 @@ vlg::RetCode BLZ_COMP_CheckKeySymbol(unsigned long &lnum,
     COMMAND_IF_NOT_OK(hint.append(EXP_CTG), exit(1))
     //we expect symb name, so we return with error if newline found.
     if(is_new_line(tkn)) {
-        BLZ_COMP_PARSE_EXP(lnum, EXP_CTG);
+        VLG_COMP_PARSE_EXP(lnum, EXP_CTG);
         return vlg::RetCode_KO;
     }
     //check if this is a reserved word
     if(!GetResWordsMap().contains_key(tkn.internal_buff())) {
-        BLZ_COMP_PARSE_FND_EXP(lnum, tkn.internal_buff(), hint.internal_buff());
+        VLG_COMP_PARSE_FND_EXP(lnum, tkn.internal_buff(), hint.internal_buff());
         return vlg::RetCode_KO;
     }
     //check if this is a built-in compiler type
     if(!GetTypesMap().contains_key(tkn.internal_buff())) {
-        BLZ_COMP_PARSE_FND_EXP(lnum, tkn.internal_buff(), hint.internal_buff());
+        VLG_COMP_PARSE_FND_EXP(lnum, tkn.internal_buff(), hint.internal_buff());
         return vlg::RetCode_KO;
     }
     //this must be a member field
     if(mmbrmap->contains_key(tkn.internal_buff())) {
-        BLZ_COMP_PARSE_FND_EXP(lnum, tkn.internal_buff(), hint.internal_buff());
+        VLG_COMP_PARSE_FND_EXP(lnum, tkn.internal_buff(), hint.internal_buff());
         return vlg::RetCode_KO;
     }
     return vlg::RetCode_OK;
 }
 
 /***********************************
-READ- BLZ_COMP_ReadOpeningCurlyBrace
+READ- VLG_COMP_ReadOpeningCurlyBrace
 ***********************************/
-vlg::RetCode BLZ_COMP_ReadOpeningCurlyBrace(unsigned long &lnum,
-                                              vlg::ascii_string_tok &tknz)
+vlg::RetCode VLG_COMP_ReadOpeningCurlyBrace(unsigned long &lnum,
+                                            vlg::ascii_string_tok &tknz)
 {
     vlg::ascii_string tkn;
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_TK_CBL, true)) {
         CR_SKIP_SP_TABS(tkn)
         CR_SKIP_NEWLINE(tkn)
         if(tkn != CR_TK_CBL) {
-            BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
+            VLG_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
             return vlg::RetCode_KO;
         }
         break;
@@ -349,23 +349,23 @@ vlg::RetCode BLZ_COMP_ReadOpeningCurlyBrace(unsigned long &lnum,
 }
 
 /***********************************
-READ- BLZ_COMP_ReadInteger
+READ- VLG_COMP_ReadInteger
 ***********************************/
-vlg::RetCode BLZ_COMP_ReadInteger(unsigned long &lnum,
-                                    vlg::ascii_string_tok &tknz,
-                                    long &along)
+vlg::RetCode VLG_COMP_ReadInteger(unsigned long &lnum,
+                                  vlg::ascii_string_tok &tknz,
+                                  long &along)
 {
     vlg::ascii_string tkn;
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_TK_COMA, true)) {
         CR_SKIP_SP_TABS(tkn)
         //we expect an int, so we return with error if newline found.
         CR_DO_CMD_ON_NEWLINE(tkn,
-                             BLZ_COMP_PARSE_EXP(lnum, BLZ_COMP_SYMB_NAME);
+                             VLG_COMP_PARSE_EXP(lnum, VLG_COMP_SYMB_NAME);
                              return vlg::RetCode_KO)
         if(vlg::string_is_int_number(tkn.internal_buff())) {
             along = atol(tkn.internal_buff());
         } else {
-            BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
+            VLG_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
             return vlg::RetCode_KO;
         }
         break;
@@ -374,12 +374,12 @@ vlg::RetCode BLZ_COMP_ReadInteger(unsigned long &lnum,
 }
 
 /***********************************
-READ- BLZ_COMP_ReadString
+READ- VLG_COMP_ReadString
 ***********************************/
-vlg::RetCode BLZ_COMP_ReadString(unsigned long &lnum,
-                                   vlg::ascii_string_tok &tknz,
-                                   char **newstr, bool begin_quote_read = false,
-                                   bool opt = false)
+vlg::RetCode VLG_COMP_ReadString(unsigned long &lnum,
+                                 vlg::ascii_string_tok &tknz,
+                                 char **newstr, bool begin_quote_read = false,
+                                 bool opt = false)
 {
     vlg::ascii_string tkn;
     if(!begin_quote_read) {
@@ -389,21 +389,21 @@ vlg::RetCode BLZ_COMP_ReadString(unsigned long &lnum,
             if(opt) {
                 CR_DO_CMD_ON_NEWLINE(tkn, lnum++; return vlg::RetCode_OK)
             } else {
-                CR_DO_CMD_ON_NEWLINE(tkn, BLZ_COMP_PARSE_EXP(lnum, BLZ_COMP_STRING);
+                CR_DO_CMD_ON_NEWLINE(tkn, VLG_COMP_PARSE_EXP(lnum, VLG_COMP_STRING);
                                      return vlg::RetCode_KO)
             }
             if(tkn == CR_TK_QT) {
                 //ok we have read the beginning quote of the string
                 break;
             } else {
-                BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
+                VLG_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
                 return vlg::RetCode_KO;
             }
         }
     }
     while(!tknz.next_token(tkn, CR_NL_DLMT CR_TK_QT, true)) {
         //we expect a string, so we return with error if newline found.
-        CR_DO_CMD_ON_NEWLINE(tkn, BLZ_COMP_PARSE_EXP(lnum, BLZ_COMP_STRING);
+        CR_DO_CMD_ON_NEWLINE(tkn, VLG_COMP_PARSE_EXP(lnum, VLG_COMP_STRING);
                              return vlg::RetCode_KO)
         if(!*newstr) {
             COMMAND_IF_NULL(*newstr = tkn.new_buffer(), exit(1))
@@ -412,7 +412,7 @@ vlg::RetCode BLZ_COMP_ReadString(unsigned long &lnum,
                 //ok we have read the ending quote of the string
                 break;
             } else {
-                BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
+                VLG_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
                 return vlg::RetCode_KO;
             }
         }
@@ -421,24 +421,24 @@ vlg::RetCode BLZ_COMP_ReadString(unsigned long &lnum,
 }
 
 /***********************************
-PARSE- BLZ_COMP_ParseVal
+PARSE- VLG_COMP_ParseVal
 ***********************************/
-vlg::RetCode BLZ_COMP_ParseVal(unsigned long &lnum,
-                                 unsigned short &mmbrid,
-                                 vlg::ascii_string &symb_name,
-                                 long &last_enum_val,
-                                 vlg::ascii_string_tok &tknz,
-                                 vlg::hash_map &definemap,
-                                 vlg::hash_map &entitymap,
-                                 vlg::hash_map &mmbrmap)
+vlg::RetCode VLG_COMP_ParseVal(unsigned long &lnum,
+                               unsigned short &mmbrid,
+                               vlg::ascii_string &symb_name,
+                               long &last_enum_val,
+                               vlg::ascii_string_tok &tknz,
+                               vlg::hash_map &definemap,
+                               vlg::hash_map &entitymap,
+                               vlg::hash_map &mmbrmap)
 {
-    RETURN_IF_NOT_OK(BLZ_COMP_CheckSymbol(lnum,
+    RETURN_IF_NOT_OK(VLG_COMP_CheckSymbol(lnum,
                                           symb_name,
                                           &definemap,
                                           &entitymap,
                                           &mmbrmap,
-                                          BLZ_COMP_RSRV_WORD,
-                                          BLZ_COMP_SYMB_NAME))
+                                          VLG_COMP_RSRV_WORD,
+                                          VLG_COMP_SYMB_NAME))
     mmbrid++;
 
     vlg::ascii_string tkn;
@@ -451,10 +451,10 @@ vlg::RetCode BLZ_COMP_ParseVal(unsigned long &lnum,
             //ok now we expect an integer value
             if(enum_val_read) {
                 //we have already read it..
-                BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
+                VLG_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
                 return vlg::RetCode_KO;
             }
-            RETURN_IF_NOT_OK(BLZ_COMP_ReadInteger(lnum, tknz, enum_val))
+            RETURN_IF_NOT_OK(VLG_COMP_ReadInteger(lnum, tknz, enum_val))
             enum_val_read = true;
         } else if(is_new_line(tkn)) {
             lnum++;
@@ -465,12 +465,12 @@ vlg::RetCode BLZ_COMP_ParseVal(unsigned long &lnum,
             break;
         } else if(tkn == CR_TK_QT) {
             //ok we read a description
-            RETURN_IF_NOT_OK(BLZ_COMP_ReadString(lnum, tknz, &desc, true))
+            RETURN_IF_NOT_OK(VLG_COMP_ReadString(lnum, tknz, &desc, true))
             break;
         }
     }
     last_enum_val = enum_val;
-    //at this point we can create a BLZ_MEMBER_DESC_COMP for this enum member
+    //at this point we can create a VLG_MEMBER_DESC_COMP for this enum member
     member_desc_comp *mmbrdesc = NULL;
     COMMAND_IF_NULL(
         mmbrdesc = new member_desc_comp(mmbrid,
@@ -486,39 +486,39 @@ vlg::RetCode BLZ_COMP_ParseVal(unsigned long &lnum,
     COMMAND_IF_NOT_OK(mmbrdesc->init(), exit(1))
     //1
     mmbrdesc->set_field_offset(0,
-                               BLZ_COMP_ARCH_x86_64,
-                               BLZ_COMP_OS_win,
-                               BLZ_COMP_LANG_CPP,
-                               BLZ_COMP_TCOMP_MSVC);
+                               VLG_COMP_ARCH_x86_64,
+                               VLG_COMP_OS_win,
+                               VLG_COMP_LANG_CPP,
+                               VLG_COMP_TCOMP_MSVC);
     mmbrdesc->set_field_type_size(4,
-                                  BLZ_COMP_ARCH_x86_64,
-                                  BLZ_COMP_OS_win,
-                                  BLZ_COMP_LANG_CPP,
-                                  BLZ_COMP_TCOMP_MSVC);
+                                  VLG_COMP_ARCH_x86_64,
+                                  VLG_COMP_OS_win,
+                                  VLG_COMP_LANG_CPP,
+                                  VLG_COMP_TCOMP_MSVC);
     //2
     mmbrdesc->set_field_offset(0,
-                               BLZ_COMP_ARCH_x86_64,
-                               BLZ_COMP_OS_unix,
-                               BLZ_COMP_LANG_CPP,
-                               BLZ_COMP_TCOMP_GCC);
+                               VLG_COMP_ARCH_x86_64,
+                               VLG_COMP_OS_unix,
+                               VLG_COMP_LANG_CPP,
+                               VLG_COMP_TCOMP_GCC);
     mmbrdesc->set_field_type_size(4,
-                                  BLZ_COMP_ARCH_x86_64,
-                                  BLZ_COMP_OS_unix,
-                                  BLZ_COMP_LANG_CPP,
-                                  BLZ_COMP_TCOMP_GCC);
+                                  VLG_COMP_ARCH_x86_64,
+                                  VLG_COMP_OS_unix,
+                                  VLG_COMP_LANG_CPP,
+                                  VLG_COMP_TCOMP_GCC);
     COMMAND_IF_NOT_OK(mmbrmap.put(symb_name.internal_buff(), &mmbrdesc), exit(1))
     return vlg::RetCode_OK;
 }
 
 /***********************************
-PARSE- BLZ_COMP_ParseNMemb
+PARSE- VLG_COMP_ParseNMemb
 we expect an integer value or an expression (a + b + c ..)
 or a combination of (a + DEFINE_0 + b + DEFINE_1...)
 ***********************************/
-vlg::RetCode BLZ_COMP_ParseNMemb(unsigned long &lnum,
-                                   vlg::ascii_string_tok &tknz,
-                                   vlg::hash_map &definemap,
-                                   size_t &nmemb)
+vlg::RetCode VLG_COMP_ParseNMemb(unsigned long &lnum,
+                                 vlg::ascii_string_tok &tknz,
+                                 vlg::hash_map &definemap,
+                                 size_t &nmemb)
 {
     vlg::ascii_string tkn;
     const char *define_val = NULL;
@@ -529,7 +529,7 @@ vlg::RetCode BLZ_COMP_ParseNMemb(unsigned long &lnum,
             if(plus_allwd) {
                 exp_valid = plus_allwd = false;
             } else {
-                BLZ_COMP_PARSE_EXP_INVALID(lnum);
+                VLG_COMP_PARSE_EXP_INVALID(lnum);
                 return vlg::RetCode_KO;
             }
         } else if(tkn == CR_TK_RBR) {
@@ -538,7 +538,7 @@ vlg::RetCode BLZ_COMP_ParseNMemb(unsigned long &lnum,
                 //ok we got the final result of expression
                 break;
             } else {
-                BLZ_COMP_PARSE_EXP_INVALID(lnum);
+                VLG_COMP_PARSE_EXP_INVALID(lnum);
                 return vlg::RetCode_KO;
             }
         } else if(vlg::string_is_int_number(tkn.internal_buff())) {
@@ -552,12 +552,12 @@ vlg::RetCode BLZ_COMP_ParseNMemb(unsigned long &lnum,
                 exp_valid = plus_allwd = true;
             } else {
                 //unexpected token
-                BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
+                VLG_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
                 return vlg::RetCode_KO;
             }
         } else {
             //unexpected token
-            BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
+            VLG_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
             return vlg::RetCode_KO;
         }
     }
@@ -565,30 +565,30 @@ vlg::RetCode BLZ_COMP_ParseNMemb(unsigned long &lnum,
 }
 
 /***********************************
-PARSE- BLZ_COMP_ParseType
+PARSE- VLG_COMP_ParseType
 ***********************************/
-vlg::RetCode BLZ_COMP_ParseType(unsigned long &lnum,
-                                  vlg::ascii_string &str_blz_type,
-                                  vlg::ascii_string_tok &tknz,
-                                  vlg::hash_map &definemap,
-                                  vlg::hash_map &entitymap,
-                                  Type &blz_type,
-                                  size_t &nmemb,
-                                  entity_desc_comp **desc,
-                                  vlg::ascii_string &symb_name)
+vlg::RetCode VLG_COMP_ParseType(unsigned long &lnum,
+                                vlg::ascii_string &str_vlg_type,
+                                vlg::ascii_string_tok &tknz,
+                                vlg::hash_map &definemap,
+                                vlg::hash_map &entitymap,
+                                Type &vlg_type,
+                                size_t &nmemb,
+                                entity_desc_comp **desc,
+                                vlg::ascii_string &symb_name)
 {
     entity_desc_comp *tmpdesc = NULL;
-    if(!GetTypesMap().contains_key(str_blz_type.internal_buff())) {
+    if(!GetTypesMap().contains_key(str_vlg_type.internal_buff())) {
         //build-in type
-        blz_type = BLZ_COMP_StrToTYPE(str_blz_type);
+        vlg_type = VLG_COMP_StrToTYPE(str_vlg_type);
         //ok we have type
-    } else if(!entitymap.get(str_blz_type.internal_buff(), &tmpdesc)) {
+    } else if(!entitymap.get(str_vlg_type.internal_buff(), &tmpdesc)) {
         //user defined type
-        blz_type = Type_ENTITY;
+        vlg_type = Type_ENTITY;
         *desc = tmpdesc;
         //ok we have type
     } else {
-        BLZ_COMP_PARSE_TYPE_UNRECOGN(lnum, str_blz_type.internal_buff());
+        VLG_COMP_PARSE_TYPE_UNRECOGN(lnum, str_vlg_type.internal_buff());
         return vlg::RetCode_KO;
     }
 
@@ -596,10 +596,10 @@ vlg::RetCode BLZ_COMP_ParseType(unsigned long &lnum,
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_TK_COMA CR_RB_DLMT, true)) {
         CR_SKIP_SP_TABS(tkn)
         //we expect to read nmemb or symbol, so we return with error if newline found.
-        CR_DO_CMD_ON_NEWLINE(tkn, BLZ_COMP_PARSE_EXP(lnum, BLZ_COMP_SYMB_NAME);
+        CR_DO_CMD_ON_NEWLINE(tkn, VLG_COMP_PARSE_EXP(lnum, VLG_COMP_SYMB_NAME);
                              return vlg::RetCode_KO)
         if(tkn == CR_TK_RBL) {
-            RETURN_IF_NOT_OK(BLZ_COMP_ParseNMemb(lnum, tknz, definemap, nmemb))
+            RETURN_IF_NOT_OK(VLG_COMP_ParseNMemb(lnum, tknz, definemap, nmemb))
             break;
         } else {
             //we have read symb here.
@@ -611,16 +611,16 @@ vlg::RetCode BLZ_COMP_ParseType(unsigned long &lnum,
 }
 
 /***********************************
-CALC- BLZ_COMP_CalcFieldOffset
+CALC- VLG_COMP_CalcFieldOffset
 ***********************************/
-vlg::RetCode BLZ_COMP_CalcFieldOffset(size_t max_align,
-                                        size_t &mmbr_offset,
-                                        vlg::hash_map &entitymap,
-                                        vlg::hash_map &mmbrmap,
-                                        BLZ_COMP_ARCH arch,
-                                        BLZ_COMP_OS os,
-                                        BLZ_COMP_LANG lang,
-                                        BLZ_COMP_TCOMP tcomp)
+vlg::RetCode VLG_COMP_CalcFieldOffset(size_t max_align,
+                                      size_t &mmbr_offset,
+                                      vlg::hash_map &entitymap,
+                                      vlg::hash_map &mmbrmap,
+                                      VLG_COMP_ARCH arch,
+                                      VLG_COMP_OS os,
+                                      VLG_COMP_LANG lang,
+                                      VLG_COMP_TCOMP tcomp)
 {
     //get cur_offset and compute next
     size_t cur_offst = mmbr_offset;
@@ -675,15 +675,15 @@ vlg::RetCode BLZ_COMP_CalcFieldOffset(size_t max_align,
 }
 
 /***********************************
-CALC- BLZ_COMP_CalcFieldsSizeAndEntityMaxAlign
+CALC- VLG_COMP_CalcFieldsSizeAndEntityMaxAlign
 ***********************************/
-vlg::RetCode BLZ_COMP_CalcFieldsSizeAndEntityMaxAlign(size_t &max_align,
-                                                        vlg::hash_map &entitymap,
-                                                        vlg::hash_map &mmbrmap,
-                                                        BLZ_COMP_ARCH arch,
-                                                        BLZ_COMP_OS os,
-                                                        BLZ_COMP_LANG lang,
-                                                        BLZ_COMP_TCOMP tcomp)
+vlg::RetCode VLG_COMP_CalcFieldsSizeAndEntityMaxAlign(size_t &max_align,
+                                                      vlg::hash_map &entitymap,
+                                                      vlg::hash_map &mmbrmap,
+                                                      VLG_COMP_ARCH arch,
+                                                      VLG_COMP_OS os,
+                                                      VLG_COMP_LANG lang,
+                                                      VLG_COMP_TCOMP tcomp)
 {
     size_t type_size = 0;
     mmbrmap.start_iteration();
@@ -725,19 +725,19 @@ vlg::RetCode BLZ_COMP_CalcFieldsSizeAndEntityMaxAlign(size_t &max_align,
 
 
 /***********************************
-CALC- BLZ_COMP_CalcTCompDependantValues
+CALC- VLG_COMP_CalcTCompDependantValues
 ***********************************/
-vlg::RetCode BLZ_COMP_CalcTCompDependantValues(size_t max_align,
-                                                 size_t field_offset,
-                                                 entity_desc_comp &entitydesc,
-                                                 vlg::hash_map &entitymap,
-                                                 vlg::hash_map &mmbrmap,
-                                                 BLZ_COMP_ARCH arch,
-                                                 BLZ_COMP_OS os,
-                                                 BLZ_COMP_LANG lang,
-                                                 BLZ_COMP_TCOMP tcomp)
+vlg::RetCode VLG_COMP_CalcTCompDependantValues(size_t max_align,
+                                               size_t field_offset,
+                                               entity_desc_comp &entitydesc,
+                                               vlg::hash_map &entitymap,
+                                               vlg::hash_map &mmbrmap,
+                                               VLG_COMP_ARCH arch,
+                                               VLG_COMP_OS os,
+                                               VLG_COMP_LANG lang,
+                                               VLG_COMP_TCOMP tcomp)
 {
-    RETURN_IF_NOT_OK(BLZ_COMP_CalcFieldsSizeAndEntityMaxAlign(max_align,
+    RETURN_IF_NOT_OK(VLG_COMP_CalcFieldsSizeAndEntityMaxAlign(max_align,
                                                               entitymap,
                                                               mmbrmap,
                                                               arch,
@@ -751,7 +751,7 @@ vlg::RetCode BLZ_COMP_CalcTCompDependantValues(size_t max_align,
                                     tcomp);
     size_t fsize = 0;
     //calculate class fields offsets
-    RETURN_IF_NOT_OK(BLZ_COMP_CalcFieldOffset(entitydesc.get_entity_max_align(arch,
+    RETURN_IF_NOT_OK(VLG_COMP_CalcFieldOffset(entitydesc.get_entity_max_align(arch,
                                                                               os,
                                                                               lang,
                                                                               tcomp),
@@ -783,15 +783,15 @@ vlg::RetCode BLZ_COMP_CalcTCompDependantValues(size_t max_align,
 
 
 /***********************************
-PARSE- BLZ_COMP_ParseFild
+PARSE- VLG_COMP_ParseFild
 ***********************************/
-vlg::RetCode BLZ_COMP_ParseFild(unsigned long &lnum,
-                                  unsigned short &mmbrid,
-                                  vlg::ascii_string &str_blz_type,
-                                  vlg::ascii_string_tok &tknz,
-                                  vlg::hash_map &definemap,
-                                  vlg::hash_map &entitymap,
-                                  vlg::hash_map &mmbrmap)
+vlg::RetCode VLG_COMP_ParseFild(unsigned long &lnum,
+                                unsigned short &mmbrid,
+                                vlg::ascii_string &str_vlg_type,
+                                vlg::ascii_string_tok &tknz,
+                                vlg::hash_map &definemap,
+                                vlg::hash_map &entitymap,
+                                vlg::hash_map &mmbrmap)
 {
     vlg::ascii_string tkn, symb_name;
     Type fld_type = Type_UNDEFINED;
@@ -799,8 +799,8 @@ vlg::RetCode BLZ_COMP_ParseFild(unsigned long &lnum,
     entity_desc_comp *fld_entity_desc = NULL;
     char *fld_desc = NULL;
 
-    RETURN_IF_NOT_OK(BLZ_COMP_ParseType(lnum,
-                                        str_blz_type,
+    RETURN_IF_NOT_OK(VLG_COMP_ParseType(lnum,
+                                        str_vlg_type,
                                         tknz,
                                         definemap,
                                         entitymap,
@@ -818,16 +818,16 @@ vlg::RetCode BLZ_COMP_ParseFild(unsigned long &lnum,
         }
     }
 
-    RETURN_IF_NOT_OK(BLZ_COMP_CheckSymbol(lnum,
+    RETURN_IF_NOT_OK(VLG_COMP_CheckSymbol(lnum,
                                           symb_name,
                                           &definemap,
                                           &entitymap,
                                           &mmbrmap,
-                                          BLZ_COMP_RSRV_WORD,
-                                          BLZ_COMP_SYMB_NAME))
+                                          VLG_COMP_RSRV_WORD,
+                                          VLG_COMP_SYMB_NAME))
 
     //we read an opt description
-    RETURN_IF_NOT_OK(BLZ_COMP_ReadString(lnum, tknz, &fld_desc, false, true))
+    RETURN_IF_NOT_OK(VLG_COMP_ReadString(lnum, tknz, &fld_desc, false, true))
 
     mmbrid++;
     fld_nmemb = fld_nmemb ? fld_nmemb : 1;
@@ -847,7 +847,7 @@ vlg::RetCode BLZ_COMP_ParseFild(unsigned long &lnum,
         //user-defined type id
         fld_entityid = fld_entity_desc->get_entityid();
     }
-    //at this point we can create a BLZ_MEMBER_DESC_COMP for this field
+    //at this point we can create a VLG_MEMBER_DESC_COMP for this field
     member_desc_comp *mmbrdesc = NULL;
     COMMAND_IF_NULL(mmbrdesc = new member_desc_comp(mmbrid,
                                                     MemberType_FIELD,
@@ -866,12 +866,12 @@ vlg::RetCode BLZ_COMP_ParseFild(unsigned long &lnum,
 }
 
 /***********************************
-PARSE- BLZ_COMP_ParseId
+PARSE- VLG_COMP_ParseId
 ***********************************/
-vlg::RetCode BLZ_COMP_ParseId(unsigned long &lnum,
-                                vlg::ascii_string_tok &tknz,
-                                vlg::hash_map &definemap,
-                                unsigned int &id)
+vlg::RetCode VLG_COMP_ParseId(unsigned long &lnum,
+                              vlg::ascii_string_tok &tknz,
+                              vlg::hash_map &definemap,
+                              unsigned int &id)
 {
     vlg::ascii_string tkn;
     const char *define_val = NULL;
@@ -888,12 +888,12 @@ vlg::RetCode BLZ_COMP_ParseId(unsigned long &lnum,
                 break;
             } else {
                 //unexpected token
-                BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
+                VLG_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
                 return vlg::RetCode_KO;
             }
         } else {
             //unexpected token
-            BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
+            VLG_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
             return vlg::RetCode_KO;
         }
     }
@@ -901,15 +901,15 @@ vlg::RetCode BLZ_COMP_ParseId(unsigned long &lnum,
 }
 
 /***********************************
-PARSE- BLZ_COMP_ParseFildSet
+PARSE- VLG_COMP_ParseFildSet
 ***********************************/
-vlg::RetCode BLZ_COMP_ParseFildSet(unsigned long &lnum,
-                                     vlg::ascii_string_tok &tknz,
-                                     vlg::hash_map &definemap,
-                                     vlg::hash_map &entitymap,
-                                     vlg::hash_map &mmbrmap,
-                                     vlg::hash_map &keymap,
-                                     vlg::linked_list  &mmbrset)
+vlg::RetCode VLG_COMP_ParseFildSet(unsigned long &lnum,
+                                   vlg::ascii_string_tok &tknz,
+                                   vlg::hash_map &definemap,
+                                   vlg::hash_map &entitymap,
+                                   vlg::hash_map &mmbrmap,
+                                   vlg::hash_map &keymap,
+                                   vlg::linked_list  &mmbrset)
 {
     vlg::ascii_string tkn;
     bool    fildset_valid = false,
@@ -921,7 +921,7 @@ vlg::RetCode BLZ_COMP_ParseFildSet(unsigned long &lnum,
         if(tkn == CR_TK_CBL) {
             if(cbl_read) {
                 //unexpected token
-                BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
+                VLG_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
                 return vlg::RetCode_KO;
             }
             fild_reading_allwd = true;
@@ -930,13 +930,13 @@ vlg::RetCode BLZ_COMP_ParseFildSet(unsigned long &lnum,
             if(fildset_valid) {
                 break;
             } else {
-                BLZ_COMP_PARSE_KEYSET_INVALID(lnum);
+                VLG_COMP_PARSE_KEYSET_INVALID(lnum);
                 return vlg::RetCode_KO;
             }
         } else if(tkn == CR_TK_COMA) {
             if(fild_reading_allwd) {
                 //unexpected token
-                BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
+                VLG_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
                 return vlg::RetCode_KO;
             } else {
                 fild_reading_allwd = true;
@@ -945,11 +945,11 @@ vlg::RetCode BLZ_COMP_ParseFildSet(unsigned long &lnum,
         } else {
             if(fild_reading_allwd) {
                 //read key member ...
-                RETURN_IF_NOT_OK(BLZ_COMP_CheckKeySymbol(lnum,
+                RETURN_IF_NOT_OK(VLG_COMP_CheckKeySymbol(lnum,
                                                          tkn,
                                                          &mmbrmap,
-                                                         BLZ_COMP_RSRV_WORD,
-                                                         BLZ_COMP_KSYMB_NAME))
+                                                         VLG_COMP_RSRV_WORD,
+                                                         VLG_COMP_KSYMB_NAME))
                 RETURN_IF_NOT_OK(mmbrmap.get(tkn.internal_buff(), &mmbrptr))
                 // ok we got key field.
                 RETURN_IF_NOT_OK(mmbrset.push_back(&mmbrptr))
@@ -957,7 +957,7 @@ vlg::RetCode BLZ_COMP_ParseFildSet(unsigned long &lnum,
                 fild_reading_allwd = false;
             } else {
                 //unexpected token
-                BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
+                VLG_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
                 return vlg::RetCode_KO;
             }
         }
@@ -966,14 +966,14 @@ vlg::RetCode BLZ_COMP_ParseFildSet(unsigned long &lnum,
 }
 
 /***********************************
-PARSE- BLZ_COMP_ParseKey
+PARSE- VLG_COMP_ParseKey
 ***********************************/
-vlg::RetCode BLZ_COMP_ParseKey(unsigned long &lnum,
-                                 vlg::ascii_string_tok &tknz,
-                                 vlg::hash_map &definemap,
-                                 vlg::hash_map &entitymap,
-                                 vlg::hash_map &mmbrmap,
-                                 vlg::hash_map &keymap)
+vlg::RetCode VLG_COMP_ParseKey(unsigned long &lnum,
+                               vlg::ascii_string_tok &tknz,
+                               vlg::hash_map &definemap,
+                               vlg::hash_map &entitymap,
+                               vlg::hash_map &mmbrmap,
+                               vlg::hash_map &keymap)
 {
     vlg::ascii_string tkn;
     unsigned int k_id = 0;
@@ -984,30 +984,30 @@ vlg::RetCode BLZ_COMP_ParseKey(unsigned long &lnum,
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_TK_COMA, true)) {
         CR_SKIP_SP_TABS(tkn)
         CR_DO_CMD_ON_NEWLINE(tkn, lnum++; break)
-        if(tkn == BLZ_RWRD_PRIMARY) {
+        if(tkn == VLG_RWRD_PRIMARY) {
             primary = true;
             break;
         } else {
             //unexpected token
-            BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
+            VLG_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
             return vlg::RetCode_KO;
         }
     }
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_TK_COMA, true)) {
         CR_SKIP_SP_TABS(tkn)
         CR_DO_CMD_ON_NEWLINE(tkn, lnum++; continue)
-        if(tkn == BLZ_RWRD_PFX BLZ_RWRD_ID) {
+        if(tkn == VLG_RWRD_PFX VLG_RWRD_ID) {
             //parse @id
             //@fixme if id already read...
-            RETURN_IF_NOT_OK(BLZ_COMP_ParseId(lnum,
+            RETURN_IF_NOT_OK(VLG_COMP_ParseId(lnum,
                                               tknz,
                                               definemap,
                                               k_id))
             id_read = true;
-        } else if(tkn == BLZ_RWRD_PFX BLZ_RWRD_FILDSET) {
+        } else if(tkn == VLG_RWRD_PFX VLG_RWRD_FILDSET) {
             //parse @fildset
             //@fixme if fildset already read...
-            RETURN_IF_NOT_OK(BLZ_COMP_ParseFildSet(lnum,
+            RETURN_IF_NOT_OK(VLG_COMP_ParseFildSet(lnum,
                                                    tknz,
                                                    definemap,
                                                    entitymap,
@@ -1015,7 +1015,7 @@ vlg::RetCode BLZ_COMP_ParseKey(unsigned long &lnum,
                                                    keymap,
                                                    mmbrset))
             mmbrset_read = true;
-        } else if(tkn == BLZ_RWRD_PFX BLZ_RWRD_KEY_END) {
+        } else if(tkn == VLG_RWRD_PFX VLG_RWRD_KEY_END) {
             //parse @key_end
             if(id_read && mmbrset_read) {
                 break;
@@ -1024,11 +1024,11 @@ vlg::RetCode BLZ_COMP_ParseKey(unsigned long &lnum,
             }
         } else {
             //unexpected token
-            BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
+            VLG_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
             return vlg::RetCode_KO;
         }
     }
-    //at this point we can create a BLZ_KEY_DESC for this key
+    //at this point we can create a VLG_KEY_DESC for this key
     key_desc_comp *keydesc = NULL;
     COMMAND_IF_NULL(keydesc = new key_desc_comp((unsigned short)k_id,
                                                 primary), exit(1))
@@ -1038,34 +1038,34 @@ vlg::RetCode BLZ_COMP_ParseKey(unsigned long &lnum,
 }
 
 /***********************************
-PARSE- BLZ_COMP_ParseEnum
+PARSE- VLG_COMP_ParseEnum
 ***********************************/
-vlg::RetCode BLZ_COMP_ParseEnum(unsigned long &lnum,
-                                  vlg::ascii_string_tok &tknz,
-                                  vlg::hash_map &definemap,
-                                  vlg::hash_map &entitymap)
+vlg::RetCode VLG_COMP_ParseEnum(unsigned long &lnum,
+                                vlg::ascii_string_tok &tknz,
+                                vlg::hash_map &definemap,
+                                vlg::hash_map &entitymap)
 {
     vlg::ascii_string tkn, symb_name;
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_CB_DLMT, true)) {
         CR_SKIP_SP_TABS(tkn)
-        RETURN_IF_NOT_OK(BLZ_COMP_CheckSymbol(lnum,
+        RETURN_IF_NOT_OK(VLG_COMP_CheckSymbol(lnum,
                                               tkn,
                                               &definemap,
                                               &entitymap,
                                               NULL,
-                                              BLZ_COMP_RSRV_WORD,
-                                              BLZ_COMP_SYMB_NAME)
+                                              VLG_COMP_RSRV_WORD,
+                                              VLG_COMP_SYMB_NAME)
                         )
         RETURN_IF_NOT_OK(symb_name.assign(tkn))
         // ok we got symb name.
         break;
     }
 
-    RETURN_IF_NOT_OK(BLZ_COMP_ReadOpeningCurlyBrace(lnum, tknz))
+    RETURN_IF_NOT_OK(VLG_COMP_ReadOpeningCurlyBrace(lnum, tknz))
 
     long last_enum_val = -1;             //last value of enum
     vlg::hash_map mmbrmap(vlg::sngl_ptr_obj_mng(),
-                            vlg::sngl_cstr_obj_mng());  //map symb -> mmbrdesc
+                          vlg::sngl_cstr_obj_mng());  //map symb -> mmbrdesc
     COMMAND_IF_NOT_OK(mmbrmap.init(HM_SIZE_NORM), exit(1))
     unsigned short mmbrid = 0;
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_CB_DLMT, true)) {
@@ -1073,7 +1073,7 @@ vlg::RetCode BLZ_COMP_ParseEnum(unsigned long &lnum,
         CR_DO_CMD_ON_NEWLINE(tkn, lnum++; continue)
         CR_BREAK_ON_TKN(tkn, CR_TK_CBR)
 
-        RETURN_IF_NOT_OK(BLZ_COMP_ParseVal(lnum,
+        RETURN_IF_NOT_OK(VLG_COMP_ParseVal(lnum,
                                            mmbrid,
                                            tkn,
                                            last_enum_val,
@@ -1084,7 +1084,7 @@ vlg::RetCode BLZ_COMP_ParseEnum(unsigned long &lnum,
     }
     uint32_t field_num = 0;
     mmbrmap.size(field_num);
-    //at this point we can create a BLZ_ENTITY_DESC_COMP for this ENUM
+    //at this point we can create a VLG_ENTITY_DESC_COMP for this ENUM
     entity_desc_comp *entitydesc = NULL;
     COMMAND_IF_NULL(entitydesc = new entity_desc_comp(0,  //0 for enum
                                                       EntityType_ENUM,
@@ -1095,37 +1095,37 @@ vlg::RetCode BLZ_COMP_ParseEnum(unsigned long &lnum,
                                                       false),exit(1))
     COMMAND_IF_NOT_OK(entitydesc->init(), exit(1))
     //-----------------------------
-    // BLZ_COMP_ARCH: x86_64
-    // BLZ_COMP_OS: win
-    // BLZ_COMP_LANG: CPP
-    // BLZ_COMP_TCOMP: MSVC
+    // VLG_COMP_ARCH: x86_64
+    // VLG_COMP_OS: win
+    // VLG_COMP_LANG: CPP
+    // VLG_COMP_TCOMP: MSVC
     //-----------------------------
     entitydesc->set_entity_size(4,
-                                BLZ_COMP_ARCH_x86_64,
-                                BLZ_COMP_OS_win,
-                                BLZ_COMP_LANG_CPP,
-                                BLZ_COMP_TCOMP_MSVC);
+                                VLG_COMP_ARCH_x86_64,
+                                VLG_COMP_OS_win,
+                                VLG_COMP_LANG_CPP,
+                                VLG_COMP_TCOMP_MSVC);
     entitydesc->set_entity_max_align(4,
-                                     BLZ_COMP_ARCH_x86_64,
-                                     BLZ_COMP_OS_win,
-                                     BLZ_COMP_LANG_CPP,
-                                     BLZ_COMP_TCOMP_MSVC);
+                                     VLG_COMP_ARCH_x86_64,
+                                     VLG_COMP_OS_win,
+                                     VLG_COMP_LANG_CPP,
+                                     VLG_COMP_TCOMP_MSVC);
     //-----------------------------
-    // BLZ_COMP_ARCH: x86_64
-    // BLZ_COMP_OS: unix
-    // BLZ_COMP_LANG: CPP
-    // BLZ_COMP_TCOMP: gcc
+    // VLG_COMP_ARCH: x86_64
+    // VLG_COMP_OS: unix
+    // VLG_COMP_LANG: CPP
+    // VLG_COMP_TCOMP: gcc
     //-----------------------------
     entitydesc->set_entity_size(4,
-                                BLZ_COMP_ARCH_x86_64,
-                                BLZ_COMP_OS_unix,
-                                BLZ_COMP_LANG_CPP,
-                                BLZ_COMP_TCOMP_GCC);
+                                VLG_COMP_ARCH_x86_64,
+                                VLG_COMP_OS_unix,
+                                VLG_COMP_LANG_CPP,
+                                VLG_COMP_TCOMP_GCC);
     entitydesc->set_entity_max_align(4,
-                                     BLZ_COMP_ARCH_x86_64,
-                                     BLZ_COMP_OS_unix,
-                                     BLZ_COMP_LANG_CPP,
-                                     BLZ_COMP_TCOMP_GCC);
+                                     VLG_COMP_ARCH_x86_64,
+                                     VLG_COMP_OS_unix,
+                                     VLG_COMP_LANG_CPP,
+                                     VLG_COMP_TCOMP_GCC);
     COMMAND_IF_NOT_OK(entitydesc->extend(&mmbrmap, NULL), exit(1))
     COMMAND_IF_NOT_OK(entitymap.put(entitydesc->get_entity_name(), &entitydesc),
                       exit(1))
@@ -1133,36 +1133,36 @@ vlg::RetCode BLZ_COMP_ParseEnum(unsigned long &lnum,
 }
 
 /***********************************
-PARSE- BLZ_COMP_ParseClass
+PARSE- VLG_COMP_ParseClass
 ***********************************/
-vlg::RetCode BLZ_COMP_ParseEntity(unsigned long &lnum,
-                                    vlg::ascii_string_tok &tknz,
-                                    vlg::hash_map &definemap,
-                                    vlg::hash_map &entitymap)
+vlg::RetCode VLG_COMP_ParseEntity(unsigned long &lnum,
+                                  vlg::ascii_string_tok &tknz,
+                                  vlg::hash_map &definemap,
+                                  vlg::hash_map &entitymap)
 {
     bool id_decl = false;
     vlg::ascii_string tkn, symb_name;
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_CB_DLMT, true)) {
         CR_SKIP_SP_TABS(tkn)
-        RETURN_IF_NOT_OK(BLZ_COMP_CheckSymbol(lnum,
+        RETURN_IF_NOT_OK(VLG_COMP_CheckSymbol(lnum,
                                               tkn,
                                               &definemap,
                                               &entitymap,
                                               NULL,
-                                              BLZ_COMP_RSRV_WORD,
-                                              BLZ_COMP_SYMB_NAME)
+                                              VLG_COMP_RSRV_WORD,
+                                              VLG_COMP_SYMB_NAME)
                         )
         RETURN_IF_NOT_OK(symb_name.assign(tkn))
         // ok we got symb name.
         break;
     }
 
-    RETURN_IF_NOT_OK(BLZ_COMP_ReadOpeningCurlyBrace(lnum, tknz))
+    RETURN_IF_NOT_OK(VLG_COMP_ReadOpeningCurlyBrace(lnum, tknz))
 
     vlg::hash_map mmbrmap(vlg::sngl_ptr_obj_mng(),
-                            vlg::sngl_cstr_obj_mng());  //map symb -> mmbrdesc
+                          vlg::sngl_cstr_obj_mng());  //map symb -> mmbrdesc
     vlg::hash_map keymap(vlg::sngl_ptr_obj_mng(),
-                           sizeof(unsigned short));  //keyid -> keydesc
+                         sizeof(unsigned short));  //keyid -> keydesc
     COMMAND_IF_NOT_OK(mmbrmap.init(HM_SIZE_NORM),exit(1))
     COMMAND_IF_NOT_OK(keymap.init(HM_SIZE_NORM),exit(1))
     unsigned int   nclass_id = 0;
@@ -1171,32 +1171,32 @@ vlg::RetCode BLZ_COMP_ParseEntity(unsigned long &lnum,
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_CB_DLMT CR_RB_DLMT, true)) {
         CR_SKIP_SP_TABS(tkn)
         CR_DO_CMD_ON_NEWLINE(tkn, lnum++; continue)
-        if(tkn == BLZ_RWRD_PFX BLZ_RWRD_ID) {
+        if(tkn == VLG_RWRD_PFX VLG_RWRD_ID) {
             //parse @id
             if(!id_decl) {
-                RETURN_IF_NOT_OK(BLZ_COMP_ParseId(lnum,
+                RETURN_IF_NOT_OK(VLG_COMP_ParseId(lnum,
                                                   tknz,
                                                   definemap,
                                                   nclass_id))
                 id_decl = true;
             } else {
-                BLZ_COMP_PARSE_CLASS_ID_ALRDY_DECL(lnum, symb_name.internal_buff());
+                VLG_COMP_PARSE_CLASS_ID_ALRDY_DECL(lnum, symb_name.internal_buff());
                 return vlg::RetCode_KO;
             }
-        } else if(tkn == BLZ_RWRD_PFX BLZ_RWRD_PERSISTENT) {
+        } else if(tkn == VLG_RWRD_PFX VLG_RWRD_PERSISTENT) {
             //parse @persistent
             if(persistent) {
-                BLZ_COMP_PARSE_CLASS_ALRDY_PERSISTENT(lnum, tkn.internal_buff());
+                VLG_COMP_PARSE_CLASS_ALRDY_PERSISTENT(lnum, tkn.internal_buff());
                 return vlg::RetCode_KO;
             }
             persistent = true;
-        } else if(tkn == BLZ_RWRD_PFX BLZ_RWRD_KEY) {
+        } else if(tkn == VLG_RWRD_PFX VLG_RWRD_KEY) {
             //parse @key
             if(!persistent) {
-                BLZ_COMP_PARSE_CLASS_NOT_PERSISTENT(lnum, tkn.internal_buff());
+                VLG_COMP_PARSE_CLASS_NOT_PERSISTENT(lnum, tkn.internal_buff());
                 return vlg::RetCode_KO;
             }
-            RETURN_IF_NOT_OK(BLZ_COMP_ParseKey(lnum,
+            RETURN_IF_NOT_OK(VLG_COMP_ParseKey(lnum,
                                                tknz,
                                                definemap,
                                                entitymap,
@@ -1207,7 +1207,7 @@ vlg::RetCode BLZ_COMP_ParseEntity(unsigned long &lnum,
             break;
         } else {
             //parse @fild
-            RETURN_IF_NOT_OK(BLZ_COMP_ParseFild(lnum,
+            RETURN_IF_NOT_OK(VLG_COMP_ParseFild(lnum,
                                                 mmbrid,
                                                 tkn,
                                                 tknz,
@@ -1219,13 +1219,13 @@ vlg::RetCode BLZ_COMP_ParseEntity(unsigned long &lnum,
     }
 
     if(!id_decl) {
-        BLZ_COMP_PARSE_CLASS_ID_NOT_DECL(lnum, symb_name.internal_buff());
+        VLG_COMP_PARSE_CLASS_ID_NOT_DECL(lnum, symb_name.internal_buff());
         return vlg::RetCode_KO;
     }
 
     uint32_t field_num = 0;
     mmbrmap.size(field_num);
-    //at this point we can create a BLZ_ENTITY_DESC_COMP for this Class
+    //at this point we can create a VLG_ENTITY_DESC_COMP for this Class
     entity_desc_comp *entitydesc = NULL;
     COMMAND_IF_NULL(entitydesc = new entity_desc_comp(nclass_id,
                                                       EntityType_NCLASS,
@@ -1238,37 +1238,37 @@ vlg::RetCode BLZ_COMP_ParseEntity(unsigned long &lnum,
     size_t max_align = 1;
     size_t field_offset = NCLASS_DERREP_STRT_OFFST_x86_64;
     //-----------------------------
-    // BLZ_COMP_ARCH: x86_64
-    // BLZ_COMP_OS: win
-    // BLZ_COMP_LANG: CPP
-    // BLZ_COMP_TCOMP: MSVC
+    // VLG_COMP_ARCH: x86_64
+    // VLG_COMP_OS: win
+    // VLG_COMP_LANG: CPP
+    // VLG_COMP_TCOMP: MSVC
     //-----------------------------
-    RETURN_IF_NOT_OK(BLZ_COMP_CalcTCompDependantValues(max_align,
+    RETURN_IF_NOT_OK(VLG_COMP_CalcTCompDependantValues(max_align,
                                                        field_offset,
                                                        *entitydesc,
                                                        entitymap,
                                                        mmbrmap,
-                                                       BLZ_COMP_ARCH_x86_64,
-                                                       BLZ_COMP_OS_win,
-                                                       BLZ_COMP_LANG_CPP,
-                                                       BLZ_COMP_TCOMP_MSVC))
+                                                       VLG_COMP_ARCH_x86_64,
+                                                       VLG_COMP_OS_win,
+                                                       VLG_COMP_LANG_CPP,
+                                                       VLG_COMP_TCOMP_MSVC))
     //-----------------------------
-    // BLZ_COMP_ARCH: x86_64
-    // BLZ_COMP_OS: unix
-    // BLZ_COMP_LANG: CPP
-    // BLZ_COMP_TCOMP: gcc
+    // VLG_COMP_ARCH: x86_64
+    // VLG_COMP_OS: unix
+    // VLG_COMP_LANG: CPP
+    // VLG_COMP_TCOMP: gcc
     //-----------------------------
     max_align = 1;
     field_offset = NCLASS_DERREP_STRT_OFFST_x86_64;
-    RETURN_IF_NOT_OK(BLZ_COMP_CalcTCompDependantValues(max_align,
+    RETURN_IF_NOT_OK(VLG_COMP_CalcTCompDependantValues(max_align,
                                                        field_offset,
                                                        *entitydesc,
                                                        entitymap,
                                                        mmbrmap,
-                                                       BLZ_COMP_ARCH_x86_64,
-                                                       BLZ_COMP_OS_unix,
-                                                       BLZ_COMP_LANG_CPP,
-                                                       BLZ_COMP_TCOMP_GCC))
+                                                       VLG_COMP_ARCH_x86_64,
+                                                       VLG_COMP_OS_unix,
+                                                       VLG_COMP_LANG_CPP,
+                                                       VLG_COMP_TCOMP_GCC))
     COMMAND_IF_NOT_OK(entitydesc->extend(&mmbrmap, &keymap),exit(1))
     COMMAND_IF_NOT_OK(entitymap.put(entitydesc->get_entity_name(), &entitydesc),
                       exit(1))
@@ -1276,24 +1276,24 @@ vlg::RetCode BLZ_COMP_ParseEntity(unsigned long &lnum,
 }
 
 /***********************************
-PARSE- BLZ_COMP_ParseDefine
+PARSE- VLG_COMP_ParseDefine
 ***********************************/
-vlg::RetCode BLZ_COMP_ParseDefine(unsigned long &lnum,
-                                    vlg::ascii_string_tok &tknz,
-                                    vlg::hash_map &definemap,
-                                    vlg::hash_map &entitymap)
+vlg::RetCode VLG_COMP_ParseDefine(unsigned long &lnum,
+                                  vlg::ascii_string_tok &tknz,
+                                  vlg::hash_map &definemap,
+                                  vlg::hash_map &entitymap)
 {
     vlg::ascii_string tkn, define_name, define_val;
     //@fixme add separators and special chars
     while(!tknz.next_token(tkn, CR_DF_DLMT, true)) {
         CR_SKIP_SP_TABS(tkn)
-        RETURN_IF_NOT_OK(BLZ_COMP_CheckSymbol(lnum,
+        RETURN_IF_NOT_OK(VLG_COMP_CheckSymbol(lnum,
                                               tkn,
                                               &definemap,
                                               &entitymap,
                                               NULL,
-                                              BLZ_COMP_RSRV_WORD,
-                                              BLZ_COMP_SYMB_NAME)
+                                              VLG_COMP_RSRV_WORD,
+                                              VLG_COMP_SYMB_NAME)
                         )
         RETURN_IF_NOT_OK(define_name.assign(tkn))
         // ok we got define name.
@@ -1303,7 +1303,7 @@ vlg::RetCode BLZ_COMP_ParseDefine(unsigned long &lnum,
     while(!tknz.next_token(tkn, CR_DF_DLMT, true)) {
         CR_SKIP_SP_TABS(tkn)
         //we expect a define name, so we return with error if newline found.
-        CR_DO_CMD_ON_NEWLINE(tkn, BLZ_COMP_PARSE_EXP(lnum, BLZ_COMP_SYMB_NAME);
+        CR_DO_CMD_ON_NEWLINE(tkn, VLG_COMP_PARSE_EXP(lnum, VLG_COMP_SYMB_NAME);
                              return vlg::RetCode_KO)
         RETURN_IF_NOT_OK(define_val.assign(tkn))
         // ok we got define val.
@@ -1315,25 +1315,25 @@ vlg::RetCode BLZ_COMP_ParseDefine(unsigned long &lnum,
 }
 
 /***********************************
-PARSE- BLZ_COMP_ParseInclude
+PARSE- VLG_COMP_ParseInclude
 ***********************************/
 
-vlg::RetCode BLZ_COMP_ParseInclude(unsigned long &lnum,
-                                     vlg::ascii_string_tok &tknz,
-                                     vlg::hash_map &definemap,
-                                     vlg::hash_map &entitymap,
-                                     char **modname,
-                                     char **modver)
+vlg::RetCode VLG_COMP_ParseInclude(unsigned long &lnum,
+                                   vlg::ascii_string_tok &tknz,
+                                   vlg::hash_map &definemap,
+                                   vlg::hash_map &entitymap,
+                                   char **modname,
+                                   char **modver)
 {
     char *incl_fname = NULL;
-    RETURN_IF_NOT_OK(BLZ_COMP_ReadString(lnum, tknz, &incl_fname))
+    RETURN_IF_NOT_OK(VLG_COMP_ReadString(lnum, tknz, &incl_fname))
     FILE *fdesc = NULL;
     vlg::ascii_string data; //file content loaded on data
     RETURN_IF_NOT_OK(open_input_file(incl_fname, &fdesc))
     RETURN_IF_NOT_OK(load_file(fdesc, data))
     printf(STG_FMT_0,
-           BLZ_COMP_INF_START,
-           BLZ_COMP_INF_PARS_FILE,
+           VLG_COMP_INF_START,
+           VLG_COMP_INF_PARS_FILE,
            incl_fname);
     RETURN_IF_NOT_OK(parse_data(incl_fname,
                                 data,
@@ -1342,73 +1342,73 @@ vlg::RetCode BLZ_COMP_ParseInclude(unsigned long &lnum,
                                 modname,
                                 modver))
     printf(STG_FMT_0,
-           BLZ_COMP_INF_END,
-           BLZ_COMP_INF_PARS_FILE,
+           VLG_COMP_INF_END,
+           VLG_COMP_INF_PARS_FILE,
            incl_fname);
     return vlg::RetCode_OK;
 }
 
 /***********************************
-PARSE- BLZ_COMP_ParseNamespace
+PARSE- VLG_COMP_ParseNamespace
 ***********************************/
-vlg::RetCode BLZ_COMP_ParseNamespace(unsigned long &lnum,
-                                       vlg::ascii_string_tok &tknz,
-                                       vlg::hash_map &definemap,
-                                       vlg::hash_map &entitymap)
+vlg::RetCode VLG_COMP_ParseNamespace(unsigned long &lnum,
+                                     vlg::ascii_string_tok &tknz,
+                                     vlg::hash_map &definemap,
+                                     vlg::hash_map &entitymap)
 {
     char *n_space = NULL;
-    RETURN_IF_NOT_OK(BLZ_COMP_ReadString(lnum, tknz, &n_space))
+    RETURN_IF_NOT_OK(VLG_COMP_ReadString(lnum, tknz, &n_space))
     RETURN_IF_NOT_OK(unit_nmspace.assign(n_space))
     return vlg::RetCode_OK;
 }
 
 /***********************************
-PARSE- BLZ_COMP_ParseNamespace_end
+PARSE- VLG_COMP_ParseNamespace_end
 ***********************************/
-vlg::RetCode BLZ_COMP_ParseNamespace_end(unsigned long &lnum,
-                                           vlg::ascii_string_tok &tknz,
-                                           vlg::hash_map &definemap,
-                                           vlg::hash_map &entitymap)
+vlg::RetCode VLG_COMP_ParseNamespace_end(unsigned long &lnum,
+                                         vlg::ascii_string_tok &tknz,
+                                         vlg::hash_map &definemap,
+                                         vlg::hash_map &entitymap)
 {
     RETURN_IF_NOT_OK(unit_nmspace.assign(""))
     return vlg::RetCode_OK;
 }
 
 /***********************************
-PARSE- BLZ_COMP_ParseModelName
+PARSE- VLG_COMP_ParseModelName
 ***********************************/
-vlg::RetCode BLZ_COMP_ParseModelName(unsigned long &lnum,
-                                       vlg::ascii_string_tok &tknz,
-                                       vlg::hash_map &definemap,
-                                       vlg::hash_map &entitymap,
-                                       char **modname)
+vlg::RetCode VLG_COMP_ParseModelName(unsigned long &lnum,
+                                     vlg::ascii_string_tok &tknz,
+                                     vlg::hash_map &definemap,
+                                     vlg::hash_map &entitymap,
+                                     char **modname)
 {
-    RETURN_IF_NOT_OK(BLZ_COMP_ReadString(lnum, tknz, modname))
+    RETURN_IF_NOT_OK(VLG_COMP_ReadString(lnum, tknz, modname))
     return vlg::RetCode_OK;
 }
 
 /***********************************
-PARSE- BLZ_COMP_ParseModelName
+PARSE- VLG_COMP_ParseModelName
 ***********************************/
-vlg::RetCode BLZ_COMP_ParseModelVer(unsigned long &lnum,
-                                      vlg::ascii_string_tok &tknz,
-                                      vlg::hash_map &definemap,
-                                      vlg::hash_map &entitymap,
-                                      char **modver)
+vlg::RetCode VLG_COMP_ParseModelVer(unsigned long &lnum,
+                                    vlg::ascii_string_tok &tknz,
+                                    vlg::hash_map &definemap,
+                                    vlg::hash_map &entitymap,
+                                    char **modver)
 {
-    RETURN_IF_NOT_OK(BLZ_COMP_ReadString(lnum, tknz, modver))
+    RETURN_IF_NOT_OK(VLG_COMP_ReadString(lnum, tknz, modver))
     return vlg::RetCode_OK;
 }
 
 /***********************************
-PARSE- BLZ_COMP_ParseData
+PARSE- VLG_COMP_ParseData
 ***********************************/
 vlg::RetCode parse_data(const char *fname,
-                          vlg::ascii_string &data,
-                          vlg::hash_map &definemap,
-                          vlg::hash_map &entitymap,
-                          char **modname,
-                          char **modver)
+                        vlg::ascii_string &data,
+                        vlg::hash_map &definemap,
+                        vlg::hash_map &entitymap,
+                        char **modname,
+                        char **modver)
 {
     unsigned long lnum = 1;
     bool parsing_comment = false;
@@ -1416,79 +1416,79 @@ vlg::RetCode parse_data(const char *fname,
     vlg::ascii_string_tok tknz;
     RETURN_IF_NOT_OK(tknz.init(data))
     RETURN_IF_NOT_OK(unit_nmspace.assign(""))
-    while(!tknz.next_token(tkn, CR_DF_DLMT BLZ_TK_COMMENT, true)) {
+    while(!tknz.next_token(tkn, CR_DF_DLMT VLG_TK_COMMENT, true)) {
         CR_SKIP_SP_TABS(tkn)
         CR_DO_CMD_ON_NEWLINE(tkn, lnum++; parsing_comment = false;
                              continue)
         if(!parsing_comment) {
-            if(tkn == BLZ_RWRD_PFX BLZ_RWRD_INCLUDE) {
+            if(tkn == VLG_RWRD_PFX VLG_RWRD_INCLUDE) {
                 //parse @include
-                RETURN_IF_NOT_OK(BLZ_COMP_ParseInclude(lnum,
+                RETURN_IF_NOT_OK(VLG_COMP_ParseInclude(lnum,
                                                        tknz,
                                                        definemap,
                                                        entitymap,
                                                        modname,
                                                        modver))
-            } else if(tkn == BLZ_RWRD_PFX BLZ_RWRD_MODLNAME) {
+            } else if(tkn == VLG_RWRD_PFX VLG_RWRD_MODLNAME) {
                 //parse @model_name
                 if(*modname) {
-                    BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
+                    VLG_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
                     return vlg::RetCode_KO;
                 } else {
-                    RETURN_IF_NOT_OK(BLZ_COMP_ParseModelName(lnum,
+                    RETURN_IF_NOT_OK(VLG_COMP_ParseModelName(lnum,
                                                              tknz,
                                                              definemap,
                                                              entitymap,
                                                              modname))
                 }
-            } else if(tkn == BLZ_RWRD_PFX BLZ_RWRD_MODLVER) {
+            } else if(tkn == VLG_RWRD_PFX VLG_RWRD_MODLVER) {
                 //parse @model_version
                 if(*modver) {
-                    BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
+                    VLG_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
                     return vlg::RetCode_KO;
                 } else {
-                    RETURN_IF_NOT_OK(BLZ_COMP_ParseModelVer(lnum,
+                    RETURN_IF_NOT_OK(VLG_COMP_ParseModelVer(lnum,
                                                             tknz,
                                                             definemap,
                                                             entitymap,
                                                             modver))
                 }
-            } else if(tkn == BLZ_RWRD_PFX BLZ_RWRD_DEFINE) {
+            } else if(tkn == VLG_RWRD_PFX VLG_RWRD_DEFINE) {
                 //parse @define
-                RETURN_IF_NOT_OK(BLZ_COMP_ParseDefine(lnum,
+                RETURN_IF_NOT_OK(VLG_COMP_ParseDefine(lnum,
                                                       tknz,
                                                       definemap,
                                                       entitymap))
-            } else if(tkn == BLZ_RWRD_ENUM) {
+            } else if(tkn == VLG_RWRD_ENUM) {
                 //parse @enum
-                RETURN_IF_NOT_OK(BLZ_COMP_ParseEnum(lnum,
+                RETURN_IF_NOT_OK(VLG_COMP_ParseEnum(lnum,
                                                     tknz,
                                                     definemap,
                                                     entitymap))
-            } else if(tkn == BLZ_RWRD_NCLASS) {
+            } else if(tkn == VLG_RWRD_NCLASS) {
                 //parse @class
-                RETURN_IF_NOT_OK(BLZ_COMP_ParseEntity(lnum,
+                RETURN_IF_NOT_OK(VLG_COMP_ParseEntity(lnum,
                                                       tknz,
                                                       definemap,
                                                       entitymap))
-            } else if(tkn == BLZ_RWRD_PFX BLZ_RWRD_NAMESPACE) {
+            } else if(tkn == VLG_RWRD_PFX VLG_RWRD_NAMESPACE) {
                 //parse @namespace
-                RETURN_IF_NOT_OK(BLZ_COMP_ParseNamespace(lnum,
+                RETURN_IF_NOT_OK(VLG_COMP_ParseNamespace(lnum,
                                                          tknz,
                                                          definemap,
                                                          entitymap))
-            } else if(tkn == BLZ_RWRD_PFX BLZ_RWRD_NAMESPACE_END) {
+            } else if(tkn == VLG_RWRD_PFX VLG_RWRD_NAMESPACE_END) {
                 //parse @namespace_end
-                RETURN_IF_NOT_OK(BLZ_COMP_ParseNamespace_end(lnum,
+                RETURN_IF_NOT_OK(VLG_COMP_ParseNamespace_end(lnum,
                                                              tknz,
                                                              definemap,
                                                              entitymap))
-            } else if(tkn == BLZ_TK_COMMENT) {
+            } else if(tkn == VLG_TK_COMMENT) {
                 //comment begin
                 parsing_comment = true;
             } else {
                 //unexpected token
-                BLZ_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
+                VLG_COMP_PARSE_UNEXP(lnum, tkn.internal_buff());
                 return vlg::RetCode_KO;
             }
         }

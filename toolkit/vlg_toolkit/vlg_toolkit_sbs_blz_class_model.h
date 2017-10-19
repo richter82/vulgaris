@@ -19,13 +19,13 @@
  *
  */
 
-#ifndef BLZ_TOOLKIT_SBS_BLZ_CLASS_MODEL_H
-#define BLZ_TOOLKIT_SBS_BLZ_CLASS_MODEL_H
-#include "blz_toolkit_glob.h"
+#ifndef VLG_TOOLKIT_SBS_VLG_CLASS_MODEL_H
+#define VLG_TOOLKIT_SBS_VLG_CLASS_MODEL_H
+#include "vlg_toolkit_glob.h"
 
-#define BLZ_TKT_INT_CELL_COLOR_RST_MSEC 500
+#define VLG_TKT_INT_CELL_COLOR_RST_MSEC 500
 
-class blz_toolkit_sbs_blz_class_model;
+class vlg_toolkit_sbs_vlg_class_model;
 
 //-----------------------------------------------------------------------------
 // subscription support structs
@@ -41,42 +41,42 @@ enum BlazeSbsEntryAct {
 class sbs_col_data_timer : public QTimer {
         Q_OBJECT
     public:
-        sbs_col_data_timer(BLZ_SBS_COL_DATA_ENTRY &parent);
+        sbs_col_data_timer(VLG_SBS_COL_DATA_ENTRY &parent);
 
     public slots:
         void OnTimeout();
 
     signals:
-        void SignalCellResetColor(BLZ_SBS_COL_DATA_ENTRY &scde);
+        void SignalCellResetColor(VLG_SBS_COL_DATA_ENTRY &scde);
 
     private:
-        BLZ_SBS_COL_DATA_ENTRY &parent_;
+        VLG_SBS_COL_DATA_ENTRY &parent_;
 };
 
-struct BLZ_SBS_COL_DATA_ENTRY {
-    BLZ_SBS_COL_DATA_ENTRY();
-    ~BLZ_SBS_COL_DATA_ENTRY();
+struct VLG_SBS_COL_DATA_ENTRY {
+    VLG_SBS_COL_DATA_ENTRY();
+    ~VLG_SBS_COL_DATA_ENTRY();
     BlazeSbsEntryAct col_act_;
     sbs_col_data_timer *color_timer_;
     int row_idx_;
     int col_idx_;
 };
 
-struct BLZ_SBS_DATA_ENTRY {
-    BLZ_SBS_DATA_ENTRY(vlg::nclass *entry,
+struct VLG_SBS_DATA_ENTRY {
+    VLG_SBS_DATA_ENTRY(vlg::nclass *entry,
                        int row_idx,
                        int col_num);
     vlg::nclass *entry_;
-    QVector<BLZ_SBS_COL_DATA_ENTRY> fld_act_;
+    QVector<VLG_SBS_COL_DATA_ENTRY> fld_act_;
 };
 
 //------------------------------------------------------------------------------
-// BLZ_CLASS_ROW_IDX_PAIR  -- HELPER STRUCT
+// VLG_CLASS_ROW_IDX_PAIR  -- HELPER STRUCT
 //------------------------------------------------------------------------------
-struct BLZ_CLASS_ROW_IDX_PAIR {
-    BLZ_CLASS_ROW_IDX_PAIR(int rowidx = 0, vlg::nclass *obj = NULL);
+struct VLG_CLASS_ROW_IDX_PAIR {
+    VLG_CLASS_ROW_IDX_PAIR(int rowidx = 0, vlg::nclass *obj = NULL);
 
-    BLZ_CLASS_ROW_IDX_PAIR &operator = (const BLZ_CLASS_ROW_IDX_PAIR &src);
+    VLG_CLASS_ROW_IDX_PAIR &operator = (const VLG_CLASS_ROW_IDX_PAIR &src);
 
     int rowidx_;
     vlg::nclass *obj_;
@@ -87,7 +87,7 @@ struct BLZ_CLASS_ROW_IDX_PAIR {
 //------------------------------------------------------------------------------
 
 struct ENM_GEN_SBS_REP_REC_UD {
-    ENM_GEN_SBS_REP_REC_UD(blz_toolkit_sbs_blz_class_model &mdl,
+    ENM_GEN_SBS_REP_REC_UD(vlg_toolkit_sbs_vlg_class_model &mdl,
                            const vlg::entity_manager &bem,
                            vlg::ascii_string *prfx,
                            bool array_fld,
@@ -95,7 +95,7 @@ struct ENM_GEN_SBS_REP_REC_UD {
 
     ~ENM_GEN_SBS_REP_REC_UD();
 
-    blz_toolkit_sbs_blz_class_model &mdl_;
+    vlg_toolkit_sbs_vlg_class_model &mdl_;
     const vlg::entity_manager &bem_;
     vlg::ascii_string *prfx_;
 
@@ -112,7 +112,7 @@ struct ENM_GEN_SBS_REP_REC_UD {
 //------------------------------------------------------------------------------
 
 struct ENM_UPD_CLS_ROW_REC_UD {
-    ENM_UPD_CLS_ROW_REC_UD(blz_toolkit_sbs_blz_class_model &mdl,
+    ENM_UPD_CLS_ROW_REC_UD(vlg_toolkit_sbs_vlg_class_model &mdl,
                            const vlg::entity_manager &bem,
                            const char *obj_ptr,
                            const char *obj_ptr_prev,
@@ -122,7 +122,7 @@ struct ENM_UPD_CLS_ROW_REC_UD {
 
     ~ENM_UPD_CLS_ROW_REC_UD();
 
-    blz_toolkit_sbs_blz_class_model &mdl_;
+    vlg_toolkit_sbs_vlg_class_model &mdl_;
     const vlg::entity_manager &bem_;
     const char *obj_ptr_;
     const char *obj_ptr_prev_;
@@ -133,16 +133,16 @@ struct ENM_UPD_CLS_ROW_REC_UD {
 };
 
 //------------------------------------------------------------------------------
-// blz_toolkit_sbs_blz_class_model
+// vlg_toolkit_sbs_vlg_class_model
 //------------------------------------------------------------------------------
-class blz_toolkit_sbs_blz_class_model : public QAbstractTableModel {
+class vlg_toolkit_sbs_vlg_class_model : public QAbstractTableModel {
         Q_OBJECT
 
     public:
-        blz_toolkit_sbs_blz_class_model(const vlg::entity_desc &edesc,
+        vlg_toolkit_sbs_vlg_class_model(const vlg::entity_desc &edesc,
                                         const vlg::entity_manager &bem,
                                         QObject *parent = 0);
-        ~blz_toolkit_sbs_blz_class_model();
+        ~vlg_toolkit_sbs_vlg_class_model();
 
 
         int columnCount(const QModelIndex &parent = QModelIndex()) const;
@@ -179,7 +179,7 @@ class blz_toolkit_sbs_blz_class_model : public QAbstractTableModel {
                          vlg::nclass *prev_entry);
 
     public slots:
-        void OnCellResetColor(BLZ_SBS_COL_DATA_ENTRY &scde);
+        void OnCellResetColor(VLG_SBS_COL_DATA_ENTRY &scde);
 
         /*****
          REP
@@ -194,10 +194,10 @@ class blz_toolkit_sbs_blz_class_model : public QAbstractTableModel {
 
         //DATA REP
         //helper repo for collected instances: ClassPrimKey  --> [rowid - instance]
-        QHash<QString, BLZ_CLASS_ROW_IDX_PAIR> data_hlpr_;
+        QHash<QString, VLG_CLASS_ROW_IDX_PAIR> data_hlpr_;
 
         //used by view - index in the list is the row in the view
-        QList<BLZ_SBS_DATA_ENTRY> data_;
+        QList<VLG_SBS_DATA_ENTRY> data_;
 };
 
-#endif // BLZ_TOOLKIT_SBS_BLZ_CLASS_MODEL_H
+#endif // VLG_TOOLKIT_SBS_VLG_CLASS_MODEL_H

@@ -19,14 +19,14 @@
  *
  */
 
-#include "blz_compiler.h"
+#include "vlg_compiler.h"
 
 namespace vlg {
 
 //-----------------------------
 // #VER#
 //-----------------------------
-#define BLZ_COMP_STRT_STR "vlg.compiler.ver.%d.%d.%d.%d.date:" __DATE__
+#define VLG_COMP_STRT_STR "vlg.compiler.ver.%d.%d.%d.%d.date:" __DATE__
 int comp_ver[4]  = {0,0,0,0};
 
 vlg::config_loader conf_ldr;
@@ -34,25 +34,25 @@ compiler_config comp_cfg;
 
 #define PAR_REQ_VAL_FMT "parameter: %s - requires an argument"
 
-void blz_comp_param_clbk(int pnum, const char *param, const char *value)
+void vlg_comp_param_clbk(int pnum, const char *param, const char *value)
 {
-    if(!strcmp(param, BLZ_COMP_START_PAR_VRBLVL)) {
+    if(!strcmp(param, VLG_COMP_START_PAR_VRBLVL)) {
         if(value) {
             comp_cfg.verblvl = atoi(value);
         } else {
-            fprintf(stderr, PAR_REQ_VAL_FMT, BLZ_COMP_START_PAR_VRBLVL);
+            fprintf(stderr, PAR_REQ_VAL_FMT, VLG_COMP_START_PAR_VRBLVL);
             EXIT_ACTION_STDOUT("")
         }
     }
-    if(!strcmp(param, BLZ_COMP_START_PAR_INCLUDE)) {
+    if(!strcmp(param, VLG_COMP_START_PAR_INCLUDE)) {
         if(value) {
             COMMAND_IF_NOT_OK(comp_cfg.path_list.push_back(value), exit(1))
         } else {
-            fprintf(stderr, PAR_REQ_VAL_FMT, BLZ_COMP_START_PAR_INCLUDE);
+            fprintf(stderr, PAR_REQ_VAL_FMT, VLG_COMP_START_PAR_INCLUDE);
             EXIT_ACTION_STDOUT("")
         }
     }
-    if(!strcmp(param, BLZ_COMP_START_PAR_OUTPT_DIR)) {
+    if(!strcmp(param, VLG_COMP_START_PAR_OUTPT_DIR)) {
         if(value) {
 #ifdef WIN32
             comp_cfg.out_dir = _strdup(value);
@@ -60,11 +60,11 @@ void blz_comp_param_clbk(int pnum, const char *param, const char *value)
             comp_cfg.out_dir = strdup(value);
 #endif
         } else {
-            fprintf(stderr, PAR_REQ_VAL_FMT, BLZ_COMP_START_PAR_OUTPT_DIR);
+            fprintf(stderr, PAR_REQ_VAL_FMT, VLG_COMP_START_PAR_OUTPT_DIR);
             EXIT_ACTION_STDOUT("")
         }
     }
-    if(!strcmp(param, BLZ_COMP_START_PAR_FILES)) {
+    if(!strcmp(param, VLG_COMP_START_PAR_FILES)) {
         if(value) {
             vlg::ascii_string tkn;
             vlg::ascii_string_tok tknz;
@@ -73,15 +73,15 @@ void blz_comp_param_clbk(int pnum, const char *param, const char *value)
                 COMMAND_IF_NOT_OK(comp_cfg.file_list.push_back(tkn.internal_buff()), exit(1))
             }
         } else {
-            fprintf(stderr, PAR_REQ_VAL_FMT, BLZ_COMP_START_PAR_FILES);
+            fprintf(stderr, PAR_REQ_VAL_FMT, VLG_COMP_START_PAR_FILES);
             EXIT_ACTION_STDOUT("")
         }
     }
-    if(!strcmp(param, BLZ_COMP_START_PAR_LANG)) {
+    if(!strcmp(param, VLG_COMP_START_PAR_LANG)) {
         if(value) {
             comp_cfg.lang = lang_from_str(value);
         } else {
-            fprintf(stderr, PAR_REQ_VAL_FMT, BLZ_COMP_START_PAR_LANG);
+            fprintf(stderr, PAR_REQ_VAL_FMT, VLG_COMP_START_PAR_LANG);
             EXIT_ACTION_STDOUT("")
         }
     }
@@ -95,7 +95,7 @@ VERSION AND USAGE
 void print_comp_ver()
 {
     printf("----------------------------------------------------\n");
-    printf("- " BLZ_COMP_STRT_STR"\n",
+    printf("- " VLG_COMP_STRT_STR"\n",
            vlg::comp_ver[0],
            vlg::comp_ver[1],
            vlg::comp_ver[2],
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
     COMMAND_IF_NOT_OK(vlg::conf_ldr.load_config(),
                       EXIT_ACTION_STDOUT("loading configuration" COMPILE_FAIL))
     vlg::conf_ldr.dump_config();
-    vlg::conf_ldr.enum_params(vlg::blz_comp_param_clbk);
+    vlg::conf_ldr.enum_params(vlg::vlg_comp_param_clbk);
     char fname[CR_MAX_SRC_FILE_NAME_LEN];
     vlg::comp_cfg.file_list.start_iteration();
     while(!vlg::comp_cfg.file_list.next(fname)) {
@@ -150,28 +150,28 @@ int main(int argc, char *argv[])
         COMMAND_IF_NOT_OK(cmpl_unit.init(fname),
                           EXIT_ACTION_STDOUT("init compilation unit" COMPILE_FAIL))
         printf(STG_FMT_0,
-               BLZ_COMP_INF_START,
-               BLZ_COMP_INF_PARS_FILE,
+               VLG_COMP_INF_START,
+               VLG_COMP_INF_PARS_FILE,
                fname);
         COMMAND_IF_NOT_OK(cmpl_unit.parse(),
                           EXIT_ACTION_STDOUT("parsing file" COMPILE_FAIL))
         printf(STG_FMT_0,
-               BLZ_COMP_INF_END,
-               BLZ_COMP_INF_PARS_FILE,
+               VLG_COMP_INF_END,
+               VLG_COMP_INF_PARS_FILE,
                fname);
         printf(STG_FMT_0,
-               BLZ_COMP_INF_START,
-               BLZ_COMP_INF_COMPL_FILE,
+               VLG_COMP_INF_START,
+               VLG_COMP_INF_COMPL_FILE,
                fname);
         COMMAND_IF_NOT_OK(cmpl_unit.compile(),
                           EXIT_ACTION_STDOUT("compiling file" COMPILE_FAIL))
         printf(STG_FMT_0,
-               BLZ_COMP_INF_END,
-               BLZ_COMP_INF_COMPL_FILE,
+               VLG_COMP_INF_END,
+               VLG_COMP_INF_COMPL_FILE,
                fname);
     }
     printf("\n%-11s %s [OK]\n",
            "",
-           BLZ_COMP_INF_JOB_DONE);
+           VLG_COMP_INF_JOB_DONE);
     return 0;
 }

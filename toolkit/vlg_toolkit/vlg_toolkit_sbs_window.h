@@ -19,24 +19,24 @@
  *
  */
 
-#ifndef BLZ_TOOLKIT_SBS_WINDOW_H
-#define BLZ_TOOLKIT_SBS_WINDOW_H
+#ifndef VLG_TOOLKIT_SBS_WINDOW_H
+#define VLG_TOOLKIT_SBS_WINDOW_H
 
-#include "blz_toolkit_blz_model.h"
-#include "blz_toolkit_sbs_blz_class_model.h"
+#include "vlg_toolkit_vlg_model.h"
+#include "vlg_toolkit_sbs_vlg_class_model.h"
 
 namespace Ui {
-class blz_toolkit_sbs_window;
+class vlg_toolkit_sbs_window;
 }
 
 //------------------------------------------------------------------------------
-// blz_toolkit_sbs_model
+// vlg_toolkit_sbs_model
 //------------------------------------------------------------------------------
 
-class blz_toolkit_sbs_model : public QSortFilterProxyModel {
+class vlg_toolkit_sbs_model : public QSortFilterProxyModel {
 
     public:
-        blz_toolkit_sbs_model(blz_toolkit_sbs_blz_class_model &wrapped_mdl,
+        vlg_toolkit_sbs_model(vlg_toolkit_sbs_vlg_class_model &wrapped_mdl,
                               QObject *parent = 0);
 
 
@@ -44,26 +44,26 @@ class blz_toolkit_sbs_model : public QSortFilterProxyModel {
 
     public:
         void offerEntry(vlg::nclass *entry);
-        blz_toolkit_sbs_blz_class_model &wrapped_mdl();
+        vlg_toolkit_sbs_vlg_class_model &wrapped_mdl();
 
     private:
-        blz_toolkit_sbs_blz_class_model &wrapped_mdl_;
+        vlg_toolkit_sbs_vlg_class_model &wrapped_mdl_;
 };
 
 //------------------------------------------------------------------------------
-// blz_toolkit_sbs_window
+// vlg_toolkit_sbs_window
 //------------------------------------------------------------------------------
 
-class blz_toolkit_sbs_window : public QMainWindow {
+class vlg_toolkit_sbs_window : public QMainWindow {
         Q_OBJECT
 
     public:
-        explicit blz_toolkit_sbs_window(const vlg::entity_desc &edesc,
+        explicit vlg_toolkit_sbs_window(const vlg::entity_desc &edesc,
                                         const vlg::entity_manager &bem,
                                         vlg::subscription_int &sbs,
-                                        blz_toolkit_sbs_blz_class_model &mdl,
+                                        vlg_toolkit_sbs_vlg_class_model &mdl,
                                         QWidget *parent = 0);
-        ~blz_toolkit_sbs_window();
+        ~vlg_toolkit_sbs_window();
 
         vlg::subscription_int &sbs() const;
 
@@ -109,12 +109,12 @@ class blz_toolkit_sbs_window : public QMainWindow {
 
     private:
         vlg::subscription_int &sbs_;
-        blz_toolkit_sbs_model sbs_mdl_;
+        vlg_toolkit_sbs_model sbs_mdl_;
 
 
     public:
-        Ui::blz_toolkit_sbs_window *ui;
+        Ui::vlg_toolkit_sbs_window *ui;
 
 };
 
-#endif // BLZ_TOOLKIT_SBS_WINDOW_H
+#endif // VLG_TOOLKIT_SBS_WINDOW_H

@@ -19,27 +19,32 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\blzpeerlib\blz_acceptor_int.cpp" />
-    <ClCompile Include="..\src\blzpeerlib\blz_connection_int.cpp" />
-    <ClCompile Include="..\src\blzpeerlib\blz_connection_proto.cpp" />
-    <ClCompile Include="..\src\blzpeerlib\blz_peer_automa.cpp" />
-    <ClCompile Include="..\src\blzpeerlib\blz_peer_int.cpp" />
-    <ClCompile Include="..\src\blzpeerlib\blz_peer_pers_sbs.cpp" />
-    <ClCompile Include="..\src\blzpeerlib\blz_restore.cpp" />
-    <ClCompile Include="..\src\blzpeerlib\blz_selector.cpp" />
-    <ClCompile Include="..\src\blzpeerlib\blz_subscription_int.cpp" />
-    <ClCompile Include="..\src\blzpeerlib\blz_transaction_int.cpp" />
+    <ClInclude Include="..\src\libvlg\vlg_acceptor_impl.h" />
+    <ClInclude Include="..\src\libvlg\vlg_connection_impl.h" />
+    <ClInclude Include="..\src\libvlg\vlg_peer_automa.h" />
+    <ClInclude Include="..\src\libvlg\vlg_peer_impl.h" />
+    <ClInclude Include="..\src\libvlg\vlg_pers_impl.h" />
+    <ClInclude Include="..\src\libvlg\vlg_proto.h" />
+    <ClInclude Include="..\src\libvlg\vlg_selector.h" />
+    <ClInclude Include="..\src\libvlg\vlg_subscription_impl.h" />
+    <ClInclude Include="..\src\libvlg\vlg_transaction_impl.h" />
+    <ClInclude Include="..\src\vlg_globint.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\blz_acceptor_int.h" />
-    <ClInclude Include="..\src\blz_connection_int.h" />
-    <ClInclude Include="..\src\blz_glob_int.h" />
-    <ClInclude Include="..\src\blz_peer_automa.h" />
-    <ClInclude Include="..\src\blz_peer_int.h" />
-    <ClInclude Include="..\src\blz_proto.h" />
-    <ClInclude Include="..\src\blz_selector.h" />
-    <ClInclude Include="..\src\blz_subscription_int.h" />
-    <ClInclude Include="..\src\blz_transaction_int.h" />
+    <ClCompile Include="..\src\libvlg\vlg_acceptor.cpp" />
+    <ClCompile Include="..\src\libvlg\vlg_connection_impl.cpp" />
+    <ClCompile Include="..\src\libvlg\vlg_connection_proto.cpp" />
+    <ClCompile Include="..\src\libvlg\vlg_model.cpp" />
+    <ClCompile Include="..\src\libvlg\vlg_model_utl.cpp" />
+    <ClCompile Include="..\src\libvlg\vlg_peer_automa.cpp" />
+    <ClCompile Include="..\src\libvlg\vlg_peer_impl.cpp" />
+    <ClCompile Include="..\src\libvlg\vlg_peer_pers_sbs.cpp" />
+    <ClCompile Include="..\src\libvlg\vlg_pers_impl.cpp" />
+    <ClCompile Include="..\src\libvlg\vlg_pers_mng.cpp" />
+    <ClCompile Include="..\src\libvlg\vlg_restore.cpp" />
+    <ClCompile Include="..\src\libvlg\vlg_selector.cpp" />
+    <ClCompile Include="..\src\libvlg\vlg_subscription_impl.cpp" />
+    <ClCompile Include="..\src\libvlg\vlg_transaction_impl.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D8E08F30-6822-4398-9C58-9589811537D8}</ProjectGuid>
@@ -89,25 +94,25 @@
     <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\blzpeerlib\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\blzpeerlib\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\vlg\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\vlg\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\blzpeerlib\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\blzpeerlib\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\vlg\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\vlg\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\blzpeerlib\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\blzpeerlib\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\vlg\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\vlg\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\blzpeerlib\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\blzpeerlib\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\vlg\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\vlg\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\contrib\pthread;..\contrib\sqlite</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\libcr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINSOCK_DEPRECATED_NO_WARNINGS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -130,7 +135,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\contrib\pthread;..\contrib\sqlite</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\libcr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINSOCK_DEPRECATED_NO_WARNINGS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -151,7 +156,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\contrib\pthread;..\contrib\sqlite</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\libcr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -174,7 +179,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\contrib\pthread;..\contrib\sqlite</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\libcr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>

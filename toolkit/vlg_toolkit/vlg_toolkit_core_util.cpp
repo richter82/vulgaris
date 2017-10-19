@@ -19,8 +19,8 @@
  *
  */
 
-#include "blz_toolkit_core_util.h"
-#include "blz_toolkit_mainwindow.h"
+#include "vlg_toolkit_core_util.h"
+#include "vlg_toolkit_mainwindow.h"
 
 #define LG_BUF_LEN_16K 16384
 
@@ -33,7 +33,7 @@ void FillQstring_FldValue(const char *fld_ptr,
                           const vlg::member_desc *mdesc,
                           QString &out)
 {
-    switch(mdesc->get_field_blz_type()) {
+    switch(mdesc->get_field_vlg_type()) {
         case vlg::Type_ENTITY: {
             if(mdesc->get_field_entity_type() == vlg::EntityType_ENUM) {
                 int val = *(int *)fld_ptr;
@@ -100,7 +100,7 @@ void FillFldValue_Qstring(const QVariant &value,
                           const vlg::member_desc *mdesc,
                           char *fld_ptr)
 {
-    switch(mdesc->get_field_blz_type()) {
+    switch(mdesc->get_field_vlg_type()) {
         case vlg::Type_ENTITY:
             if(mdesc->get_field_entity_type() == vlg::EntityType_ENUM) {
                 *(int *)fld_ptr = value.toInt();
@@ -145,13 +145,13 @@ void FillFldValue_Qstring(const QVariant &value,
     }
 }
 
-namespace blz_tlkt {
+namespace vlg_tlkt {
 
 //-----------------------------------------------------------------------------
 // QPlainTextEditApnd
 //-----------------------------------------------------------------------------
 
-QPlainTextEditApnd::QPlainTextEditApnd(blz_toolkit_MainWindow *btmw) :
+QPlainTextEditApnd::QPlainTextEditApnd(vlg_toolkit_MainWindow *btmw) :
     appender(),
     btmw_(btmw)
 {}
@@ -212,12 +212,12 @@ size_t QPlainTextEditApnd::put_msg_va_plain(const char *msg, va_list args)
     return msg_b_idx;
 }
 
-blz_toolkit_MainWindow *QPlainTextEditApnd::btmw() const
+vlg_toolkit_MainWindow *QPlainTextEditApnd::btmw() const
 {
     return btmw_;
 }
 
-void QPlainTextEditApnd::setBtmw(blz_toolkit_MainWindow *btmw)
+void QPlainTextEditApnd::setBtmw(vlg_toolkit_MainWindow *btmw)
 {
     btmw_ = btmw;
 }

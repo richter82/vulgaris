@@ -19,9 +19,9 @@
  *
  */
 
-#include "blaze_peer.h"
-#include "blaze_connection.h"
-#include "blz_peer_int.h"
+#include "vlg_peer.h"
+#include "vlg_connection.h"
+#include "vlg_peer_impl.h"
 
 namespace vlg {
 
@@ -61,7 +61,7 @@ class peer_impl {
                 }
 
                 virtual vlg::RetCode peer_load_cfg_usr(int pnum, const char *param,
-                                                         const char *value) {
+                                                       const char *value) {
                     vlg::RetCode cdrs_res = peer_int::peer_load_cfg_usr(pnum, param, value);
                     if(cdrs_res) {
                         return cdrs_res;
@@ -116,7 +116,7 @@ class peer_impl {
                 }
 
                 virtual vlg::RetCode new_incoming_connection_accept(connection_int
-                                                                      &incoming_connection) {
+                                                                    &incoming_connection) {
                     connection *conn_publ = new connection();
                     vlg::collector &c = conn_publ->get_collector();
                     c.retain(conn_publ);
@@ -377,7 +377,7 @@ vlg::RetCode peer::extend_model(const char *model_name)
 }
 
 vlg::RetCode peer::on_load_config(int pnum, const char *param,
-                                    const char *value)
+                                  const char *value)
 {
     return vlg::RetCode_OK;
 }
@@ -427,9 +427,9 @@ void peer::set_status_change_handler(peer_status_change handler, void *ud)
 }
 
 vlg::RetCode peer::await_for_status_reached_or_outdated(PeerStatus test,
-                                                          PeerStatus &current,
-                                                          time_t sec,
-                                                          long nsec)
+                                                        PeerStatus &current,
+                                                        time_t sec,
+                                                        long nsec)
 {
     return impl_->get_peer_int()->await_for_peer_status_reached_or_outdated(test,
                                                                             current,
@@ -438,8 +438,8 @@ vlg::RetCode peer::await_for_status_reached_or_outdated(PeerStatus test,
 }
 
 vlg::RetCode peer::await_for_status_change(PeerStatus &peer_status,
-                                             time_t sec,
-                                             long nsec)
+                                           time_t sec,
+                                           long nsec)
 {
     return impl_->get_peer_int()->await_for_peer_status_change(peer_status,
                                                                sec,
@@ -457,8 +457,8 @@ void peer::set_connection_factory(connection_factory &conn_factory)
 }
 
 vlg::RetCode peer::start(int argc,
-                           char *argv[],
-                           bool spawn_new_thread)
+                         char *argv[],
+                         bool spawn_new_thread)
 {
     return impl_->get_peer_int()->start_peer(argc, argv, spawn_new_thread);
 }
@@ -469,7 +469,7 @@ vlg::RetCode peer::stop(bool force_disconnect /*= false*/)
 }
 
 vlg::RetCode peer::persistence_schema_create(PersistenceAlteringMode
-                                               mode)
+                                             mode)
 {
     return impl_->get_peer_int()->pers_schema_create(mode);
 }
@@ -483,9 +483,9 @@ vlg::RetCode peer::class_persistence_schema_create(
 }
 
 vlg::RetCode peer::class_persistent_load(unsigned short class_key,
-                                           unsigned int &ts_0_out,
-                                           unsigned int &ts_1_out,
-                                           nclass &in_out_obj)
+                                         unsigned int &ts_0_out,
+                                         unsigned int &ts_1_out,
+                                         nclass &in_out_obj)
 {
     return impl_->get_peer_int()->class_pers_load(class_key,
                                                   ts_0_out,
@@ -499,27 +499,27 @@ vlg::RetCode peer::class_persistent_save(const nclass &in_obj)
 }
 
 vlg::RetCode peer::class_persistent_update(unsigned short class_key,
-                                             const nclass &in_obj)
+                                           const nclass &in_obj)
 {
     return impl_->get_peer_int()->class_pers_update(class_key, in_obj);
 }
 
 vlg::RetCode peer::class_persistent_update_or_save(unsigned short class_key,
-                                                     const nclass &in_obj)
+                                                   const nclass &in_obj)
 {
     return impl_->get_peer_int()->class_pers_update_or_save(class_key, in_obj);
 }
 
 vlg::RetCode peer::class_persistent_remove(unsigned short class_key,
-                                             PersistenceDeletionMode mode,
-                                             const nclass &in_obj)
+                                           PersistenceDeletionMode mode,
+                                           const nclass &in_obj)
 {
     return impl_->get_peer_int()->class_pers_remove(class_key, mode, in_obj);
 }
 
 vlg::RetCode peer::class_distribute(SubscriptionEventType event_type,
-                                      Action action,
-                                      const nclass &in_obj)
+                                    Action action,
+                                    const nclass &in_obj)
 {
     return impl_->get_peer_int()->class_distribute(event_type,
                                                    ProtocolCode_SUCCESS,
@@ -528,7 +528,7 @@ vlg::RetCode peer::class_distribute(SubscriptionEventType event_type,
 }
 
 vlg::RetCode peer::class_persistent_save_and_distribute(const nclass
-                                                          &in_obj)
+                                                        &in_obj)
 {
     return impl_->get_peer_int()->class_pers_save_and_distribute(in_obj);
 }

@@ -19,18 +19,19 @@
  *
  */
 
-#include "blz_connection_int.h"
+#include "vlg_proto.h"
+#include "vlg_connection_impl.h"
 
-#define BLZ_WRD_BYTE_SIZE       4   //word length [byte size]
+#define VLG_WRD_BYTE_SIZE       4   //word length [byte size]
 
 /*****************************************
  GLOB PROTO UTILS
 ******************************************/
 namespace vlg {
 
-blz_hdr_rec::blz_hdr_rec()
+vlg_hdr_rec::vlg_hdr_rec()
 {
-    memset(this, 0, sizeof(blz_hdr_rec));
+    memset(this, 0, sizeof(vlg_hdr_rec));
 }
 
 tx_id::tx_id()
@@ -38,33 +39,33 @@ tx_id::tx_id()
     memset(this, 0, sizeof(tx_id));
 }
 
-int dump_blz_hdr_rec(const blz_hdr_ptr hdr, char *out)
+int dump_vlg_hdr_rec(const vlg_hdr_ptr hdr, char *out)
 {
     int offst = 0;
     offst += sprintf(&out[offst], "HDR_REC{PKTHDR[%02x|%x|%02x]", hdr->phdr.prover,
                      hdr->phdr.hdrlen,
                      hdr->phdr.pkttyp);
     switch(hdr->phdr.pkttyp) {
-        case BLZ_PKT_NONE:
-        case BLZ_PKT_TSTREQ_ID:
+        case VLG_PKT_NONE:
+        case VLG_PKT_TSTREQ_ID:
             /*TEST REQUEST*/
             offst += sprintf(&out[offst], "TMSTMP[%010u]", hdr->row_1.tmstmp.tmstmp);
             if(hdr->phdr.hdrlen == 3) {
                 offst += sprintf(&out[offst], "CONNID[%010u]", hdr->row_2.connid.connid);
             }
             break;
-        case BLZ_PKT_HRTBET_ID:
+        case VLG_PKT_HRTBET_ID:
             /*HEARTBEAT*/
             offst += sprintf(&out[offst], "TMSTMP[%010u]", hdr->row_1.tmstmp.tmstmp);
             if(hdr->phdr.hdrlen == 3) {
                 offst += sprintf(&out[offst], "CONNID[%010u]", hdr->row_2.connid.connid);
             }
             break;
-        case BLZ_PKT_CONREQ_ID:
+        case VLG_PKT_CONREQ_ID:
             /*CONNECTION REQUEST*/
             offst += sprintf(&out[offst], "CLIHBT[%06u]", hdr->row_1.clihbt.hbtsec);
             break;
-        case BLZ_PKT_CONRES_ID:
+        case VLG_PKT_CONRES_ID:
             /*CONNECTION RESPONSE*/
             offst += sprintf(&out[offst], "SRVCRS[%x|%x|%06u]", hdr->row_1.srvcrs.conres,
                              hdr->row_1.srvcrs.errcod,
@@ -73,14 +74,14 @@ int dump_blz_hdr_rec(const blz_hdr_ptr hdr, char *out)
                 offst += sprintf(&out[offst], "CONNID[%010u]", hdr->row_2.connid.connid);
             }
             break;
-        case BLZ_PKT_DSCOND_ID:
+        case VLG_PKT_DSCOND_ID:
             /*DISCONNECTED*/
             offst += sprintf(&out[offst], "DISWRD[%x]", hdr->row_1.diswrd.disres);
             if(hdr->phdr.hdrlen == 3) {
                 offst += sprintf(&out[offst], "CONNID[%010u]", hdr->row_2.connid.connid);
             }
             break;
-        case BLZ_PKT_TXRQST_ID:
+        case VLG_PKT_TXRQST_ID:
             /*TRANSACTION REQUEST*/
             offst += sprintf(&out[offst], "TXREQW[%x|%x|%x]", hdr->row_1.txreqw.txtype,
                              hdr->row_1.txreqw.txactn,
@@ -94,7 +95,7 @@ int dump_blz_hdr_rec(const blz_hdr_ptr hdr, char *out)
                              hdr->row_7.clsenc.enctyp);
             offst += sprintf(&out[offst], "CONNID[%010u]", hdr->row_8.connid.connid);
             break;
-        case BLZ_PKT_TXRESP_ID:
+        case VLG_PKT_TXRESP_ID:
             /*TRANSACTION RESPONSE*/
             offst += sprintf(&out[offst], "TXRESW[%x|%x|%04x]", hdr->row_1.txresw.txresl,
                              hdr->row_1.txresw.blzcod,
@@ -109,7 +110,7 @@ int dump_blz_hdr_rec(const blz_hdr_ptr hdr, char *out)
                                  hdr->row_7.clsenc.enctyp);
             }
             break;
-        case BLZ_PKT_SBSREQ_ID:
+        case VLG_PKT_SBSREQ_ID:
             /*SUBSCRIPTION REQUEST*/
             offst += sprintf(&out[offst], "SBREQW[%01x|%02x|%02x|%02x]",
                              hdr->row_1.sbreqw.sbstyp,
@@ -125,7 +126,7 @@ int dump_blz_hdr_rec(const blz_hdr_ptr hdr, char *out)
                 offst += sprintf(&out[offst], "TMSTMP[1][%010u]", hdr->row_6.tmstmp.tmstmp);
             }
             break;
-        case BLZ_PKT_SBSRES_ID:
+        case VLG_PKT_SBSRES_ID:
             /*SUBSCRIPTION RESPONSE*/
             offst += sprintf(&out[offst], "SBRESW[%x|%x]", hdr->row_1.sbresw.sbresl,
                              hdr->row_1.sbresw.blzcod);
@@ -134,7 +135,7 @@ int dump_blz_hdr_rec(const blz_hdr_ptr hdr, char *out)
                 offst += sprintf(&out[offst], "SBSRID[%010u]", hdr->row_3.sbsrid.sbsrid);
             }
             break;
-        case BLZ_PKT_SBSEVT_ID:
+        case VLG_PKT_SBSEVT_ID:
             /*SUBSCRIPTION EVENT*/
             offst += sprintf(&out[offst], "SBSRID[%010u]", hdr->row_1.sbsrid.sbsrid);
             offst += sprintf(&out[offst], "SEVTTP[%02x|%x|%04x|]", hdr->row_2.sevttp.sevttp,
@@ -147,16 +148,16 @@ int dump_blz_hdr_rec(const blz_hdr_ptr hdr, char *out)
                 offst += sprintf(&out[offst], "PKTLEN[%u]", hdr->row_6.pktlen.pktlen);
             }
             break;
-        case BLZ_PKT_SBSACK_ID:
+        case VLG_PKT_SBSACK_ID:
             /*SUBSCRIPTION EVENT ACK*/
             offst += sprintf(&out[offst], "SBSRID[%010u]", hdr->row_1.sbsrid.sbsrid);
             offst += sprintf(&out[offst], "SEVTID[%010u]", hdr->row_2.sevtid.sevtid);
             break;
-        case BLZ_PKT_SBSTOP_ID:
+        case VLG_PKT_SBSTOP_ID:
             /*SUBSCRIPTION STOP REQUEST*/
             offst += sprintf(&out[offst], "SBSRID[%010u]", hdr->row_1.sbsrid.sbsrid);
             break;
-        case BLZ_PKT_SBSSPR_ID:
+        case VLG_PKT_SBSSPR_ID:
             /*SUBSCRIPTION STOP RESPONSE*/
             offst += sprintf(&out[offst], "SBRESW[%x|%x]", hdr->row_1.sbresw.sbresl,
                              hdr->row_1.sbresw.blzcod);
@@ -241,7 +242,7 @@ MASKS FOR ENCODING:
 ******************************************/
 
 
-inline void Encode_WRD_PKTHDR(const BLZ_WRD_PKTHDR_REC *rec,
+inline void Encode_WRD_PKTHDR(const VLG_WRD_PKTHDR_REC *rec,
                               vlg::grow_byte_buffer *obb)
 {
     unsigned int data_out = 0;
@@ -281,7 +282,7 @@ inline void Encode_WRD_CLIHBT(const unsigned short *hbtsec,
     obb->append_uint(data_out);
 }
 
-inline void Encode_WRD_SRVCRS(const BLZ_WRD_SRVCRS_REC *rec,
+inline void Encode_WRD_SRVCRS(const VLG_WRD_SRVCRS_REC *rec,
                               vlg::grow_byte_buffer *obb)
 {
     unsigned int data_out = 0;
@@ -294,7 +295,7 @@ inline void Encode_WRD_SRVCRS(const BLZ_WRD_SRVCRS_REC *rec,
     obb->append_uint(data_out);
 }
 
-inline void Encode_WRD_DISWRD(const BLZ_WRD_DISWRD_REC *rec,
+inline void Encode_WRD_DISWRD(const VLG_WRD_DISWRD_REC *rec,
                               vlg::grow_byte_buffer *obb)
 {
     unsigned int data_out = 0;
@@ -303,7 +304,7 @@ inline void Encode_WRD_DISWRD(const BLZ_WRD_DISWRD_REC *rec,
     obb->append_uint(data_out);
 }
 
-inline void Encode_WRD_TXREQW(const BLZ_WRD_TXREQW_REC *rec,
+inline void Encode_WRD_TXREQW(const VLG_WRD_TXREQW_REC *rec,
                               vlg::grow_byte_buffer *obb)
 {
     unsigned int data_out = 0;
@@ -316,7 +317,7 @@ inline void Encode_WRD_TXREQW(const BLZ_WRD_TXREQW_REC *rec,
     obb->append_uint(data_out);
 }
 
-inline void Encode_WRD_CLSENC(const BLZ_WRD_CLSENC_REC *rec,
+inline void Encode_WRD_CLSENC(const VLG_WRD_CLSENC_REC *rec,
                               vlg::grow_byte_buffer *obb)
 {
     unsigned int data_out = 0;
@@ -331,7 +332,7 @@ inline void Encode_WRD_CLSENC(const BLZ_WRD_CLSENC_REC *rec,
     obb->append_uint(data_out);
 }
 
-inline void Encode_WRD_TXRESW(const BLZ_WRD_TXRESW_REC *rec,
+inline void Encode_WRD_TXRESW(const VLG_WRD_TXRESW_REC *rec,
                               vlg::grow_byte_buffer *obb)
 {
     unsigned int data_out = 0;
@@ -391,7 +392,7 @@ inline void Encode_WRD_RQSTID(const unsigned int *rqstid,
     obb->append_uint(htonl(*rqstid));
 }
 
-inline void Encode_WRD_SBREQW(const BLZ_WRD_SBREQW_REC *rec,
+inline void Encode_WRD_SBREQW(const VLG_WRD_SBREQW_REC *rec,
                               vlg::grow_byte_buffer *obb)
 {
     unsigned int data_out = 0;
@@ -406,7 +407,7 @@ inline void Encode_WRD_SBREQW(const BLZ_WRD_SBREQW_REC *rec,
     obb->append_uint(data_out);
 }
 
-inline void Encode_WRD_SBRESW(const BLZ_WRD_SBRESW_REC *rec,
+inline void Encode_WRD_SBRESW(const VLG_WRD_SBRESW_REC *rec,
                               vlg::grow_byte_buffer *obb)
 {
     unsigned int data_out = 0;
@@ -436,7 +437,7 @@ inline void Encode_WRD_SEVTID(const unsigned int *sevtid,
     obb->append_uint(htonl(*sevtid));
 }
 
-inline void Encode_WRD_SEVTTP(const BLZ_WRD_SEVTTP_REC *rec,
+inline void Encode_WRD_SEVTTP(const VLG_WRD_SEVTTP_REC *rec,
                               vlg::grow_byte_buffer *obb)
 {
     unsigned int data_out = 0;
@@ -458,7 +459,7 @@ inline void Encode_WRD_SEVTTP(const BLZ_WRD_SEVTTP_REC *rec,
  It is supposed that each Decode f reads 32 bit on buffer
 ******************************************/
 inline void Decode_WRD_PKTHDR(const unsigned int *data_in,
-                              BLZ_WRD_PKTHDR_REC *rec)
+                              VLG_WRD_PKTHDR_REC *rec)
 {
     //PROVER |VVVVVV00000000000000000000000000|
     unsigned short tus = ((*data_in >> 2) & 0x3F);
@@ -467,32 +468,32 @@ inline void Decode_WRD_PKTHDR(const unsigned int *data_in,
     tus = ((*data_in << 2) & 0x000C) | ((*data_in >> 14) & 0x3);
     rec->hdrlen = tus;
     //PKTTYP |0000000000RRRRRR0000000000000000|
-    rec->pkttyp = static_cast<BLZ_PKT_ID>((*data_in >> 8) & 0x3F);
+    rec->pkttyp = static_cast<VLG_PKT_ID>((*data_in >> 8) & 0x3F);
 }
 
 inline void Decode_WRD_PKTLEN(const unsigned int *data_in,
-                              BLZ_WRD_PKTLEN_REC *rec)
+                              VLG_WRD_PKTLEN_REC *rec)
 {
     //PKTLEN |LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL|
     rec->pktlen = ntohl(*data_in);
 }
 
 inline void Decode_WRD_TMSTMP(const unsigned int *data_in,
-                              BLZ_WRD_TMSTMP_REC *rec)
+                              VLG_WRD_TMSTMP_REC *rec)
 {
     //TMSTMP |TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT|
     rec->tmstmp = ntohl(*data_in);
 }
 
 inline void Decode_WRD_CLIHBT(const unsigned int *data_in,
-                              BLZ_WRD_CLIHBT_REC *rec)
+                              VLG_WRD_CLIHBT_REC *rec)
 {
     //CLIHBT |HHHHHHHH000000000000000000000000|
     rec->hbtsec = *data_in & 0xFF;
 }
 
 inline void Decode_WRD_SRVCRS(const unsigned int *data_in,
-                              BLZ_WRD_SRVCRS_REC *rec)
+                              VLG_WRD_SRVCRS_REC *rec)
 {
     //CONRES |RRR00000000000000000000000000000|
     rec->conres = static_cast<ConnectionResult>((*data_in >> 5) & 0x3);
@@ -503,14 +504,14 @@ inline void Decode_WRD_SRVCRS(const unsigned int *data_in,
 }
 
 inline void Decode_WRD_DISWRD(const unsigned int *data_in,
-                              BLZ_WRD_DISWRD_REC *rec)
+                              VLG_WRD_DISWRD_REC *rec)
 {
     //DISRES |RRRR0000000000000000000000000000|
     rec->disres = static_cast<DisconnectionResultReason>(*data_in >> 4);
 }
 
 inline void Decode_WRD_TXREQW(const unsigned int *data_in,
-                              BLZ_WRD_TXREQW_REC *rec)
+                              VLG_WRD_TXREQW_REC *rec)
 {
     //TXTYPE |TTTT0000000000000000000000000000|
     rec->txtype = static_cast<TransactionRequestType>((*data_in >> 4) & 0xF);
@@ -521,7 +522,7 @@ inline void Decode_WRD_TXREQW(const unsigned int *data_in,
 }
 
 inline void Decode_WRD_CLSENC(const unsigned int *data_in,
-                              BLZ_WRD_CLSENC_REC *rec)
+                              VLG_WRD_CLSENC_REC *rec)
 {
     //ENCTYP |EEEE0000000000000000000000000000|
     rec->enctyp = static_cast<Encode>((*data_in >> 4) & 0xF);
@@ -534,7 +535,7 @@ inline void Decode_WRD_CLSENC(const unsigned int *data_in,
 }
 
 inline void Decode_WRD_TXRESW(const unsigned int *data_in,
-                              BLZ_WRD_TXRESW_REC *rec)
+                              VLG_WRD_TXRESW_REC *rec)
 {
     //TXRESL |XXX00000000000000000000000000000|
     rec->txresl = static_cast<TransactionResult>((*data_in >> 5) & 0x7);
@@ -549,49 +550,49 @@ inline void Decode_WRD_TXRESW(const unsigned int *data_in,
 }
 
 inline void Decode_WRD_TXPLID(const unsigned int *data_in,
-                              BLZ_WRD_TXPLID_REC *rec)
+                              VLG_WRD_TXPLID_REC *rec)
 {
     //TXPLID |PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP|
     rec->txplid = ntohl(*data_in);
 }
 
 inline void Decode_WRD_TXSVID(const unsigned int *data_in,
-                              BLZ_WRD_TXSVID_REC *rec)
+                              VLG_WRD_TXSVID_REC *rec)
 {
     //TXSVID |SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS|
     rec->txsvid = ntohl(*data_in);
 }
 
 inline void Decode_WRD_TXCNID(const unsigned int *data_in,
-                              BLZ_WRD_TXCNID_REC *rec)
+                              VLG_WRD_TXCNID_REC *rec)
 {
     //TXCNID |CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC|
     rec->txcnid = ntohl(*data_in);
 }
 
 inline void Decode_WRD_TXPRID(const unsigned int *data_in,
-                              BLZ_WRD_TXPRID_REC *rec)
+                              VLG_WRD_TXPRID_REC *rec)
 {
     //TXPRID |PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP|
     rec->txprid = ntohl(*data_in);
 }
 
 inline void Decode_WRD_CONNID(const unsigned int *data_in,
-                              BLZ_WRD_CONNID_REC *rec)
+                              VLG_WRD_CONNID_REC *rec)
 {
     //CONNID |CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC|
     rec->connid = ntohl(*data_in);
 }
 
 inline void Decode_WRD_RQSTID(const unsigned int *data_in,
-                              BLZ_WRD_RQSTID_REC *rec)
+                              VLG_WRD_RQSTID_REC *rec)
 {
     //RQSTID |RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR|
     rec->rqstid = ntohl(*data_in);
 }
 
 inline void Decode_WRD_SBREQW(const unsigned int *data_in,
-                              BLZ_WRD_SBREQW_REC *rec)
+                              VLG_WRD_SBREQW_REC *rec)
 {
     //SBSTYP |00SS 0000 0000 0000 | 0000 0000 0000 0000|
     rec->sbstyp = static_cast<SubscriptionType>((*data_in >> 4) & 0x3);
@@ -604,7 +605,7 @@ inline void Decode_WRD_SBREQW(const unsigned int *data_in,
 }
 
 inline void Decode_WRD_SBRESW(const unsigned int *data_in,
-                              BLZ_WRD_SBRESW_REC *rec)
+                              VLG_WRD_SBRESW_REC *rec)
 {
     //SBRESL |XXX00000000000000000000000000000|
     rec->sbresl = static_cast<SubscriptionResponse>((*data_in >> 5) & 0x7);
@@ -617,21 +618,21 @@ inline void Decode_WRD_SBRESW(const unsigned int *data_in,
 }
 
 inline void Decode_WRD_SBSRID(const unsigned int *data_in,
-                              BLZ_WRD_SBSRID_REC *rec)
+                              VLG_WRD_SBSRID_REC *rec)
 {
     //SBSRID |SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS|
     rec->sbsrid = ntohl(*data_in);
 }
 
 inline void Decode_WRD_SEVTID(const unsigned int *data_in,
-                              BLZ_WRD_SEVTID_REC *rec)
+                              VLG_WRD_SEVTID_REC *rec)
 {
     //SEVTID |EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE|
     rec->sevtid = ntohl(*data_in);
 }
 
 inline void Decode_WRD_SEVTTP(const unsigned int *data_in,
-                              BLZ_WRD_SEVTTP_REC *rec)
+                              VLG_WRD_SEVTTP_REC *rec)
 {
     //ENCTYP |TTTT0000000000000000000000000000|
     rec->sevttp = static_cast<SubscriptionEventType>((*data_in >> 4) & 0xF);
@@ -654,10 +655,10 @@ void build_PKT_TSTREQ(time_stamp tstamp,
                       unsigned int connid,
                       vlg::grow_byte_buffer *obb)
 {
-    BLZ_WRD_PKTHDR_REC pkthdr;
+    VLG_WRD_PKTHDR_REC pkthdr;
     pkthdr.hdrlen = connid ? 3 : 2;
-    pkthdr.prover = BLZ_PROTO_VER;
-    pkthdr.pkttyp = BLZ_PKT_TSTREQ_ID;
+    pkthdr.prover = VLG_PROTO_VER;
+    pkthdr.pkttyp = VLG_PKT_TSTREQ_ID;
     Encode_WRD_PKTHDR(&pkthdr, obb);
     Encode_WRD_TMSTMP(&tstamp, obb);
     if(connid) {
@@ -670,10 +671,10 @@ void build_PKT_HRTBET(time_stamp tstamp,
                       unsigned int connid,
                       vlg::grow_byte_buffer *obb)
 {
-    BLZ_WRD_PKTHDR_REC pkthdr;
+    VLG_WRD_PKTHDR_REC pkthdr;
     pkthdr.hdrlen = connid ? 3 : 2;
-    pkthdr.prover = BLZ_PROTO_VER;
-    pkthdr.pkttyp = BLZ_PKT_HRTBET_ID;
+    pkthdr.prover = VLG_PROTO_VER;
+    pkthdr.pkttyp = VLG_PKT_HRTBET_ID;
     Encode_WRD_PKTHDR(&pkthdr, obb);
     Encode_WRD_TMSTMP(&tstamp, obb);
     if(connid) {
@@ -685,10 +686,10 @@ void build_PKT_HRTBET(time_stamp tstamp,
 void build_PKT_CONREQ(unsigned short clihbt,
                       vlg::grow_byte_buffer *obb)
 {
-    BLZ_WRD_PKTHDR_REC pkthdr;
+    VLG_WRD_PKTHDR_REC pkthdr;
     pkthdr.hdrlen = 2;
-    pkthdr.prover = BLZ_PROTO_VER;
-    pkthdr.pkttyp = BLZ_PKT_CONREQ_ID;
+    pkthdr.prover = VLG_PROTO_VER;
+    pkthdr.pkttyp = VLG_PKT_CONREQ_ID;
     Encode_WRD_PKTHDR(&pkthdr, obb);
     Encode_WRD_CLIHBT(&clihbt, obb);
 }
@@ -700,11 +701,11 @@ void build_PKT_CONRES(ConnectionResult conres,
                       unsigned int connid,
                       vlg::grow_byte_buffer *obb)
 {
-    BLZ_WRD_PKTHDR_REC pkthdr;
+    VLG_WRD_PKTHDR_REC pkthdr;
     pkthdr.hdrlen = connid ? 3 : 2;
-    pkthdr.prover = BLZ_PROTO_VER;
-    pkthdr.pkttyp = BLZ_PKT_CONRES_ID;
-    BLZ_WRD_SRVCRS_REC srvcrs;
+    pkthdr.prover = VLG_PROTO_VER;
+    pkthdr.pkttyp = VLG_PKT_CONRES_ID;
+    VLG_WRD_SRVCRS_REC srvcrs;
     srvcrs.conres = conres;
     srvcrs.errcod = errcod;
     srvcrs.agrhbt = agrhbt;
@@ -720,11 +721,11 @@ void build_PKT_DSCOND(DisconnectionResultReason disres,
                       unsigned int connid,
                       vlg::grow_byte_buffer *obb)
 {
-    BLZ_WRD_PKTHDR_REC pkthdr;
+    VLG_WRD_PKTHDR_REC pkthdr;
     pkthdr.hdrlen = connid ? 3 : 2;
-    pkthdr.prover = BLZ_PROTO_VER;
-    pkthdr.pkttyp = BLZ_PKT_DSCOND_ID;
-    BLZ_WRD_DISWRD_REC diswrd;
+    pkthdr.prover = VLG_PROTO_VER;
+    pkthdr.pkttyp = VLG_PKT_DSCOND_ID;
+    VLG_WRD_DISWRD_REC diswrd;
     diswrd.disres = disres;
     Encode_WRD_PKTHDR(&pkthdr, obb);
     Encode_WRD_DISWRD(&diswrd, obb);
@@ -743,10 +744,10 @@ void build_PKT_TXRQST(TransactionRequestType txtype,
                       unsigned int connid,
                       vlg::grow_byte_buffer *obb)
 {
-    BLZ_WRD_PKTHDR_REC pkthdr;
-    BLZ_WRD_TXREQW_REC txreqw;
-    pkthdr.prover = BLZ_PROTO_VER;
-    pkthdr.pkttyp = BLZ_PKT_TXRQST_ID;
+    VLG_WRD_PKTHDR_REC pkthdr;
+    VLG_WRD_TXREQW_REC txreqw;
+    pkthdr.prover = VLG_PROTO_VER;
+    pkthdr.pkttyp = VLG_PKT_TXRQST_ID;
     txreqw.txtype = txtype;
     txreqw.txactn = txactn;
     txreqw.rsclrq = rsclrq;
@@ -759,7 +760,7 @@ void build_PKT_TXRQST(TransactionRequestType txtype,
         Encode_WRD_TXCNID(&txid->txcnid, obb);
         Encode_WRD_TXPRID(&txid->txprid, obb);
         obb->advance_pos_write(4); //reserved space for pktlen
-        BLZ_WRD_CLSENC_REC clsenc;
+        VLG_WRD_CLSENC_REC clsenc;
         clsenc.enctyp = enctyp;
         clsenc.nclsid = nclsid;
         Encode_WRD_CLSENC(&clsenc, obb);
@@ -785,10 +786,10 @@ void build_PKT_TXRESP(TransactionResult txresl,
                       unsigned int nclsid,
                       vlg::grow_byte_buffer *obb)
 {
-    BLZ_WRD_PKTHDR_REC pkthdr;
-    BLZ_WRD_TXRESW_REC txresw;
-    pkthdr.prover = BLZ_PROTO_VER;
-    pkthdr.pkttyp = BLZ_PKT_TXRESP_ID;
+    VLG_WRD_PKTHDR_REC pkthdr;
+    VLG_WRD_TXRESW_REC txresw;
+    pkthdr.prover = VLG_PROTO_VER;
+    pkthdr.pkttyp = VLG_PKT_TXRESP_ID;
     txresw.txresl = txresl;
     txresw.blzcod = blzcod;
     txresw.rescls = rescls;
@@ -801,7 +802,7 @@ void build_PKT_TXRESP(TransactionResult txresl,
         Encode_WRD_TXCNID(&txid->txcnid, obb);
         Encode_WRD_TXPRID(&txid->txprid, obb);
         obb->advance_pos_write(4); //reserved space for pktlen
-        BLZ_WRD_CLSENC_REC clsenc;
+        VLG_WRD_CLSENC_REC clsenc;
         clsenc.enctyp = enctyp;
         clsenc.nclsid = nclsid;
         Encode_WRD_CLSENC(&clsenc, obb);
@@ -829,11 +830,11 @@ void build_PKT_SBSREQ(SubscriptionType sbstyp,
                       unsigned int tmstp1,
                       vlg::grow_byte_buffer *obb)
 {
-    BLZ_WRD_PKTHDR_REC pkthdr;
-    BLZ_WRD_SBREQW_REC sbreqw;
-    BLZ_WRD_CLSENC_REC clsenc;
-    pkthdr.prover = BLZ_PROTO_VER;
-    pkthdr.pkttyp = BLZ_PKT_SBSREQ_ID;
+    VLG_WRD_PKTHDR_REC pkthdr;
+    VLG_WRD_SBREQW_REC sbreqw;
+    VLG_WRD_CLSENC_REC clsenc;
+    pkthdr.prover = VLG_PROTO_VER;
+    pkthdr.pkttyp = VLG_PKT_SBSREQ_ID;
     sbreqw.sbstyp = sbstyp;
     sbreqw.sbsmod = sbsmod;
     sbreqw.flotyp = flotyp;
@@ -866,10 +867,10 @@ void build_PKT_SBSRES(SubscriptionResponse sbresl,
                       unsigned int sbsrid,
                       vlg::grow_byte_buffer *obb)
 {
-    BLZ_WRD_PKTHDR_REC pkthdr;
-    BLZ_WRD_SBRESW_REC sbresw;
-    pkthdr.prover = BLZ_PROTO_VER;
-    pkthdr.pkttyp = BLZ_PKT_SBSRES_ID;
+    VLG_WRD_PKTHDR_REC pkthdr;
+    VLG_WRD_SBRESW_REC sbresw;
+    pkthdr.prover = VLG_PROTO_VER;
+    pkthdr.pkttyp = VLG_PKT_SBSRES_ID;
     sbresw.sbresl = sbresl;
     sbresw.blzcod = blzcod;
     if(sbsrid) {
@@ -896,10 +897,10 @@ void build_PKT_SBSEVT(unsigned int sbsrid,
                       unsigned int tmstp1,
                       vlg::grow_byte_buffer *obb)
 {
-    BLZ_WRD_PKTHDR_REC pkthdr;
-    BLZ_WRD_SEVTTP_REC sevttpw;
-    pkthdr.prover = BLZ_PROTO_VER;
-    pkthdr.pkttyp = BLZ_PKT_SBSEVT_ID;
+    VLG_WRD_PKTHDR_REC pkthdr;
+    VLG_WRD_SEVTTP_REC sevttpw;
+    pkthdr.prover = VLG_PROTO_VER;
+    pkthdr.pkttyp = VLG_PKT_SBSEVT_ID;
     sevttpw.sevttp = sevttp;
     sevttpw.sbeact = sbeact;
     sevttpw.blzcod = blzcod;
@@ -928,10 +929,10 @@ void build_PKT_SBSACK(unsigned int sbsrid,
                       unsigned int sevtid,
                       vlg::grow_byte_buffer *obb)
 {
-    BLZ_WRD_PKTHDR_REC pkthdr;
+    VLG_WRD_PKTHDR_REC pkthdr;
     pkthdr.hdrlen = 3;
-    pkthdr.prover = BLZ_PROTO_VER;
-    pkthdr.pkttyp = BLZ_PKT_SBSACK_ID;
+    pkthdr.prover = VLG_PROTO_VER;
+    pkthdr.pkttyp = VLG_PKT_SBSACK_ID;
     Encode_WRD_PKTHDR(&pkthdr, obb);
     Encode_WRD_SBSRID(&sbsrid, obb);
     Encode_WRD_SEVTID(&sevtid, obb);
@@ -941,9 +942,9 @@ void build_PKT_SBSACK(unsigned int sbsrid,
 void build_PKT_SBSTOP(unsigned int sbsrid,
                       vlg::grow_byte_buffer *obb)
 {
-    BLZ_WRD_PKTHDR_REC pkthdr;
-    pkthdr.prover = BLZ_PROTO_VER;
-    pkthdr.pkttyp = BLZ_PKT_SBSTOP_ID;
+    VLG_WRD_PKTHDR_REC pkthdr;
+    pkthdr.prover = VLG_PROTO_VER;
+    pkthdr.pkttyp = VLG_PKT_SBSTOP_ID;
     pkthdr.hdrlen = 2;
     Encode_WRD_PKTHDR(&pkthdr, obb);
     Encode_WRD_SBSRID(&sbsrid, obb);
@@ -955,10 +956,10 @@ void build_PKT_SBSSPR(SubscriptionResponse sbresl,
                       unsigned int sbsrid,
                       vlg::grow_byte_buffer *obb)
 {
-    BLZ_WRD_PKTHDR_REC pkthdr;
-    BLZ_WRD_SBRESW_REC sbresw;
-    pkthdr.prover = BLZ_PROTO_VER;
-    pkthdr.pkttyp = BLZ_PKT_SBSSPR_ID;
+    VLG_WRD_PKTHDR_REC pkthdr;
+    VLG_WRD_SBRESW_REC sbresw;
+    pkthdr.prover = VLG_PROTO_VER;
+    pkthdr.pkttyp = VLG_PKT_SBSSPR_ID;
     sbresw.sbresl = sbresl;
     sbresw.blzcod = blzcod;
     if(sbsrid) {
@@ -977,21 +978,21 @@ void build_PKT_SBSSPR(SubscriptionResponse sbresl,
 // CONNECTION RECV METHS
 //-----------------------------
 
-inline vlg::RetCode connection_int::recv_single_hdr_row(unsigned int *hdr_row)
+inline vlg::RetCode connection_impl::recv_single_hdr_row(unsigned int *hdr_row)
 {
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
     bool stay = true;
-    long brecv = 0, tot_brecv = 0, recv_buf_sz = BLZ_WRD_BYTE_SIZE;
-    char buff[BLZ_WRD_BYTE_SIZE] = {0};
+    long brecv = 0, tot_brecv = 0, recv_buf_sz = VLG_WRD_BYTE_SIZE;
+    char buff[VLG_WRD_BYTE_SIZE] = {0};
     while(stay) {
-        while((tot_brecv < BLZ_WRD_BYTE_SIZE) &&
+        while((tot_brecv < VLG_WRD_BYTE_SIZE) &&
                 ((brecv = recv(socket_, &buff[tot_brecv], recv_buf_sz, 0)) > 0)) {
             tot_brecv += brecv;
             recv_buf_sz -= brecv;
             IFLOG(trc(TH_ID, LS_TRL "%s() - brecv:%d, tot_brecv:%d, recv_buf_sz:%d",
                       __func__, brecv, tot_brecv, recv_buf_sz))
         }
-        if(tot_brecv != BLZ_WRD_BYTE_SIZE) {
+        if(tot_brecv != VLG_WRD_BYTE_SIZE) {
             if((cdrs_res = socket_excptn_hndl(brecv)) != vlg::RetCode_SCKEAGN) {
                 stay = false;
             } else {
@@ -1001,21 +1002,21 @@ inline vlg::RetCode connection_int::recv_single_hdr_row(unsigned int *hdr_row)
             break;
         }
     }
-    memcpy(hdr_row, buff, BLZ_WRD_BYTE_SIZE);
+    memcpy(hdr_row, buff, VLG_WRD_BYTE_SIZE);
     return cdrs_res;
 }
 
 #define RCVSNGLROW if((cdrs_res = recv_single_hdr_row(&hdr_row))) return cdrs_res;
 
-vlg::RetCode connection_int::recv_and_decode_hdr(blz_hdr_rec *pkt_hdr)
+vlg::RetCode connection_impl::recv_and_decode_hdr(vlg_hdr_rec *pkt_hdr)
 {
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
     unsigned int hdr_row = 0;
     RCVSNGLROW
     Decode_WRD_PKTHDR(&hdr_row, &pkt_hdr->phdr);
-    pkt_hdr->hdr_bytelen = pkt_hdr->phdr.hdrlen * BLZ_WRD_BYTE_SIZE;
+    pkt_hdr->hdr_bytelen = pkt_hdr->phdr.hdrlen * VLG_WRD_BYTE_SIZE;
     switch(pkt_hdr->phdr.pkttyp) {
-        case BLZ_PKT_TSTREQ_ID:
+        case VLG_PKT_TSTREQ_ID:
             /*TEST REQUEST*/
             RCVSNGLROW
             Decode_WRD_TMSTMP(&hdr_row, &pkt_hdr->row_1.tmstmp);
@@ -1024,7 +1025,7 @@ vlg::RetCode connection_int::recv_and_decode_hdr(blz_hdr_rec *pkt_hdr)
                 Decode_WRD_CONNID(&hdr_row, &pkt_hdr->row_2.connid);
             }
             break;
-        case BLZ_PKT_HRTBET_ID:
+        case VLG_PKT_HRTBET_ID:
             /*HEARTBEAT*/
             RCVSNGLROW
             Decode_WRD_TMSTMP(&hdr_row, &pkt_hdr->row_1.tmstmp);
@@ -1033,12 +1034,12 @@ vlg::RetCode connection_int::recv_and_decode_hdr(blz_hdr_rec *pkt_hdr)
                 Decode_WRD_CONNID(&hdr_row, &pkt_hdr->row_2.connid);
             }
             break;
-        case BLZ_PKT_CONREQ_ID:
+        case VLG_PKT_CONREQ_ID:
             /*CONNECTION REQUEST*/
             RCVSNGLROW
             Decode_WRD_CLIHBT(&hdr_row, &pkt_hdr->row_1.clihbt);
             break;
-        case BLZ_PKT_CONRES_ID:
+        case VLG_PKT_CONRES_ID:
             /*CONNECTION RESPONSE*/
             RCVSNGLROW
             Decode_WRD_SRVCRS(&hdr_row, &pkt_hdr->row_1.srvcrs);
@@ -1047,7 +1048,7 @@ vlg::RetCode connection_int::recv_and_decode_hdr(blz_hdr_rec *pkt_hdr)
                 Decode_WRD_CONNID(&hdr_row, &pkt_hdr->row_2.connid);
             }
             break;
-        case BLZ_PKT_DSCOND_ID:
+        case VLG_PKT_DSCOND_ID:
             /*DISCONNECTED*/
             RCVSNGLROW
             Decode_WRD_DISWRD(&hdr_row, &pkt_hdr->row_1.diswrd);
@@ -1056,7 +1057,7 @@ vlg::RetCode connection_int::recv_and_decode_hdr(blz_hdr_rec *pkt_hdr)
                 Decode_WRD_CONNID(&hdr_row, &pkt_hdr->row_2.connid);
             }
             break;
-        case BLZ_PKT_TXRQST_ID:
+        case VLG_PKT_TXRQST_ID:
             /*TRANSACTION REQUEST*/
             RCVSNGLROW
             Decode_WRD_TXREQW(&hdr_row, &pkt_hdr->row_1.txreqw);
@@ -1076,7 +1077,7 @@ vlg::RetCode connection_int::recv_and_decode_hdr(blz_hdr_rec *pkt_hdr)
             Decode_WRD_CONNID(&hdr_row, &pkt_hdr->row_8.connid);
             pkt_hdr->bdy_bytelen = pkt_hdr->row_6.pktlen.pktlen - pkt_hdr->hdr_bytelen;
             break;
-        case BLZ_PKT_TXRESP_ID:
+        case VLG_PKT_TXRESP_ID:
             /*TRANSACTION RESPONSE*/
             RCVSNGLROW
             Decode_WRD_TXRESW(&hdr_row, &pkt_hdr->row_1.txresw);
@@ -1096,7 +1097,7 @@ vlg::RetCode connection_int::recv_and_decode_hdr(blz_hdr_rec *pkt_hdr)
                 pkt_hdr->bdy_bytelen = pkt_hdr->row_6.pktlen.pktlen - pkt_hdr->hdr_bytelen;
             }
             break;
-        case BLZ_PKT_SBSREQ_ID:
+        case VLG_PKT_SBSREQ_ID:
             /*SUBSCRIPTION REQUEST*/
             RCVSNGLROW
             Decode_WRD_SBREQW(&hdr_row, &pkt_hdr->row_1.sbreqw);
@@ -1113,7 +1114,7 @@ vlg::RetCode connection_int::recv_and_decode_hdr(blz_hdr_rec *pkt_hdr)
                 Decode_WRD_TMSTMP(&hdr_row, &pkt_hdr->row_6.tmstmp); //timestamp 1
             }
             break;
-        case BLZ_PKT_SBSRES_ID:
+        case VLG_PKT_SBSRES_ID:
             /*SUBSCRIPTION RESPONSE*/
             RCVSNGLROW
             Decode_WRD_SBRESW(&hdr_row, &pkt_hdr->row_1.sbresw);
@@ -1124,7 +1125,7 @@ vlg::RetCode connection_int::recv_and_decode_hdr(blz_hdr_rec *pkt_hdr)
                 Decode_WRD_SBSRID(&hdr_row, &pkt_hdr->row_3.sbsrid);
             }
             break;
-        case BLZ_PKT_SBSEVT_ID:
+        case VLG_PKT_SBSEVT_ID:
             /*SUBSCRIPTION EVENT*/
             RCVSNGLROW
             Decode_WRD_SBSRID(&hdr_row, &pkt_hdr->row_1.sbsrid);
@@ -1142,19 +1143,19 @@ vlg::RetCode connection_int::recv_and_decode_hdr(blz_hdr_rec *pkt_hdr)
                 pkt_hdr->bdy_bytelen = pkt_hdr->row_6.pktlen.pktlen - pkt_hdr->hdr_bytelen;
             }
             break;
-        case BLZ_PKT_SBSACK_ID:
+        case VLG_PKT_SBSACK_ID:
             /*SUBSCRIPTION EVENT ACK*/
             RCVSNGLROW
             Decode_WRD_SBSRID(&hdr_row, &pkt_hdr->row_1.sbsrid);
             RCVSNGLROW
             Decode_WRD_SEVTID(&hdr_row, &pkt_hdr->row_2.sevtid);
             break;
-        case BLZ_PKT_SBSTOP_ID:
+        case VLG_PKT_SBSTOP_ID:
             /*SUBSCRIPTION STOP REQUEST*/
             RCVSNGLROW
             Decode_WRD_SBSRID(&hdr_row, &pkt_hdr->row_1.sbsrid);
             break;
-        case BLZ_PKT_SBSSPR_ID:
+        case VLG_PKT_SBSSPR_ID:
             /*SUBSCRIPTION STOP RESPONSE*/
             RCVSNGLROW
             Decode_WRD_SBRESW(&hdr_row, &pkt_hdr->row_1.sbresw);

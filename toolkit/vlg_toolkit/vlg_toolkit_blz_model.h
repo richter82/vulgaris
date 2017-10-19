@@ -19,24 +19,24 @@
  *
  */
 
-#ifndef BLZ_TOOLKIT_BLZ_MODEL_H
-#define BLZ_TOOLKIT_BLZ_MODEL_H
+#ifndef VLG_TOOLKIT_VLG_MODEL_H
+#define VLG_TOOLKIT_VLG_MODEL_H
 
-#include "blz_toolkit_glob.h"
+#include "vlg_toolkit_glob.h"
 
 //------------------------------------------------------------------------------
-// BLZ_MODEL_ITEM
+// VLG_MODEL_ITEM
 //------------------------------------------------------------------------------
-enum BLZ_MODEL_ITEM_TYPE {
-    BLZ_MODEL_ITEM_TYPE_Undef,
-    BLZ_MODEL_ITEM_TYPE_ROOT,     //ROOT
-    BLZ_MODEL_ITEM_TYPE_EDESC,     //entity_desc
-    BLZ_MODEL_ITEM_TYPE_MDESC,     //member_desc
+enum VLG_MODEL_ITEM_TYPE {
+    VLG_MODEL_ITEM_TYPE_Undef,
+    VLG_MODEL_ITEM_TYPE_ROOT,     //ROOT
+    VLG_MODEL_ITEM_TYPE_EDESC,     //entity_desc
+    VLG_MODEL_ITEM_TYPE_MDESC,     //member_desc
 };
 
 class model_item {
     public:
-        model_item(BLZ_MODEL_ITEM_TYPE    item_type,
+        model_item(VLG_MODEL_ITEM_TYPE    item_type,
                    const vlg::entity_desc      *edesc,
                    const vlg::member_desc      *mdesc,
                    model_item             *parent = NULL);
@@ -52,7 +52,7 @@ class model_item {
         int                 row() const;
         model_item         *parent();
 
-        BLZ_MODEL_ITEM_TYPE item_type() const;
+        VLG_MODEL_ITEM_TYPE item_type() const;
 
         const vlg::entity_desc *edesc() const;
         const vlg::member_desc *mdesc() const;
@@ -65,25 +65,25 @@ class model_item {
         model_item          *parentItem_;
 
     private:
-        BLZ_MODEL_ITEM_TYPE       item_type_;
+        VLG_MODEL_ITEM_TYPE       item_type_;
         const vlg::entity_desc     *edesc_;
         const vlg::member_desc     *mdesc_;
 };
 
 
 //------------------------------------------------------------------------------
-// blz_toolkit_blz_model
+// vlg_toolkit_vlg_model
 //------------------------------------------------------------------------------
 
-class blz_toolkit_blz_model : public QAbstractItemModel {
+class vlg_toolkit_vlg_model : public QAbstractItemModel {
         Q_OBJECT
 
     public slots:
         void OnModelUpdate_event();
 
     public:
-        blz_toolkit_blz_model(vlg::entity_manager &bem, QObject *parent = 0);
-        ~blz_toolkit_blz_model();
+        vlg_toolkit_vlg_model(vlg::entity_manager &bem, QObject *parent = 0);
+        ~vlg_toolkit_vlg_model();
 
         //overriden methods
         QModelIndex index(int row, int column,
@@ -111,4 +111,4 @@ class blz_toolkit_blz_model : public QAbstractItemModel {
         model_item          *rootItem_;
 };
 
-#endif // BLZ_TOOLKIT_BLZ_MODEL_H
+#endif // VLG_TOOLKIT_VLG_MODEL_H

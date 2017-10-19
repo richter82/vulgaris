@@ -19,41 +19,41 @@
  *
  */
 
-#include "blz_peer_int.h"
-#include "blz_connection_int.h"
-#include "blz_subscription_int.h"
+#include "vlg_peer_impl.h"
+#include "vlg_connection_impl.h"
+#include "vlg_subscription_impl.h"
 
 namespace vlg {
 
 class sbs_event_inst_collector : public vlg::collector {
     public:
-        sbs_event_inst_collector() : vlg::collector("subscription_event_int") {}
+        sbs_event_inst_collector() : vlg::collector("subscription_event_impl") {}
 };
 
-vlg::collector *sbs_event_int_inst_coll_ = NULL;
-vlg::collector &sbs_event_int_inst_collector()
+vlg::collector *sbs_event_impl_inst_coll_ = NULL;
+vlg::collector &sbs_event_impl_inst_collector()
 {
-    if(sbs_event_int_inst_coll_) {
-        return *sbs_event_int_inst_coll_;
+    if(sbs_event_impl_inst_coll_) {
+        return *sbs_event_impl_inst_coll_;
     }
-    if(!(sbs_event_int_inst_coll_ = new sbs_event_inst_collector())) {
-        EXIT_ACTION("failed creating subscription_event_int::sbs_event_int_inst_coll_\n")
+    if(!(sbs_event_impl_inst_coll_ = new sbs_event_inst_collector())) {
+        EXIT_ACTION("failed creating subscription_event_impl::sbs_event_impl_inst_coll_\n")
     }
-    return *sbs_event_int_inst_coll_;
+    return *sbs_event_impl_inst_coll_;
 }
 
-vlg::collector &subscription_event_int::get_collector()
+vlg::collector &subscription_event_impl::get_collector()
 {
-    return sbs_event_int_inst_collector();
+    return sbs_event_impl_inst_collector();
 }
 
-// BLZ_SBS_EVENT CTORS - INIT - DESTROY
+// VLG_SBS_EVENT CTORS - INIT - DESTROY
 
-vlg::RetCode subscription_event_int::new_instance(subscription_event_int
-                                                    **ptr)
+vlg::RetCode subscription_event_impl::new_instance(subscription_event_impl
+                                                   **ptr)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, ptr))
-    if(!((*ptr) = new subscription_event_int())) {
+    if(!((*ptr) = new subscription_event_impl())) {
         IFLOG(cri(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_MEMERR;
     } else {
@@ -62,9 +62,9 @@ vlg::RetCode subscription_event_int::new_instance(subscription_event_int
     }
 }
 
-nclass_logger *subscription_event_int::log_ = NULL;
+nclass_logger *subscription_event_impl::log_ = NULL;
 
-subscription_event_int::subscription_event_int() :
+subscription_event_impl::subscription_event_impl() :
     sbs_sbsid_(0),
     sbs_evtid_(0),
     sbs_evttype_(SubscriptionEventType_UNDEFINED),
@@ -74,11 +74,11 @@ subscription_event_int::subscription_event_int() :
     sbs_act_(Action_NONE),
     sbs_data_(NULL)
 {
-    log_ = get_nclass_logger("subscription_event_int");
+    log_ = get_nclass_logger("subscription_event_impl");
     IFLOG(trc(TH_ID, LS_CTR "%s(ptr:%p)", __func__, this))
 }
 
-subscription_event_int::~subscription_event_int()
+subscription_event_impl::~subscription_event_impl()
 {
     if(sbs_data_) {
         /************************
@@ -90,84 +90,84 @@ subscription_event_int::~subscription_event_int()
     IFLOG(trc(TH_ID, LS_DTR "%s(ptr:%p)", __func__, this))
 }
 
-// BLZ_SBS_EVENT GETTERS / SETTERS
+// VLG_SBS_EVENT GETTERS / SETTERS
 
-unsigned int subscription_event_int::get_sbsid()
+unsigned int subscription_event_impl::get_sbsid()
 {
     return sbs_sbsid_;
 }
 
-unsigned int subscription_event_int::get_evtid()
+unsigned int subscription_event_impl::get_evtid()
 {
     return sbs_evtid_;
 }
 
-SubscriptionEventType subscription_event_int::get_evttype()
+SubscriptionEventType subscription_event_impl::get_evttype()
 {
     return sbs_evttype_;
 }
 
-ProtocolCode subscription_event_int::get_protocode()
+ProtocolCode subscription_event_impl::get_protocode()
 {
     return sbs_protocode_;
 }
 
-unsigned int subscription_event_int::get_tmstp0()
+unsigned int subscription_event_impl::get_tmstp0()
 {
     return sbs_tmstp0_;
 }
 
-unsigned int subscription_event_int::get_tmstp1()
+unsigned int subscription_event_impl::get_tmstp1()
 {
     return sbs_tmstp1_;
 }
 
-Action subscription_event_int::get_act()
+Action subscription_event_impl::get_act()
 {
     return sbs_act_;
 }
 
-nclass *subscription_event_int::get_obj()
+nclass *subscription_event_impl::get_obj()
 {
     return sbs_data_;
 }
 
-void subscription_event_int::set_sbsid(unsigned int val)
+void subscription_event_impl::set_sbsid(unsigned int val)
 {
     sbs_sbsid_ = val;
 }
 
-void subscription_event_int::set_evtid(unsigned int val)
+void subscription_event_impl::set_evtid(unsigned int val)
 {
     sbs_evtid_ = val;
 }
 
-void subscription_event_int::set_evttype(SubscriptionEventType val)
+void subscription_event_impl::set_evttype(SubscriptionEventType val)
 {
     sbs_evttype_ = val;
 }
 
-void subscription_event_int::set_protocode(ProtocolCode val)
+void subscription_event_impl::set_protocode(ProtocolCode val)
 {
     sbs_protocode_ = val;
 }
 
-void subscription_event_int::set_tmstp0(unsigned int val)
+void subscription_event_impl::set_tmstp0(unsigned int val)
 {
     sbs_tmstp0_ = val;
 }
 
-void subscription_event_int::set_tmstp1(unsigned int val)
+void subscription_event_impl::set_tmstp1(unsigned int val)
 {
     sbs_tmstp1_ = val;
 }
 
-void subscription_event_int::set_act(Action val)
+void subscription_event_impl::set_act(Action val)
 {
     sbs_act_ = val;
 }
 
-void subscription_event_int::set_obj(const nclass *obj)
+void subscription_event_impl::set_obj(const nclass *obj)
 {
     if(sbs_data_) {
         /************************
@@ -188,7 +188,7 @@ void subscription_event_int::set_obj(const nclass *obj)
     }
 }
 
-void subscription_event_int::set_obj_on_event_receive(nclass *val)
+void subscription_event_impl::set_obj_on_event_receive(nclass *val)
 {
     if(sbs_data_) {
         /************************
@@ -207,9 +207,9 @@ void subscription_event_int::set_obj_on_event_receive(nclass *val)
     }
 }
 
-// BLZ_SBS_EVENT_WRPR
+// VLG_SBS_EVENT_WRPR
 
-sbs_event_wrapper::sbs_event_wrapper(subscription_event_int *evt) :
+sbs_event_wrapper::sbs_event_wrapper(subscription_event_impl *evt) :
     evt_(evt)
 {
     if(evt_) {
@@ -232,7 +232,7 @@ sbs_event_wrapper::~sbs_event_wrapper()
     }
 }
 
-void sbs_event_wrapper::set_evt(subscription_event_int *evt)
+void sbs_event_wrapper::set_evt(subscription_event_impl *evt)
 {
     if(evt_) {
         vlg::collector &c = evt_->get_collector();
@@ -251,18 +251,18 @@ void sbs_event_wrapper::set_evt(subscription_event_int *evt)
     }
 }
 
-subscription_event_int *sbs_event_wrapper::get_evt()
+subscription_event_impl *sbs_event_wrapper::get_evt()
 {
     return evt_;
 }
 
-// BLZ_SUBSCRIPTION CTORS - INIT - DESTROY
+// VLG_SUBSCRIPTION CTORS - INIT - DESTROY
 
-//BLZ_SUBSCRIPTION MEMORY
+//VLG_SUBSCRIPTION MEMORY
 
 class subscription_inst_collector : public vlg::collector {
     public:
-        subscription_inst_collector() : vlg::collector("subscription_int") {}
+        subscription_inst_collector() : vlg::collector("subscription_impl") {}
 
 };
 
@@ -273,19 +273,19 @@ vlg::collector &sbs_inst_collector()
         return *sbs_inst_coll_;
     }
     if(!(sbs_inst_coll_ = new subscription_inst_collector())) {
-        EXIT_ACTION("failed creating subscription_int::sbs_inst_coll_\n")
+        EXIT_ACTION("failed creating subscription_impl::sbs_inst_coll_\n")
     }
     return *sbs_inst_coll_;
 }
 
-vlg::collector &subscription_int::get_collector()
+vlg::collector &subscription_impl::get_collector()
 {
     return sbs_inst_collector();
 }
 
-nclass_logger *subscription_int::log_ = NULL;
+nclass_logger *subscription_impl::log_ = NULL;
 
-subscription_int::subscription_int(connection_int &conn) :
+subscription_impl::subscription_impl(connection_impl &conn) :
     peer_(conn.peer()),
     conn_(conn),
     bem_(conn.peer().get_em()),
@@ -307,7 +307,7 @@ subscription_int::subscription_int(connection_int &conn) :
     last_blzcod_(ProtocolCode_SUCCESS),
     sen_hndl_(NULL),
     sen_hndl_ud_(NULL),
-    cli_evt_sts_(BLZ_SBS_Evt_Undef),
+    cli_evt_sts_(VLG_SBS_Evt_Undef),
     cli_evt_q_(vlg::sngl_ptr_obj_mng()),
     srv_sbs_last_evt_ack_(true), //at the beginning we consider true this.
     srv_sbs_to_ack_evtid_(0),
@@ -318,11 +318,11 @@ subscription_int::subscription_int(connection_int &conn) :
     initial_query_(NULL),
     initial_query_ended_(true)
 {
-    log_ = get_nclass_logger("subscription_int");
+    log_ = get_nclass_logger("subscription_impl");
     IFLOG(trc(TH_ID, LS_CTR "%s(ptr:%p)", __func__, this))
 }
 
-subscription_int::~subscription_int()
+subscription_impl::~subscription_impl()
 {
     vlg::collector &c = get_collector();
     if(c.is_instance_collected(this)) {
@@ -336,7 +336,7 @@ subscription_int::~subscription_int()
     IFLOG(trc(TH_ID, LS_DTR "%s(ptr:%p)", __func__, this))
 }
 
-vlg::RetCode subscription_int::init()
+vlg::RetCode subscription_impl::init()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     RETURN_IF_NOT_OK(cli_evt_q_.init(1))
@@ -348,7 +348,7 @@ vlg::RetCode subscription_int::init()
     return vlg::RetCode_OK;
 }
 
-void subscription_int::release_initial_query()
+void subscription_impl::release_initial_query()
 {
     if(!initial_query_ended_) {
         if(initial_query_) {
@@ -359,158 +359,158 @@ void subscription_int::release_initial_query()
     }
 }
 
-// BLZ_SUBSCRIPTION GETTERS / SETTERS
+// VLG_SUBSCRIPTION GETTERS / SETTERS
 
-peer_int &subscription_int::peer()
+peer_impl &subscription_impl::peer()
 {
     return peer_;
 }
 
-connection_int &subscription_int::get_connection()
+connection_impl &subscription_impl::get_connection()
 {
     return conn_;
 }
 
-SubscriptionStatus subscription_int::status()
+SubscriptionStatus subscription_impl::status()
 {
     return status_;
 }
 
-unsigned int subscription_int::sbsid()
+unsigned int subscription_impl::sbsid()
 {
     return sbsid_;
 }
 
-unsigned int subscription_int::nclass_id()
+unsigned int subscription_impl::nclass_id()
 {
     return nclassid_;
 }
 
-inline void subscription_int::set_sbs_to_ack_evt_id(unsigned int sbs_evtid)
+inline void subscription_impl::set_sbs_to_ack_evt_id(unsigned int sbs_evtid)
 {
     srv_sbs_last_evt_ack_ = false;
     srv_sbs_to_ack_evtid_ = sbs_evtid;
 }
 
-inline void subscription_int::set_sbs_last_ack_evt_id()
+inline void subscription_impl::set_sbs_last_ack_evt_id()
 {
     srv_sbs_last_evt_ack_ = true;
     srv_sbs_last_ack_evtid_ = srv_sbs_to_ack_evtid_;
     srv_sbs_to_ack_evtid_ = 0;
 }
 
-SubscriptionType subscription_int::get_sbstyp() const
+SubscriptionType subscription_impl::get_sbstyp() const
 {
     return sbstyp_;
 }
 
-SubscriptionMode subscription_int::get_sbsmod() const
+SubscriptionMode subscription_impl::get_sbsmod() const
 {
     return sbsmod_;
 }
 
-SubscriptionFlowType subscription_int::get_flotyp() const
+SubscriptionFlowType subscription_impl::get_flotyp() const
 {
     return flotyp_;
 }
 
-SubscriptionDownloadType subscription_int::get_dwltyp() const
+SubscriptionDownloadType subscription_impl::get_dwltyp() const
 {
     return dwltyp_;
 }
 
-Encode subscription_int::get_enctyp() const
+Encode subscription_impl::get_enctyp() const
 {
     return enctyp_;
 }
 
-unsigned int subscription_int::get_open_tmstp0() const
+unsigned int subscription_impl::get_open_tmstp0() const
 {
     return open_tmstp0_;
 }
 
-unsigned int subscription_int::get_open_tmstp1() const
+unsigned int subscription_impl::get_open_tmstp1() const
 {
     return open_tmstp1_;
 }
 
-persistence_query_int *subscription_int::get_initial_query()
+persistence_query_impl *subscription_impl::get_initial_query()
 {
     return initial_query_;
 }
 
-bool subscription_int::is_initial_query_ended()
+bool subscription_impl::is_initial_query_ended()
 {
     return initial_query_ended_;
 }
 
-void subscription_int::set_nclassid(unsigned int nclass_id)
+void subscription_impl::set_nclassid(unsigned int nclass_id)
 {
     nclassid_ = nclass_id;
 }
 
-void subscription_int::set_sbstyp(SubscriptionType val)
+void subscription_impl::set_sbstyp(SubscriptionType val)
 {
     sbstyp_ = val;
 }
 
-void subscription_int::set_sbsmod(SubscriptionMode val)
+void subscription_impl::set_sbsmod(SubscriptionMode val)
 {
     sbsmod_ = val;
 }
 
-void subscription_int::set_flotyp(SubscriptionFlowType val)
+void subscription_impl::set_flotyp(SubscriptionFlowType val)
 {
     flotyp_ = val;
 }
 
-void subscription_int::set_dwltyp(SubscriptionDownloadType val)
+void subscription_impl::set_dwltyp(SubscriptionDownloadType val)
 {
     dwltyp_ = val;
 }
 
-void subscription_int::set_enctyp(Encode val)
+void subscription_impl::set_enctyp(Encode val)
 {
     enctyp_ = val;
 }
 
-void subscription_int::set_open_tmstp0(unsigned int val)
+void subscription_impl::set_open_tmstp0(unsigned int val)
 {
     open_tmstp0_ = val;
 }
 
-void subscription_int::set_open_tmstp1(unsigned int val)
+void subscription_impl::set_open_tmstp1(unsigned int val)
 {
     open_tmstp1_ = val;
 }
 
-void subscription_int::set_subscription_status_change_handler(
+void subscription_impl::set_subscription_status_change_handler(
     subscription_status_change_hndlr hndlr, void *ud)
 {
     ssc_hndl_ = hndlr;
     ssc_hndl_ud_ = ud;
 }
 
-void subscription_int::set_subscription_event_notify_handler(
+void subscription_impl::set_subscription_event_notify_handler(
     subscription_evt_notify_hndlr hndlr, void *ud)
 {
     sen_hndl_ = hndlr;
     sen_hndl_ud_ = ud;
 }
 
-void subscription_int::set_initial_query(persistence_query_int *initial_query)
+void subscription_impl::set_initial_query(persistence_query_impl *initial_query)
 {
     initial_query_ = initial_query;
 }
 
-void subscription_int::set_initial_query_ended(bool val)
+void subscription_impl::set_initial_query_ended(bool val)
 {
     initial_query_ended_ = val;
 }
 
-// BLZ_SUBSCRIPTION STATUS
+// VLG_SUBSCRIPTION STATUS
 
-vlg::RetCode subscription_int::set_req_sent()
+vlg::RetCode subscription_impl::set_req_sent()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     IFLOG(inf(TH_ID,
@@ -530,7 +530,7 @@ vlg::RetCode subscription_int::set_req_sent()
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode subscription_int::set_started()
+vlg::RetCode subscription_impl::set_started()
 {
     IFLOG(inf(TH_ID, LS_SBS"[CONNID:%010u-SBSID:%010u][STARTED]", conn_.connid(),
               sbsid_))
@@ -539,7 +539,7 @@ vlg::RetCode subscription_int::set_started()
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode subscription_int::set_stopped()
+vlg::RetCode subscription_impl::set_stopped()
 {
     IFLOG(inf(TH_ID, LS_SBS"[CONNID:%010u-SBSID:%010u][STOPPED]", conn_.connid(),
               sbsid_))
@@ -548,7 +548,7 @@ vlg::RetCode subscription_int::set_stopped()
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode subscription_int::set_released()
+vlg::RetCode subscription_impl::set_released()
 {
     IFLOG(dbg(TH_ID, LS_SBS"[CONNID:%010u-SBSID:%010u][RELEASED]", conn_.connid(),
               sbsid_))
@@ -556,7 +556,7 @@ vlg::RetCode subscription_int::set_released()
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode subscription_int::set_error()
+vlg::RetCode subscription_impl::set_error()
 {
     IFLOG(err(TH_ID, LS_SBS"[CONNID:%010u-SBSID:%010u][ERROR]", conn_.connid(),
               sbsid_))
@@ -565,7 +565,7 @@ vlg::RetCode subscription_int::set_error()
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode subscription_int::set_status(SubscriptionStatus status)
+vlg::RetCode subscription_impl::set_status(SubscriptionStatus status)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, status:%d)", __func__, this, status))
     CHK_MON_ERR_0(lock)
@@ -579,7 +579,7 @@ vlg::RetCode subscription_int::set_status(SubscriptionStatus status)
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode subscription_int::await_for_status_reached_or_outdated(
+vlg::RetCode subscription_impl::await_for_status_reached_or_outdated(
     SubscriptionStatus test,
     SubscriptionStatus &current,
     time_t sec,
@@ -611,7 +611,7 @@ vlg::RetCode subscription_int::await_for_status_reached_or_outdated(
     return cdrs_res;
 }
 
-vlg::RetCode subscription_int::await_for_start_result(
+vlg::RetCode subscription_impl::await_for_start_result(
     SubscriptionResponse
     &sbs_start_result,
     ProtocolCode &sbs_start_protocode,
@@ -650,11 +650,11 @@ vlg::RetCode subscription_int::await_for_start_result(
     return cdrs_res;
 }
 
-vlg::RetCode subscription_int::await_for_stop_result(SubscriptionResponse
-                                                       &sbs_stop_result,
-                                                       ProtocolCode &sbs_stop_protocode,
-                                                       time_t sec,
-                                                       long nsec)
+vlg::RetCode subscription_impl::await_for_stop_result(SubscriptionResponse
+                                                      &sbs_stop_result,
+                                                      ProtocolCode &sbs_stop_protocode,
+                                                      time_t sec,
+                                                      long nsec)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     CHK_MON_ERR_0(lock)
@@ -688,7 +688,7 @@ vlg::RetCode subscription_int::await_for_stop_result(SubscriptionResponse
     return cdrs_res;
 }
 
-vlg::RetCode subscription_int::notify_for_start_stop_result()
+vlg::RetCode subscription_impl::notify_for_start_stop_result()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     mon_.lock();
@@ -699,9 +699,9 @@ vlg::RetCode subscription_int::notify_for_start_stop_result()
     return vlg::RetCode_OK;
 }
 
-// BLZ_SUBSCRIPTION ACTIONS
+// VLG_SUBSCRIPTION ACTIONS
 
-vlg::RetCode subscription_int::start()
+vlg::RetCode subscription_impl::start()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ != SubscriptionStatus_INITIALIZED &&
@@ -719,7 +719,7 @@ vlg::RetCode subscription_int::start()
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
     reqid_ = conn_.next_reqid();
     vlg::synch_hash_map &reqid_sbs_map = conn_.reqid_sbs_map();
-    subscription_int *self = this;
+    subscription_impl *self = this;
     if((cdrs_res = reqid_sbs_map.put(&reqid_, &self))) {
         IFLOG(cri(TH_ID, LS_CLO "%s() - hash put, res:%d", __func__, cdrs_res))
         return cdrs_res;
@@ -732,14 +732,14 @@ vlg::RetCode subscription_int::start()
     return cdrs_res;
 }
 
-vlg::RetCode subscription_int::start(SubscriptionType sbscr_type,
-                                       SubscriptionMode sbscr_mode,
-                                       SubscriptionFlowType sbscr_flow_type,
-                                       SubscriptionDownloadType  sbscr_dwnld_type,
-                                       Encode sbscr_class_encode,
-                                       unsigned int nclass_id,
-                                       unsigned int start_timestamp_0,
-                                       unsigned int start_timestamp_1)
+vlg::RetCode subscription_impl::start(SubscriptionType sbscr_type,
+                                      SubscriptionMode sbscr_mode,
+                                      SubscriptionFlowType sbscr_flow_type,
+                                      SubscriptionDownloadType  sbscr_dwnld_type,
+                                      Encode sbscr_class_encode,
+                                      unsigned int nclass_id,
+                                      unsigned int start_timestamp_0,
+                                      unsigned int start_timestamp_1)
 {
     IFLOG(trc(TH_ID, LS_OPN
               "%s(ptr:%p, sbscr_type:%d, sbscr_mode:%d, sbscr_flow_type:%d, sbscr_dwnld_type:%d, sbscr_class_encode:%d, nclass_id:%u, ts0:%u, ts1:%u)",
@@ -772,7 +772,7 @@ vlg::RetCode subscription_int::start(SubscriptionType sbscr_type,
     return cdrs_res;
 }
 
-vlg::RetCode subscription_int::stop()
+vlg::RetCode subscription_impl::stop()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ != SubscriptionStatus_STARTED) {
@@ -788,13 +788,13 @@ vlg::RetCode subscription_int::stop()
         initial_query_ended_ = true;
     }
     start_stop_evt_occur_ = false;
-    DECLINITH_GBB(gbb, BLZ_BUFF_DEF_SZ)
+    DECLINITH_GBB(gbb, VLG_BUFF_DEF_SZ)
     build_PKT_SBSTOP(sbsid_,
                      gbb);
     gbb->flip();
     RETURN_IF_NOT_OK(conn_.pkt_snd_q().put(&gbb))
     selector_event *evt = new selector_event(
-        BLZ_SELECTOR_Evt_SendPacket, &conn_);
+        VLG_SELECTOR_Evt_SendPacket, &conn_);
     cdrs_res = peer_.get_selector().evt_enqueue_and_notify(evt);
     if(cdrs_res) {
         set_status(SubscriptionStatus_ERROR);
@@ -803,15 +803,15 @@ vlg::RetCode subscription_int::stop()
     return cdrs_res;
 }
 
-// BLZ_SUBSCRIPTION SENDING METHS
+// VLG_SUBSCRIPTION SENDING METHS
 
-vlg::RetCode subscription_int::send_start_request()
+vlg::RetCode subscription_impl::send_start_request()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
     set_req_sent();
     start_stop_evt_occur_ = false;
-    DECLINITH_GBB(gbb, BLZ_BUFF_DEF_SZ)
+    DECLINITH_GBB(gbb, VLG_BUFF_DEF_SZ)
     build_PKT_SBSREQ(sbstyp_,
                      sbsmod_,
                      flotyp_,
@@ -826,7 +826,7 @@ vlg::RetCode subscription_int::send_start_request()
     gbb->flip();
     RETURN_IF_NOT_OK(conn_.pkt_snd_q().put(&gbb))
     selector_event *evt = new selector_event(
-        BLZ_SELECTOR_Evt_SendPacket, &conn_);
+        VLG_SELECTOR_Evt_SendPacket, &conn_);
     if((cdrs_res = peer_.get_selector().evt_enqueue_and_notify(evt))) {
         set_status(SubscriptionStatus_ERROR);
     }
@@ -834,11 +834,11 @@ vlg::RetCode subscription_int::send_start_request()
     return cdrs_res;
 }
 
-vlg::RetCode subscription_int::send_start_response()
+vlg::RetCode subscription_impl::send_start_response()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
-    DECLINITH_GBB(gbb, BLZ_BUFF_DEF_SZ)
+    DECLINITH_GBB(gbb, VLG_BUFF_DEF_SZ)
     build_PKT_SBSRES(sbresl_,
                      last_blzcod_,
                      reqid_,
@@ -847,7 +847,7 @@ vlg::RetCode subscription_int::send_start_response()
     gbb->flip();
     RETURN_IF_NOT_OK(conn_.pkt_snd_q().put(&gbb))
     selector_event *evt = new selector_event(
-        BLZ_SELECTOR_Evt_SendPacket, &conn_);
+        VLG_SELECTOR_Evt_SendPacket, &conn_);
     cdrs_res = peer_.get_selector().evt_enqueue_and_notify(evt);
     if(cdrs_res) {
         set_status(SubscriptionStatus_ERROR);
@@ -856,12 +856,12 @@ vlg::RetCode subscription_int::send_start_response()
     return cdrs_res;
 }
 
-vlg::RetCode subscription_int::send_event(const subscription_event_int
-                                            *sbs_evt)
+vlg::RetCode subscription_impl::send_event(const subscription_event_impl
+                                           *sbs_evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, sbs_evt:%p)", __func__, this, sbs_evt))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
-    DECLINITH_GBB(gbb, BLZ_BUFF_DEF_SZ)
+    DECLINITH_GBB(gbb, VLG_BUFF_DEF_SZ)
     build_PKT_SBSEVT(sbsid_,
                      sbs_evt->sbs_evttype_,
                      sbs_evt->sbs_act_,
@@ -882,7 +882,7 @@ vlg::RetCode subscription_int::send_event(const subscription_event_int
     gbb->flip();
     RETURN_IF_NOT_OK(conn_.pkt_snd_q().put(&gbb))
     selector_event *evt = new selector_event(
-        BLZ_SELECTOR_Evt_SendPacket, &conn_);
+        VLG_SELECTOR_Evt_SendPacket, &conn_);
     set_sbs_to_ack_evt_id(sbs_evt->sbs_evtid_);
     IFLOG(dbg(TH_ID, LS_SBS"[sbsid:[%d] - sbs event[%u] set to ack]", sbsid_,
               srv_sbs_to_ack_evtid_))
@@ -894,18 +894,18 @@ vlg::RetCode subscription_int::send_event(const subscription_event_int
     return cdrs_res;
 }
 
-vlg::RetCode subscription_int::send_event_ack()
+vlg::RetCode subscription_impl::send_event_ack()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
-    DECLINITH_GBB(gbb, BLZ_BUFF_DEF_SZ)
+    DECLINITH_GBB(gbb, VLG_BUFF_DEF_SZ)
     build_PKT_SBSACK(sbsid_,
                      cli_last_evt_->sbs_evtid_,
                      gbb);
     gbb->flip();
     RETURN_IF_NOT_OK(conn_.pkt_snd_q().put(&gbb))
     selector_event *evt = new selector_event(
-        BLZ_SELECTOR_Evt_SendPacket, &conn_);
+        VLG_SELECTOR_Evt_SendPacket, &conn_);
     cdrs_res = peer_.get_selector().evt_enqueue_and_notify(evt);
     if(cdrs_res) {
         set_status(SubscriptionStatus_ERROR);
@@ -914,10 +914,10 @@ vlg::RetCode subscription_int::send_event_ack()
     return cdrs_res;
 }
 
-// BLZ_SUBSCRIPTION ASYNCH SENDING
+// VLG_SUBSCRIPTION ASYNCH SENDING
 
-vlg::RetCode subscription_int::store_sbs_evt_srv_asynch(subscription_event_int
-                                                          *evt)
+vlg::RetCode subscription_impl::store_sbs_evt_srv_asynch(subscription_event_impl
+                                                         *evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, evt:%p)", __func__, this, evt))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
@@ -1046,8 +1046,8 @@ vlg::RetCode subscription_int::store_sbs_evt_srv_asynch(subscription_event_int
     return cdrs_res;
 }
 
-vlg::RetCode subscription_int::consume_sbs_evt_srv_asynch(
-    subscription_event_int **evt_out)
+vlg::RetCode subscription_impl::consume_sbs_evt_srv_asynch(
+    subscription_event_impl **evt_out)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, evt_out:%p)", __func__, this, evt_out))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
@@ -1105,13 +1105,13 @@ vlg::RetCode subscription_int::consume_sbs_evt_srv_asynch(
     return cdrs_res;
 }
 
-vlg::RetCode subscription_int::accept_event(subscription_event_int *sbs_evt)
+vlg::RetCode subscription_impl::accept_event(subscription_event_impl *sbs_evt)
 {
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode subscription_int::submit_live_event(subscription_event_int
-                                                   *sbs_evt)
+vlg::RetCode subscription_impl::submit_live_event(subscription_event_impl
+                                                  *sbs_evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, sbs_evt:%p)",
               __func__,
@@ -1153,12 +1153,12 @@ vlg::RetCode subscription_int::submit_live_event(subscription_event_int
     return cdrs_res;
 }
 
-// BLZ_SUBSCRIPTION RECVING METHS
+// VLG_SUBSCRIPTION RECVING METHS
 
 /*Client only*/
-vlg::RetCode subscription_int::receive_event(const blz_hdr_rec *pkt_hdr,
-                                               vlg::grow_byte_buffer *pkt_body,
-                                               subscription_event_int *sbs_evt)
+vlg::RetCode subscription_impl::receive_event(const vlg_hdr_rec *pkt_hdr,
+                                              vlg::grow_byte_buffer *pkt_body,
+                                              subscription_event_impl *sbs_evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(pkt_hdr:%p, pkt_body:%p, sbs_evt:%p)",
               __func__,
@@ -1221,7 +1221,7 @@ vlg::RetCode subscription_int::receive_event(const blz_hdr_rec *pkt_hdr,
 }
 
 /*Server only*/
-vlg::RetCode subscription_int::receive_event_ack(const blz_hdr_rec *hdr)
+vlg::RetCode subscription_impl::receive_event_ack(const vlg_hdr_rec *hdr)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     IFLOG(dbg(TH_ID, LS_SBS"[sbsid:[%d] - sbs event[%u] ack received]", sbsid_,
@@ -1229,7 +1229,7 @@ vlg::RetCode subscription_int::receive_event_ack(const blz_hdr_rec *hdr)
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
     pthread_rwlock_wrlock(&lock_srv_sbs_rep_asynch_);
     set_sbs_last_ack_evt_id();
-    subscription_event_int *sbs_evt = NULL;
+    subscription_event_impl *sbs_evt = NULL;
     if(!initial_query_ended_) {
         cdrs_res = submit_dwnl_event();
     }
@@ -1271,12 +1271,12 @@ vlg::RetCode subscription_int::receive_event_ack(const blz_hdr_rec *hdr)
 }
 
 /*Server only*/
-vlg::RetCode subscription_int::submit_dwnl_event()
+vlg::RetCode subscription_impl::submit_dwnl_event()
 {
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     per_nclassid_helper_rec *sdr = NULL;
-    subscription_event_int *new_dwnl_sbs_event = NULL;
+    subscription_event_impl *new_dwnl_sbs_event = NULL;
     const entity_manager &bem = peer_.get_em();
     nclass *dwnl_obj = NULL;
     unsigned int ts0 = 0, ts1 = 0;
@@ -1373,16 +1373,16 @@ vlg::RetCode subscription_int::submit_dwnl_event()
     return cdrs_res;
 }
 
-vlg::RetCode subscription_int::execute_initial_query()
+vlg::RetCode subscription_impl::execute_initial_query()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
     const entity_desc *class_desc = NULL;
     if(!(cdrs_res = bem_.get_entity_descriptor(nclassid_, &class_desc))) {
         if(class_desc->is_persistent()) {
-            persistence_driver_int *driv = NULL;
+            persistence_driver_impl *driv = NULL;
             if((driv = peer_.get_pers_mng().available_driver(nclassid_))) {
-                persistence_connection_int *conn = NULL;
+                persistence_connection_impl *conn = NULL;
                 if((conn = driv->available_connection(nclassid_))) {
                     vlg::ascii_string qry_s;
                     qry_s.assign("select * from ");
@@ -1437,7 +1437,7 @@ vlg::RetCode subscription_int::execute_initial_query()
 }
 
 
-vlg::RetCode subscription_int::safe_submit_dwnl_event()
+vlg::RetCode subscription_impl::safe_submit_dwnl_event()
 {
     pthread_rwlock_wrlock(&lock_srv_sbs_rep_asynch_);
     vlg::RetCode cdrs_res = submit_dwnl_event();
@@ -1445,10 +1445,10 @@ vlg::RetCode subscription_int::safe_submit_dwnl_event()
     return cdrs_res;
 }
 
-// BLZ_SUBSCRIPTION EVENT MNGMNT
+// VLG_SUBSCRIPTION EVENT MNGMNT
 
-vlg::RetCode subscription_int::await_for_next_event(
-    subscription_event_int **sbs_evt,
+vlg::RetCode subscription_impl::await_for_next_event(
+    subscription_event_impl **sbs_evt,
     time_t sec,
     long nsec)
 {
@@ -1460,7 +1460,7 @@ vlg::RetCode subscription_int::await_for_next_event(
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_BADSTTS;
     }
-    while(cli_evt_sts_ != BLZ_SBS_Evt_Rdy) {
+    while(cli_evt_sts_ != VLG_SBS_Evt_Rdy) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
@@ -1482,7 +1482,7 @@ vlg::RetCode subscription_int::await_for_next_event(
     return cdrs_res;
 }
 
-vlg::RetCode subscription_int::ack_event()
+vlg::RetCode subscription_impl::ack_event()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
@@ -1499,7 +1499,7 @@ vlg::RetCode subscription_int::ack_event()
     return cdrs_res;
 }
 
-vlg::RetCode subscription_int::consume_event(subscription_event_int **sbs_evt)
+vlg::RetCode subscription_impl::consume_event(subscription_event_impl **sbs_evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
@@ -1525,11 +1525,11 @@ vlg::RetCode subscription_int::consume_event(subscription_event_int **sbs_evt)
     return cdrs_res;
 }
 
-vlg::RetCode subscription_int::ack_event_priv()
+vlg::RetCode subscription_impl::ack_event_priv()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
-    if(cli_evt_sts_ != BLZ_SBS_Evt_ToAck || !cli_last_evt_) {
+    if(cli_evt_sts_ != VLG_SBS_Evt_ToAck || !cli_last_evt_) {
         IFLOG(wrn(TH_ID, LS_CLO "%s() - cli_last_evt_[%p] evt_status[%d]",
                   __func__,
                   &cli_last_evt_,
@@ -1556,40 +1556,40 @@ vlg::RetCode subscription_int::ack_event_priv()
     return cdrs_res;
 }
 
-vlg::RetCode subscription_int::evt_reset()
+vlg::RetCode subscription_impl::evt_reset()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    cli_evt_sts_ = BLZ_SBS_Evt_Rst;
+    cli_evt_sts_ = VLG_SBS_Evt_Rst;
     CHK_MON_ERR_0(notify_all)
     IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode subscription_int::evt_ready()
+vlg::RetCode subscription_impl::evt_ready()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    cli_evt_sts_ = BLZ_SBS_Evt_Rdy;
+    cli_evt_sts_ = VLG_SBS_Evt_Rdy;
     CHK_MON_ERR_0(notify_all)
     IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode subscription_int::evt_to_ack()
+vlg::RetCode subscription_impl::evt_to_ack()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    cli_evt_sts_ = BLZ_SBS_Evt_ToAck;
+    cli_evt_sts_ = VLG_SBS_Evt_ToAck;
     CHK_MON_ERR_0(notify_all)
     IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
     return vlg::RetCode_OK;
 }
 
-void subscription_int::on_start()
+void subscription_impl::on_start()
 {}
 
-void subscription_int::on_stop()
+void subscription_impl::on_stop()
 {}
 
-void subscription_int::on_event(subscription_event_int &sbs_evt)
+void subscription_impl::on_event(subscription_event_impl &sbs_evt)
 {}
 
 }

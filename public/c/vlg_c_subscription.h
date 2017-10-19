@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef BLZ_C_SUBSCRIPTION_H_
-#define BLZ_C_SUBSCRIPTION_H_
+#ifndef VLG_C_SUBSCRIPTION_H_
+#define VLG_C_SUBSCRIPTION_H_
 #include "vlg.h"
 
 #if defined(__cplusplus)
@@ -54,7 +54,7 @@ typedef void(*subscription_event_notify_wr)(subscription_wr sbs,
                                             subscription_event_wr sbs_evt,
                                             void *ud);
 
-    subscription_wr subscription_create(void);
+subscription_wr subscription_create(void);
 void            subscription_destroy(subscription_wr sbs);
 
 RetCode subscription_bind(subscription_wr sbs,

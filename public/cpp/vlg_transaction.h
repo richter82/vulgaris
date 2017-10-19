@@ -19,9 +19,9 @@
  *
  */
 
-#ifndef BLZ_CPP_TRANSACTION_H_
-#define BLZ_CPP_TRANSACTION_H_
-#include "blaze_memory.h"
+#ifndef VLG_CPP_TRANSACTION_H_
+#define VLG_CPP_TRANSACTION_H_
+#include "vlg_memory.h"
 
 namespace vlg {
 
@@ -136,9 +136,9 @@ class transaction : public vlg::collectable {
         vlg::RetCode  prepare();
 
         vlg::RetCode  prepare(TransactionRequestType  tx_request_type,
-                                Action                  tx_action,
-                                const nclass         *sending_obj = NULL,
-                                const nclass         *current_obj = NULL);
+                              Action                  tx_action,
+                              const nclass         *sending_obj = NULL,
+                              const nclass         *current_obj = NULL);
 
     public:
         vlg::RetCode  send();

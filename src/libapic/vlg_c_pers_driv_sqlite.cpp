@@ -19,8 +19,8 @@
  *
  */
 
-#include "blaze_c_pers_driv_sqlite.h"
-#include "blz_drv_sqlite.h"
+#include "vlg_c_pers_driv_sqlite.h"
+#include "vlg_drv_sqlite.h"
 
 namespace vlg {
 extern "C" {
@@ -37,7 +37,7 @@ extern "C" {
 
     const char *persistence_driver_sqlite_get_name()
     {
-        return BLZ_PERS_DRIV_SQLITE_NAME;
+        return VLG_PERS_DRIV_SQLITE_NAME;
     }
 
 }

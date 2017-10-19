@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef BLZ_C_PERS_DRIV_SQLITE_H_
-#define BLZ_C_PERS_DRIV_SQLITE_H_
+#ifndef VLG_C_PERS_DRIV_SQLITE_H_
+#define VLG_C_PERS_DRIV_SQLITE_H_
 #include "vlg.h"
 
 #if defined(__cplusplus)

@@ -19,22 +19,22 @@
  *
  */
 
-#ifndef BLZ_TOOLKIT_GLOB_H
-#define BLZ_TOOLKIT_GLOB_H
+#ifndef VLG_TOOLKIT_GLOB_H
+#define VLG_TOOLKIT_GLOB_H
 
 #include <QtCore>
 #include <QVector>
 
-#include "blz_peer_int.h"
-#include "blz_connection_int.h"
-#include "blz_transaction_int.h"
-#include "blz_subscription_int.h"
+#include "vlg_peer_impl.h"
+#include "vlg_connection_impl.h"
+#include "vlg_transaction_impl.h"
+#include "vlg_subscription_impl.h"
 
 #include <QMainWindow>
 #include <QtGui>
 #include <QtWidgets>
 
-#define KEY_WINDOW      "blz_toolkit_window"
+#define KEY_WINDOW      "vlg_toolkit_window"
 #define KEY_POSITION    "position"
 #define KEY_SIZE        "size"
 
@@ -57,9 +57,9 @@ if(sprintf_dbg >= GEN_HDR_FIDX_BUFF){                    \
 //-----------------------------------------------------------------------------
 // INTERNAL TIMEOUT VALUE FOR AWAIT OPERATIONS (SECONDS)
 //-----------------------------------------------------------------------------
-#define BLZ_TKT_INT_AWT_TIMEOUT 4
-#define BLZ_TKT_INT_REPT_SHOT_TIMER_CAPTMSG_FLAS_MSEC 150
-#define BLZ_TKT_INT_SINGL_SHOT_TIMER_CAPTMSG_RST_MSEC 4000
+#define VLG_TKT_INT_AWT_TIMEOUT 4
+#define VLG_TKT_INT_REPT_SHOT_TIMER_CAPTMSG_FLAS_MSEC 150
+#define VLG_TKT_INT_SINGL_SHOT_TIMER_CAPTMSG_RST_MSEC 4000
 
 void FillQstring_FldValue(const char *fld_ptr,
                           const vlg::member_desc *mdesc,
@@ -80,6 +80,6 @@ class entity_desc_impl {
 };
 }
 
-struct BLZ_SBS_COL_DATA_ENTRY;
+struct VLG_SBS_COL_DATA_ENTRY;
 
-#endif // BLZ_TOOLKIT_GLOB_H
+#endif // VLG_TOOLKIT_GLOB_H

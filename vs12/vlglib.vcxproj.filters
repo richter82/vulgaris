@@ -1,78 +1,93 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
+    <Filter Include="h">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\blzpeerlib\blz_peer_pers_sbs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\blzpeerlib\blz_connection_int.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\blzpeerlib\blz_peer_int.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\blzpeerlib\blz_acceptor_int.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\blzpeerlib\blz_connection_proto.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\blzpeerlib\blz_subscription_int.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\blzpeerlib\blz_transaction_int.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\blzpeerlib\blz_restore.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\blzpeerlib\blz_peer_automa.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\blzpeerlib\blz_selector.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClInclude Include="..\src\libvlg\vlg_subscription_impl.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\libvlg\vlg_transaction_impl.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\libvlg\vlg_acceptor_impl.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\libvlg\vlg_connection_impl.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\libvlg\vlg_peer_automa.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\libvlg\vlg_peer_impl.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\libvlg\vlg_pers_impl.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\libvlg\vlg_proto.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\libvlg\vlg_selector.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vlg_globint.h">
+      <Filter>h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\blz_transaction_int.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\blz_acceptor_int.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\blz_connection_int.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\blz_peer_int.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\blz_subscription_int.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\blz_glob_int.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\blz_proto.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\blz_selector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\blz_peer_automa.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+    <ClCompile Include="..\src\libvlg\vlg_model.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\libvlg\vlg_model_utl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\libvlg\vlg_peer_automa.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\libvlg\vlg_peer_impl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\libvlg\vlg_peer_pers_sbs.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\libvlg\vlg_pers_impl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\libvlg\vlg_pers_mng.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\libvlg\vlg_restore.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\libvlg\vlg_selector.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\libvlg\vlg_subscription_impl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\libvlg\vlg_transaction_impl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\libvlg\vlg_acceptor.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\libvlg\vlg_connection_impl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\libvlg\vlg_connection_proto.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -19,9 +19,9 @@
  *
  */
 
-#include "blaze_logger.h"
-#include "blaze_model.h"
-#include "blz_glob_int.h"
+#include "vlg_logger.h"
+#include "vlg_model.h"
+#include "vlg_globint.h"
 
 #define LG_BUF_LEN_16K 16384
 
@@ -31,20 +31,20 @@ extern bool deflt_log_loaded;
 
 namespace vlg {
 
-vlg::hash_map *blz_lgname_lg = NULL;
-vlg::hash_map &get_blz_logger_map()
+vlg::hash_map *vlg_lgname_lg = NULL;
+vlg::hash_map &get_vlg_logger_map()
 {
-    if(blz_lgname_lg) {
-        return *blz_lgname_lg;
+    if(vlg_lgname_lg) {
+        return *vlg_lgname_lg;
     }
-    if(!(blz_lgname_lg = new vlg::hash_map(vlg::sngl_ptr_obj_mng(),
-                                             vlg::sngl_cstr_obj_mng()))) {
-        EXIT_ACTION("get_blz_logger_map() - failed create blz_lgname_lg map\n")
+    if(!(vlg_lgname_lg = new vlg::hash_map(vlg::sngl_ptr_obj_mng(),
+                                           vlg::sngl_cstr_obj_mng()))) {
+        EXIT_ACTION("get_vlg_logger_map() - failed create vlg_lgname_lg map\n")
     }
-    if(blz_lgname_lg->init(HM_SIZE_NANO)) {
-        EXIT_ACTION("get_blz_logger_map() - failed init blz_lgname_lg map\n")
+    if(vlg_lgname_lg->init(HM_SIZE_NANO)) {
+        EXIT_ACTION("get_vlg_logger_map() - failed init vlg_lgname_lg map\n")
     }
-    return *blz_lgname_lg;
+    return *vlg_lgname_lg;
 }
 
 nclass_logger *get_nclass_logger(const char *logger_name)
@@ -54,7 +54,7 @@ nclass_logger *get_nclass_logger(const char *logger_name)
         vlg::deflt_log_loaded = true;
     }
     nclass_logger *b_log = NULL;
-    IF_RetCode_OK_CMD(get_blz_logger_map().get(logger_name, &b_log), return b_log)
+    IF_RetCode_OK_CMD(get_vlg_logger_map().get(logger_name, &b_log), return b_log)
     vlg::logger *log = NULL;
     vlg::logger::get_logger(logger_name, &log);
     if(!log) {
@@ -63,14 +63,14 @@ nclass_logger *get_nclass_logger(const char *logger_name)
     if(log) {
         b_log = new nclass_logger();
         b_log->set_rep_from(*log);
-        get_blz_logger_map().put(logger_name, &b_log);
+        get_vlg_logger_map().put(logger_name, &b_log);
         return b_log;
     }
     return NULL;
 }
 
 //-----------------------------
-// BLZ_LOGGER
+// VLG_LOGGER
 //-----------------------------
 
 nclass_logger::nclass_logger()

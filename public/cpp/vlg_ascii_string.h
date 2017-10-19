@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef BLZ_ASCIISTR_H_
-#define BLZ_ASCIISTR_H_
+#ifndef VLG_ASCIISTR_H_
+#define VLG_ASCIISTR_H_
 #include "vlg.h"
 
 namespace vlg {

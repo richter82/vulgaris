@@ -22,15 +22,15 @@
 #ifndef NEWCONNDIALOG_H
 #define NEWCONNDIALOG_H
 
-#include "ui_blz_toolkit_newconndlg.h"
-#include "blz_toolkit_glob.h"
+#include "ui_vlg_toolkit_newconndlg.h"
+#include "vlg_toolkit_glob.h"
 
-class blz_toolkit_NewConnDlg : public QDialog {
+class vlg_toolkit_NewConnDlg : public QDialog {
         Q_OBJECT
 
     public:
-        explicit blz_toolkit_NewConnDlg(QWidget *parent = 0);
-        ~blz_toolkit_NewConnDlg();
+        explicit vlg_toolkit_NewConnDlg(QWidget *parent = 0);
+        ~vlg_toolkit_NewConnDlg();
 
     public:
         Ui::NewConnDialog *ui;

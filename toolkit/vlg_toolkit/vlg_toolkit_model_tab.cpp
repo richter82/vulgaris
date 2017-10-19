@@ -19,14 +19,14 @@
  *
  */
 
-#include "blz_toolkit_model_tab.h"
-#include "ui_blz_toolkit_model_tab.h"
+#include "vlg_toolkit_model_tab.h"
+#include "ui_vlg_toolkit_model_tab.h"
 
 //------------------------------------------------------------------------------
-// blz_toolkit_Model_mdl
+// vlg_toolkit_Model_mdl
 //------------------------------------------------------------------------------
 
-blz_toolkit_Model_mdl::blz_toolkit_Model_mdl(blz_toolkit_blz_model &wrapped_mdl,
+vlg_toolkit_Model_mdl::vlg_toolkit_Model_mdl(vlg_toolkit_vlg_model &wrapped_mdl,
                                              QObject *parent) :
     wrapped_mdl_(wrapped_mdl),
     QSortFilterProxyModel(parent)
@@ -34,33 +34,33 @@ blz_toolkit_Model_mdl::blz_toolkit_Model_mdl(blz_toolkit_blz_model &wrapped_mdl,
     setSourceModel(&wrapped_mdl);
 }
 
-blz_toolkit_blz_model &blz_toolkit_Model_mdl::wrapped_mdl()
+vlg_toolkit_vlg_model &vlg_toolkit_Model_mdl::wrapped_mdl()
 {
     return wrapped_mdl_;
 }
 
 
 //------------------------------------------------------------------------------
-// blz_toolkit_model_tab
+// vlg_toolkit_model_tab
 //------------------------------------------------------------------------------
 
-blz_toolkit_model_tab::blz_toolkit_model_tab(blz_toolkit_blz_model
-                                             &blz_model_loaded_model, QWidget *parent) :
-    b_mdl_(blz_model_loaded_model, this),
+vlg_toolkit_model_tab::vlg_toolkit_model_tab(vlg_toolkit_vlg_model
+                                             &vlg_model_loaded_model, QWidget *parent) :
+    b_mdl_(vlg_model_loaded_model, this),
     QWidget(parent),
-    ui(new Ui::blz_toolkit_model_tab)
+    ui(new Ui::vlg_toolkit_model_tab)
 {
     ui->setupUi(this);
-    b_mdl_.setSourceModel(&blz_model_loaded_model);
+    b_mdl_.setSourceModel(&vlg_model_loaded_model);
     ui->peer_model_tree_main_view->setModel(&b_mdl_);
 }
 
-blz_toolkit_model_tab::~blz_toolkit_model_tab()
+vlg_toolkit_model_tab::~vlg_toolkit_model_tab()
 {
     delete ui;
 }
 
-void blz_toolkit_model_tab::On_BLZ_MODEL_Update()
+void vlg_toolkit_model_tab::On_VLG_MODEL_Update()
 {
     ui->entities_no_label_disp->setText(QString("%1").arg(
                                             b_mdl_.wrapped_mdl().bem().entity_count()));
@@ -69,7 +69,7 @@ void blz_toolkit_model_tab::On_BLZ_MODEL_Update()
     ui->class_no_label_disp->setText(QString("%1").arg(
                                          b_mdl_.wrapped_mdl().bem().nclass_count()));
 }
-blz_toolkit_Model_mdl &blz_toolkit_model_tab::b_mdl()
+vlg_toolkit_Model_mdl &vlg_toolkit_model_tab::b_mdl()
 {
     return b_mdl_;
 }

@@ -23,10 +23,10 @@
 MODEL TESTS
 ******************************************/
 #include <iostream>
-#include "blz_model_sample.h"
+#include "vlg_model_sample.h"
 
 using namespace vlg;
-using namespace blz_model_sample;
+using namespace vlg_model_sample;
 
 static void  TypeSize(FILE *f)
 {
@@ -46,7 +46,7 @@ static void  TypeSize(FILE *f)
 
 int main(int argc, char *argv[])
 {
-    entity_manager *em = get_em_blz_model_sample();
+    entity_manager *em = get_em_vlg_model_sample();
     USER u;
 
     u.set_field_by_name("surname", "this is a test", strlen("this is a test"));

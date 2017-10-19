@@ -1,18 +1,18 @@
 //
-//  blz_os_support.h
+//  vlg_os_support.h
 //
 //  Created by Giuseppe Baccini on 27/04/15.
 //  Copyright (c) 2015 vlg. All rights reserved.
 //
 
-#ifndef blz_os_support_h
-#define blz_os_support_h
+#ifndef vlg_os_support_h
+#define vlg_os_support_h
 
-#import "blaze_c_peer.h"
-#import "blaze_c_connection.h"
-#import "blaze_c_transaction.h"
-#import "blaze_c_subscription.h"
-#import "blaze_c_persistence.h"
+#import "vlg_c_peer.h"
+#import "vlg_c_connection.h"
+#import "vlg_c_transaction.h"
+#import "vlg_c_subscription.h"
+#import "vlg_c_persistence.h"
 
 /*******************************************************************************
  peer

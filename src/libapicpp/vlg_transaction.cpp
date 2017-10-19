@@ -19,10 +19,10 @@
  *
  */
 
-#include "blaze_connection.h"
-#include "blaze_transaction.h"
-#include "blz_connection_int.h"
-#include "blz_transaction_int.h"
+#include "vlg_connection.h"
+#include "vlg_transaction.h"
+#include "vlg_connection_impl.h"
+#include "vlg_transaction_impl.h"
 
 namespace vlg {
 
@@ -71,7 +71,7 @@ class transaction_impl {
         //-----------------------------
         // callbacks
         //-----------------------------
-        static transaction_int *blz_client_tx_factory_timpl(connection_int &connection,
+        static transaction_int *vlg_client_tx_factory_timpl(connection_int &connection,
                                                             void *ud) {
             transaction *publ = static_cast<transaction *>(ud);
             return new timpl_transaction_int_client(connection, *publ);
@@ -151,7 +151,7 @@ class transaction_impl {
             if(conn.get_connection_type() == ConnectionType_OUTGOING) {
                 transaction_int *t_int = NULL;
                 if((cdrs_res = conn.get_internal()->new_transaction(&t_int,
-                                                                    blz_client_tx_factory_timpl,
+                                                                    vlg_client_tx_factory_timpl,
                                                                     true,
                                                                     &publ_)) == vlg::RetCode_OK) {
                     int_ = t_int;
@@ -458,10 +458,10 @@ vlg::RetCode transaction::prepare()
 }
 
 vlg::RetCode transaction::prepare(TransactionRequestType
-                                    tx_request_type,
-                                    Action tx_action,
-                                    const nclass *sending_obj,
-                                    const nclass *current_obj)
+                                  tx_request_type,
+                                  Action tx_action,
+                                  const nclass *sending_obj,
+                                  const nclass *current_obj)
 {
     return impl_->get_tx()->prepare(tx_request_type,
                                     tx_action,

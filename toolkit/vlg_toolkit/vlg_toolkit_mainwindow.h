@@ -19,29 +19,29 @@
  *
  */
 
-#ifndef BLZ_TOOLKIT_MAINWINDOW_H
-#define BLZ_TOOLKIT_MAINWINDOW_H
+#ifndef VLG_TOOLKIT_MAINWINDOW_H
+#define VLG_TOOLKIT_MAINWINDOW_H
 
-#include "blz_toolkit_core_util.h"
-#include "blz_toolkit_blz_model.h"
-#include "blz_toolkit_peer.h"
-#include "blz_toolkit_newconndlg.h"
-#include "blz_toolkit_model_tab.h"
-#include "blz_toolkit_connection.h"
+#include "vlg_toolkit_core_util.h"
+#include "vlg_toolkit_vlg_model.h"
+#include "vlg_toolkit_peer.h"
+#include "vlg_toolkit_newconndlg.h"
+#include "vlg_toolkit_model_tab.h"
+#include "vlg_toolkit_connection.h"
 
 namespace Ui {
-class blz_toolkit_MainWindow;
+class vlg_toolkit_MainWindow;
 }
 
-class blz_toolkit_MainWindow : public QMainWindow {
+class vlg_toolkit_MainWindow : public QMainWindow {
         Q_OBJECT
 
     protected:
         void closeEvent(QCloseEvent *event);
 
     public:
-        explicit blz_toolkit_MainWindow(QWidget *parent = 0);
-        ~blz_toolkit_MainWindow();
+        explicit vlg_toolkit_MainWindow(QWidget *parent = 0);
+        ~vlg_toolkit_MainWindow();
 
     public:
         void InitGuiConfig();
@@ -69,20 +69,20 @@ class blz_toolkit_MainWindow : public QMainWindow {
     public slots:
         void OnLogEvent(vlg::TraceLVL tlvl, const QString &msg);
         void OnPeer_status_change(vlg::PeerStatus status);
-        void On_BLZ_MODEL_Update();
+        void On_VLG_MODEL_Update();
         void OnSetInfoMsg(const QString &msg);
         void OnFlashInfoMsg();
         void OnResetInfoMsg();
 
     signals:
         void Peer_status_change(vlg::PeerStatus status);
-        void BLZ_MODEL_Update_event();
+        void VLG_MODEL_Update_event();
         void SignalNewConnectionTimeout(const QString &msg);
 
     public:
         void EmitPeerStatus(vlg::PeerStatus status);
 
-        friend void blz_toolkit_peer_lfcyc_status_change_hndlr(vlg::peer_automa
+        friend void vlg_toolkit_peer_lfcyc_status_change_hndlr(vlg::peer_automa
                                                                &peer,
                                                                vlg::PeerStatus status,
                                                                void *ud);
@@ -108,8 +108,8 @@ class blz_toolkit_MainWindow : public QMainWindow {
 
     private:
         vlg::RetCode PeerLoadCfgHndl(int pnum,
-                                       const char *param,
-                                       const char *value);
+                                     const char *param,
+                                     const char *value);
 
         /******
         REP
@@ -117,9 +117,9 @@ class blz_toolkit_MainWindow : public QMainWindow {
 
         //peer
     private:
-        blz_tlkt::toolkit_peer  peer_;
+        vlg_tlkt::toolkit_peer  peer_;
 
-        //MODEL: BLZ_MODEL(s) TO LOAD by FILE
+        //MODEL: VLG_MODEL(s) TO LOAD by FILE
     private:
         bool view_model_loaded_;
         QStringListModel blzmodel_load_list_model_;
@@ -129,16 +129,16 @@ class blz_toolkit_MainWindow : public QMainWindow {
         QStringListModel pers_dri_file_load_list_model_;
 
     private:
-        //MODEL: BLZ_MODEL(s) LOADED.
-        blz_toolkit_blz_model blz_model_loaded_model_;
+        //MODEL: VLG_MODEL(s) LOADED.
+        vlg_toolkit_vlg_model vlg_model_loaded_model_;
 
         //business-rep
     private:
-        blz_tlkt::QPlainTextEditApnd pte_apnd_;
+        vlg_tlkt::QPlainTextEditApnd pte_apnd_;
 
         //static gui rep
     private:
-        Ui::blz_toolkit_MainWindow *ui;
+        Ui::vlg_toolkit_MainWindow *ui;
 
     private:
         QTimer reset_info_msg_tim_;
@@ -146,4 +146,4 @@ class blz_toolkit_MainWindow : public QMainWindow {
         int flash_info_msg_val_;
 };
 
-#endif // BLZ_TOOLKIT_MAINWINDOW_H
+#endif // VLG_TOOLKIT_MAINWINDOW_H

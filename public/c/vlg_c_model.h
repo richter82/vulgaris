@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef BLZ_C_MDL_H_
-#define BLZ_C_MDL_H_
+#ifndef VLG_C_MDL_H_
+#define VLG_C_MDL_H_
 #include "vlg.h"
 
 #if defined(__cplusplus)
@@ -39,7 +39,7 @@ const char      *member_desc_get_member_description(member_desc_wr mdesc);
 /*
 Field section
 */
-Type            member_desc_get_field_blz_type(member_desc_wr mdesc);
+Type            member_desc_get_field_vlg_type(member_desc_wr mdesc);
 size_t          member_desc_get_field_offset(member_desc_wr mdesc);
 size_t          member_desc_get_field_type_size(member_desc_wr mdesc);
 size_t          member_desc_get_field_nmemb(member_desc_wr mdesc);

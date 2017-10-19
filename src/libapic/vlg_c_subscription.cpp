@@ -19,8 +19,8 @@
  *
  */
 
-#include "blaze_c_subscription.h"
-#include "blaze_subscription.h"
+#include "vlg_c_subscription.h"
+#include "vlg_subscription.h"
 
 namespace vlg {
 

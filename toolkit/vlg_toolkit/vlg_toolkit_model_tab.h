@@ -19,55 +19,55 @@
  *
  */
 
-#ifndef BLZ_TOOLKIT_MODEL_TAB_H
-#define BLZ_TOOLKIT_MODEL_TAB_H
+#ifndef VLG_TOOLKIT_MODEL_TAB_H
+#define VLG_TOOLKIT_MODEL_TAB_H
 
-#include "blz_toolkit_glob.h"
-#include "blz_toolkit_blz_model.h"
+#include "vlg_toolkit_glob.h"
+#include "vlg_toolkit_vlg_model.h"
 
 //------------------------------------------------------------------------------
-// blz_toolkit_Model_mdl
+// vlg_toolkit_Model_mdl
 //------------------------------------------------------------------------------
 
-class blz_toolkit_Model_mdl : public QSortFilterProxyModel {
+class vlg_toolkit_Model_mdl : public QSortFilterProxyModel {
 
     public:
-        blz_toolkit_Model_mdl(blz_toolkit_blz_model &wrapped_mdl, QObject *parent = 0);
+        vlg_toolkit_Model_mdl(vlg_toolkit_vlg_model &wrapped_mdl, QObject *parent = 0);
 
 
-        blz_toolkit_blz_model &wrapped_mdl();
+        vlg_toolkit_vlg_model &wrapped_mdl();
 
     private:
-        blz_toolkit_blz_model &wrapped_mdl_;
+        vlg_toolkit_vlg_model &wrapped_mdl_;
 };
 
 //------------------------------------------------------------------------------
-// blz_toolkit_model_tab
+// vlg_toolkit_model_tab
 //------------------------------------------------------------------------------
 
 namespace Ui {
-class blz_toolkit_model_tab;
+class vlg_toolkit_model_tab;
 }
 
-class blz_toolkit_model_tab : public QWidget {
+class vlg_toolkit_model_tab : public QWidget {
         Q_OBJECT
 
     public:
-        explicit blz_toolkit_model_tab(blz_toolkit_blz_model &blz_model_loaded_model,
+        explicit vlg_toolkit_model_tab(vlg_toolkit_vlg_model &vlg_model_loaded_model,
                                        QWidget *parent = 0);
-        ~blz_toolkit_model_tab();
+        ~vlg_toolkit_model_tab();
 
-        blz_toolkit_Model_mdl &b_mdl();
+        vlg_toolkit_Model_mdl &b_mdl();
 
 
     public slots:
-        void On_BLZ_MODEL_Update();
+        void On_VLG_MODEL_Update();
 
     private:
-        blz_toolkit_Model_mdl b_mdl_;
+        vlg_toolkit_Model_mdl b_mdl_;
 
     private:
-        Ui::blz_toolkit_model_tab *ui;
+        Ui::vlg_toolkit_model_tab *ui;
 };
 
-#endif // BLZ_TOOLKIT_MODEL_TAB_H
+#endif // VLG_TOOLKIT_MODEL_TAB_H

@@ -19,14 +19,14 @@
  *
  */
 
-#ifndef BLZ_TOOLKIT_CORE_UTIL_H
-#define BLZ_TOOLKIT_CORE_UTIL_H
+#ifndef VLG_TOOLKIT_CORE_UTIL_H
+#define VLG_TOOLKIT_CORE_UTIL_H
 
-#include "blz_toolkit_glob.h"
+#include "vlg_toolkit_glob.h"
 
-class blz_toolkit_MainWindow;
+class vlg_toolkit_MainWindow;
 
-namespace blz_tlkt {
+namespace vlg_tlkt {
 
 //-----------------------------------------------------------------------------
 // QPlainTextEditApnd
@@ -36,10 +36,10 @@ class QPlainTextEditApnd : public QObject, public vlg::appender {
 
         //---ctors
     public:
-        QPlainTextEditApnd(blz_toolkit_MainWindow      *btmw);
+        QPlainTextEditApnd(vlg_toolkit_MainWindow      *btmw);
 
-        blz_toolkit_MainWindow *btmw() const;
-        void setBtmw(blz_toolkit_MainWindow *btmw);
+        vlg_toolkit_MainWindow *btmw() const;
+        void setBtmw(vlg_toolkit_MainWindow *btmw);
 
 
     signals:
@@ -71,7 +71,7 @@ class QPlainTextEditApnd : public QObject, public vlg::appender {
 
 
     private:
-        blz_toolkit_MainWindow      *btmw_;
+        vlg_toolkit_MainWindow      *btmw_;
 };
 
 //-----------------------------------------------------------------------------
@@ -96,4 +96,4 @@ QPlainTextEditApnd &apnd_;
 
 }
 
-#endif // BLZ_TOOLKIT_CORE_UTIL_H
+#endif // VLG_TOOLKIT_CORE_UTIL_H

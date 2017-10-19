@@ -19,9 +19,9 @@
  *
  */
 
-#ifndef BLZ_TRANSACTION_H_
-#define BLZ_TRANSACTION_H_
-#include "blz_glob_int.h"
+#ifndef VLG_TRANSACTION_H_
+#define VLG_TRANSACTION_H_
+#include "vlg_globint.h"
 
 namespace vlg {
 
@@ -31,23 +31,23 @@ namespace vlg {
 #define TX_NO_OBJ       "NO-OBJ"
 
 //-----------------------------
-// BLZ_TRANSACTION
+// VLG_TRANSACTION
 //-----------------------------
 
-class transaction_int : public vlg::collectable {
-        friend class peer_int;
-        friend class connection_int;
+class transaction_impl : public vlg::collectable {
+        friend class peer_impl;
+        friend class connection_impl;
 
-        typedef void (*transaction_status_change_hndlr)(transaction_int &trans,
+        typedef void (*transaction_status_change_hndlr)(transaction_impl &trans,
                                                         TransactionStatus status,
                                                         void *ud);
 
-        typedef void (*transaction_closure_hndlr)(transaction_int &trans, void *ud);
+        typedef void (*transaction_closure_hndlr)(transaction_impl &trans, void *ud);
 
         //---ctors
     protected:
-        transaction_int(connection_int &conn);
-        virtual ~transaction_int();
+        transaction_impl(connection_impl &conn);
+        virtual ~transaction_impl();
 
     public:
         virtual vlg::collector &get_collector();
@@ -56,8 +56,8 @@ class transaction_int : public vlg::collectable {
         // GETTERS
         //-----------------------------
     public:
-        peer_int                    &peer();
-        connection_int              &get_connection();
+        peer_impl                    &peer();
+        connection_impl              &get_connection();
         TransactionResult           tx_res();
         ProtocolCode                tx_result_code();
         TransactionRequestType      tx_req_type();
@@ -108,9 +108,9 @@ class transaction_int : public vlg::collectable {
         //-----------------------------
     public:
         vlg::RetCode await_for_status_reached_or_outdated(TransactionStatus test,
-                                                            TransactionStatus &current,
-                                                            time_t sec = -1,
-                                                            long nsec = 0);
+                                                          TransactionStatus &current,
+                                                          time_t sec = -1,
+                                                          long nsec = 0);
 
         vlg::RetCode await_for_closure(time_t sec = -1, long nsec = 0);
 
@@ -151,11 +151,11 @@ class transaction_int : public vlg::collectable {
         vlg::RetCode        prepare();
 
         vlg::RetCode        prepare(TransactionRequestType    txtype,
-                                      Action  txactn,
-                                      Encode  clsenc,
-                                      bool    rsclrq,
-                                      const nclass *request_obj = NULL,
-                                      const nclass *current_obj = NULL);
+                                    Action  txactn,
+                                    Encode  clsenc,
+                                    bool    rsclrq,
+                                    const nclass *request_obj = NULL,
+                                    const nclass *current_obj = NULL);
 
         //-----------------------------
         // TX SEND
@@ -194,8 +194,8 @@ class transaction_int : public vlg::collectable {
         //-----------------------------
     private:
 
-        peer_int                &peer_; // associated peer.
-        connection_int          &conn_; // underlying connection.
+        peer_impl                &peer_; // associated peer.
+        connection_impl          &conn_; // underlying connection.
         const entity_manager    &bem_;
 
         tx_id                   txid_;  //(set by client)
