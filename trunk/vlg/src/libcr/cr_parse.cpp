@@ -51,7 +51,7 @@ bool is_comment_line(const char *line)
     }
 }
 
-bool string_is_impl_number(const char *str)
+bool string_is_number(const char *str)
 {
     int i = 0;
     bool lc = false;
