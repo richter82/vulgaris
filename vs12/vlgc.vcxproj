@@ -67,38 +67,38 @@
     <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\blzcompiler\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\blzcompiler\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\blzcompiler\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\blzcompiler\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\blzcompiler\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\blzcompiler\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\blzcompiler\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\blzcompiler\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\contrib\pthread;..\contrib\sqlite</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\libcr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <ExceptionHandling />
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader />
-      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
       <AdditionalDependencies>wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -119,20 +119,20 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\contrib\pthread;..\contrib\sqlite</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\libcr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <ExceptionHandling />
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader />
-      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
       <AdditionalDependencies>wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)blzc.exe</OutputFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <TargetMachine>MachineX64</TargetMachine>
@@ -148,14 +148,14 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\contrib\pthread;..\contrib\sqlite</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\libcr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader />
-      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
       <AdditionalDependencies>wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -179,14 +179,14 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\contrib\pthread;..\contrib\sqlite</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\libcr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader />
-      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
       <AdditionalDependencies>wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -204,43 +204,29 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="blz_model.vcxproj">
-      <Project>{850366a9-57fa-4f2d-b210-5f1ea2a2b5a8}</Project>
-      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="blz_peer_lib.vcxproj">
-      <Project>{d8e08f30-6822-4398-9c58-9589811537d8}</Project>
-      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="blz_persistence.vcxproj">
-      <Project>{b34a16af-5db0-4994-a397-e340070a641c}</Project>
-      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="crlib.vcxproj">
-      <Project>{c2dc0e98-a7ef-4ab6-bd82-de4bf7a0b56c}</Project>
-      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Library Include="..\contrib_lib\nt10_x64\pthreadVC2.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </Library>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\blzc\blz_compiler.cpp" />
-    <ClCompile Include="..\src\blzc\blz_comp_gen_cpp_headr.cpp" />
-    <ClCompile Include="..\src\blzc\blz_comp_gen_cpp_impl.cpp" />
-    <ClCompile Include="..\src\blzc\blz_comp_gen_java.cpp" />
-    <ClCompile Include="..\src\blzc\blz_comp_parser.cpp" />
-    <ClCompile Include="..\src\blzc\blz_comp_utils.cpp" />
+    <ClInclude Include="..\src\vlgc\vlg_compiler.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\blzc\blz_compiler.h" />
+    <ClCompile Include="..\src\vlgc\vlg_compiler.cpp" />
+    <ClCompile Include="..\src\vlgc\vlg_comp_gen_cpp_headr.cpp" />
+    <ClCompile Include="..\src\vlgc\vlg_comp_gen_cpp_impl.cpp" />
+    <ClCompile Include="..\src\vlgc\vlg_comp_gen_java.cpp" />
+    <ClCompile Include="..\src\vlgc\vlg_comp_parser.cpp" />
+    <ClCompile Include="..\src\vlgc\vlg_comp_utils.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="cr.vcxproj">
+      <Project>{c2dc0e98-a7ef-4ab6-bd82-de4bf7a0b56c}</Project>
+    </ProjectReference>
+    <ProjectReference Include="vlg.vcxproj">
+      <Project>{d8e08f30-6822-4398-9c58-9589811537d8}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -45,7 +45,7 @@ vlg::RetCode VLG_PERS_MNG_ReadUInt(unsigned long &lnum,
     while(!tknz.next_token(tkn, CR_DF_DLMT, true)) {
         CR_SKIP_SP_TABS(tkn)
         CR_DO_CMD_ON_NEWLINE(tkn, return vlg::RetCode_BADCFG)
-        if(vlg::string_is_impl_number(tkn.internal_buff())) {
+        if(vlg::string_is_number(tkn.internal_buff())) {
             uint = atoi(tkn.internal_buff());
         } else {
             return vlg::RetCode_KO;
@@ -526,7 +526,7 @@ vlg::RetCode persistence_manager_impl::parse_class_mapping_cfg(
             break;
         } else {
             RETURN_IF_NOT_OK(nclass_id.assign(tkn))
-            if(!vlg::string_is_impl_number(nclass_id.internal_buff())) {
+            if(!vlg::string_is_number(nclass_id.internal_buff())) {
                 IFLOG(cri(TH_ID, LS_PRS "%s() - line:%d, bad nclass_id:%s", __func__, lnum,
                           nclass_id.internal_buff()))
                 return vlg::RetCode_BADCFG;
