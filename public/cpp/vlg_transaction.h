@@ -29,8 +29,8 @@ namespace vlg {
 */
 class transaction_factory {
     public:
-        static transaction_int  *tx_factory_int_f(connection_int &conn,
-                                                  void *ud);
+        static transaction_impl  *tx_factory_impl_f(connection_impl &conn,
+                                                    void *ud);
 
     public:
         transaction_factory();
@@ -148,8 +148,8 @@ class transaction : public vlg::collectable {
         virtual void    on_close();
 
     public:
-        transaction_int *get_internal();
-        void             set_internal(transaction_int *tx);
+        transaction_impl *get_implernal();
+        void             set_implernal(transaction_impl *tx);
 
     private:
         transaction_impl *impl_;

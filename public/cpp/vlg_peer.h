@@ -209,7 +209,7 @@ class peer {
         on_new_incoming_connection(connection &incoming_connection);
 
     public:
-        peer_int *get_internal();
+        peer_impl *get_implernal();
 
     private:
         peer_impl *impl_;

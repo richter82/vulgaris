@@ -56,7 +56,7 @@ extern "C" {
 VLG_PERS_DRIV_SQLITE ENTRY POINT
 *******************************/
 extern "C" {
-    EXP_SYM persistence_driver_int *get_pers_driv_sqlite();
+    EXP_SYM persistence_driver_impl *get_pers_driv_sqlite();
 }
 
 }

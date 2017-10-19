@@ -39,10 +39,10 @@ namespace vlg {
 */
 class connection_factory {
     public:
-        static connection_int       *conn_factory_int_f(peer_int &peer,
-                                                        ConnectionType con_type,
-                                                        unsigned int connid,
-                                                        void *ud);
+        static connection_impl       *conn_factory_impl_f(peer_impl &peer,
+                                                          ConnectionType con_type,
+                                                          unsigned int connid,
+                                                          void *ud);
     public:
         connection_factory();
         virtual ~connection_factory();
@@ -144,8 +144,8 @@ class connection : public vlg::collectable {
         unsigned short      get_host_port() const;
 
     public:
-        connection_int *get_internal();
-        void            set_internal(connection_int *conn);
+        connection_impl *get_implernal();
+        void            set_implernal(connection_impl *conn);
 
     private:
         connection_impl *impl_;

@@ -40,7 +40,7 @@ class persistence_manager {
 
         /*static*/
         static vlg::RetCode
-        load_persistence_driver(persistence_driver_int *drivers[],
+        load_persistence_driver(persistence_driver_impl *drivers[],
                                 int drivers_num);
 
         /***************************
@@ -61,7 +61,7 @@ class persistence_manager {
         static vlg::RetCode start_all_persistence_drivers();
 
         //returns null if no driver is available.
-        static persistence_driver_int *available_driver(unsigned int nclass_id);
+        static persistence_driver_impl *available_driver(unsigned int nclass_id);
 };
 
 /** @brief persistence_connection class.
@@ -75,13 +75,13 @@ class persistence_connection {
         ~persistence_connection();
 
         vlg::RetCode bind(unsigned int nclass_id,
-                          persistence_driver_int &driver);
+                          persistence_driver_impl &driver);
 
         //getters
     public:
-        persistence_connection_int      *get_connection_internal();
+        persistence_connection_impl      *get_connection_implernal();
         unsigned int                    get_id()                    const;
-        persistence_driver_int          *get_driver();
+        persistence_driver_impl          *get_driver();
         PersistenceConnectionStatus     get_status()                const;
 
         //business meths

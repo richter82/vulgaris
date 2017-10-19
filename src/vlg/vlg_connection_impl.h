@@ -24,6 +24,7 @@
 
 #include "vlg_memory.h"
 #include "vlg_logger.h"
+#include "vlg/vlg_proto.h"
 #include "vlg_globint.h"
 
 #define VLG_RECV_BUFF_SZ 512

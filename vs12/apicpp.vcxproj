@@ -18,6 +18,26 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\public\cpp\vlg_ascii_string.h" />
+    <ClInclude Include="..\public\cpp\vlg_byte_buffer.h" />
+    <ClInclude Include="..\public\cpp\vlg_connection.h" />
+    <ClInclude Include="..\public\cpp\vlg_drv_sqlite.h" />
+    <ClInclude Include="..\public\cpp\vlg_logger.h" />
+    <ClInclude Include="..\public\cpp\vlg_memory.h" />
+    <ClInclude Include="..\public\cpp\vlg_model.h" />
+    <ClInclude Include="..\public\cpp\vlg_peer.h" />
+    <ClInclude Include="..\public\cpp\vlg_persistence.h" />
+    <ClInclude Include="..\public\cpp\vlg_subscription.h" />
+    <ClInclude Include="..\public\cpp\vlg_transaction.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\apicpp\vlg_connection.cpp" />
+    <ClCompile Include="..\src\apicpp\vlg_peer.cpp" />
+    <ClCompile Include="..\src\apicpp\vlg_persistence.cpp" />
+    <ClCompile Include="..\src\apicpp\vlg_subscription.cpp" />
+    <ClCompile Include="..\src\apicpp\vlg_transaction.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{86051208-762D-4D3D-A490-59DF7ECE67EA}</ProjectGuid>
     <RootNamespace>blz_model</RootNamespace>
@@ -66,26 +86,26 @@
     <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\blzcppinterf\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\blzcppinterf\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\blzcppinterf\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\blzcppinterf\</IntDir>
-    <TargetName>blz_cpp_interface</TargetName>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</IntDir>
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\blzcppinterf\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\blzcppinterf\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\blzcppinterf\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\blzcppinterf\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\contrib\pthread;..\contrib\sqlite</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -107,7 +127,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\contrib\pthread;..\contrib\sqlite</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -126,7 +146,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\contrib\pthread;..\contrib\sqlite</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -147,7 +167,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\contrib\pthread;..\contrib\sqlite</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -161,27 +181,6 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
 copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(DefaultPlatformToolset)\$(TargetName).pdb"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="..\src\blz_cpp_public_impl\blaze_connection.cpp" />
-    <ClCompile Include="..\src\blz_cpp_public_impl\blaze_peer.cpp" />
-    <ClCompile Include="..\src\blz_cpp_public_impl\blaze_persistence.cpp" />
-    <ClCompile Include="..\src\blz_cpp_public_impl\blaze_subscription.cpp" />
-    <ClCompile Include="..\src\blz_cpp_public_impl\blaze_transaction.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\public\cpp\blaze.h" />
-    <ClInclude Include="..\public\cpp\blaze_ascii_string.h" />
-    <ClInclude Include="..\public\cpp\blaze_byte_buffer.h" />
-    <ClInclude Include="..\public\cpp\blaze_connection.h" />
-    <ClInclude Include="..\public\cpp\blaze_logger.h" />
-    <ClInclude Include="..\public\cpp\blaze_memory.h" />
-    <ClInclude Include="..\public\cpp\blaze_model.h" />
-    <ClInclude Include="..\public\cpp\blaze_peer.h" />
-    <ClInclude Include="..\public\cpp\blaze_persistence.h" />
-    <ClInclude Include="..\public\cpp\blaze_subscription.h" />
-    <ClInclude Include="..\public\cpp\blaze_transaction.h" />
-    <ClInclude Include="..\public\cpp\blz_drv_sqlite.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
