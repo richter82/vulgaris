@@ -19,51 +19,51 @@
  *
  */
 
-#ifndef BLZ_TOOLKIT_CONNECTION_H
-#define BLZ_TOOLKIT_CONNECTION_H
+#ifndef VLG_TOOLKIT_CONNECTION_H
+#define VLG_TOOLKIT_CONNECTION_H
 
-#include "blz_toolkit_tx_window.h"
-#include "blz_toolkit_sbs_window.h"
+#include "vlg_toolkit_tx_window.h"
+#include "vlg_toolkit_sbs_window.h"
 
 //------------------------------------------------------------------------------
-// blz_toolkit_Conn_mdl
+// vlg_toolkit_Conn_mdl
 //------------------------------------------------------------------------------
 
-class blz_toolkit_Conn_mdl : public QSortFilterProxyModel {
+class vlg_toolkit_Conn_mdl : public QSortFilterProxyModel {
 
     public:
-        blz_toolkit_Conn_mdl(blz_toolkit_blz_model &wrapped_mdl, QObject *parent = 0);
+        vlg_toolkit_Conn_mdl(vlg_toolkit_vlg_model &wrapped_mdl, QObject *parent = 0);
 
 
         bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;
 
-        blz_toolkit_blz_model &wrapped_mdl();
+        vlg_toolkit_vlg_model &wrapped_mdl();
 
     private:
-        blz_toolkit_blz_model &wrapped_mdl_;
+        vlg_toolkit_vlg_model &wrapped_mdl_;
 };
 
 //------------------------------------------------------------------------------
-// blz_toolkit_Connection
+// vlg_toolkit_Connection
 //------------------------------------------------------------------------------
 
 namespace Ui {
-class blz_toolkit_Connection;
+class vlg_toolkit_Connection;
 }
 
-class blz_toolkit_Connection : public QWidget {
+class vlg_toolkit_Connection : public QWidget {
         Q_OBJECT
 
     public:
-        explicit blz_toolkit_Connection(vlg::connection_int &conn,
+        explicit vlg_toolkit_Connection(vlg::connection_int &conn,
                                         const QString &host,
                                         const QString &port,
                                         const QString &usr,
                                         const QString &psswd,
-                                        blz_toolkit_blz_model &blz_model_loaded_model,
+                                        vlg_toolkit_vlg_model &vlg_model_loaded_model,
                                         QMainWindow &m_win,
                                         QWidget *parent = 0);
-        ~blz_toolkit_Connection();
+        ~vlg_toolkit_Connection();
 
     public slots:
         void OnConnStatusChange(vlg::ConnectionStatus status);
@@ -79,7 +79,7 @@ class blz_toolkit_Connection : public QWidget {
         void EmitConnStatus(vlg::ConnectionStatus status);
 
 
-        friend void blz_toolkit_connection_status_change_hndl(vlg::connection_int
+        friend void vlg_toolkit_connection_status_change_hndl(vlg::connection_int
                                                               &conn,
                                                               vlg::ConnectionStatus status,
                                                               void *ud);
@@ -113,13 +113,13 @@ class blz_toolkit_Connection : public QWidget {
         vlg::connection_int &conn_;
 
     private:
-        blz_toolkit_Conn_mdl b_mdl_;
+        vlg_toolkit_Conn_mdl b_mdl_;
 
     private:
         static int count_;
 
     public:
-        Ui::blz_toolkit_Connection *ui;
+        Ui::vlg_toolkit_Connection *ui;
     private slots:
         void on_connect_button_clicked();
         void on_disconnect_button_clicked();
@@ -128,4 +128,4 @@ class blz_toolkit_Connection : public QWidget {
         void on_new_sbs_button_clicked();
 };
 
-#endif // BLZ_TOOLKIT_CONNECTION_H
+#endif // VLG_TOOLKIT_CONNECTION_H

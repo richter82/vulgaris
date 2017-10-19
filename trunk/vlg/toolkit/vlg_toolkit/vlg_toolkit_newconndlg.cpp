@@ -19,16 +19,16 @@
  *
  */
 
-#include "blz_toolkit_newconndlg.h"
+#include "vlg_toolkit_newconndlg.h"
 
-blz_toolkit_NewConnDlg::blz_toolkit_NewConnDlg(QWidget *parent) :
+vlg_toolkit_NewConnDlg::vlg_toolkit_NewConnDlg(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::NewConnDialog)
 {
     ui->setupUi(this);
 }
 
-blz_toolkit_NewConnDlg::~blz_toolkit_NewConnDlg()
+vlg_toolkit_NewConnDlg::~vlg_toolkit_NewConnDlg()
 {
     delete ui;
 }

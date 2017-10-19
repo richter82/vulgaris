@@ -19,7 +19,7 @@
 *
 */
 
-#include "blz_glob_int.h"
+#include "vlg_globint.h"
 
 namespace vlg {
 

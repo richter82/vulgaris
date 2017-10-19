@@ -19,12 +19,12 @@
  *
  */
 
-#include "blaze_peer.h"
-#include "blaze_connection.h"
-#include "blaze_transaction.h"
-#include "blaze_subscription.h"
-#include "blz_peer_int.h"
-#include "blz_connection_int.h"
+#include "vlg_peer.h"
+#include "vlg_connection.h"
+#include "vlg_transaction.h"
+#include "vlg_subscription.h"
+#include "vlg_peer_impl.h"
+#include "vlg_connection_impl.h"
 
 namespace vlg {
 
@@ -72,7 +72,7 @@ class connection_impl {
                 connection &publ_;
         };
 
-        static connection_int *blz_conn_factory_cimpl(peer_int &peer,
+        static connection_int *vlg_conn_factory_cimpl(peer_int &peer,
                                                       ConnectionType con_type,
                                                       unsigned int connid,
                                                       void *ud) {
@@ -169,7 +169,7 @@ class connection_impl {
             if(!int_) { //ugly test to detect outgoing/ingoing connection type..
                 connection_int *c_int = NULL;
                 if((cdrs_res = p.get_internal()->new_connection(&c_int,
-                                                                blz_conn_factory_cimpl,
+                                                                vlg_conn_factory_cimpl,
                                                                 ConnectionType_OUTGOING,
                                                                 0,
                                                                 &publ_)) == vlg::RetCode_OK) {
@@ -310,9 +310,9 @@ vlg::RetCode connection::await_for_status_reached_or_outdated(
 }
 
 vlg::RetCode connection::await_for_status_change(ConnectionStatus
-                                                   &status,
-                                                   time_t sec,
-                                                   long nsec)
+                                                 &status,
+                                                 time_t sec,
+                                                 long nsec)
 {
     return impl_->get_conn()->await_for_status_change(status, sec, nsec);
 }
@@ -341,7 +341,7 @@ vlg::RetCode connection::await_for_connection_result(
 }
 
 vlg::RetCode connection::disconnect(DisconnectionResultReason
-                                      reason_code)
+                                    reason_code)
 {
     return impl_->get_conn()->disconnect(reason_code);
 }

@@ -19,19 +19,19 @@
  *
  */
 
-#include "blz_peer_int.h"
-#include "blz_connection_int.h"
-#include "blz_transaction_int.h"
+#include "vlg_peer_impl.h"
+#include "vlg_connection_impl.h"
+#include "vlg_transaction_impl.h"
 
 namespace vlg {
 
-// BLZ_TRANSACTION CTORS - INIT - DESTROY
+// VLG_TRANSACTION CTORS - INIT - DESTROY
 
-//BLZ_TRANSACTION MEMORY
+//VLG_TRANSACTION MEMORY
 
 class transaction_inst_collector : public vlg::collector {
     public:
-        transaction_inst_collector() : vlg::collector("transaction_int") {}
+        transaction_inst_collector() : vlg::collector("transaction_impl") {}
 };
 
 vlg::collector *inst_coll_ = NULL;
@@ -41,19 +41,19 @@ vlg::collector &tx_inst_collector()
         return *inst_coll_;
     }
     if(!(inst_coll_ = new transaction_inst_collector())) {
-        EXIT_ACTION("failed creating transaction_int::inst_coll_\n")
+        EXIT_ACTION("failed creating transaction_impl::inst_coll_\n")
     }
     return *inst_coll_;
 }
 
-vlg::collector &transaction_int::get_collector()
+vlg::collector &transaction_impl::get_collector()
 {
     return tx_inst_collector();
 }
 
-nclass_logger *transaction_int::log_ = NULL;
+nclass_logger *transaction_impl::log_ = NULL;
 
-transaction_int::transaction_int(connection_int &conn) :
+transaction_impl::transaction_impl(connection_impl &conn) :
     peer_(conn.peer()),
     conn_(conn),
     bem_(conn.peer().get_em()),
@@ -77,11 +77,11 @@ transaction_int::transaction_int(connection_int &conn) :
     tres_hndl_ud_(NULL),
     start_mark_tim_(0)
 {
-    log_ = get_nclass_logger("transaction_int");
+    log_ = get_nclass_logger("transaction_impl");
     IFLOG(trc(TH_ID, LS_CTR "%s(ptr:%p)", __func__, this))
 }
 
-transaction_int::~transaction_int()
+transaction_impl::~transaction_impl()
 {
     vlg::collector &c = get_collector();
     if(c.is_instance_collected(this)) {
@@ -99,7 +99,7 @@ transaction_int::~transaction_int()
     IFLOG(trc(TH_ID, LS_DTR "%s(ptr:%p)", __func__, this))
 }
 
-vlg::RetCode transaction_int::objs_release()
+vlg::RetCode transaction_impl::objs_release()
 {
     if(request_obj_) {
         /************************
@@ -128,7 +128,7 @@ vlg::RetCode transaction_int::objs_release()
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode transaction_int::init()
+vlg::RetCode transaction_impl::init()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     set_status(TransactionStatus_INITIALIZED);
@@ -136,7 +136,7 @@ vlg::RetCode transaction_int::init()
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode transaction_int::re_new()
+vlg::RetCode transaction_impl::re_new()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ < TransactionStatus_PREPARED) {
@@ -156,140 +156,140 @@ vlg::RetCode transaction_int::re_new()
 }
 
 //-----------------------------
-// BLZ_TRANSACTION GETTERS / SETTERS
+// VLG_TRANSACTION GETTERS / SETTERS
 //
 //-----------------------------
-peer_int &transaction_int::peer()
+peer_impl &transaction_impl::peer()
 {
     return peer_;
 }
 
-connection_int &transaction_int::get_connection()
+connection_impl &transaction_impl::get_connection()
 {
     return conn_;
 }
 
-TransactionStatus transaction_int::status()
+TransactionStatus transaction_impl::status()
 {
     return status_;
 }
 
-TransactionResult transaction_int::tx_res()
+TransactionResult transaction_impl::tx_res()
 {
     return tx_res_;
 }
 
-ProtocolCode transaction_int::tx_result_code()
+ProtocolCode transaction_impl::tx_result_code()
 {
     return result_code_;
 }
 
-TransactionRequestType transaction_int::tx_req_type()
+TransactionRequestType transaction_impl::tx_req_type()
 {
     return txtype_;
 }
 
-Action transaction_int::tx_act()
+Action transaction_impl::tx_act()
 {
     return txactn_;
 }
 
-unsigned int transaction_int::tx_req_class_id()
+unsigned int transaction_impl::tx_req_class_id()
 {
     return req_classid_;
 }
 
-Encode transaction_int::tx_req_class_encode()
+Encode transaction_impl::tx_req_class_encode()
 {
     return req_clsenc_;
 }
 
-unsigned int transaction_int::tx_res_class_id()
+unsigned int transaction_impl::tx_res_class_id()
 {
     return res_classid_;
 }
 
-vlg::Encode transaction_int::tx_res_class_encode()
+vlg::Encode transaction_impl::tx_res_class_encode()
 {
     return res_clsenc_;
 }
 
-bool transaction_int::is_result_class_req()
+bool transaction_impl::is_result_class_req()
 {
     return rsclrq_;
 }
 
-bool transaction_int::is_result_class_set()
+bool transaction_impl::is_result_class_set()
 {
     return rescls_;
 }
 
-const nclass *transaction_int::request_obj()
+const nclass *transaction_impl::request_obj()
 {
     return request_obj_;
 }
 
-const nclass *transaction_int::current_obj()
+const nclass *transaction_impl::current_obj()
 {
     return current_obj_;
 }
 
-const nclass *transaction_int::result_obj()
+const nclass *transaction_impl::result_obj()
 {
     return result_obj_;
 }
 
-void transaction_int::set_tx_res(TransactionResult val)
+void transaction_impl::set_tx_res(TransactionResult val)
 {
     tx_res_ = val;
 }
 
-void transaction_int::set_tx_result_code(ProtocolCode val)
+void transaction_impl::set_tx_result_code(ProtocolCode val)
 {
     result_code_ = val;
 }
 
-void transaction_int::set_tx_req_type(TransactionRequestType val)
+void transaction_impl::set_tx_req_type(TransactionRequestType val)
 {
     txtype_ = val;
 }
 
-void transaction_int::set_tx_act(Action val)
+void transaction_impl::set_tx_act(Action val)
 {
     txactn_ = val;
 }
 
-void transaction_int::set_tx_req_class_id(unsigned int val)
+void transaction_impl::set_tx_req_class_id(unsigned int val)
 {
     req_classid_ = val;
 }
 
-void transaction_int::set_tx_req_class_encode(Encode val)
+void transaction_impl::set_tx_req_class_encode(Encode val)
 {
     req_clsenc_ = val;
 }
 
-void transaction_int::set_tx_res_class_id(unsigned int val)
+void transaction_impl::set_tx_res_class_id(unsigned int val)
 {
     res_classid_ = val;
 }
 
-void transaction_int::set_tx_res_class_encode(Encode val)
+void transaction_impl::set_tx_res_class_encode(Encode val)
 {
     res_clsenc_ = val;
 }
 
-void transaction_int::set_result_class_req(bool val)
+void transaction_impl::set_result_class_req(bool val)
 {
     rsclrq_ = val;
 }
 
-void transaction_int::set_result_class_set(bool val)
+void transaction_impl::set_result_class_set(bool val)
 {
     rescls_ = val;
 }
 
-void transaction_int::set_request_obj(const nclass *val)
+void transaction_impl::set_request_obj(const nclass *val)
 {
     if(request_obj_) {
         /************************
@@ -315,7 +315,7 @@ void transaction_int::set_request_obj(const nclass *val)
     }
 }
 
-void transaction_int::set_current_obj(const nclass *val)
+void transaction_impl::set_current_obj(const nclass *val)
 {
     if(current_obj_) {
         /************************
@@ -337,7 +337,7 @@ void transaction_int::set_current_obj(const nclass *val)
     }
 }
 
-void transaction_int::set_result_obj(const nclass *val)
+void transaction_impl::set_result_obj(const nclass *val)
 {
     if(result_obj_) {
         /************************
@@ -366,7 +366,7 @@ void transaction_int::set_result_obj(const nclass *val)
     }
 }
 
-void transaction_int::set_request_obj_on_request(nclass *val)
+void transaction_impl::set_request_obj_on_request(nclass *val)
 {
     if(request_obj_) {
         /************************
@@ -385,7 +385,7 @@ void transaction_int::set_request_obj_on_request(nclass *val)
     }
 }
 
-void transaction_int::set_result_obj_on_response(nclass *val)
+void transaction_impl::set_result_obj_on_response(nclass *val)
 {
     if(result_obj_) {
         /************************
@@ -407,81 +407,81 @@ void transaction_int::set_result_obj_on_response(nclass *val)
     }
 }
 
-void transaction_int::set_tx_id(tx_id &txid)
+void transaction_impl::set_tx_id(tx_id &txid)
 {
     txid_ = txid;
 }
 
-tx_id &transaction_int::txid()
+tx_id &transaction_impl::txid()
 {
     return txid_;
 }
 
-tx_id *transaction_int::tx_id_ptr()
+tx_id *transaction_impl::tx_id_ptr()
 {
     return &txid_;
 }
 
-unsigned int transaction_int::tx_id_PLID()
+unsigned int transaction_impl::tx_id_PLID()
 {
     return txid_.txplid;
 }
 
-unsigned int transaction_int::tx_id_SVID()
+unsigned int transaction_impl::tx_id_SVID()
 {
     return txid_.txsvid;
 }
 
-unsigned int transaction_int::tx_id_CNID()
+unsigned int transaction_impl::tx_id_CNID()
 {
     return txid_.txcnid;
 }
 
-unsigned int transaction_int::tx_id_PRID()
+unsigned int transaction_impl::tx_id_PRID()
 {
     return txid_.txprid;
 }
 
-void transaction_int::set_tx_id_PLID(unsigned int val)
+void transaction_impl::set_tx_id_PLID(unsigned int val)
 {
     txid_.txplid = val;
 }
 
-void transaction_int::set_tx_id_SVID(unsigned int val)
+void transaction_impl::set_tx_id_SVID(unsigned int val)
 {
     txid_.txsvid = val;
 }
 
-void transaction_int::set_tx_id_CNID(unsigned int val)
+void transaction_impl::set_tx_id_CNID(unsigned int val)
 {
     txid_.txcnid = val;
 }
 
-void transaction_int::set_tx_id_PRID(unsigned int val)
+void transaction_impl::set_tx_id_PRID(unsigned int val)
 {
     txid_.txprid = val;
 }
 
-void transaction_int::set_transaction_status_change_handler(
+void transaction_impl::set_transaction_status_change_handler(
     transaction_status_change_hndlr hndlr, void *ud)
 {
     tsc_hndl_ = hndlr;
     tsc_hndl_ud_ = ud;
 }
 
-void transaction_int::set_transaction_closure_handler(transaction_closure_hndlr
-                                                      hndlr, void *ud)
+void transaction_impl::set_transaction_closure_handler(transaction_closure_hndlr
+                                                       hndlr, void *ud)
 {
     tres_hndl_ = hndlr;
     tres_hndl_ud_ = ud;
 }
 
 //-----------------------------
-// BLZ_TRANSACTION ACTIONS
+// VLG_TRANSACTION ACTIONS
 //
 //-----------------------------
 
-vlg::RetCode transaction_int::prepare()
+vlg::RetCode transaction_impl::prepare()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ != TransactionStatus_INITIALIZED) {
@@ -493,12 +493,12 @@ vlg::RetCode transaction_int::prepare()
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode transaction_int::prepare(TransactionRequestType txtype,
-                                        Action txactn,
-                                        Encode clsenc,
-                                        bool rsclrq,
-                                        const nclass *request_obj,
-                                        const nclass *current_obj)
+vlg::RetCode transaction_impl::prepare(TransactionRequestType txtype,
+                                       Action txactn,
+                                       Encode clsenc,
+                                       bool rsclrq,
+                                       const nclass *request_obj,
+                                       const nclass *current_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ != TransactionStatus_INITIALIZED) {
@@ -517,11 +517,11 @@ vlg::RetCode transaction_int::prepare(TransactionRequestType txtype,
 }
 
 //-----------------------------
-// BLZ_TRANSACTION SENDING METHS
+// VLG_TRANSACTION SENDING METHS
 //
 //-----------------------------
 
-vlg::RetCode transaction_int::send()
+vlg::RetCode transaction_impl::send()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
@@ -537,7 +537,7 @@ vlg::RetCode transaction_int::send()
     c.retain(this);
     vlg::rt_mark_time(&start_mark_tim_);
     set_flying();
-    transaction_int *self = this;
+    transaction_impl *self = this;
     if((cdrs_res = conn_.client_fly_tx_map().put(&txid_, &self))) {
         set_status(TransactionStatus_ERROR);
         IFLOG(err(TH_ID, LS_TRL"[error putting tx into flying map - res:%d]", cdrs_res))
@@ -553,7 +553,7 @@ vlg::RetCode transaction_int::send()
               txactn_,
               req_clsenc_,
               rsclrq_))
-    DECLINITH_GBB(gbb, BLZ_BUFF_DEF_SZ)
+    DECLINITH_GBB(gbb, VLG_BUFF_DEF_SZ)
     build_PKT_TXRQST(txtype_,
                      txactn_,
                      &txid_,
@@ -571,7 +571,7 @@ vlg::RetCode transaction_int::send()
     gbb->flip();
     RETURN_IF_NOT_OK(conn_.pkt_snd_q().put(&gbb))
     selector_event *evt = new selector_event(
-        BLZ_SELECTOR_Evt_SendPacket, &conn_);
+        VLG_SELECTOR_Evt_SendPacket, &conn_);
     if((cdrs_res = peer_.get_selector().evt_enqueue_and_notify(evt))) {
         set_status(TransactionStatus_ERROR);
     }
@@ -579,7 +579,7 @@ vlg::RetCode transaction_int::send()
     return cdrs_res;
 }
 
-vlg::RetCode transaction_int::send_response()
+vlg::RetCode transaction_impl::send_response()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
@@ -587,7 +587,7 @@ vlg::RetCode transaction_int::send_response()
         IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
         return vlg::RetCode_BADSTTS;
     }
-    DECLINITH_GBB(gbb, BLZ_BUFF_DEF_SZ)
+    DECLINITH_GBB(gbb, VLG_BUFF_DEF_SZ)
     build_PKT_TXRESP(tx_res_,
                      result_code_,
                      &txid_,
@@ -603,7 +603,7 @@ vlg::RetCode transaction_int::send_response()
     gbb->flip();
     RETURN_IF_NOT_OK(conn_.pkt_snd_q().put(&gbb))
     selector_event *evt = new selector_event(
-        BLZ_SELECTOR_Evt_SendPacket, &conn_);
+        VLG_SELECTOR_Evt_SendPacket, &conn_);
     cdrs_res = peer_.get_selector().evt_enqueue_and_notify(evt);
     if(cdrs_res) {
         set_status(TransactionStatus_ERROR);
@@ -613,11 +613,11 @@ vlg::RetCode transaction_int::send_response()
 }
 
 //-----------------------------
-// BLZ_TRANSACTION STATUS
+// VLG_TRANSACTION STATUS
 //
 //-----------------------------
 
-vlg::RetCode transaction_int::set_flying()
+vlg::RetCode transaction_impl::set_flying()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(conn_.conn_type() == ConnectionType_INGOING) {
@@ -646,7 +646,7 @@ vlg::RetCode transaction_int::set_flying()
     return vlg::RetCode_OK;
 }
 
-inline void transaction_int::trace_tx_closure(const char *tx_res_str)
+inline void transaction_impl::trace_tx_closure(const char *tx_res_str)
 {
     char tim_buf[32];
     rt_time_t fin_mark_tim, dt_mark_tim;
@@ -740,7 +740,7 @@ inline void transaction_int::trace_tx_closure(const char *tx_res_str)
               tim_buf))
 }
 
-vlg::RetCode transaction_int::set_closed()
+vlg::RetCode transaction_impl::set_closed()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ != TransactionStatus_FLYING) {
@@ -759,7 +759,7 @@ vlg::RetCode transaction_int::set_closed()
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode transaction_int::set_aborted()
+vlg::RetCode transaction_impl::set_aborted()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     set_tx_res(TransactionResult_ABORTED);
@@ -774,7 +774,7 @@ vlg::RetCode transaction_int::set_aborted()
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode transaction_int::set_status(TransactionStatus status)
+vlg::RetCode transaction_impl::set_status(TransactionStatus status)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, status:%d)", __func__, this, status))
     CHK_MON_ERR_0(lock)
@@ -788,7 +788,7 @@ vlg::RetCode transaction_int::set_status(TransactionStatus status)
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode transaction_int::await_for_status_reached_or_outdated(
+vlg::RetCode transaction_impl::await_for_status_reached_or_outdated(
     TransactionStatus test,
     TransactionStatus &current,
     time_t sec,
@@ -820,7 +820,7 @@ vlg::RetCode transaction_int::await_for_status_reached_or_outdated(
     return cdrs_res;
 }
 
-vlg::RetCode transaction_int::await_for_closure(time_t sec, long nsec)
+vlg::RetCode transaction_impl::await_for_closure(time_t sec, long nsec)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     CHK_MON_ERR_0(lock)
@@ -847,14 +847,14 @@ vlg::RetCode transaction_int::await_for_closure(time_t sec, long nsec)
 }
 
 //-----------------------------
-// BLZ_TRANSACTION RECVING METHS
+// VLG_TRANSACTION RECVING METHS
 //
 //-----------------------------
 
-void transaction_int::on_request()
+void transaction_impl::on_request()
 {}
 
-void transaction_int::on_close()
+void transaction_impl::on_close()
 {}
 
 }

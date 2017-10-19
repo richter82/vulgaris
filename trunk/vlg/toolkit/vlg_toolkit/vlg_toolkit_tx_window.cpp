@@ -19,14 +19,14 @@
  *
  */
 
-#include "blz_toolkit_tx_window.h"
-#include "ui_blz_toolkit_tx_window.h"
+#include "vlg_toolkit_tx_window.h"
+#include "ui_vlg_toolkit_tx_window.h"
 
 //------------------------------------------------------------------------------
-// blz_toolkit_tx_model
+// vlg_toolkit_tx_model
 //------------------------------------------------------------------------------
 
-blz_toolkit_tx_model::blz_toolkit_tx_model(blz_toolkit_tx_blz_class_model
+vlg_toolkit_tx_model::vlg_toolkit_tx_model(vlg_toolkit_tx_vlg_class_model
                                            &wrapped_mdl, QObject *parent) :
     wrapped_mdl_(wrapped_mdl),
     QSortFilterProxyModel(parent)
@@ -34,50 +34,50 @@ blz_toolkit_tx_model::blz_toolkit_tx_model(blz_toolkit_tx_blz_class_model
     setSourceModel(&wrapped_mdl);
 }
 
-bool blz_toolkit_tx_model::filterAcceptsRow(int sourceRow,
+bool vlg_toolkit_tx_model::filterAcceptsRow(int sourceRow,
                                             const QModelIndex &sourceParent) const
 {
     return true;
 }
 
-blz_toolkit_tx_blz_class_model &blz_toolkit_tx_model::wrapped_mdl()
+vlg_toolkit_tx_vlg_class_model &vlg_toolkit_tx_model::wrapped_mdl()
 {
     return wrapped_mdl_;
 }
 
 //------------------------------------------------------------------------------
-// blz_toolkit_tx_window
+// vlg_toolkit_tx_window
 //------------------------------------------------------------------------------
 
 void tx_status_change_hndlr(vlg::transaction_int &trans,
                             vlg::TransactionStatus status,
                             void *ud)
 {
-    blz_toolkit_tx_window *txw = (blz_toolkit_tx_window *)ud;
+    vlg_toolkit_tx_window *txw = (vlg_toolkit_tx_window *)ud;
     qDebug() << "tx status:" << status;
     txw->EmitTxStatus(status);
 }
 
 void tx_closure_hndlr(vlg::transaction_int &trans, void *ud)
 {
-    blz_toolkit_tx_window *txw = (blz_toolkit_tx_window *)ud;
+    vlg_toolkit_tx_window *txw = (vlg_toolkit_tx_window *)ud;
     txw->EmitTxClosure();
 }
 
 
-blz_toolkit_tx_window::blz_toolkit_tx_window(const vlg::entity_desc &edesc,
+vlg_toolkit_tx_window::vlg_toolkit_tx_window(const vlg::entity_desc &edesc,
                                              const vlg::entity_manager &bem,
                                              vlg::transaction_int &tx,
-                                             blz_toolkit_tx_blz_class_model &mdl,
+                                             vlg_toolkit_tx_vlg_class_model &mdl,
                                              QWidget *parent) :
     bem_(bem),
     tx_(tx),
     tx_mdl_wrp_(mdl),
     QMainWindow(parent),
-    ui(new Ui::blz_toolkit_tx_window)
+    ui(new Ui::vlg_toolkit_tx_window)
 {
     ui->setupUi(this);
-    ui->blz_class_tx_table_view->setModel(&tx_mdl_wrp_);
+    ui->vlg_class_tx_table_view->setModel(&tx_mdl_wrp_);
     ui->connid_label_disp->setText(QString("%1").arg(
                                        tx_.get_connection().connid()));
     TxClosedActions();
@@ -99,9 +99,9 @@ blz_toolkit_tx_window::blz_toolkit_tx_window(const vlg::entity_desc &edesc,
     tx_.set_transaction_closure_handler(tx_closure_hndlr, this);
 }
 
-blz_toolkit_tx_window::~blz_toolkit_tx_window()
+vlg_toolkit_tx_window::~vlg_toolkit_tx_window()
 {
-    qDebug() << "~blz_toolkit_tx_window()";
+    qDebug() << "~vlg_toolkit_tx_window()";
     vlg::TransactionStatus current = vlg::TransactionStatus_UNDEFINED;
     tx_.set_transaction_status_change_handler(NULL, NULL);
     tx_.set_transaction_closure_handler(NULL, NULL);
@@ -113,11 +113,11 @@ blz_toolkit_tx_window::~blz_toolkit_tx_window()
     delete ui;
 }
 
-void blz_toolkit_tx_window::closeEvent(QCloseEvent *event)
+void vlg_toolkit_tx_window::closeEvent(QCloseEvent *event)
 {
 }
 
-void blz_toolkit_tx_window::OnTxStatusChange(vlg::TransactionStatus
+void vlg_toolkit_tx_window::OnTxStatusChange(vlg::TransactionStatus
                                              status)
 {
     switch(status) {
@@ -164,7 +164,7 @@ void blz_toolkit_tx_window::OnTxStatusChange(vlg::TransactionStatus
     }
 }
 
-void blz_toolkit_tx_window::OnTxClosure()
+void vlg_toolkit_tx_window::OnTxClosure()
 {
     switch(tx_.tx_res()) {
         case vlg::TransactionResult_COMMITTED:
@@ -187,7 +187,7 @@ void blz_toolkit_tx_window::OnTxClosure()
     }
 }
 
-void blz_toolkit_tx_window::on_actionSend_TX_triggered()
+void vlg_toolkit_tx_window::on_actionSend_TX_triggered()
 {
     if(tx_.status() != vlg::TransactionStatus_INITIALIZED) {
         tx_.re_new();
@@ -251,29 +251,29 @@ void blz_toolkit_tx_window::on_actionSend_TX_triggered()
     tx_.send();
 }
 
-void blz_toolkit_tx_window::on_actionReNew_TX_triggered()
+void vlg_toolkit_tx_window::on_actionReNew_TX_triggered()
 {
     if(tx_.status() != vlg::TransactionStatus_INITIALIZED) {
         tx_.re_new();
     }
 }
 
-void blz_toolkit_tx_window::EmitTxStatus(vlg::TransactionStatus status)
+void vlg_toolkit_tx_window::EmitTxStatus(vlg::TransactionStatus status)
 {
     emit SignalTxStatusChange(status);
 }
 
-void blz_toolkit_tx_window::EmitTxClosure()
+void vlg_toolkit_tx_window::EmitTxClosure()
 {
     emit SignalTxClosure();
 }
 
-void blz_toolkit_tx_window::TxFlyingActions()
+void vlg_toolkit_tx_window::TxFlyingActions()
 {
 
 }
 
-void blz_toolkit_tx_window::TxClosedActions()
+void vlg_toolkit_tx_window::TxClosedActions()
 {
 
 }

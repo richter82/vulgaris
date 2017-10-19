@@ -19,8 +19,8 @@
  *
  */
 
-#include "blaze_c_connection.h"
-#include "blaze_connection.h"
+#include "vlg_c_connection.h"
+#include "vlg_connection.h"
 
 namespace vlg {
 

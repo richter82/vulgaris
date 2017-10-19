@@ -19,8 +19,8 @@
  *
  */
 
-#include "blaze_logger.h"
-#include "blz_glob_int.h"
+#include "vlg_logger.h"
+#include "vlg_globint.h"
 
 #define MSEC_F 1000000L
 #define USEC_F 1000L

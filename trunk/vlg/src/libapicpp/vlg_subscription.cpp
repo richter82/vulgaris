@@ -19,10 +19,10 @@
  *
  */
 
-#include "blaze_connection.h"
-#include "blaze_subscription.h"
-#include "blz_connection_int.h"
-#include "blz_subscription_int.h"
+#include "vlg_connection.h"
+#include "vlg_subscription.h"
+#include "vlg_connection_impl.h"
+#include "vlg_subscription_impl.h"
 
 namespace vlg {
 
@@ -202,7 +202,7 @@ class subscription_impl {
                 subscription &publ_;
         };
 
-        static subscription_int *blz_sbs_factory_simpl(connection_int &connection,
+        static subscription_int *vlg_sbs_factory_simpl(connection_int &connection,
                                                        void *ud) {
             subscription *publ = static_cast<subscription *>(ud);
             return new simpl_subscription_int(connection, *publ);
@@ -300,7 +300,7 @@ class subscription_impl {
             if(conn.get_connection_type() == ConnectionType_OUTGOING) {
                 subscription_int *s_int = NULL;
                 if((cdrs_res = conn.get_internal()->new_subscription(&s_int,
-                                                                     blz_sbs_factory_simpl, &publ_)) == vlg::RetCode_OK) {
+                                                                     vlg_sbs_factory_simpl, &publ_)) == vlg::RetCode_OK) {
                     int_ = s_int;
                     vlg::collector &c = int_->get_collector();
                     c.retain(int_);
@@ -502,13 +502,13 @@ vlg::RetCode subscription::start()
 }
 
 vlg::RetCode subscription::start(SubscriptionType sbs_type,
-                                   SubscriptionMode sbs_mode,
-                                   SubscriptionFlowType sbs_flow_type,
-                                   SubscriptionDownloadType sbs_dwnl_type,
-                                   Encode class_encode,
-                                   unsigned int nclass_id,
-                                   unsigned int open_timestamp_0,
-                                   unsigned int open_timestamp_1)
+                                 SubscriptionMode sbs_mode,
+                                 SubscriptionFlowType sbs_flow_type,
+                                 SubscriptionDownloadType sbs_dwnl_type,
+                                 Encode class_encode,
+                                 unsigned int nclass_id,
+                                 unsigned int open_timestamp_0,
+                                 unsigned int open_timestamp_1)
 {
     return impl_->get_sbs()->start(sbs_type,
                                    sbs_mode,
@@ -520,10 +520,10 @@ vlg::RetCode subscription::start(SubscriptionType sbs_type,
 }
 
 vlg::RetCode subscription::await_for_start_result(SubscriptionResponse
-                                                    &sbs_start_result,
-                                                    ProtocolCode &sbs_start_protocode,
-                                                    time_t sec,
-                                                    long nsec)
+                                                  &sbs_start_result,
+                                                  ProtocolCode &sbs_start_protocode,
+                                                  time_t sec,
+                                                  long nsec)
 {
     return impl_->get_sbs()->await_for_start_result(sbs_start_result,
                                                     sbs_start_protocode,
@@ -537,10 +537,10 @@ vlg::RetCode subscription::stop()
 }
 
 vlg::RetCode subscription::await_for_stop_result(SubscriptionResponse
-                                                   &sbs_stop_result,
-                                                   ProtocolCode &sbs_stop_protocode,
-                                                   time_t sec,
-                                                   long nsec)
+                                                 &sbs_stop_result,
+                                                 ProtocolCode &sbs_stop_protocode,
+                                                 time_t sec,
+                                                 long nsec)
 {
     return impl_->get_sbs()->await_for_stop_result(sbs_stop_result,
                                                    sbs_stop_protocode, sec, nsec);

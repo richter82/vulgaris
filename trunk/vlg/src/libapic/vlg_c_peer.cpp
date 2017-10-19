@@ -19,8 +19,8 @@
  *
  */
 
-#include "blaze_c_peer.h"
-#include "blaze_peer.h"
+#include "vlg_c_peer.h"
+#include "vlg_peer.h"
 
 namespace vlg {
 

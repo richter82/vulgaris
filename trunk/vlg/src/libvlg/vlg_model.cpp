@@ -19,9 +19,9 @@
  *
  */
 
-#include "blaze_logger.h"
-#include "blaze_model.h"
-#include "blz_glob_int.h"
+#include "vlg_logger.h"
+#include "vlg_model.h"
+#include "vlg_globint.h"
 
 namespace vlg {
 
@@ -216,12 +216,12 @@ class member_desc_impl {
         const char      *mmbr_name_;
         const char      *mmbr_desc_;
 
-        //BLZ_MEMBTYPE_Field
+        //VLG_MEMBTYPE_Field
         //field type when applicable
         Type            fild_type_;
 
         //starting offset in bytes
-        //from BLZ_ENTITY base class
+        //from VLG_ENTITY base class
         size_t          fild_offset_;
 
         //In Arch type size
@@ -232,17 +232,17 @@ class member_desc_impl {
         size_t          nmemb_;
 
         // valid only if fild_type
-        // is set to BLZ_TYPE_Entity &&
-        // fild_entitytype_ == BLZ_ENTITY_TYPE_Class
+        // is set to VLG_TYPE_Entity &&
+        // fild_entitytype_ == VLG_ENTITY_TYPE_Class
         unsigned int    fild_nclassid_;
 
         // equals to entityname when
-        // fild_type_ == BLZ_TYPE_Entity
-        // is set to BLZ_TYPE_Entity
+        // fild_type_ == VLG_TYPE_Entity
+        // is set to VLG_TYPE_Entity
         const char      *fild_usr_str_type_;
 
         // valid only if fild_type
-        // is set to BLZ_TYPE_Entity
+        // is set to VLG_TYPE_Entity
         EntityType     fild_entitytype_;
 
         //enum specific
@@ -310,7 +310,7 @@ const char *member_desc::get_member_description() const
 /*
 Field section
 */
-Type member_desc::get_field_blz_type() const
+Type member_desc::get_field_vlg_type() const
 {
     return impl_->fild_type_;
 }
@@ -758,7 +758,7 @@ class entity_manager_impl {
         }
 
         vlg::RetCode get_entity_desc(unsigned int nclass_id,
-                                       entity_desc const **edesc) const {
+                                     entity_desc const **edesc) const {
             const entity_desc **ptr = (const entity_desc **)entid_edesc_.get(&nclass_id);
             if(ptr) {
                 *edesc = *ptr;
@@ -770,7 +770,7 @@ class entity_manager_impl {
         }
 
         vlg::RetCode get_entity_desc(const char *entityname,
-                                       entity_desc const **edesc) const {
+                                     entity_desc const **edesc) const {
             const entity_desc **ptr = (const entity_desc **)entnm_edesc_.get(entityname);
             if(ptr) {
                 *edesc = *ptr;
@@ -900,17 +900,17 @@ class entity_manager_impl {
                 return vlg::RetCode_BADARG;
             }
 #ifdef WIN32
-            wchar_t w_model_name[BLZ_MDL_NAME_LEN] = {0};
-            swprintf(w_model_name, BLZ_MDL_NAME_LEN, L"%hs", model_name);
+            wchar_t w_model_name[VLG_MDL_NAME_LEN] = {0};
+            swprintf(w_model_name, VLG_MDL_NAME_LEN, L"%hs", model_name);
             void *dynalib = vlg::dynamic_lib_open(w_model_name);
 #endif
 #ifdef __linux
-            char slib_name[BLZ_MDL_NAME_LEN] = {0};
+            char slib_name[VLG_MDL_NAME_LEN] = {0};
             sprintf(slib_name, "lib%s.so", model_name);
             void *dynalib = vlg::dynamic_lib_open(slib_name);
 #endif
 #if defined (__MACH__) || defined (__APPLE__)
-            char slib_name[BLZ_MDL_NAME_LEN] = {0};
+            char slib_name[VLG_MDL_NAME_LEN] = {0};
             sprintf(slib_name, "lib%s.dylib", model_name);
             void *dynalib = vlg::dynamic_lib_open(slib_name);
 #endif
@@ -919,7 +919,7 @@ class entity_manager_impl {
                           __func__, model_name))
                 return vlg::RetCode_KO;
             }
-            char bem_ep_f[BLZ_MDL_NAME_LEN] = {0};
+            char bem_ep_f[VLG_MDL_NAME_LEN] = {0};
             sprintf(bem_ep_f, "get_em_%s", model_name);
             entity_manager_func bem_f =
                 (entity_manager_func)vlg::dynamic_lib_load_symbol(dynalib, bem_ep_f);
@@ -935,7 +935,7 @@ class entity_manager_impl {
                           __func__, model_name, cdrs_res))
                 return cdrs_res;
             } else {
-                char mdlv_f_n[BLZ_MDL_NAME_LEN] = {0};
+                char mdlv_f_n[VLG_MDL_NAME_LEN] = {0};
                 sprintf(mdlv_f_n, "get_mdl_ver_%s", model_name);
                 model_version_func mdlv_f =
                     (model_version_func)vlg::dynamic_lib_load_symbol(dynalib, mdlv_f_n);
@@ -945,7 +945,7 @@ class entity_manager_impl {
         }
 
         vlg::RetCode new_class_instance(unsigned int nclass_id,
-                                          nclass **ptr) const {
+                                        nclass **ptr) const {
             IFLOG(trc(TH_ID, LS_OPN "%s(nclass_id:%u, ptr:%p)", __func__, nclass_id, ptr))
             const entity_desc **edptr = (const entity_desc **)entid_edesc_.get(&nclass_id);
             if(edptr) {
@@ -1004,13 +1004,13 @@ vlg::RetCode entity_manager::init()
 }
 
 vlg::RetCode entity_manager::get_entity_descriptor(unsigned int nclass_id,
-                                                     entity_desc const **edesc) const
+                                                   entity_desc const **edesc) const
 {
     return impl_->get_entity_desc(nclass_id, edesc);
 }
 
 vlg::RetCode entity_manager::get_entity_descriptor(const char *entityname,
-                                                     entity_desc const **edesc) const
+                                                   entity_desc const **edesc) const
 {
     return impl_->get_entity_desc(entityname, edesc);
 }
@@ -1069,7 +1069,7 @@ vlg::RetCode entity_manager::extend(const char *model_name)
 }
 
 vlg::RetCode entity_manager::new_class_instance(unsigned int entityid,
-                                                  nclass **ptr) const
+                                                nclass **ptr) const
 {
     return impl_->new_class_instance(entityid, ptr);
 }
@@ -1185,8 +1185,8 @@ void *nclass::get_field_by_name_index(const char *fldname,
 }
 
 vlg::RetCode nclass::set_field_by_id(unsigned int fldid,
-                                       const void *ptr,
-                                       size_t maxlen)
+                                     const void *ptr,
+                                     size_t maxlen)
 {
     const entity_desc *ed = get_entity_descriptor();
     const member_desc *md = ed->get_member_desc_by_id(fldid);
@@ -1202,8 +1202,8 @@ vlg::RetCode nclass::set_field_by_id(unsigned int fldid,
 }
 
 vlg::RetCode nclass::set_field_by_name(const char *fldname,
-                                         const void *ptr,
-                                         size_t maxlen)
+                                       const void *ptr,
+                                       size_t maxlen)
 {
     const entity_desc *ed = get_entity_descriptor();
     const member_desc *md = ed->get_member_desc_by_name(fldname);
@@ -1219,9 +1219,9 @@ vlg::RetCode nclass::set_field_by_name(const char *fldname,
 }
 
 vlg::RetCode nclass::set_field_by_id_index(unsigned int fldid,
-                                             const void *ptr,
-                                             unsigned int index,
-                                             size_t maxlen)
+                                           const void *ptr,
+                                           unsigned int index,
+                                           size_t maxlen)
 {
     const entity_desc *ed = get_entity_descriptor();
     const member_desc *md = ed->get_member_desc_by_id(fldid);
@@ -1237,9 +1237,9 @@ vlg::RetCode nclass::set_field_by_id_index(unsigned int fldid,
 }
 
 vlg::RetCode nclass::set_field_by_name_index(const char *fldname,
-                                               const void *ptr,
-                                               unsigned int index,
-                                               size_t maxlen)
+                                             const void *ptr,
+                                             unsigned int index,
+                                             size_t maxlen)
 {
     const entity_desc *ed = get_entity_descriptor();
     const member_desc *md = ed->get_member_desc_by_name(fldname);
@@ -1255,7 +1255,7 @@ vlg::RetCode nclass::set_field_by_name_index(const char *fldname,
 }
 
 vlg::RetCode nclass::is_field_zero_by_id(unsigned int fldid,
-                                           bool &res) const
+                                         bool &res) const
 {
     const entity_desc *ed = get_entity_descriptor();
     const member_desc *md = ed->get_member_desc_by_id(fldid);
@@ -1272,7 +1272,7 @@ vlg::RetCode nclass::is_field_zero_by_id(unsigned int fldid,
 }
 
 vlg::RetCode nclass::is_field_zero_by_name(const char *fldname,
-                                             bool &res) const
+                                           bool &res) const
 {
     const entity_desc *ed = get_entity_descriptor();
     const member_desc *md = ed->get_member_desc_by_name(fldname);
@@ -1289,9 +1289,9 @@ vlg::RetCode nclass::is_field_zero_by_name(const char *fldname,
 }
 
 vlg::RetCode nclass::is_field_zero_by_id_index(unsigned int fldid,
-                                                 unsigned int index,
-                                                 unsigned int nmenb,
-                                                 bool &res) const
+                                               unsigned int index,
+                                               unsigned int nmenb,
+                                               bool &res) const
 {
     const entity_desc *ed = get_entity_descriptor();
     const member_desc *md = ed->get_member_desc_by_id(fldid);
@@ -1307,9 +1307,9 @@ vlg::RetCode nclass::is_field_zero_by_id_index(unsigned int fldid,
 }
 
 vlg::RetCode nclass::is_field_zero_by_name_index(const char *fldname,
-                                                   unsigned int index,
-                                                   unsigned int nmenb,
-                                                   bool &res) const
+                                                 unsigned int index,
+                                                 unsigned int nmenb,
+                                                 bool &res) const
 {
     const entity_desc *ed = get_entity_descriptor();
     const member_desc *md = ed->get_member_desc_by_name(fldname);
@@ -1355,8 +1355,8 @@ vlg::RetCode nclass::set_field_zero_by_name(const char *fldname)
 }
 
 vlg::RetCode nclass::set_field_zero_by_name_index(const char *fldname,
-                                                    unsigned int index,
-                                                    unsigned int nmenb)
+                                                  unsigned int index,
+                                                  unsigned int nmenb)
 {
     const entity_desc *ed = get_entity_descriptor();
     const member_desc *md = ed->get_member_desc_by_name(fldname);
@@ -1372,8 +1372,8 @@ vlg::RetCode nclass::set_field_zero_by_name_index(const char *fldname,
 }
 
 vlg::RetCode nclass::set_field_zero_by_id_index(unsigned int fldid,
-                                                  unsigned int index,
-                                                  unsigned int nmenb)
+                                                unsigned int index,
+                                                unsigned int nmenb)
 {
     const entity_desc *ed = get_entity_descriptor();
     const member_desc *md = ed->get_member_desc_by_id(fldid);
@@ -1428,7 +1428,7 @@ void enum_edesc_fnd_idx(const vlg::hash_map &map,
 {
     ENM_FND_IDX_REC_UD *rud = static_cast<ENM_FND_IDX_REC_UD *>(ud);
     const member_desc *mmbrd = *(const member_desc **)ptr;
-    if(mmbrd->get_field_blz_type() == Type_ENTITY) {
+    if(mmbrd->get_field_vlg_type() == Type_ENTITY) {
         if(mmbrd->get_field_entity_type() == EntityType_ENUM) {
             //treat enum as number
             if(mmbrd->get_field_nmemb() > 1) {
@@ -1485,7 +1485,7 @@ void enum_edesc_fnd_idx(const vlg::hash_map &map,
         }
     } else {
         //primitive type
-        if(mmbrd->get_field_blz_type() == Type_ASCII) {
+        if(mmbrd->get_field_vlg_type() == Type_ASCII) {
             if(rud->plain_idx_ == *(rud->current_plain_idx_)) {
                 *(rud->obj_fld_ptr_) = rud->obj_ptr_ + mmbrd->get_field_offset();
                 rud->fld_mmbrd_ = mmbrd;
@@ -1617,7 +1617,7 @@ void enum_keyset_prim_key_buff_value(const vlg::linked_list &list,
     const member_desc *mmbrd = *(const member_desc **)ptr;
     const char *obj_f_ptr = NULL;
     obj_f_ptr = rud->obj_ptr_ + mmbrd->get_field_offset();
-    int sout = FillBuff_FldValue(obj_f_ptr, mmbrd->get_field_blz_type(),
+    int sout = FillBuff_FldValue(obj_f_ptr, mmbrd->get_field_vlg_type(),
                                  mmbrd->get_field_nmemb(),
                                  &rud->out_[rud->cur_idx_],
                                  rud->max_out_len_);
@@ -1722,7 +1722,7 @@ void enum_keyset_prim_key_str_value(const vlg::linked_list &list,
     const member_desc *mmbrd = *(const member_desc **)ptr;
     const char *obj_f_ptr = NULL;
     obj_f_ptr = rud->obj_ptr_ + mmbrd->get_field_offset();
-    FillStr_FldValue(obj_f_ptr, mmbrd->get_field_blz_type(),
+    FillStr_FldValue(obj_f_ptr, mmbrd->get_field_vlg_type(),
                      mmbrd->get_field_nmemb(), rud->out_);
 }
 

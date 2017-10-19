@@ -19,13 +19,13 @@
  *
  */
 
-#include "blaze_persistence.h"
+#include "vlg_persistence.h"
 
 #ifdef WIN32
-#ifdef BLZ_PERS_DRIV_EXPORTS
+#ifdef VLG_PERS_DRIV_EXPORTS
 #define EXP_SYM __declspec(dllexport)
 #else
-#ifdef BLZ_PERS_DRIV_IMPORTS
+#ifdef VLG_PERS_DRIV_IMPORTS
 #define EXP_SYM __declspec(dllimport)
 #else
 #define EXP_SYM
@@ -40,20 +40,20 @@
 #endif
 #endif
 
-#define BLZ_PERS_DRIV_SQLITE_ID     101
-#define BLZ_PERS_DRIV_SQLITE_NAME   "sqlite"
+#define VLG_PERS_DRIV_SQLITE_ID     101
+#define VLG_PERS_DRIV_SQLITE_NAME   "sqlite"
 
 namespace vlg {
 
 /***************************
-BLZ_PERS_DRIV_SQLITE VERSION
+VLG_PERS_DRIV_SQLITE VERSION
 ***************************/
 extern "C" {
     EXP_SYM const char *get_pers_driv_ver_sqlite();
 }
 
 /*******************************
-BLZ_PERS_DRIV_SQLITE ENTRY POINT
+VLG_PERS_DRIV_SQLITE ENTRY POINT
 *******************************/
 extern "C" {
     EXP_SYM persistence_driver_int *get_pers_driv_sqlite();

@@ -19,8 +19,8 @@
  *
  */
 
-#include "blz_drv_sqlite.h"
-#include "blz_persistence_int.h"
+#include "vlg_drv_sqlite.h"
+#include "vlg_persistence_impl.h"
 #include "sqlite3.h"
 
 #if defined(_MSC_VER)
@@ -29,20 +29,20 @@
 
 namespace vlg {
 
-enum BLZ_SQLITE_DATATYPE {
-    BLZ_SQLITE_DATATYPE_Undef,
-    BLZ_SQLITE_DATATYPE_NUMERIC,
-    BLZ_SQLITE_DATATYPE_INTEGER,
-    BLZ_SQLITE_DATATYPE_REAL,
-    BLZ_SQLITE_DATATYPE_TEXT,
-    BLZ_SQLITE_DATATYPE_BLOB,
+enum VLG_SQLITE_DATATYPE {
+    VLG_SQLITE_DATATYPE_Undef,
+    VLG_SQLITE_DATATYPE_NUMERIC,
+    VLG_SQLITE_DATATYPE_INTEGER,
+    VLG_SQLITE_DATATYPE_REAL,
+    VLG_SQLITE_DATATYPE_TEXT,
+    VLG_SQLITE_DATATYPE_BLOB,
 };
 
-#define BLZ_SQLITE_DTYPE_NUMERIC    "NUMERIC"
-#define BLZ_SQLITE_DTYPE_INTEGER    "INTEGER"
-#define BLZ_SQLITE_DTYPE_REAL       "REAL"
-#define BLZ_SQLITE_DTYPE_TEXT       "TEXT"
-#define BLZ_SQLITE_DTYPE_BLOB       "BLOB"
+#define VLG_SQLITE_DTYPE_NUMERIC    "NUMERIC"
+#define VLG_SQLITE_DTYPE_INTEGER    "INTEGER"
+#define VLG_SQLITE_DTYPE_REAL       "REAL"
+#define VLG_SQLITE_DTYPE_TEXT       "TEXT"
+#define VLG_SQLITE_DTYPE_BLOB       "BLOB"
 
 #define SQLITE_VAL_BUFF 256
 #define SQLITE_FIDX_BUFF 16
@@ -71,25 +71,25 @@ const char *SQLITE_TypeStr_From_BLZType(Type type)
 {
     switch(type) {
         case Type_BOOL:
-            return BLZ_SQLITE_DTYPE_NUMERIC;
+            return VLG_SQLITE_DTYPE_NUMERIC;
         case Type_INT16:
-            return BLZ_SQLITE_DTYPE_INTEGER;
+            return VLG_SQLITE_DTYPE_INTEGER;
         case Type_UINT16:
-            return BLZ_SQLITE_DTYPE_INTEGER;
+            return VLG_SQLITE_DTYPE_INTEGER;
         case Type_INT32:
-            return BLZ_SQLITE_DTYPE_INTEGER;
+            return VLG_SQLITE_DTYPE_INTEGER;
         case Type_UINT32:
-            return BLZ_SQLITE_DTYPE_INTEGER;
+            return VLG_SQLITE_DTYPE_INTEGER;
         case Type_INT64:
-            return BLZ_SQLITE_DTYPE_INTEGER;
+            return VLG_SQLITE_DTYPE_INTEGER;
         case Type_UINT64:
-            return BLZ_SQLITE_DTYPE_INTEGER;
+            return VLG_SQLITE_DTYPE_INTEGER;
         case Type_FLOAT32:
-            return BLZ_SQLITE_DTYPE_REAL;
+            return VLG_SQLITE_DTYPE_REAL;
         case Type_FLOAT64:
-            return BLZ_SQLITE_DTYPE_REAL;
+            return VLG_SQLITE_DTYPE_REAL;
         case Type_ASCII:
-            return BLZ_SQLITE_DTYPE_TEXT;
+            return VLG_SQLITE_DTYPE_TEXT;
         default:
             return NULL;
     }
@@ -137,7 +137,7 @@ static int entity_fill_fld(const member_desc *mmbrd,
                            char *obj_f_ptr)
 {
     const char *cptr;
-    switch(mmbrd->get_field_blz_type()) {
+    switch(mmbrd->get_field_vlg_type()) {
         case Type_BOOL:
             *(bool *)obj_f_ptr = sqlite3_column_int(stmt, colmn_idx) ? true : false;
             return 0;
@@ -219,7 +219,7 @@ char *SQLTE_ENM_BUFF::getValBuff_RSZ(size_t req_size)
 {
     if(req_size > val_buf_sz_) {
         val_buf_ = (char *)vlg::grow_buff_or_die(val_buf_, val_buf_sz_,
-                                                   (req_size - val_buf_sz_));
+                                                 (req_size - val_buf_sz_));
         val_buf_sz_ = req_size;
     }
     return val_buf_;
@@ -260,7 +260,7 @@ void enum_mmbrs_fill_entity(const vlg::hash_map &map, const void *key,
     SQLTE_ENM_SELECT_REC_UD *rud = static_cast<SQLTE_ENM_SELECT_REC_UD *>(ud);
     const member_desc *mmbrd = *(const member_desc **)ptr;
     char *obj_f_ptr = NULL;
-    if(mmbrd->get_field_blz_type() == Type_ENTITY) {
+    if(mmbrd->get_field_vlg_type() == Type_ENTITY) {
         if(mmbrd->get_field_entity_type() == EntityType_ENUM) {
             //treat enum as number
             if(mmbrd->get_field_nmemb() > 1) {
@@ -300,7 +300,7 @@ void enum_mmbrs_fill_entity(const vlg::hash_map &map, const void *key,
         }
     } else {
         //primitive type
-        if(mmbrd->get_field_blz_type() == Type_ASCII) {
+        if(mmbrd->get_field_vlg_type() == Type_ASCII) {
             //value
             obj_f_ptr = rud->obj_ptr + mmbrd->get_field_offset();
             strncpy(obj_f_ptr, (const char *)sqlite3_column_text(rud->stmt,
@@ -359,7 +359,7 @@ void enum_mmbrs_update(const vlg::hash_map &map, const void *key,
         sprintf(idx_b, "%s%u", idx_prfx.length() ? "_" : "", rud->fld_idx);
         idx_prfx.append(idx_b);
     }
-    if(mmbrd->get_field_blz_type() == Type_ENTITY) {
+    if(mmbrd->get_field_vlg_type() == Type_ENTITY) {
         if(mmbrd->get_field_entity_type() == EntityType_ENUM) {
             //treat enum as number
             //coma handling
@@ -442,7 +442,7 @@ void enum_mmbrs_update(const vlg::hash_map &map, const void *key,
         } else {
             rud->set_section->append(", ");
         }
-        if(mmbrd->get_field_blz_type() == Type_ASCII) {
+        if(mmbrd->get_field_vlg_type() == Type_ASCII) {
             if(rud->prfx->length()) {
                 rud->set_section->append(idx_prfx);
                 rud->set_section->append("_");
@@ -478,7 +478,7 @@ void enum_mmbrs_update(const vlg::hash_map &map, const void *key,
                 //value
                 obj_f_ptr = rud->obj_ptr + mmbrd->get_field_offset() +
                             mmbrd->get_field_type_size()*i;
-                fill_buff_fld_value_1(obj_f_ptr, mmbrd->get_field_blz_type(),
+                fill_buff_fld_value_1(obj_f_ptr, mmbrd->get_field_vlg_type(),
                                       rud->enm_buff->getValBuff());
                 rud->set_section->append("=");
                 rud->set_section->append(rud->enm_buff->getValBuff());
@@ -491,7 +491,7 @@ void enum_mmbrs_update(const vlg::hash_map &map, const void *key,
             rud->set_section->append(mmbrd->get_member_name());
             //value
             obj_f_ptr = rud->obj_ptr + mmbrd->get_field_offset();
-            fill_buff_fld_value_1(obj_f_ptr, mmbrd->get_field_blz_type(),
+            fill_buff_fld_value_1(obj_f_ptr, mmbrd->get_field_vlg_type(),
                                   rud->enm_buff->getValBuff());
             rud->set_section->append("=");
             rud->set_section->append(rud->enm_buff->getValBuff());
@@ -534,7 +534,7 @@ struct SQLTE_ENM_INSERT_REC_UD {
 };
 
 //-----------------------------
-// BLZ_PERS_QUERY_SQLITE
+// VLG_PERS_QUERY_SQLITE
 //-----------------------------
 class pers_query_sqlite : public persistence_query_int {
     public:
@@ -569,7 +569,7 @@ sqlite3_stmt *pers_query_sqlite::get_sqlite_stmt()
 }
 
 //-----------------------------
-// BLZ_PERS_CONN_SQLITE - CONNECTION
+// VLG_PERS_CONN_SQLITE - CONNECTION
 //-----------------------------
 class pers_conn_sqlite : public persistence_connection_int {
     public:
@@ -577,18 +577,18 @@ class pers_conn_sqlite : public persistence_connection_int {
                          persistence_connection_pool &conn_pool);
 
         vlg::RetCode sqlite_connect(const char *filename,
-                                      int flags);
+                                    int flags);
 
         vlg::RetCode sqlite_disconnect();
 
         vlg::RetCode sqlite_exec_stmt(const char *stmt,
-                                        bool fail_is_error = true);
+                                      bool fail_is_error = true);
 
         vlg::RetCode sqlite_prepare_stmt(const char *sql_stmt,
-                                           sqlite3_stmt **stmt);
+                                         sqlite3_stmt **stmt);
 
         vlg::RetCode sqlite_step_stmt(sqlite3_stmt *stmt,
-                                        int &sqlite_rc);
+                                      int &sqlite_rc);
 
         vlg::RetCode sqlite_release_stmt(sqlite3_stmt *stmt);
 
@@ -597,54 +597,54 @@ class pers_conn_sqlite : public persistence_connection_int {
         virtual vlg::RetCode do_connect();
 
         virtual vlg::RetCode do_create_table(const entity_manager &bem,
-                                               const entity_desc &edesc,
-                                               bool drop_if_exist);
+                                             const entity_desc &edesc,
+                                             bool drop_if_exist);
 
         virtual vlg::RetCode do_select(unsigned int key,
-                                         const entity_manager &bem,
-                                         unsigned int &ts0_out,
-                                         unsigned int &ts1_out,
-                                         nclass &in_out_obj);
+                                       const entity_manager &bem,
+                                       unsigned int &ts0_out,
+                                       unsigned int &ts1_out,
+                                       nclass &in_out_obj);
 
         virtual vlg::RetCode do_update(unsigned int key,
-                                         const entity_manager &bem,
-                                         unsigned int ts0,
-                                         unsigned int ts1,
-                                         const nclass &in_obj);
+                                       const entity_manager &bem,
+                                       unsigned int ts0,
+                                       unsigned int ts1,
+                                       const nclass &in_obj);
 
         virtual vlg::RetCode do_delete(unsigned int key,
-                                         const entity_manager &bem,
-                                         unsigned int ts0,
-                                         unsigned int ts1,
-                                         PersistenceDeletionMode mode,
-                                         const nclass &in_obj);
+                                       const entity_manager &bem,
+                                       unsigned int ts0,
+                                       unsigned int ts1,
+                                       PersistenceDeletionMode mode,
+                                       const nclass &in_obj);
 
         virtual vlg::RetCode do_insert(const entity_manager &bem,
-                                         unsigned int ts0,
-                                         unsigned int ts1,
-                                         const nclass &in_obj,
-                                         bool fail_is_error = true);
+                                       unsigned int ts0,
+                                       unsigned int ts1,
+                                       const nclass &in_obj,
+                                       bool fail_is_error = true);
 
         virtual vlg::RetCode do_execute_query(const entity_manager &bem,
-                                                const char *sql,
-                                                persistence_query_int **qry_out);
+                                              const char *sql,
+                                              persistence_query_int **qry_out);
 
         virtual vlg::RetCode do_release_query(persistence_query_int *qry);
 
         virtual vlg::RetCode do_next_entity_from_query(persistence_query_int *qry,
-                                                         unsigned int &ts0_out,
-                                                         unsigned int &ts1_out,
-                                                         nclass &out_obj);
+                                                       unsigned int &ts0_out,
+                                                       unsigned int &ts1_out,
+                                                       nclass &out_obj);
 
         virtual vlg::RetCode do_execute_statement(const char *sql);
 
 
     private:
         static vlg::RetCode read_timestamp_and_del_from_record(sqlite3_stmt  *stmt,
-                                                                 int           &sqlite_rc,
-                                                                 unsigned int  *ts0,
-                                                                 unsigned int  *ts1,
-                                                                 bool          *del);
+                                                               int           &sqlite_rc,
+                                                               unsigned int  *ts0,
+                                                               unsigned int  *ts1,
+                                                               bool          *del);
 
 
     protected:
@@ -657,7 +657,7 @@ class pers_conn_sqlite : public persistence_connection_int {
         //-----------------------------
         class persistence_task_sqlite : public persistence_task {
             public:
-                persistence_task_sqlite(pers_conn_sqlite &sql_conn, BLZ_PERS_TASK_OP op_code) :
+                persistence_task_sqlite(pers_conn_sqlite &sql_conn, VLG_PERS_TASK_OP op_code) :
                     persistence_task(op_code),
                     sql_conn_(sql_conn),
                     sel_rud_(NULL) {
@@ -669,7 +669,7 @@ class pers_conn_sqlite : public persistence_connection_int {
                     IFLOG(trc(TH_ID, LS_OPN "%s(url:%s, usr:%s, psswd:%s)", __func__, pcp.url(),
                               pcp.user(), pcp.password()))
                     vlg::RetCode cdrs_res = sql_conn_.sqlite_connect(pcp.url(),
-                                                                       SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
+                                                                     SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
                     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
                     return cdrs_res;
                 }
@@ -788,7 +788,7 @@ class pers_conn_sqlite : public persistence_connection_int {
                 virtual vlg::RetCode do_release_query() {
                     pers_query_sqlite *qry_sqlite = static_cast<pers_query_sqlite *>(in_out_query_);
                     vlg::RetCode cdrs_res = sql_conn_.sqlite_release_stmt(
-                                                  qry_sqlite->get_sqlite_stmt());
+                                                qry_sqlite->get_sqlite_stmt());
                     return cdrs_res;
                 }
 
@@ -880,7 +880,7 @@ vlg::RetCode pers_conn_sqlite::sqlite_disconnect()
 }
 
 vlg::RetCode pers_conn_sqlite::sqlite_exec_stmt(const char *stmt,
-                                                  bool fail_is_error)
+                                                bool fail_is_error)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(id:%d, stmt:%p)", __func__, id_, stmt))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
@@ -906,7 +906,7 @@ vlg::RetCode pers_conn_sqlite::sqlite_exec_stmt(const char *stmt,
 }
 
 vlg::RetCode pers_conn_sqlite::sqlite_prepare_stmt(const char *sql_stmt,
-                                                     sqlite3_stmt **stmt)
+                                                   sqlite3_stmt **stmt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sql_stmt:p, stmt:%p)", __func__, sql_stmt, stmt))
     if(!stmt) {
@@ -927,7 +927,7 @@ vlg::RetCode pers_conn_sqlite::sqlite_prepare_stmt(const char *sql_stmt,
 }
 
 vlg::RetCode pers_conn_sqlite::sqlite_step_stmt(sqlite3_stmt *stmt,
-                                                  int &sqlite_rc)
+                                                int &sqlite_rc)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(stmt:%p)", __func__, stmt))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
@@ -997,7 +997,7 @@ vlg::RetCode pers_conn_sqlite::do_connect()
         return vlg::RetCode_UNVRSC;
     }
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
-                                                                BLZ_PERS_TASK_OP_CONNECT);
+                                                                VLG_PERS_TASK_OP_CONNECT);
     if((cdrs_res = worker_->submit_task(task))) {
         IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, cdrs_res))
     } else {
@@ -1035,7 +1035,7 @@ void enum_mmbrs_create_table(const vlg::hash_map &map, const void *key,
         sprintf(idx_b, "%s%u", idx_prfx.length() ? "_" : "", rud->fld_idx);
         idx_prfx.append(idx_b);
     }
-    if(mmbrd->get_field_blz_type() == Type_ENTITY) {
+    if(mmbrd->get_field_vlg_type() == Type_ENTITY) {
         if(mmbrd->get_field_entity_type() == EntityType_ENUM) {
             //treat enum as number
             if(mmbrd->get_field_nmemb() > 1) {
@@ -1047,7 +1047,7 @@ void enum_mmbrs_create_table(const vlg::hash_map &map, const void *key,
                     sprintf(idx_b, "_%u", i);
                     rud->create_stmt->append(mmbrd->get_member_name());
                     rud->create_stmt->append(idx_b);
-                    rud->create_stmt->append(" " BLZ_SQLITE_DTYPE_NUMERIC", ");
+                    rud->create_stmt->append(" " VLG_SQLITE_DTYPE_NUMERIC", ");
                 }
             } else {
                 if(rud->prfx->length()) {
@@ -1055,7 +1055,7 @@ void enum_mmbrs_create_table(const vlg::hash_map &map, const void *key,
                     rud->create_stmt->append("_");
                 }
                 rud->create_stmt->append(mmbrd->get_member_name());
-                rud->create_stmt->append(" " BLZ_SQLITE_DTYPE_NUMERIC", ");
+                rud->create_stmt->append(" " VLG_SQLITE_DTYPE_NUMERIC", ");
             }
         } else {
             //class, struct is a recursive step.
@@ -1088,13 +1088,13 @@ void enum_mmbrs_create_table(const vlg::hash_map &map, const void *key,
         }
     } else {
         //primitive type
-        if(mmbrd->get_field_blz_type() == Type_ASCII) {
+        if(mmbrd->get_field_vlg_type() == Type_ASCII) {
             if(rud->prfx->length()) {
                 rud->create_stmt->append(idx_prfx);
                 rud->create_stmt->append("_");
             }
             rud->create_stmt->append(mmbrd->get_member_name());
-            rud->create_stmt->append(" " BLZ_SQLITE_DTYPE_TEXT", ");
+            rud->create_stmt->append(" " VLG_SQLITE_DTYPE_TEXT", ");
         } else if(mmbrd->get_field_nmemb() > 1) {
             for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
                 if(rud->prfx->length()) {
@@ -1106,7 +1106,7 @@ void enum_mmbrs_create_table(const vlg::hash_map &map, const void *key,
                 rud->create_stmt->append(idx_b);
                 rud->create_stmt->append(" ");
                 rud->create_stmt->append(SQLITE_TypeStr_From_BLZType(
-                                             mmbrd->get_field_blz_type()));
+                                             mmbrd->get_field_vlg_type()));
                 rud->create_stmt->append(", ");
             }
         } else {
@@ -1117,7 +1117,7 @@ void enum_mmbrs_create_table(const vlg::hash_map &map, const void *key,
             rud->create_stmt->append(mmbrd->get_member_name());
             rud->create_stmt->append(" ");
             rud->create_stmt->append(SQLITE_TypeStr_From_BLZType(
-                                         mmbrd->get_field_blz_type()));
+                                         mmbrd->get_field_vlg_type()));
             rud->create_stmt->append(", ");
         }
     }
@@ -1163,8 +1163,8 @@ void enum_keys_create_table(const vlg::hash_map &map, const void *key,
 }
 
 vlg::RetCode pers_conn_sqlite::do_create_table(const entity_manager &bem,
-                                                 const entity_desc &edesc,
-                                                 bool drop_if_exist)
+                                               const entity_desc &edesc,
+                                               bool drop_if_exist)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(drop_if_exist:%d)", __func__, drop_if_exist))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
@@ -1174,9 +1174,9 @@ vlg::RetCode pers_conn_sqlite::do_create_table(const entity_manager &bem,
     RETURN_IF_NOT_OK(create_stmt.assign("CREATE TABLE "))
     RETURN_IF_NOT_OK(create_stmt.append(edesc.get_entity_name()))
     RETURN_IF_NOT_OK(create_stmt.append("("))
-    RETURN_IF_NOT_OK(create_stmt.append(P_F_TS0" " BLZ_SQLITE_DTYPE_NUMERIC", "))
-    RETURN_IF_NOT_OK(create_stmt.append(P_F_TS1" " BLZ_SQLITE_DTYPE_NUMERIC", "))
-    RETURN_IF_NOT_OK(create_stmt.append(P_F_DEL" " BLZ_SQLITE_DTYPE_NUMERIC", "))
+    RETURN_IF_NOT_OK(create_stmt.append(P_F_TS0" " VLG_SQLITE_DTYPE_NUMERIC", "))
+    RETURN_IF_NOT_OK(create_stmt.append(P_F_TS1" " VLG_SQLITE_DTYPE_NUMERIC", "))
+    RETURN_IF_NOT_OK(create_stmt.append(P_F_DEL" " VLG_SQLITE_DTYPE_NUMERIC", "))
     const vlg::hash_map &nm_desc = edesc.get_opaque()->GetMap_NM_MMBRDSC();
     vlg::ascii_string prfx;
     RETURN_IF_NOT_OK(prfx.assign(""))
@@ -1196,7 +1196,7 @@ vlg::RetCode pers_conn_sqlite::do_create_table(const entity_manager &bem,
     idk_desc.enum_elements(enum_keys_create_table, &rud);
     RETURN_IF_NOT_OK(create_stmt.append(");"))
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
-                                                                BLZ_PERS_TASK_OP_CREATETABLE);
+                                                                VLG_PERS_TASK_OP_CREATETABLE);
     task->in_edesc(edesc);
     task->in_drop_if_exist(drop_if_exist);
     task->stmt_bf(create_stmt);
@@ -1228,7 +1228,7 @@ void enum_keyset_select(const vlg::linked_list &list, const void *ptr,
         rud->where_claus->append(" AND ");
     }
     rud->where_claus->append(mmbrd->get_member_name());
-    if(mmbrd->get_field_blz_type() == Type_ENTITY) {
+    if(mmbrd->get_field_vlg_type() == Type_ENTITY) {
         //treat enum as number
         obj_f_ptr = rud->obj_ptr + mmbrd->get_field_offset();
         sprintf(rud->enm_buff->getValBuff(), "%d", *(int *)obj_f_ptr);
@@ -1236,7 +1236,7 @@ void enum_keyset_select(const vlg::linked_list &list, const void *ptr,
         rud->where_claus->append(rud->enm_buff->getValBuff());
     } else {
         //can be only a primitive type
-        if(mmbrd->get_field_blz_type() == Type_ASCII) {
+        if(mmbrd->get_field_vlg_type() == Type_ASCII) {
             obj_f_ptr = rud->obj_ptr + mmbrd->get_field_offset();
             sprintf(rud->enm_buff->getValBuff_RSZ(mmbrd->get_field_nmemb()), "%s",
                     obj_f_ptr);
@@ -1245,7 +1245,7 @@ void enum_keyset_select(const vlg::linked_list &list, const void *ptr,
             rud->where_claus->append("'");
         } else {
             obj_f_ptr = rud->obj_ptr + mmbrd->get_field_offset();
-            fill_buff_fld_value_1(obj_f_ptr, mmbrd->get_field_blz_type(),
+            fill_buff_fld_value_1(obj_f_ptr, mmbrd->get_field_vlg_type(),
                                   rud->enm_buff->getValBuff());
             rud->where_claus->append("=");
             rud->where_claus->append(rud->enm_buff->getValBuff());
@@ -1254,10 +1254,10 @@ void enum_keyset_select(const vlg::linked_list &list, const void *ptr,
 }
 
 vlg::RetCode pers_conn_sqlite::do_select(unsigned int key,
-                                           const entity_manager &bem,
-                                           unsigned int &ts0_out,
-                                           unsigned int &ts1_out,
-                                           nclass &in_out_obj)
+                                         const entity_manager &bem,
+                                         unsigned int &ts0_out,
+                                         unsigned int &ts1_out,
+                                         nclass &in_out_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%d)", __func__, key))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
@@ -1312,7 +1312,7 @@ vlg::RetCode pers_conn_sqlite::do_select(unsigned int key,
     RETURN_IF_NOT_OK(select_stmt.append(where_claus));
     RETURN_IF_NOT_OK(select_stmt.append(";"));
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
-                                                                BLZ_PERS_TASK_OP_SELECT);
+                                                                VLG_PERS_TASK_OP_SELECT);
     task->in_bem(bem);
     task->in_key(key);
     task->in_out_ts0(ts0_out);
@@ -1351,7 +1351,7 @@ void enum_keyset_update(const vlg::linked_list &list, const void *ptr,
         rud->where_claus->append(" AND ");
     }
     rud->where_claus->append(mmbrd->get_member_name());
-    if(mmbrd->get_field_blz_type() == Type_ENTITY) {
+    if(mmbrd->get_field_vlg_type() == Type_ENTITY) {
         //treat enum as number
         obj_f_ptr = rud->obj_ptr + mmbrd->get_field_offset();
         sprintf(rud->enm_buff->getValBuff(), "%d", *(int *)obj_f_ptr);
@@ -1359,7 +1359,7 @@ void enum_keyset_update(const vlg::linked_list &list, const void *ptr,
         rud->where_claus->append(rud->enm_buff->getValBuff());
     } else {
         //can be only a primitive type
-        if(mmbrd->get_field_blz_type() == Type_ASCII) {
+        if(mmbrd->get_field_vlg_type() == Type_ASCII) {
             obj_f_ptr = rud->obj_ptr + mmbrd->get_field_offset();
             sprintf(rud->enm_buff->getValBuff_RSZ(mmbrd->get_field_nmemb()), "%s",
                     obj_f_ptr);
@@ -1368,7 +1368,7 @@ void enum_keyset_update(const vlg::linked_list &list, const void *ptr,
             rud->where_claus->append("'");
         } else {
             obj_f_ptr = rud->obj_ptr + mmbrd->get_field_offset();
-            fill_buff_fld_value_1(obj_f_ptr, mmbrd->get_field_blz_type(),
+            fill_buff_fld_value_1(obj_f_ptr, mmbrd->get_field_vlg_type(),
                                   rud->enm_buff->getValBuff());
             rud->where_claus->append("=");
             rud->where_claus->append(rud->enm_buff->getValBuff());
@@ -1377,10 +1377,10 @@ void enum_keyset_update(const vlg::linked_list &list, const void *ptr,
 }
 
 vlg::RetCode pers_conn_sqlite::do_update(unsigned int key,
-                                           const entity_manager &bem,
-                                           unsigned int ts0,
-                                           unsigned int ts1,
-                                           const nclass &in_obj)
+                                         const entity_manager &bem,
+                                         unsigned int ts0,
+                                         unsigned int ts1,
+                                         const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%d)", __func__, key))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
@@ -1438,7 +1438,7 @@ vlg::RetCode pers_conn_sqlite::do_update(unsigned int key,
     RETURN_IF_NOT_OK(update_stmt.append(where_claus));
     RETURN_IF_NOT_OK(update_stmt.append(";"));
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
-                                                                BLZ_PERS_TASK_OP_UPDATE);
+                                                                VLG_PERS_TASK_OP_UPDATE);
     task->in_bem(bem);
     task->in_key(key);
     task->in_out_ts0(ts0);
@@ -1475,7 +1475,7 @@ void enum_keyset_delete(const vlg::linked_list &list, const void *ptr,
         rud->where_claus->append(" AND ");
     }
     rud->where_claus->append(mmbrd->get_member_name());
-    if(mmbrd->get_field_blz_type() == Type_ENTITY) {
+    if(mmbrd->get_field_vlg_type() == Type_ENTITY) {
         //treat enum as number
         obj_f_ptr = rud->obj_ptr + mmbrd->get_field_offset();
         sprintf(rud->enm_buff->getValBuff(), "%d", *(int *)obj_f_ptr);
@@ -1483,7 +1483,7 @@ void enum_keyset_delete(const vlg::linked_list &list, const void *ptr,
         rud->where_claus->append(rud->enm_buff->getValBuff());
     } else {
         //can be only a primitive type
-        if(mmbrd->get_field_blz_type() == Type_ASCII) {
+        if(mmbrd->get_field_vlg_type() == Type_ASCII) {
             obj_f_ptr = rud->obj_ptr + mmbrd->get_field_offset();
             sprintf(rud->enm_buff->getValBuff_RSZ(mmbrd->get_field_nmemb()), "%s",
                     obj_f_ptr);
@@ -1492,7 +1492,7 @@ void enum_keyset_delete(const vlg::linked_list &list, const void *ptr,
             rud->where_claus->append("'");
         } else {
             obj_f_ptr = rud->obj_ptr + mmbrd->get_field_offset();
-            fill_buff_fld_value_1(obj_f_ptr, mmbrd->get_field_blz_type(),
+            fill_buff_fld_value_1(obj_f_ptr, mmbrd->get_field_vlg_type(),
                                   rud->enm_buff->getValBuff());
             rud->where_claus->append("=");
             rud->where_claus->append(rud->enm_buff->getValBuff());
@@ -1501,11 +1501,11 @@ void enum_keyset_delete(const vlg::linked_list &list, const void *ptr,
 }
 
 vlg::RetCode pers_conn_sqlite::do_delete(unsigned int key,
-                                           const entity_manager &bem,
-                                           unsigned int ts0,
-                                           unsigned int ts1,
-                                           PersistenceDeletionMode  mode,
-                                           const nclass &in_obj)
+                                         const entity_manager &bem,
+                                         unsigned int ts0,
+                                         unsigned int ts1,
+                                         PersistenceDeletionMode  mode,
+                                         const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%d)", __func__, key))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
@@ -1550,7 +1550,7 @@ vlg::RetCode pers_conn_sqlite::do_delete(unsigned int key,
         RETURN_IF_NOT_OK(delete_stmt.append(";"));
     }
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
-                                                                BLZ_PERS_TASK_OP_DELETE);
+                                                                VLG_PERS_TASK_OP_DELETE);
     task->in_bem(bem);
     task->in_key(key);
     task->in_out_ts0(ts0);
@@ -1590,7 +1590,7 @@ void enum_mmbrs_insert(const vlg::hash_map &map, const void *key,
         sprintf(idx_b, "%s%u", idx_prfx.length() ? "_" : "", rud->fld_idx);
         idx_prfx.append(idx_b);
     }
-    if(mmbrd->get_field_blz_type() == Type_ENTITY) {
+    if(mmbrd->get_field_vlg_type() == Type_ENTITY) {
         if(mmbrd->get_field_entity_type() == EntityType_ENUM) {
             //treat enum as number
             //coma handling
@@ -1673,7 +1673,7 @@ void enum_mmbrs_insert(const vlg::hash_map &map, const void *key,
             rud->insert_stmt->append(", ");
             rud->values->append(", ");
         }
-        if(mmbrd->get_field_blz_type() == Type_ASCII) {
+        if(mmbrd->get_field_vlg_type() == Type_ASCII) {
             if(rud->prfx->length()) {
                 rud->insert_stmt->append(idx_prfx);
                 rud->insert_stmt->append("_");
@@ -1709,7 +1709,7 @@ void enum_mmbrs_insert(const vlg::hash_map &map, const void *key,
                 rud->insert_stmt->append(idx_b);
                 obj_f_ptr = rud->obj_ptr + mmbrd->get_field_offset() +
                             mmbrd->get_field_type_size()*i;
-                fill_buff_fld_value_1(obj_f_ptr, mmbrd->get_field_blz_type(),
+                fill_buff_fld_value_1(obj_f_ptr, mmbrd->get_field_vlg_type(),
                                       rud->enm_buff->getValBuff());
                 rud->values->append(rud->enm_buff->getValBuff());
             }
@@ -1721,7 +1721,7 @@ void enum_mmbrs_insert(const vlg::hash_map &map, const void *key,
             rud->insert_stmt->append(mmbrd->get_member_name());
             //value
             obj_f_ptr = rud->obj_ptr + mmbrd->get_field_offset();
-            fill_buff_fld_value_1(obj_f_ptr, mmbrd->get_field_blz_type(),
+            fill_buff_fld_value_1(obj_f_ptr, mmbrd->get_field_vlg_type(),
                                   rud->enm_buff->getValBuff());
             rud->values->append(rud->enm_buff->getValBuff());
         }
@@ -1729,10 +1729,10 @@ void enum_mmbrs_insert(const vlg::hash_map &map, const void *key,
 }
 
 vlg::RetCode pers_conn_sqlite::do_insert(const entity_manager &bem,
-                                           unsigned int ts0,
-                                           unsigned int ts1,
-                                           const nclass &in_obj,
-                                           bool fail_is_error)
+                                         unsigned int ts0,
+                                         unsigned int ts1,
+                                         const nclass &in_obj,
+                                         bool fail_is_error)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
@@ -1775,7 +1775,7 @@ vlg::RetCode pers_conn_sqlite::do_insert(const entity_manager &bem,
     RETURN_IF_NOT_OK(insert_stmt.append(values));
     RETURN_IF_NOT_OK(insert_stmt.append(");"));
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
-                                                                BLZ_PERS_TASK_OP_INSERT);
+                                                                VLG_PERS_TASK_OP_INSERT);
     task->in_fail_is_error(fail_is_error);
     task->stmt_bf(insert_stmt);
     IFLOG(dbg(TH_ID, LS_STM "%s() - insert_stmt:%s", __func__,
@@ -1797,13 +1797,13 @@ vlg::RetCode pers_conn_sqlite::do_insert(const entity_manager &bem,
 //--------------------- QUERY -------------------------------------------------
 
 vlg::RetCode pers_conn_sqlite::do_execute_query(const entity_manager &bem,
-                                                  const char *sql, persistence_query_int **qry_out)
+                                                const char *sql, persistence_query_int **qry_out)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sql:%p, qry_out:%p)", __func__, sql, qry_out))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
     IFLOG(trc(TH_ID, LS_QRY "%s() - query-sql:%s", __func__, sql))
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
-                                                                BLZ_PERS_TASK_OP_EXECUTEQUERY);
+                                                                VLG_PERS_TASK_OP_EXECUTEQUERY);
     task->in_bem(bem);
     task->in_sql(sql);
     if((cdrs_res = worker_->submit_task(task))) {
@@ -1823,7 +1823,7 @@ vlg::RetCode pers_conn_sqlite::do_release_query(persistence_query_int *qry)
     IFLOG(trc(TH_ID, LS_OPN "%s(qry:%p)", __func__, qry))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
-                                                                BLZ_PERS_TASK_OP_RELEASEQUERY);
+                                                                VLG_PERS_TASK_OP_RELEASEQUERY);
     task->in_out_query(qry);
     if((cdrs_res = worker_->submit_task(task))) {
         IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, cdrs_res))
@@ -1837,10 +1837,10 @@ vlg::RetCode pers_conn_sqlite::do_release_query(persistence_query_int *qry)
 }
 
 vlg::RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_int
-                                                           *qry,
-                                                           unsigned int &ts0_out,
-                                                           unsigned int &ts1_out,
-                                                           nclass &out_obj)
+                                                         *qry,
+                                                         unsigned int &ts0_out,
+                                                         unsigned int &ts1_out,
+                                                         nclass &out_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(qry:%p)", __func__, qry))
     pers_query_sqlite *qry_sqlite = static_cast<pers_query_sqlite *>(qry);
@@ -1872,7 +1872,7 @@ vlg::RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_int
                                     enm_buff
                                   };
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
-                                                                BLZ_PERS_TASK_OP_NEXTENTITYFROMQUERY);
+                                                                VLG_PERS_TASK_OP_NEXTENTITYFROMQUERY);
     task->in_out_query(qry_sqlite);
     task->in_out_ts0(ts0_out);
     task->in_out_ts1(ts1_out);
@@ -1900,7 +1900,7 @@ vlg::RetCode pers_conn_sqlite::do_execute_statement(const char *sql)
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
     IFLOG(trc(TH_ID, LS_STM "%s() - sql:%s", __func__, sql))
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
-                                                                BLZ_PERS_TASK_OP_EXECUTESTATEMENT);
+                                                                VLG_PERS_TASK_OP_EXECUTESTATEMENT);
     task->in_sql(sql);
     if((cdrs_res = worker_->submit_task(task))) {
         IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, cdrs_res))
@@ -1914,7 +1914,7 @@ vlg::RetCode pers_conn_sqlite::do_execute_statement(const char *sql)
 }
 
 //-----------------------------
-// BLZ_PERS_DRIV_SQLITE - DRIVER
+// VLG_PERS_DRIV_SQLITE - DRIVER
 //-----------------------------
 static unsigned int sqlite_connid = 0;
 unsigned int GetSQLITE_NEXT_CONNID()
@@ -1936,7 +1936,7 @@ class pers_driv_sqlite : public persistence_driver_int {
 
     public:
         virtual vlg::RetCode new_connection(persistence_connection_pool &conn_pool,
-                                              persistence_connection_int **new_conn);
+                                            persistence_connection_int **new_conn);
 
         virtual vlg::RetCode close_connection(persistence_connection_int &conn);
 
@@ -1964,7 +1964,7 @@ pers_driv_sqlite *pers_driv_sqlite::get_instance()
 }
 
 pers_driv_sqlite::pers_driv_sqlite() :
-    persistence_driver_int(BLZ_PERS_DRIV_SQLITE_ID)
+    persistence_driver_int(VLG_PERS_DRIV_SQLITE_ID)
 {
     IFLOG(trc(TH_ID, LS_CTR "%s(id:%d)", __func__, id_))
 }
@@ -1975,8 +1975,8 @@ pers_driv_sqlite::~pers_driv_sqlite()
 }
 
 vlg::RetCode pers_driv_sqlite::new_connection(persistence_connection_pool
-                                                &conn_pool,
-                                                persistence_connection_int **new_conn)
+                                              &conn_pool,
+                                              persistence_connection_int **new_conn)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(url:%s, usr:%s, psswd:%s, new_conn:%p)", __func__,
               conn_pool.url(), conn_pool.user(),
@@ -1998,7 +1998,7 @@ vlg::RetCode pers_driv_sqlite::new_connection(persistence_connection_pool
 }
 
 vlg::RetCode pers_driv_sqlite::close_connection(persistence_connection_int
-                                                  &conn)
+                                                &conn)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     vlg::RetCode res = static_cast<pers_conn_sqlite &>(conn).sqlite_disconnect();
@@ -2008,7 +2008,7 @@ vlg::RetCode pers_driv_sqlite::close_connection(persistence_connection_int
 
 const char *pers_driv_sqlite::get_driver_name()
 {
-    return BLZ_PERS_DRIV_SQLITE_NAME;
+    return VLG_PERS_DRIV_SQLITE_NAME;
 }
 
 /********************************
@@ -2022,7 +2022,7 @@ extern "C" {
 }
 
 /********************************
-BLZ_PERS_DRIV_SQLITE ENTRY POINT
+VLG_PERS_DRIV_SQLITE ENTRY POINT
 *******************************/
 extern "C" {
     EXP_SYM persistence_driver_int *get_pers_driv_sqlite()

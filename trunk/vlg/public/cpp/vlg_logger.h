@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef BLZ_LOG_H_
-#define BLZ_LOG_H_
+#ifndef VLG_LOG_H_
+#define VLG_LOG_H_
 #include "vlg.h"
 
 namespace vlg {

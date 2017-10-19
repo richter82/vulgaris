@@ -22,9 +22,9 @@
 #include <errno.h>
 #include <unistd.h>
 #endif
-#include "blz_acceptor_int.h"
-#include "blz_peer_int.h"
-#include "blz_connection_int.h"
+#include "vlg_acceptor_impl.h"
+#include "vlg_peer_impl.h"
+#include "vlg_connection_impl.h"
 
 namespace vlg {
 
@@ -59,12 +59,12 @@ vlg::RetCode WSA_destroy(vlg::logger *log_)
 #endif
 
 /*****************************************
- BLZ_ACCEPTOR
+ VLG_ACCEPTOR
 ******************************************/
 
 vlg::logger *acceptor::log_ = NULL;
 
-acceptor::acceptor(peer_int &peer) :
+acceptor::acceptor(peer_impl &peer) :
     peer_(peer),
     serv_socket_(INVALID_SOCKET)
 {
@@ -75,7 +75,7 @@ acceptor::acceptor(peer_int &peer) :
 
 acceptor::~acceptor()
 {
-    IFLOG(trc(TH_ID, LS_DTR "%s(srv_intrf:%s, srv_port:%d)", __func__,
+    IFLOG(trc(TH_ID, LS_DTR "%s(srv_implrf:%s, srv_port:%d)", __func__,
               inet_ntoa(serv_sockaddr_in_.sin_addr),
               ntohs(serv_sockaddr_in_.sin_port)))
     if(serv_socket_ != INVALID_SOCKET) {
@@ -92,7 +92,7 @@ acceptor::~acceptor()
     }
 }
 
-peer_int &acceptor::peer() {
+peer_impl &acceptor::peer() {
     return peer_;
 }
 
@@ -102,7 +102,7 @@ vlg::RetCode acceptor::set_sockaddr_in(sockaddr_in &serv_sockaddr_in) {
 }
 
 vlg::RetCode acceptor::create_server_socket(SOCKET &serv_socket) {
-    IFLOG(trc(TH_ID, LS_OPN "%s(srv_intrf:%s, srv_port:%d)", __func__,
+    IFLOG(trc(TH_ID, LS_OPN "%s(srv_implrf:%s, srv_port:%d)", __func__,
               inet_ntoa(serv_sockaddr_in_.sin_addr),
               ntohs(serv_sockaddr_in_.sin_port)))
     if((serv_socket = serv_socket_ = socket(AF_INET, SOCK_STREAM,
@@ -132,14 +132,14 @@ vlg::RetCode acceptor::create_server_socket(SOCKET &serv_socket) {
         IFLOG(err(TH_ID, LS_CLO "%s() -socket KO-", __func__))
         return vlg::RetCode_SYSERR;
     }
-    IFLOG(inf(TH_ID, LS_CLO "%s(srv_intrf:%s, srv_port:%d)", __func__,
+    IFLOG(inf(TH_ID, LS_CLO "%s(srv_implrf:%s, srv_port:%d)", __func__,
               inet_ntoa(serv_sockaddr_in_.sin_addr),
               ntohs(serv_sockaddr_in_.sin_port)))
     return vlg::RetCode_OK;
 }
 
 vlg::RetCode acceptor::accept(unsigned int new_connid,
-                                connection_int **new_conn) {
+                              connection_impl **new_conn) {
     IFLOG(trc(TH_ID, LS_OPN "%s(newconnid:%d, new_conn:%p)", __func__, new_connid,
               new_conn))
     SOCKET socket = INVALID_SOCKET;

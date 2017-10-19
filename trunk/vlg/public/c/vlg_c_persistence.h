@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef BLZ_C_PERSISTENCE_H_
-#define BLZ_C_PERSISTENCE_H_
+#ifndef VLG_C_PERSISTENCE_H_
+#define VLG_C_PERSISTENCE_H_
 #include "vlg.h"
 
 #if defined(__cplusplus)
@@ -49,7 +49,7 @@ RetCode persistence_manager_set_cfg_file_path_name(const char *file_path);
 
 RetCode persistence_manager_load_config(const char *file_name);
 
-    RetCode persistence_manager_start_all_drivers(void);
+RetCode persistence_manager_start_all_drivers(void);
 
 RetCode persistence_connection_bind(persistence_connection_wr pconn,
                                     unsigned int nclass_id,

@@ -21,7 +21,7 @@
 
 #ifndef CR_PARSE_H_
 #define CR_PARSE_H_
-#include "blaze_ascii_string.h"
+#include "vlg_ascii_string.h"
 
 namespace vlg {
 
@@ -146,7 +146,7 @@ if(tkn == CR_TK_SP || tkn == CR_TK_TAB){ \
 bool is_new_line(ascii_string &str);
 bool is_comment_line(const char *line);
 bool is_blank_line(const char *line);
-bool string_is_int_number(const char *str);
+bool string_is_impl_number(const char *str);
 RetCode load_file(FILE *fdesc, ascii_string &data);
 
 }

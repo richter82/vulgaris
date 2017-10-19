@@ -19,19 +19,19 @@
  *
  */
 
-#ifndef BLZ_TOOLKIT_TX_BLZ_CLASS_MODEL_H
-#define BLZ_TOOLKIT_TX_BLZ_CLASS_MODEL_H
+#ifndef VLG_TOOLKIT_TX_VLG_CLASS_MODEL_H
+#define VLG_TOOLKIT_TX_VLG_CLASS_MODEL_H
 
-#include "blz_toolkit_glob.h"
+#include "vlg_toolkit_glob.h"
 
-class blz_toolkit_tx_blz_class_model;
+class vlg_toolkit_tx_vlg_class_model;
 
 //------------------------------------------------------------------------------
 // GENERATE REP SECTION BGN
 //------------------------------------------------------------------------------
 
 struct ENM_GEN_TX_REP_REC_UD {
-    ENM_GEN_TX_REP_REC_UD(blz_toolkit_tx_blz_class_model &mdl,
+    ENM_GEN_TX_REP_REC_UD(vlg_toolkit_tx_vlg_class_model &mdl,
                           const vlg::entity_manager &bem,
                           vlg::ascii_string *prfx,
                           bool array_fld,
@@ -39,7 +39,7 @@ struct ENM_GEN_TX_REP_REC_UD {
 
     ~ENM_GEN_TX_REP_REC_UD();
 
-    blz_toolkit_tx_blz_class_model &mdl_;
+    vlg_toolkit_tx_vlg_class_model &mdl_;
     const vlg::entity_manager &bem_;
     vlg::ascii_string *prfx_;
 
@@ -54,17 +54,17 @@ struct ENM_GEN_TX_REP_REC_UD {
 
 
 //------------------------------------------------------------------------------
-// blz_toolkit_tx_blz_class_model
+// vlg_toolkit_tx_vlg_class_model
 //------------------------------------------------------------------------------
-class blz_toolkit_tx_blz_class_model : public QAbstractTableModel {
+class vlg_toolkit_tx_vlg_class_model : public QAbstractTableModel {
         Q_OBJECT
 
     public:
-        blz_toolkit_tx_blz_class_model(const vlg::entity_desc &edesc,
+        vlg_toolkit_tx_vlg_class_model(const vlg::entity_desc &edesc,
                                        const vlg::entity_manager &bem,
                                        vlg::transaction_int &tx,
                                        QObject *parent = 0);
-        ~blz_toolkit_tx_blz_class_model();
+        ~vlg_toolkit_tx_vlg_class_model();
 
         vlg::nclass *local_obj() const;
 
@@ -102,4 +102,4 @@ class blz_toolkit_tx_blz_class_model : public QAbstractTableModel {
         QHash<int, QString>     hdr_rowidx_rowname_;  //rowidx --> row_hdr_name
 };
 
-#endif // BLZ_TOOLKIT_TX_BLZ_CLASS_MODEL_H
+#endif // VLG_TOOLKIT_TX_VLG_CLASS_MODEL_H

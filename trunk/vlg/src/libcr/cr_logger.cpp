@@ -25,9 +25,9 @@
 #include <stdarg.h>
 #endif
 
-#include "blaze_logger.h"
-#include "blaze_model.h"
-#include "blz_glob_int.h"
+#include "vlg_logger.h"
+#include "vlg_model.h"
+#include "vlg_globint.h"
 
 #define LG_BUF_LEN_16K 16384
 

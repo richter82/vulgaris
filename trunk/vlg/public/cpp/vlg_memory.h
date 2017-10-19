@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef BLZ_MEM_H_
-#define BLZ_MEM_H_
+#ifndef VLG_MEM_H_
+#define VLG_MEM_H_
 #include "vlg.h"
 
 namespace vlg {

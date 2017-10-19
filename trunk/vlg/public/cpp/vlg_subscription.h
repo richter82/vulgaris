@@ -19,9 +19,9 @@
  *
  */
 
-#ifndef BLZ_CPP_SUBSCRIPTION_H_
-#define BLZ_CPP_SUBSCRIPTION_H_
-#include "blaze_memory.h"
+#ifndef VLG_CPP_SUBSCRIPTION_H_
+#define VLG_CPP_SUBSCRIPTION_H_
+#include "vlg_memory.h"
 
 namespace vlg {
 
@@ -141,13 +141,13 @@ class subscription : public vlg::collectable {
         vlg::RetCode start();
 
         vlg::RetCode start(SubscriptionType           sbs_type,
-                             SubscriptionMode           sbs_mode,
-                             SubscriptionFlowType       sbs_flow_type,
-                             SubscriptionDownloadType   sbs_dwnl_type,
-                             Encode                     class_encode,
-                             unsigned int               nclass_id,
-                             unsigned int               open_timestamp_0 = 0,
-                             unsigned int               open_timestamp_1 = 0);
+                           SubscriptionMode           sbs_mode,
+                           SubscriptionFlowType       sbs_flow_type,
+                           SubscriptionDownloadType   sbs_dwnl_type,
+                           Encode                     class_encode,
+                           unsigned int               nclass_id,
+                           unsigned int               open_timestamp_0 = 0,
+                           unsigned int               open_timestamp_1 = 0);
 
         /* this function must be called from same thread that called start()*/
         vlg::RetCode

@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef BLZ_BLZ_H_
-#define BLZ_BLZ_H_
+#ifndef VLG_VLG_H_
+#define VLG_VLG_H_
 
 #include <ctype.h>
 #include <stdio.h>
@@ -530,22 +530,22 @@ class nclass;
 class entity_desc;
 class entity_manager;
 class peer;
-class peer_int;
+class peer_impl;
 class connection;
-class connection_int;
+class connection_impl;
 class connection_factory;
 class transaction;
-class transaction_int;
+class transaction_impl;
 class transaction_factory;
 class subscription;
-class subscription_int;
+class subscription_impl;
 class subscription_event;
-class subscription_event_int;
+class subscription_event_impl;
 class subscription_factory;
-class persistence_connection_int;
-class persistence_driver_int;
-class persistence_query_int;
-class persistence_manager_int;
+class persistence_connection_impl;
+class persistence_driver_impl;
+class persistence_query_impl;
+class persistence_manager_impl;
 class persistence_task;
 class persistence_connection_pool;
 class persistence_worker;
@@ -553,7 +553,7 @@ class persistence_worker;
 typedef void *persistence_manager_wr;
 typedef void *persistence_connection_wr;
 typedef void *persistence_query_wr;
-typedef void *persistence_driver_int_wr;
+typedef void *persistence_driver_impl_wr;
 typedef void *peer_wr;
 typedef void *connection_wr;
 typedef void *transaction_wr;
@@ -563,7 +563,7 @@ typedef void *member_desc_wr;
 typedef void *entity_desc_wr;
 typedef void *key_desc_wr;
 typedef void *entity_manager_wr;
-typedef void *blaze_logger_wr;
+typedef void *vlg_logger_wr;
 typedef void *net_class_wr;
 typedef void *ascii_str_wr;
 

@@ -19,54 +19,52 @@
  *
  */
 
-#ifndef BLZ_SEL_H_
-#define BLZ_SEL_H_
-#include "blz_acceptor_int.h"
+#ifndef VLG_SEL_H_
+#define VLG_SEL_H_
+#include "vlg_proto.h"
+#include "vlg_acceptor_impl.h"
 
 namespace vlg {
-
-class peer;
-class peer_int;
 
 //-----------------------------
 // selector_event
 //-----------------------------
-class connection_int;
+class connection_impl;
 struct selector_event {
-    selector_event(BLZ_SELECTOR_Evt evt, connection_int *conn);
+    selector_event(VLG_SELECTOR_Evt evt, connection_impl *conn);
 
-    BLZ_SELECTOR_Evt    evt_;
+    VLG_SELECTOR_Evt    evt_;
     ConnectionType      con_type_;
-    connection_int      *conn_;
+    connection_impl      *conn_;
     //not really safe rely on this (what if socket is reused by the system?).
     SOCKET              socket_;
     unsigned int        connid_;
     sockaddr_in         saddr_;
 };
 
-#define BLZ_DEF_SRV_EXEC_NO     1
-#define BLZ_DEF_SRV_EXEC_Q_LEN  0
-#define BLZ_DEF_CLI_EXEC_NO     1
-#define BLZ_DEF_CLI_EXEC_Q_LEN  0
-#define BLZ_DEF_SEL_EVT_Q_LEN   0
-#define BLZ_ADDR_LEN            100
+#define VLG_DEF_SRV_EXEC_NO     1
+#define VLG_DEF_SRV_EXEC_Q_LEN  0
+#define VLG_DEF_CLI_EXEC_NO     1
+#define VLG_DEF_CLI_EXEC_Q_LEN  0
+#define VLG_DEF_SEL_EVT_Q_LEN   0
+#define VLG_ADDR_LEN            100
 #define BUFF_SIZE               1024
 
 //-----------------------------
-// BLZ_ASYNCH_SELECTOR_STATUS
+// VLG_ASYNCH_SELECTOR_STATUS
 //-----------------------------
-enum BLZ_ASYNCH_SELECTOR_STATUS {
-    BLZ_ASYNCH_SELECTOR_STATUS_UNDEF,
-    BLZ_ASYNCH_SELECTOR_STATUS_TO_INIT,
-    BLZ_ASYNCH_SELECTOR_STATUS_INIT,
-    BLZ_ASYNCH_SELECTOR_STATUS_REQUEST_READY,    // <<-- asynch request to transit into Ready status.
-    BLZ_ASYNCH_SELECTOR_STATUS_READY,
-    BLZ_ASYNCH_SELECTOR_STATUS_REQUEST_SELECT,   // <<-- asynch request to transit into Selecting status.
-    BLZ_ASYNCH_SELECTOR_STATUS_SELECT,
-    BLZ_ASYNCH_SELECTOR_STATUS_REQUEST_STOP,     // <<-- asynch request to transit into Stopped status.
-    BLZ_ASYNCH_SELECTOR_STATUS_STOPPING,
-    BLZ_ASYNCH_SELECTOR_STATUS_STOPPED,
-    BLZ_ASYNCH_SELECTOR_STATUS_ERROR = 500,
+enum VLG_ASYNCH_SELECTOR_STATUS {
+    VLG_ASYNCH_SELECTOR_STATUS_UNDEF,
+    VLG_ASYNCH_SELECTOR_STATUS_TO_INIT,
+    VLG_ASYNCH_SELECTOR_STATUS_INIT,
+    VLG_ASYNCH_SELECTOR_STATUS_REQUEST_READY,    // <<-- asynch request to transit into Ready status.
+    VLG_ASYNCH_SELECTOR_STATUS_READY,
+    VLG_ASYNCH_SELECTOR_STATUS_REQUEST_SELECT,   // <<-- asynch request to transit into Selecting status.
+    VLG_ASYNCH_SELECTOR_STATUS_SELECT,
+    VLG_ASYNCH_SELECTOR_STATUS_REQUEST_STOP,     // <<-- asynch request to transit into Stopped status.
+    VLG_ASYNCH_SELECTOR_STATUS_STOPPING,
+    VLG_ASYNCH_SELECTOR_STATUS_STOPPED,
+    VLG_ASYNCH_SELECTOR_STATUS_ERROR = 500,
 };
 
 //-----------------------------
@@ -75,14 +73,14 @@ enum BLZ_ASYNCH_SELECTOR_STATUS {
 class selector : public vlg::p_thread {
     public:
         //---ctors
-        selector(peer_int &peer, unsigned int id);
+        selector(peer_impl &peer, unsigned int id);
         ~selector();
 
     public:
         vlg::RetCode    init(unsigned int srv_executors,
-                               unsigned int srv_pkt_q_len,
-                               unsigned int cli_executors,
-                               unsigned int cli_pkt_q_len);
+                             unsigned int srv_pkt_q_len,
+                             unsigned int cli_executors,
+                             unsigned int cli_pkt_q_len);
 
 
         vlg::RetCode    on_peer_start_actions();
@@ -91,9 +89,9 @@ class selector : public vlg::p_thread {
     public:
         vlg::RetCode
         await_for_status_reached_or_outdated(
-            BLZ_ASYNCH_SELECTOR_STATUS
+            VLG_ASYNCH_SELECTOR_STATUS
             test,
-            BLZ_ASYNCH_SELECTOR_STATUS &current,
+            VLG_ASYNCH_SELECTOR_STATUS &current,
             time_t sec = -1,
             long nsec = 0);
 
@@ -101,11 +99,11 @@ class selector : public vlg::p_thread {
         vlg::RetCode    interrupt();
 
     public:
-        BLZ_ASYNCH_SELECTOR_STATUS  status() const;
-        vlg::RetCode              set_status(BLZ_ASYNCH_SELECTOR_STATUS status);
+        VLG_ASYNCH_SELECTOR_STATUS  status() const;
+        vlg::RetCode              set_status(VLG_ASYNCH_SELECTOR_STATUS status);
 
     public:
-        peer_int        &peer();
+        peer_impl        &peer();
         sockaddr_in     get_srv_sock_addr();
         timeval         get_select_timeout();
         SOCKET          get_UDP_notify_srv_sock();
@@ -144,8 +142,8 @@ class selector : public vlg::p_thread {
         vlg::RetCode  consume_inco_sock_events();
 
         vlg::RetCode  add_early_outg_conn(selector_event *conn_evt);
-        vlg::RetCode  promote_early_outg_conn(connection_int *conn);
-        vlg::RetCode  delete_early_outg_conn(connection_int *conn);
+        vlg::RetCode  promote_early_outg_conn(connection_impl *conn);
+        vlg::RetCode  delete_early_outg_conn(connection_impl *conn);
 
         vlg::RetCode  manage_disconnect_conn(selector_event *conn_evt);
 
@@ -153,9 +151,9 @@ class selector : public vlg::p_thread {
 
     private:
         //---gen_rep
-        peer_int                    &peer_;
+        peer_impl                    &peer_;
         unsigned int                id_;
-        BLZ_ASYNCH_SELECTOR_STATUS  status_;
+        VLG_ASYNCH_SELECTOR_STATUS  status_;
         fd_set                      read_FDs_,
                                     write_FDs_,
                                     excep_FDs_;
@@ -174,18 +172,18 @@ class selector : public vlg::p_thread {
         sockaddr_in                 srv_sockaddr_in_;
         acceptor                    srv_acceptor_;
 
-        //SERVER MAP connid --> BLZ_CONNECTION
+        //SERVER MAP connid --> VLG_CONNECTION
         vlg::hash_map             srv_incoming_sock_map_;
         vlg::p_executor_service   srv_exec_serv_; //srv executor service.
 
         //---cli_rep
-        //CLIENT MAP socketid --> BLZ_CONNECTION
+        //CLIENT MAP socketid --> VLG_CONNECTION
         vlg::hash_map             cli_early_outgoing_sock_map_;
-        //CLIENT MAP connid --> BLZ_CONNECTION
+        //CLIENT MAP connid --> VLG_CONNECTION
         vlg::hash_map             cli_outgoing_sock_map_;
         vlg::p_executor_service   cli_exec_serv_; //cli executor service.
 
-        //CLIENT MAP socket --> BLZ_CONNECTION
+        //CLIENT MAP socket --> VLG_CONNECTION
         vlg::hash_map             write_pending_sockets_;
 
         //--logger

@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef BLZ_CPP_PERSISTENCE_H_
-#define BLZ_CPP_PERSISTENCE_H_
+#ifndef VLG_CPP_PERSISTENCE_H_
+#define VLG_CPP_PERSISTENCE_H_
 #include "vlg.h"
 
 namespace vlg {
@@ -75,7 +75,7 @@ class persistence_connection {
         ~persistence_connection();
 
         vlg::RetCode bind(unsigned int nclass_id,
-                            persistence_driver_int &driver);
+                          persistence_driver_int &driver);
 
         //getters
     public:
@@ -87,42 +87,42 @@ class persistence_connection {
         //business meths
     public:
         vlg::RetCode    create_entity_schema(PersistenceAlteringMode mode,
-                                               const entity_manager &em,
-                                               unsigned int nclass_id);
+                                             const entity_manager &em,
+                                             unsigned int nclass_id);
 
         vlg::RetCode    create_entity_schema(PersistenceAlteringMode mode,
-                                               const entity_manager &em,
-                                               const entity_desc &desc);
+                                             const entity_manager &em,
+                                             const entity_desc &desc);
 
         vlg::RetCode    save_entity(const entity_manager &em,
+                                    unsigned int ts0,
+                                    unsigned int ts1,
+                                    const nclass &in_obj);
+
+        vlg::RetCode    update_entity(unsigned short key,
+                                      const entity_manager &em,
                                       unsigned int ts0,
                                       unsigned int ts1,
                                       const nclass &in_obj);
 
-        vlg::RetCode    update_entity(unsigned short key,
-                                        const entity_manager &em,
-                                        unsigned int ts0,
-                                        unsigned int ts1,
-                                        const nclass &in_obj);
-
         vlg::RetCode    save_or_update_entity(unsigned short key,
-                                                const entity_manager &em,
-                                                unsigned int ts0,
-                                                unsigned int ts1,
-                                                const nclass &in_obj);
+                                              const entity_manager &em,
+                                              unsigned int ts0,
+                                              unsigned int ts1,
+                                              const nclass &in_obj);
 
         vlg::RetCode    remove_entity(unsigned short key,
-                                        const entity_manager &em,
-                                        unsigned int ts0,
-                                        unsigned int ts1,
-                                        PersistenceDeletionMode mode,
-                                        const nclass &in_obj);
+                                      const entity_manager &em,
+                                      unsigned int ts0,
+                                      unsigned int ts1,
+                                      PersistenceDeletionMode mode,
+                                      const nclass &in_obj);
 
         vlg::RetCode    load_entity(unsigned short key,
-                                      const entity_manager &em,
-                                      unsigned int &ts0_out,
-                                      unsigned int &ts1_out,
-                                      nclass &in_out_obj);
+                                    const entity_manager &em,
+                                    unsigned int &ts0_out,
+                                    unsigned int &ts1_out,
+                                    nclass &in_out_obj);
 
         vlg::RetCode    execute_statement(const char *stmt);
 
@@ -148,8 +148,8 @@ class persistence_query {
         const entity_manager    &get_entity_manager()   const;
 
         vlg::RetCode    next_entity(unsigned int &ts0_out,
-                                      unsigned int &ts1_out,
-                                      nclass &out_obj);
+                                    unsigned int &ts1_out,
+                                    nclass &out_obj);
 
         vlg::RetCode    release();
 

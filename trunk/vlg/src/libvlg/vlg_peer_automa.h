@@ -19,13 +19,13 @@
  *
  */
 
-#ifndef BLZ_PEER_AUTOMA_H_
-#define BLZ_PEER_AUTOMA_H_
-#include "blaze_logger.h"
-#include "blz_glob_int.h"
+#ifndef VLG_PEER_AUTOMA_H_
+#define VLG_PEER_AUTOMA_H_
+#include "vlg_logger.h"
+#include "vlg_globint.h"
 
-#define BLZ_PEER_NAME_LEN 256
-#define BLZ_PEER_CFG_FILE_PATH_NAME_LEN 512
+#define VLG_PEER_NAME_LEN 256
+#define VLG_PEER_CFG_FILE_PATH_NAME_LEN 512
 
 namespace vlg {
 
@@ -73,8 +73,8 @@ class peer_automa {
         vlg::RetCode    early_init();
 
         vlg::RetCode    start_peer(int argc,
-                                     char *argv[],
-                                     bool spawn_new_thread);
+                                   char *argv[],
+                                   bool spawn_new_thread);
 
         vlg::RetCode    stop_peer(bool force_disconnect = false);
 
@@ -90,18 +90,18 @@ class peer_automa {
         //-----------------------------
     public:
         vlg::RetCode await_for_peer_status_reached_or_outdated(PeerStatus test,
-                                                                 PeerStatus &current,
-                                                                 time_t sec = -1,
-                                                                 long nsec = 0);
+                                                               PeerStatus &current,
+                                                               time_t sec = -1,
+                                                               long nsec = 0);
 
         vlg::RetCode await_for_peer_status_condition(peer_lfcyc_eval_condition
-                                                       cond_cllbk,
-                                                       time_t sec = -1,
-                                                       long nsec = 0);
+                                                     cond_cllbk,
+                                                     time_t sec = -1,
+                                                     long nsec = 0);
 
         vlg::RetCode await_for_peer_status_change(PeerStatus &peer_status,
-                                                    time_t sec = -1,
-                                                    long nsec = 0);
+                                                  time_t sec = -1,
+                                                  long nsec = 0);
 
         //-----------------------------
         // STATUS
@@ -133,8 +133,8 @@ class peer_automa {
         virtual const char             *peer_name_usr();
         virtual const unsigned int     *peer_ver_usr();
         virtual vlg::RetCode          peer_load_cfg_usr(int pnum,
-                                                          const char *param,
-                                                          const char *value);
+                                                        const char *param,
+                                                        const char *value);
 
         //-----------------------------
         // LIFECYCLE - Usr opt. subclass entrypoints
@@ -157,11 +157,11 @@ class peer_automa {
         unsigned int    peer_plid_;
         unsigned int    peer_svid_;
         PeerStatus      peer_status_;
-        char            peer_name_[BLZ_PEER_NAME_LEN];
+        char            peer_name_[VLG_PEER_NAME_LEN];
         unsigned int    peer_ver_[4];
         int         peer_argc_;
         char        **peer_argv_;
-        char        peer_cfg_file_path_name_[BLZ_PEER_CFG_FILE_PATH_NAME_LEN];
+        char        peer_cfg_file_path_name_[VLG_PEER_CFG_FILE_PATH_NAME_LEN];
 
         vlg::config_loader    peer_conf_ldr_;
         bool                    configured_;
@@ -177,7 +177,7 @@ class peer_automa {
         mutable vlg::synch_monitor    peer_mon_;
 
     private:
-        static void blz_peer_param_clbk_ud(int pnum, const char *param,
+        static void vlg_peer_param_clbk_ud(int pnum, const char *param,
                                            const char *value, void *ud);
     public:
         static vlg::logger     *peer_log_;

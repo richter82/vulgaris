@@ -222,7 +222,7 @@ class shared_pointer {
         /**
         @return
         */
-        const void *get_internal_reference_counter() const {
+        const void *get_implernal_reference_counter() const {
             return reference_counter_;
         }
 

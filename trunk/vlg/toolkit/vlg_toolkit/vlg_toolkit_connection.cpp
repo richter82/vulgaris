@@ -19,14 +19,14 @@
  *
  */
 
-#include "blz_toolkit_connection.h"
-#include "ui_blz_toolkit_connection.h"
+#include "vlg_toolkit_connection.h"
+#include "ui_vlg_toolkit_connection.h"
 
 //------------------------------------------------------------------------------
-// blz_toolkit_Conn_mdl
+// vlg_toolkit_Conn_mdl
 //------------------------------------------------------------------------------
 
-blz_toolkit_Conn_mdl::blz_toolkit_Conn_mdl(blz_toolkit_blz_model &wrapped_mdl,
+vlg_toolkit_Conn_mdl::vlg_toolkit_Conn_mdl(vlg_toolkit_vlg_model &wrapped_mdl,
                                            QObject *parent) :
     wrapped_mdl_(wrapped_mdl),
     QSortFilterProxyModel(parent)
@@ -34,41 +34,41 @@ blz_toolkit_Conn_mdl::blz_toolkit_Conn_mdl(blz_toolkit_blz_model &wrapped_mdl,
     setSourceModel(&wrapped_mdl);
 }
 
-bool blz_toolkit_Conn_mdl::filterAcceptsRow(int sourceRow,
+bool vlg_toolkit_Conn_mdl::filterAcceptsRow(int sourceRow,
                                             const QModelIndex &sourceParent) const
 {
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
     model_item *item = static_cast<model_item *>(index.internalPointer());
-    return item->item_type() == BLZ_MODEL_ITEM_TYPE_EDESC &&
+    return item->item_type() == VLG_MODEL_ITEM_TYPE_EDESC &&
            item->edesc()->get_entity_type() == vlg::EntityType_NCLASS;
 }
 
-blz_toolkit_blz_model &blz_toolkit_Conn_mdl::wrapped_mdl()
+vlg_toolkit_vlg_model &vlg_toolkit_Conn_mdl::wrapped_mdl()
 {
     return wrapped_mdl_;
 }
 
 //------------------------------------------------------------------------------
-// blz_toolkit_Connection
+// vlg_toolkit_Connection
 //------------------------------------------------------------------------------
 
-int blz_toolkit_Connection::count_ = 0;
+int vlg_toolkit_Connection::count_ = 0;
 
-void blz_toolkit_connection_status_change_hndl(vlg::connection_int &conn,
+void vlg_toolkit_connection_status_change_hndl(vlg::connection_int &conn,
                                                vlg::ConnectionStatus status,
                                                void *ud)
 {
-    blz_toolkit_Connection *ct = (blz_toolkit_Connection *)ud;
+    vlg_toolkit_Connection *ct = (vlg_toolkit_Connection *)ud;
     qDebug() << "connection status:" << status;
     ct->EmitConnStatus(status);
 }
 
-blz_toolkit_Connection::blz_toolkit_Connection(vlg::connection_int &conn,
+vlg_toolkit_Connection::vlg_toolkit_Connection(vlg::connection_int &conn,
                                                const QString &host,
                                                const QString &port,
                                                const QString &usr,
                                                const QString &psswd,
-                                               blz_toolkit_blz_model &blz_model_loaded_model,
+                                               vlg_toolkit_vlg_model &vlg_model_loaded_model,
                                                QMainWindow &m_win,
                                                QWidget *parent) :
     m_win_(m_win),
@@ -76,9 +76,9 @@ blz_toolkit_Connection::blz_toolkit_Connection(vlg::connection_int &conn,
     tab_id_(NextCount()),
     parent_(*static_cast<QTabWidget *>(parent)),
     conn_(conn),
-    b_mdl_(blz_model_loaded_model, this),
+    b_mdl_(vlg_model_loaded_model, this),
     QWidget(parent),
-    ui(new Ui::blz_toolkit_Connection)
+    ui(new Ui::vlg_toolkit_Connection)
 {
     ui->setupUi(this);
 
@@ -95,7 +95,7 @@ blz_toolkit_Connection::blz_toolkit_Connection(vlg::connection_int &conn,
             SLOT(OnConnStatusChange(vlg::ConnectionStatus)));
     EmitConnStatus(conn_.status());
     conn_.set_connection_status_change_handler(
-        blz_toolkit_connection_status_change_hndl, this);
+        vlg_toolkit_connection_status_change_hndl, this);
 
     ui->peer_model_tree_view->setModel(&b_mdl_);
     connect(ui->peer_model_tree_view,
@@ -109,14 +109,14 @@ blz_toolkit_Connection::blz_toolkit_Connection(vlg::connection_int &conn,
             SLOT(OnSetInfoMsg(const QString &)));
 }
 
-blz_toolkit_Connection::~blz_toolkit_Connection()
+vlg_toolkit_Connection::~vlg_toolkit_Connection()
 {
     vlg::collector &c = conn_.get_collector();
     c.release(&conn_);
     delete ui;
 }
 
-void blz_toolkit_Connection::UpdateTabHeader()
+void vlg_toolkit_Connection::UpdateTabHeader()
 {
     if(tab_idx_ < 0) {
         return;
@@ -146,7 +146,7 @@ void blz_toolkit_Connection::UpdateTabHeader()
     parent_.setTabIcon(tab_idx_, icon_flash);
 }
 
-void blz_toolkit_Connection::ConnectionUpActions()
+void vlg_toolkit_Connection::ConnectionUpActions()
 {
     ui->cp_group_box->setEnabled(false);
     ui->connect_button->setEnabled(false);
@@ -156,7 +156,7 @@ void blz_toolkit_Connection::ConnectionUpActions()
     ui->new_sbs_button->setEnabled(true);
 }
 
-void blz_toolkit_Connection::ConnectionDownActions()
+void vlg_toolkit_Connection::ConnectionDownActions()
 {
     ui->cp_group_box->setEnabled(true);
     ui->connect_button->setEnabled(true);
@@ -166,40 +166,40 @@ void blz_toolkit_Connection::ConnectionDownActions()
     ui->new_sbs_button->setEnabled(false);
 }
 
-int blz_toolkit_Connection::count()
+int vlg_toolkit_Connection::count()
 {
     return count_;
 }
 
-void blz_toolkit_Connection::setCount(int count)
+void vlg_toolkit_Connection::setCount(int count)
 {
     count_ = count;
 }
-int blz_toolkit_Connection::tab_id() const
+int vlg_toolkit_Connection::tab_id() const
 {
     return tab_id_;
 }
 
-void blz_toolkit_Connection::setTab_id(int tab_id)
+void vlg_toolkit_Connection::setTab_id(int tab_id)
 {
     tab_id_ = tab_id;
 }
-int blz_toolkit_Connection::tab_idx() const
+int vlg_toolkit_Connection::tab_idx() const
 {
     return tab_idx_;
 }
 
-void blz_toolkit_Connection::setTab_idx(int tab_idx)
+void vlg_toolkit_Connection::setTab_idx(int tab_idx)
 {
     tab_idx_ = tab_idx;
 }
 
-int blz_toolkit_Connection::NextCount()
+int vlg_toolkit_Connection::NextCount()
 {
     return ++count_;
 }
 
-void blz_toolkit_Connection::OnConnStatusChange(vlg::ConnectionStatus
+void vlg_toolkit_Connection::OnConnStatusChange(vlg::ConnectionStatus
                                                 status)
 {
     switch(status) {
@@ -272,12 +272,12 @@ void blz_toolkit_Connection::OnConnStatusChange(vlg::ConnectionStatus
     UpdateTabHeader();
 }
 
-void blz_toolkit_Connection::OnTestSlot()
+void vlg_toolkit_Connection::OnTestSlot()
 {
     qDebug() << "called test slot";
 }
 
-void blz_toolkit_Connection::OnCustomMenuRequested(const QPoint &pos)
+void vlg_toolkit_Connection::OnCustomMenuRequested(const QPoint &pos)
 {
     QModelIndex proxy_index = ui->peer_model_tree_view->indexAt(pos);
     QModelIndex index = b_mdl_.mapToSource(proxy_index);
@@ -285,7 +285,7 @@ void blz_toolkit_Connection::OnCustomMenuRequested(const QPoint &pos)
     if(!item) {
         return;
     }
-    if(item->item_type() != BLZ_MODEL_ITEM_TYPE_EDESC ||
+    if(item->item_type() != VLG_MODEL_ITEM_TYPE_EDESC ||
             item->edesc()->get_entity_size() != vlg::EntityType_NCLASS) {
         return;
     }
@@ -305,12 +305,12 @@ void blz_toolkit_Connection::OnCustomMenuRequested(const QPoint &pos)
     custom_menu->popup(ui->peer_model_tree_view->viewport()->mapToGlobal(pos));
 }
 
-void blz_toolkit_Connection::EmitConnStatus(vlg::ConnectionStatus status)
+void vlg_toolkit_Connection::EmitConnStatus(vlg::ConnectionStatus status)
 {
     emit SignalConnStatusChange(status);
 }
 
-void blz_toolkit_Connection::on_connect_button_clicked()
+void vlg_toolkit_Connection::on_connect_button_clicked()
 {
     sockaddr_in conn_params;
     memset(&conn_params, 0, sizeof(conn_params));
@@ -321,26 +321,26 @@ void blz_toolkit_Connection::on_connect_button_clicked()
     conn_.client_connect(conn_params);
 }
 
-void blz_toolkit_Connection::on_disconnect_button_clicked()
+void vlg_toolkit_Connection::on_disconnect_button_clicked()
 {
     vlg::ConnectivityEventResult cres =
         vlg::ConnectivityEventResult_UNDEFINED;
     vlg::ConnectivityEventType cevttyp =
         vlg::ConnectivityEventType_UNDEFINED;
     conn_.disconnect(vlg::DisconnectionResultReason_APPLICATIVE);
-    if(conn_.await_for_disconnection_result(cres, cevttyp, BLZ_TKT_INT_AWT_TIMEOUT,
+    if(conn_.await_for_disconnection_result(cres, cevttyp, VLG_TKT_INT_AWT_TIMEOUT,
                                             0) == vlg::RetCode_TIMEOUT) {
         emit SignalDisconnectionTimeout(QString("on disconnection [connid:%1]").arg(
                                             conn_.connid()));
     }
 }
 
-void blz_toolkit_Connection::on_extend_model_button_clicked()
+void vlg_toolkit_Connection::on_extend_model_button_clicked()
 {
 
 }
 
-void blz_toolkit_Connection::on_new_tx_button_clicked()
+void vlg_toolkit_Connection::on_new_tx_button_clicked()
 {
     QModelIndexList indexes =
         ui->peer_model_tree_view->selectionModel()->selectedRows();
@@ -365,12 +365,12 @@ void blz_toolkit_Connection::on_new_tx_button_clicked()
     conn_.peer().get_em().new_class_instance(edesc->get_nclass_id(), &sending_obj);
     new_tx->set_request_obj(sending_obj);
 
-    blz_toolkit_tx_blz_class_model *tx_mdl = new blz_toolkit_tx_blz_class_model(
+    vlg_toolkit_tx_vlg_class_model *tx_mdl = new vlg_toolkit_tx_vlg_class_model(
         *edesc, conn_.peer().get_em(), *new_tx,
         this);
 
     /*if last param set to 'this' child will be always on TOP*/
-    blz_toolkit_tx_window *new_tx_window = new blz_toolkit_tx_window(*edesc,
+    vlg_toolkit_tx_window *new_tx_window = new vlg_toolkit_tx_window(*edesc,
                                                                      conn_.peer().get_em(), *new_tx, *tx_mdl, NULL);
     new_tx_window->setAttribute(Qt::WA_DeleteOnClose, true);
     new_tx_window->setWindowTitle(QString("[TX][CONNID:%1][NCLASS:%2]").arg(
@@ -381,7 +381,7 @@ void blz_toolkit_Connection::on_new_tx_button_clicked()
     //new_tx_window->activateWindow();
 }
 
-void blz_toolkit_Connection::on_new_sbs_button_clicked()
+void vlg_toolkit_Connection::on_new_sbs_button_clicked()
 {
     QModelIndexList indexes =
         ui->peer_model_tree_view->selectionModel()->selectedRows();
@@ -402,11 +402,11 @@ void blz_toolkit_Connection::on_new_sbs_button_clicked()
     conn_.new_subscription(&new_sbs);
     new_sbs->set_nclassid(item->edesc()->get_nclass_id());
 
-    blz_toolkit_sbs_blz_class_model *sbs_mdl = new blz_toolkit_sbs_blz_class_model(
+    vlg_toolkit_sbs_vlg_class_model *sbs_mdl = new vlg_toolkit_sbs_vlg_class_model(
         *edesc, conn_.peer().get_em(), this);
 
     /*if last param set to 'this' child will be always on TOP*/
-    blz_toolkit_sbs_window *new_sbs_window = new blz_toolkit_sbs_window(*edesc,
+    vlg_toolkit_sbs_window *new_sbs_window = new vlg_toolkit_sbs_window(*edesc,
                                                                         conn_.peer().get_em(),
                                                                         *new_sbs, *sbs_mdl,
                                                                         NULL);

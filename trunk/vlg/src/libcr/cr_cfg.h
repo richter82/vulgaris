@@ -21,7 +21,7 @@
 
 #ifndef CR_CFG_H_
 #define CR_CFG_H_
-#include "blaze_ascii_string.h"
+#include "vlg_ascii_string.h"
 
 namespace vlg {
 

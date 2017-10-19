@@ -19,17 +19,17 @@
  *
  */
 
-#ifndef BLZ_PEER_H_
-#define BLZ_PEER_H_
-#include "blz_peer_automa.h"
-#include "blz_selector.h"
-#include "blz_persistence_int.h"
-#include "blz_subscription_int.h"
+#ifndef VLG_PEER_H_
+#define VLG_PEER_H_
+#include "vlg_peer_automa.h"
+#include "vlg_selector.h"
+#include "vlg_pers_impl.h"
+#include "vlg_subscription_impl.h"
 
 
 namespace vlg {
 
-class connection_int;
+class connection_impl;
 
 /***********************************
 an helper class used to server peer to generate a progressive - per nclass_id -
@@ -59,38 +59,38 @@ class per_nclassid_helper_rec {
         mutable vlg::synch_monitor mon_;
 };
 
-#define BLZ_DEF_SRV_SBS_EXEC_NO     1
-#define BLZ_DEF_SRV_SBS_EXEC_Q_LEN  0
+#define VLG_DEF_SRV_SBS_EXEC_NO     1
+#define VLG_DEF_SRV_SBS_EXEC_Q_LEN  0
 
 //-----------------------------
-// BLZ_PEER
+// VLG_PEER
 //-----------------------------
 
-typedef connection_int *(*blz_conn_factory)(peer_int &peer,
-                                            ConnectionType con_type,
-                                            unsigned int connid,
-                                            void *ud);
+typedef connection_impl *(*vlg_conn_factory)(peer_impl &peer,
+                                             ConnectionType con_type,
+                                             unsigned int connid,
+                                             void *ud);
 
-class peer_int : public peer_automa {
+class peer_impl : public peer_automa {
         friend class selector;
         friend class peer_recv_task;
-        friend class connection_int;
-        friend class transaction_int;
-        friend class subscription_int;
+        friend class connection_impl;
+        friend class transaction_impl;
+        friend class subscription_impl;
 
         /*************************************************************
         -Factory function types
         *************************************************************/
 
-        static connection_int *blz_conn_factory_default(peer_int &peer,
-                                                        ConnectionType con_type,
-                                                        unsigned int connid,
-                                                        void *ud);
+        static connection_impl *vlg_conn_factory_default(peer_impl &peer,
+                                                         ConnectionType con_type,
+                                                         unsigned int connid,
+                                                         void *ud);
 
     public:
         //---ctors
-        peer_int(unsigned int id);
-        ~peer_int();
+        peer_impl(unsigned int id);
+        ~peer_impl();
 
         vlg::RetCode set_params_file_dir(const char *dir);
 
@@ -101,7 +101,7 @@ class peer_int : public peer_automa {
         selector                &get_selector();
         const entity_manager    &get_em() const;
         entity_manager          &get_em_m();
-        persistence_manager_int &get_pers_mng();
+        persistence_manager_impl &get_pers_mng();
         bool                    persistent();
         bool                    pers_schema_create();
         vlg::synch_hash_map   &get_srv_classid_condesc_set();
@@ -148,12 +148,12 @@ class peer_int : public peer_automa {
         vlg::RetCode    extend_model(const char *model_name);
 
         //-----------------------------
-        // BLZ_PEER_LFCYC HANDLERS
+        // VLG_PEER_LFCYC HANDLERS
         //-----------------------------
     protected:
         virtual vlg::RetCode    peer_load_cfg_usr(int pnum,
-                                                    const char *param,
-                                                    const char *value);
+                                                  const char *param,
+                                                  const char *value);
 
         virtual vlg::RetCode    peer_early_init_usr();
         virtual vlg::RetCode    peer_init_usr();
@@ -170,23 +170,23 @@ class peer_int : public peer_automa {
         vlg::RetCode    next_connid(unsigned int &connid);
 
     public:
-        vlg::RetCode    new_connection(connection_int     **new_connection,
-                                         blz_conn_factory   blz_conn_factory_f = NULL,
-                                         ConnectionType     con_type = ConnectionType_OUTGOING,
-                                         unsigned int       connid = 0,
-                                         void               *ud = NULL);
+        vlg::RetCode    new_connection(connection_impl     **new_connection,
+                                       vlg_conn_factory   vlg_conn_factory_f = NULL,
+                                       ConnectionType     con_type = ConnectionType_OUTGOING,
+                                       unsigned int       connid = 0,
+                                       void               *ud = NULL);
 
-        vlg::RetCode    release_connection(connection_int *connection);
+        vlg::RetCode    release_connection(connection_impl *connection);
 
         //-----------------------------
         // SERVER SPECIFIC CONNECTIVITY HANDLER
         //-----------------------------
     public:
-        virtual vlg::RetCode new_incoming_connection_accept(connection_int
-                                                              &incoming_connection);
+        virtual vlg::RetCode new_incoming_connection_accept(connection_impl
+                                                            &incoming_connection);
 
-        blz_conn_factory conn_factory() const;
-        void set_conn_factory(blz_conn_factory val);
+        vlg_conn_factory conn_factory() const;
+        void set_conn_factory(vlg_conn_factory val);
 
         void *conn_factory_ud() const;
         void set_conn_factory_ud(void *val);
@@ -198,9 +198,9 @@ class peer_int : public peer_automa {
         /*
         this method is called by an executor
         */
-        vlg::RetCode recv_and_route_pkt(connection_int &conn,
-                                          blz_hdr_rec *hdr,
-                                          vlg::grow_byte_buffer *body);
+        vlg::RetCode recv_and_route_pkt(connection_impl &conn,
+                                        vlg_hdr_rec *hdr,
+                                        vlg::grow_byte_buffer *body);
 
         //-----------------------------
         // RCV TASK
@@ -209,9 +209,9 @@ class peer_int : public peer_automa {
         /*
         this method is called by selector thread.
         */
-        vlg::p_task  *new_peer_recv_task(connection_int &conn,
-                                           blz_hdr_rec *pkt_hdr,
-                                           vlg::grow_byte_buffer *pkt_body);
+        vlg::p_task  *new_peer_recv_task(connection_impl &conn,
+                                         vlg_hdr_rec *pkt_hdr,
+                                         vlg::grow_byte_buffer *pkt_body);
 
         //-----------------------------
         // SBS TASK
@@ -219,31 +219,31 @@ class peer_int : public peer_automa {
         /*
         this method is called by a client/server executor thread.
         */
-        vlg::p_task  *new_sbs_evt_task(subscription_event_int &sbs_evt,
-                                         vlg::synch_hash_map &srv_connid_connection_map);
+        vlg::p_task  *new_sbs_evt_task(subscription_event_impl &sbs_evt,
+                                       vlg::synch_hash_map &srv_connid_connection_map);
 
         //-----------------------------
         // SUBSCRIPTION
         //-----------------------------
     private:
         vlg::RetCode    build_sbs_event(unsigned int evt_id,
-                                          SubscriptionEventType sbs_evttype,
-                                          ProtocolCode sbs_protocode,
-                                          unsigned int sbs_tmstp0,
-                                          unsigned int sbs_tmstp1,
-                                          Action sbs_act,
-                                          const nclass *sbs_data,
-                                          subscription_event_int **new_sbs_event);
+                                        SubscriptionEventType sbs_evttype,
+                                        ProtocolCode sbs_protocode,
+                                        unsigned int sbs_tmstp0,
+                                        unsigned int sbs_tmstp1,
+                                        Action sbs_act,
+                                        const nclass *sbs_data,
+                                        subscription_event_impl **new_sbs_event);
 
-        vlg::RetCode    add_subscriber(subscription_int *sbsdesc);
+        vlg::RetCode    add_subscriber(subscription_impl *sbsdesc);
 
-        vlg::RetCode    remove_subscriber(subscription_int *sbsdesc);
+        vlg::RetCode    remove_subscriber(subscription_impl *sbsdesc);
 
         vlg::RetCode    get_per_classid_helper_class(unsigned int nclass_id,
-                                                       per_nclassid_helper_rec **out);
+                                                     per_nclassid_helper_rec **out);
 
-        vlg::RetCode    submit_sbs_evt_task(subscription_event_int &sbs_evt,
-                                              vlg::synch_hash_map &srv_connid_condesc_set);
+        vlg::RetCode    submit_sbs_evt_task(subscription_event_impl &sbs_evt,
+                                            vlg::synch_hash_map &srv_connid_condesc_set);
 
 
         //-----------------------------
@@ -253,24 +253,24 @@ class peer_int : public peer_automa {
         vlg::RetCode pers_schema_create(PersistenceAlteringMode mode);
 
         vlg::RetCode class_pers_schema_create(PersistenceAlteringMode mode,
-                                                unsigned int entity_id);
+                                              unsigned int entity_id);
 
         vlg::RetCode class_pers_load(unsigned short key,
-                                       unsigned int &ts0_out,
-                                       unsigned int &ts1_out,
-                                       nclass &in_out_obj);
+                                     unsigned int &ts0_out,
+                                     unsigned int &ts1_out,
+                                     nclass &in_out_obj);
 
         vlg::RetCode class_pers_save(const nclass &in_obj);
 
         vlg::RetCode class_pers_update(unsigned short key,
-                                         const nclass &in_obj);
+                                       const nclass &in_obj);
 
         vlg::RetCode class_pers_update_or_save(unsigned short key,
-                                                 const nclass &in_obj);
+                                               const nclass &in_obj);
 
         vlg::RetCode class_pers_remove(unsigned short key,
-                                         PersistenceDeletionMode mode,
-                                         const nclass &in_obj);
+                                       PersistenceDeletionMode mode,
+                                       const nclass &in_obj);
 
 
         //-----------------------------
@@ -278,9 +278,9 @@ class peer_int : public peer_automa {
         //-----------------------------
     public:
         vlg::RetCode class_distribute(SubscriptionEventType evt_type,
-                                        ProtocolCode proto_code,
-                                        Action act,
-                                        const nclass &obj);
+                                      ProtocolCode proto_code,
+                                      Action act,
+                                      const nclass &obj);
 
         //-----------------------------
         // PERSISTENCE + DISTRIBUTION
@@ -289,14 +289,14 @@ class peer_int : public peer_automa {
         vlg::RetCode class_pers_save_and_distribute(const nclass &in_obj);
 
         vlg::RetCode class_pers_update_and_distribute(unsigned short key,
-                                                        const nclass &in_obj);
+                                                      const nclass &in_obj);
 
         vlg::RetCode class_pers_update_or_save_and_distribute(unsigned short key,
-                                                                const nclass &in_obj);
+                                                              const nclass &in_obj);
 
         vlg::RetCode class_pers_remove_and_distribute(unsigned short key,
-                                                        PersistenceDeletionMode mode,
-                                                        const nclass &in_obj);
+                                                      PersistenceDeletionMode mode,
+                                                      const nclass &in_obj);
 
         //-----------------------------
         // REP INIT
@@ -329,7 +329,7 @@ class peer_int : public peer_automa {
         //persistence
     protected:
         bool                    pers_enabled_;
-        persistence_manager_int &pers_mng_;
+        persistence_manager_impl &pers_mng_;
         vlg::hash_map         pers_dri_load_;
         bool                    pers_schema_create_;
         /*use this only when develop*/
@@ -350,7 +350,7 @@ class peer_int : public peer_automa {
         //nclassid --> condesc_set
         vlg::synch_hash_map       srv_sbs_nclassid_condesc_set_;
 
-        blz_conn_factory    conn_factory_;      //factory for incoming connections
+        vlg_conn_factory    conn_factory_;      //factory for incoming connections
         void                *conn_factory_ud_;  //factory for incoming connections ud
     public:
         static nclass_logger *logger();

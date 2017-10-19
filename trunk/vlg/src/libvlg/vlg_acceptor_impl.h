@@ -19,15 +19,12 @@
  *
  */
 
-#ifndef BLZ_ACCEPTOR_H_
-#define BLZ_ACCEPTOR_H_
-#include "blaze_logger.h"
-#include "blz_glob_int.h"
+#ifndef VLG_ACCEPTOR_H_
+#define VLG_ACCEPTOR_H_
+#include "vlg_logger.h"
+#include "vlg_globint.h"
 
 namespace vlg {
-
-class peer_int;
-class connection_int;
 
 #ifdef WIN32
 vlg::RetCode WSA_init(vlg::logger *log_);
@@ -40,21 +37,21 @@ vlg::RetCode WSA_destroy(vlg::logger *log_);
 class acceptor {
     public:
         //---ctors
-        acceptor(peer_int &peer);
+        acceptor(peer_impl &peer);
         ~acceptor();
 
     public:
-        peer_int   &peer();
+        peer_impl   &peer();
 
         vlg::RetCode  set_sockaddr_in(sockaddr_in &serv_sockaddr_in);
 
         vlg::RetCode  create_server_socket(SOCKET &serv_socket);
 
         vlg::RetCode  accept(unsigned int new_connid,
-                               connection_int **new_conn_desc);
+                             connection_impl **new_conn_desc);
 
     private:
-        peer_int        &peer_;
+        peer_impl        &peer_;
         SOCKET          serv_socket_;
         sockaddr_in     serv_sockaddr_in_;
 

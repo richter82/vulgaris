@@ -19,29 +19,29 @@
  *
  */
 
-#ifndef BLZ_SUBSCRIPTION_H_
-#define BLZ_SUBSCRIPTION_H_
-#include "blaze_logger.h"
-#include "blz_glob_int.h"
+#ifndef VLG_SUBSCRIPTION_H_
+#define VLG_SUBSCRIPTION_H_
+#include "vlg_logger.h"
+#include "vlg_globint.h"
 
 namespace vlg {
 
-class persistence_query_int;
+class persistence_query_impl;
 
 //-----------------------------
-// subscription_event_int
+// subscription_event_impl
 //-----------------------------
-class subscription_event_int : public vlg::collectable {
-        friend class connection_int;
-        friend class subscription_int;
+class subscription_event_impl : public vlg::collectable {
+        friend class connection_impl;
+        friend class subscription_impl;
 
     public:
-        static vlg::RetCode new_instance(subscription_event_int **sbs_evt);
+        static vlg::RetCode new_instance(subscription_event_impl **sbs_evt);
 
     private:
-        subscription_event_int();
+        subscription_event_impl();
     public:
-        virtual ~subscription_event_int();
+        virtual ~subscription_event_impl();
 
     public:
         virtual vlg::collector &get_collector();
@@ -87,51 +87,51 @@ class subscription_event_int : public vlg::collectable {
 };
 
 //-----------------------------
-// BLZ_SUBSCRIPTION_EVENT_WRAPPER
+// VLG_SUBSCRIPTION_EVENT_WRAPPER
 // server only.
 //-----------------------------
 class sbs_event_wrapper {
     public:
         //--ctors
-        explicit sbs_event_wrapper(subscription_event_int *evt);
+        explicit sbs_event_wrapper(subscription_event_impl *evt);
         ~sbs_event_wrapper();
 
-        void                        set_evt(subscription_event_int *evt);
-        subscription_event_int     *get_evt();
+        void                        set_evt(subscription_event_impl *evt);
+        subscription_event_impl     *get_evt();
 
         //--rep
     private:
-        subscription_event_int *evt_;
+        subscription_event_impl *evt_;
 };
 
-enum BLZ_SBS_Evt {
-    BLZ_SBS_Evt_Undef,
-    BLZ_SBS_Evt_Rst,
-    BLZ_SBS_Evt_Rdy,
-    BLZ_SBS_Evt_ToAck,
+enum VLG_SBS_Evt {
+    VLG_SBS_Evt_Undef,
+    VLG_SBS_Evt_Rst,
+    VLG_SBS_Evt_Rdy,
+    VLG_SBS_Evt_ToAck,
 };
 
 //-----------------------------
-// BLZ_SUBSCRIPTION
+// VLG_SUBSCRIPTION
 //-----------------------------
 
-class subscription_int : public vlg::collectable {
-        friend class peer_int;
-        friend class connection_int;
+class subscription_impl : public vlg::collectable {
+        friend class peer_impl;
+        friend class connection_impl;
         friend class peer_sbs_task;
 
-        typedef void (*subscription_status_change_hndlr)(subscription_int &sbs,
+        typedef void (*subscription_status_change_hndlr)(subscription_impl &sbs,
                                                          SubscriptionStatus status,
                                                          void *ud);
 
-        typedef void(*subscription_evt_notify_hndlr)(subscription_int &sbs,
-                                                     subscription_event_int &sbs_evt,
+        typedef void(*subscription_evt_notify_hndlr)(subscription_impl &sbs,
+                                                     subscription_event_impl &sbs_evt,
                                                      void *ud);
 
         //---ctors
     protected:
-        explicit subscription_int(connection_int &conn);
-        virtual ~subscription_int();
+        explicit subscription_impl(connection_impl &conn);
+        virtual ~subscription_impl();
 
     public:
         virtual vlg::collector &get_collector();
@@ -140,8 +140,8 @@ class subscription_int : public vlg::collectable {
         // GETTERS
         //-----------------------------
     public:
-        peer_int           &peer();
-        connection_int     &get_connection();
+        peer_impl           &peer();
+        connection_impl     &get_connection();
         unsigned int        sbsid();
         unsigned int        nclass_id();
 
@@ -153,7 +153,7 @@ class subscription_int : public vlg::collectable {
         unsigned int                get_open_tmstp0() const;
         unsigned int                get_open_tmstp1() const;
 
-        persistence_query_int      *get_initial_query();
+        persistence_query_impl      *get_initial_query();
         bool                        is_initial_query_ended();
 
         //-----------------------------
@@ -169,7 +169,7 @@ class subscription_int : public vlg::collectable {
         void    set_open_tmstp0(unsigned int val);
         void    set_open_tmstp1(unsigned int val);
 
-        void    set_initial_query(persistence_query_int *initial_query);
+        void    set_initial_query(persistence_query_impl *initial_query);
         void    set_initial_query_ended(bool val);
 
         //-----------------------------
@@ -187,20 +187,20 @@ class subscription_int : public vlg::collectable {
 
         //client side
         vlg::RetCode start(SubscriptionType sbscr_type,
-                             SubscriptionMode sbscr_mode,
-                             SubscriptionFlowType sbscr_flow_type,
-                             SubscriptionDownloadType sbscr_dwnld_type,
-                             Encode sbscr_class_encode,
-                             unsigned int nclass_id,
-                             unsigned int start_timestamp_0 = 0,
-                             unsigned int start_timestamp_1 = 0);
+                           SubscriptionMode sbscr_mode,
+                           SubscriptionFlowType sbscr_flow_type,
+                           SubscriptionDownloadType sbscr_dwnld_type,
+                           Encode sbscr_class_encode,
+                           unsigned int nclass_id,
+                           unsigned int start_timestamp_0 = 0,
+                           unsigned int start_timestamp_1 = 0);
 
         /* this function must be called from same thread that called Start()*/
         vlg::RetCode    await_for_start_result(SubscriptionResponse
-                                                 &sbs_start_result,
-                                                 ProtocolCode &sbs_start_protocode,
-                                                 time_t sec = -1,
-                                                 long nsec = 0);
+                                               &sbs_start_result,
+                                               ProtocolCode &sbs_start_protocode,
+                                               time_t sec = -1,
+                                               long nsec = 0);
 
 
         /***********************************
@@ -215,10 +215,10 @@ class subscription_int : public vlg::collectable {
 
         /* this function must be called from same thread that called Stop()*/
         vlg::RetCode    await_for_stop_result(SubscriptionResponse
-                                                &sbs_stop_result,
-                                                ProtocolCode &sbs_stop_protocode,
-                                                time_t sec = -1,
-                                                long nsec = 0);
+                                              &sbs_stop_result,
+                                              ProtocolCode &sbs_stop_protocode,
+                                              time_t sec = -1,
+                                              long nsec = 0);
 
 
     private:
@@ -229,10 +229,10 @@ class subscription_int : public vlg::collectable {
         //-----------------------------
     public:
         vlg::RetCode    await_for_status_reached_or_outdated(SubscriptionStatus
-                                                               test,
-                                                               SubscriptionStatus &current,
-                                                               time_t sec = -1,
-                                                               long nsec = 0);
+                                                             test,
+                                                             SubscriptionStatus &current,
+                                                             time_t sec = -1,
+                                                             long nsec = 0);
 
         //-----------------------------
         // STATUS ASYNCHRO HNDLRS
@@ -245,9 +245,9 @@ class subscription_int : public vlg::collectable {
         // EVENT NOTIFY SYNCHRO
         //-----------------------------
     public:
-        vlg::RetCode await_for_next_event(subscription_event_int **sbs_evt,
-                                            time_t sec = -1,
-                                            long nsec = 0);
+        vlg::RetCode await_for_next_event(subscription_event_impl **sbs_evt,
+                                          time_t sec = -1,
+                                          long nsec = 0);
 
         vlg::RetCode  ack_event();
 
@@ -264,12 +264,12 @@ class subscription_int : public vlg::collectable {
     public:
         virtual void on_start();
         virtual void on_stop();
-        virtual void on_event(subscription_event_int &sbs_evt);
+        virtual void on_event(subscription_event_impl &sbs_evt);
 
         //-----------------------------
         // AUTHORIZE EVENT (SERVER)
         //-----------------------------
-        virtual vlg::RetCode accept_event(subscription_event_int *sbs_evt);
+        virtual vlg::RetCode accept_event(subscription_event_impl *sbs_evt);
 
         //-----------------------------
         // SEND
@@ -277,7 +277,7 @@ class subscription_int : public vlg::collectable {
     private:
         vlg::RetCode send_start_request();
         vlg::RetCode send_start_response();
-        vlg::RetCode send_event(const subscription_event_int *sbs_evt);
+        vlg::RetCode send_event(const subscription_event_impl *sbs_evt);
         vlg::RetCode send_event_ack();
 
         //-----------------------------
@@ -290,19 +290,19 @@ class subscription_int : public vlg::collectable {
         When evt must be stored or send to the selector thread an adoption is needed.
         ***********************************/
     private:
-        vlg::RetCode submit_live_event(subscription_event_int *sbs_evt);
+        vlg::RetCode submit_live_event(subscription_event_impl *sbs_evt);
 
         //-----------------------------
         // RECEIVE
         //-----------------------------
     private:
         /*Client only*/
-        vlg::RetCode receive_event(const blz_hdr_rec *pkt_hdr,
-                                     vlg::grow_byte_buffer *pkt_body,
-                                     subscription_event_int *sbs_evt);
+        vlg::RetCode receive_event(const vlg_hdr_rec *pkt_hdr,
+                                   vlg::grow_byte_buffer *pkt_body,
+                                   subscription_event_impl *sbs_evt);
 
         /*Server only*/
-        vlg::RetCode receive_event_ack(const blz_hdr_rec *pkt_hdr);
+        vlg::RetCode receive_event_ack(const vlg_hdr_rec *pkt_hdr);
 
         //-----------------------------
         // Sbs Initial Query  - SERVER ONLY
@@ -333,7 +333,7 @@ class subscription_int : public vlg::collectable {
         // All these func MUST be called inside a synch region.
         //-----------------------------
     private:
-        vlg::RetCode    consume_event(subscription_event_int **sbs_evt);
+        vlg::RetCode    consume_event(subscription_event_impl **sbs_evt);
         vlg::RetCode    ack_event_priv();
         vlg::RetCode    evt_reset();
         vlg::RetCode    evt_ready();
@@ -344,8 +344,8 @@ class subscription_int : public vlg::collectable {
         //-----------------------------
     private:
 
-        peer_int                &peer_; // associated peer.
-        connection_int          &conn_; // underlying connection.
+        peer_impl                &peer_; // associated peer.
+        connection_impl          &conn_; // underlying connection.
         const entity_manager    &bem_;
         unsigned int            sbsid_;
         unsigned int            reqid_; //set by client
@@ -376,9 +376,9 @@ class subscription_int : public vlg::collectable {
         void                            *sen_hndl_ud_;
 
     private:
-        BLZ_SBS_Evt                 cli_evt_sts_;
+        VLG_SBS_Evt                 cli_evt_sts_;
         vlg::blocking_queue       cli_evt_q_;
-        subscription_event_int      *cli_last_evt_;
+        subscription_event_impl      *cli_last_evt_;
 
         //****-----***********
         // SRV SBS MNG REP BG
@@ -401,9 +401,9 @@ class subscription_int : public vlg::collectable {
         //[classkeyvalue] --> [classkeyvalue_instance_event_queue]
         vlg::hash_map srv_sbs_classkey_evt_q_hm_;
 
-        vlg::RetCode store_sbs_evt_srv_asynch(subscription_event_int *evt);
+        vlg::RetCode store_sbs_evt_srv_asynch(subscription_event_impl *evt);
         /**returns OK if a new event is available. KO if not.*/
-        vlg::RetCode consume_sbs_evt_srv_asynch(subscription_event_int **evt_out);
+        vlg::RetCode consume_sbs_evt_srv_asynch(subscription_event_impl **evt_out);
 
         //dedicated lock to synchro *asyncro sbs rep*
         mutable pthread_rwlock_t lock_srv_sbs_rep_asynch_;
@@ -411,7 +411,7 @@ class subscription_int : public vlg::collectable {
 
         //initial query rep
     private:
-        persistence_query_int  *initial_query_;
+        persistence_query_impl  *initial_query_;
         bool                    initial_query_ended_;
         //****-----***********
         // SRV SBS MNG REP END

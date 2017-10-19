@@ -19,16 +19,16 @@
  *
  */
 
-#include "blz_toolkit_sbs_window.h"
-#include "ui_blz_toolkit_sbs_window.h"
+#include "vlg_toolkit_sbs_window.h"
+#include "ui_vlg_toolkit_sbs_window.h"
 
-#include "blz_toolkit_tx_window.h"
+#include "vlg_toolkit_tx_window.h"
 
 //------------------------------------------------------------------------------
-// blz_toolkit_sbs_model
+// vlg_toolkit_sbs_model
 //------------------------------------------------------------------------------
 
-blz_toolkit_sbs_model::blz_toolkit_sbs_model(blz_toolkit_sbs_blz_class_model
+vlg_toolkit_sbs_model::vlg_toolkit_sbs_model(vlg_toolkit_sbs_vlg_class_model
                                              &wrapped_mdl, QObject *parent) :
     wrapped_mdl_(wrapped_mdl),
     QSortFilterProxyModel(parent)
@@ -36,31 +36,31 @@ blz_toolkit_sbs_model::blz_toolkit_sbs_model(blz_toolkit_sbs_blz_class_model
     setSourceModel(&wrapped_mdl);
 }
 
-bool blz_toolkit_sbs_model::filterAcceptsRow(int sourceRow,
+bool vlg_toolkit_sbs_model::filterAcceptsRow(int sourceRow,
                                              const QModelIndex &sourceParent) const
 {
     return true;
 }
 
-void blz_toolkit_sbs_model::offerEntry(vlg::nclass *entry)
+void vlg_toolkit_sbs_model::offerEntry(vlg::nclass *entry)
 {
     wrapped_mdl_.offerEntry(entry);
 }
 
-blz_toolkit_sbs_blz_class_model &blz_toolkit_sbs_model::wrapped_mdl()
+vlg_toolkit_sbs_vlg_class_model &vlg_toolkit_sbs_model::wrapped_mdl()
 {
     return wrapped_mdl_;
 }
 
 
 //------------------------------------------------------------------------------
-// blz_toolkit_sbs_window
+// vlg_toolkit_sbs_window
 //------------------------------------------------------------------------------
 
 void sbs_status_change_hndlr(vlg::subscription_int &sbs,
                              vlg::SubscriptionStatus status, void *ud)
 {
-    blz_toolkit_sbs_window *sbw = (blz_toolkit_sbs_window *)ud;
+    vlg_toolkit_sbs_window *sbw = (vlg_toolkit_sbs_window *)ud;
     qDebug() << "sbs status:" << status;
     sbw->EmitSbsStatus(status);
 }
@@ -69,23 +69,23 @@ void sbs_evt_notify_hndlr(vlg::subscription_int &sbs,
                           vlg::subscription_event_int &sbs_evt,
                           void *ud)
 {
-    blz_toolkit_sbs_window *sbw = (blz_toolkit_sbs_window *)ud;
+    vlg_toolkit_sbs_window *sbw = (vlg_toolkit_sbs_window *)ud;
     //qDebug() << "sbs evt occurred id:" << sbs_evt.GetEvtid() << " type:" << sbs_evt.GetEvttype();
     sbw->EmitSbsEvent(&sbs_evt);
 }
 
-blz_toolkit_sbs_window::blz_toolkit_sbs_window(const vlg::entity_desc &edesc,
+vlg_toolkit_sbs_window::vlg_toolkit_sbs_window(const vlg::entity_desc &edesc,
                                                const vlg::entity_manager &bem,
                                                vlg::subscription_int &sbs,
-                                               blz_toolkit_sbs_blz_class_model &mdl,
+                                               vlg_toolkit_sbs_vlg_class_model &mdl,
                                                QWidget *parent) :
     sbs_(sbs),
     sbs_mdl_(mdl, this),
     QMainWindow(parent),
-    ui(new Ui::blz_toolkit_sbs_window)
+    ui(new Ui::vlg_toolkit_sbs_window)
 {
     ui->setupUi(this);
-    ui->blz_class_sbs_table_view->setModel(&sbs_mdl_);
+    ui->vlg_class_sbs_table_view->setModel(&sbs_mdl_);
     ui->connid_label_disp->setText(QString("%1").arg(
                                        sbs_.get_connection().connid()));
 
@@ -98,7 +98,7 @@ blz_toolkit_sbs_window::blz_toolkit_sbs_window(const vlg::entity_desc &edesc,
             SLOT(OnSbsStatusChange(vlg::SubscriptionStatus)));
     connect(this, SIGNAL(SignalSbsEvent(vlg::subscription_event_int *)), this,
             SLOT(OnSbsEvent(vlg::subscription_event_int *)));
-    connect(ui->blz_class_sbs_table_view,
+    connect(ui->vlg_class_sbs_table_view,
             SIGNAL(customContextMenuRequested(const QPoint &)), this,
             SLOT(OnCustomMenuRequested(const QPoint &)));
 
@@ -107,9 +107,9 @@ blz_toolkit_sbs_window::blz_toolkit_sbs_window(const vlg::entity_desc &edesc,
     sbs_.set_subscription_event_notify_handler(sbs_evt_notify_hndlr, this);
 }
 
-blz_toolkit_sbs_window::~blz_toolkit_sbs_window()
+vlg_toolkit_sbs_window::~vlg_toolkit_sbs_window()
 {
-    qDebug() << "~blz_toolkit_sbs_window()";
+    qDebug() << "~vlg_toolkit_sbs_window()";
     vlg::SubscriptionStatus current =
         vlg::SubscriptionStatus_UNDEFINED;
     vlg::SubscriptionResponse sbs_stop_result =
@@ -131,7 +131,7 @@ blz_toolkit_sbs_window::~blz_toolkit_sbs_window()
     delete ui;
 }
 
-void blz_toolkit_sbs_window::on_actionStart_SBS_triggered()
+void vlg_toolkit_sbs_window::on_actionStart_SBS_triggered()
 {
     switch(ui->cfg_sbs_type_cb->currentIndex()) {
         case 0:
@@ -196,12 +196,12 @@ void blz_toolkit_sbs_window::on_actionStart_SBS_triggered()
     sbs_.start();
 }
 
-void blz_toolkit_sbs_window::on_actionStop_SBS_triggered()
+void vlg_toolkit_sbs_window::on_actionStop_SBS_triggered()
 {
     sbs_.stop();
 }
 
-void blz_toolkit_sbs_window::OnSbsStatusChange(vlg::SubscriptionStatus
+void vlg_toolkit_sbs_window::OnSbsStatusChange(vlg::SubscriptionStatus
                                                status)
 {
     switch(status) {
@@ -252,7 +252,7 @@ void blz_toolkit_sbs_window::OnSbsStatusChange(vlg::SubscriptionStatus
     }
 }
 
-void blz_toolkit_sbs_window::OnSbsEvent(vlg::subscription_event_int *sbs_evt)
+void vlg_toolkit_sbs_window::OnSbsEvent(vlg::subscription_event_int *sbs_evt)
 {
     //qDebug() << "OnSbsEvent slot called";
     if(sbs_evt->get_evttype() !=
@@ -264,12 +264,12 @@ void blz_toolkit_sbs_window::OnSbsEvent(vlg::subscription_event_int *sbs_evt)
     c.release(sbs_evt);
 }
 
-void blz_toolkit_sbs_window::OnCustomMenuRequested(const QPoint &pos)
+void vlg_toolkit_sbs_window::OnCustomMenuRequested(const QPoint &pos)
 {
-    QModelIndex proxy_index = ui->blz_class_sbs_table_view->indexAt(pos);
+    QModelIndex proxy_index = ui->vlg_class_sbs_table_view->indexAt(pos);
     QModelIndex index = sbs_mdl_.mapToSource(proxy_index);
     vlg::nclass *item = static_cast<vlg::nclass *>
-                          (index.internalPointer());
+                        (index.internalPointer());
     if(!item) {
         return;
     }
@@ -277,13 +277,13 @@ void blz_toolkit_sbs_window::OnCustomMenuRequested(const QPoint &pos)
     QAction *ntx = new QAction("New Transaction", this);
     connect(ntx, SIGNAL(triggered()), this, SLOT(OnNewTxRequested()));
     custom_menu->addAction(ntx);
-    custom_menu->popup(ui->blz_class_sbs_table_view->viewport()->mapToGlobal(pos));
+    custom_menu->popup(ui->vlg_class_sbs_table_view->viewport()->mapToGlobal(pos));
 }
 
-void blz_toolkit_sbs_window::OnNewTxRequested()
+void vlg_toolkit_sbs_window::OnNewTxRequested()
 {
     QModelIndexList indexes =
-        ui->blz_class_sbs_table_view->selectionModel()->selectedIndexes();
+        ui->vlg_class_sbs_table_view->selectionModel()->selectedIndexes();
 
     if(!indexes.count()) {
         return;
@@ -311,15 +311,15 @@ void blz_toolkit_sbs_window::OnNewTxRequested()
     sbs_.get_connection().new_transaction(&new_tx);
     new_tx->set_request_obj(item);
 
-    blz_toolkit_tx_blz_class_model *tx_mdl =
-        new blz_toolkit_tx_blz_class_model(*edesc,
+    vlg_toolkit_tx_vlg_class_model *tx_mdl =
+        new vlg_toolkit_tx_vlg_class_model(*edesc,
                                            sbs_.peer().get_em(),
                                            *new_tx,
                                            this);
 
     /*if last param set to 'this' child will be always on TOP*/
-    blz_toolkit_tx_window *new_tx_window =
-        new blz_toolkit_tx_window(*edesc,
+    vlg_toolkit_tx_window *new_tx_window =
+        new vlg_toolkit_tx_window(*edesc,
                                   sbs_.get_connection().peer().get_em(),
                                   *new_tx,
                                   *tx_mdl,
@@ -334,13 +334,13 @@ void blz_toolkit_sbs_window::OnNewTxRequested()
     //new_tx_window->activateWindow();
 }
 
-void blz_toolkit_sbs_window::EmitSbsStatus(vlg::SubscriptionStatus
+void vlg_toolkit_sbs_window::EmitSbsStatus(vlg::SubscriptionStatus
                                            status)
 {
     emit SignalSbsStatusChange(status);
 }
 
-void blz_toolkit_sbs_window::EmitSbsEvent(vlg::subscription_event_int
+void vlg_toolkit_sbs_window::EmitSbsEvent(vlg::subscription_event_int
                                           *sbs_evt)
 {
     vlg::collector &c = sbs_evt->get_collector();
@@ -348,7 +348,7 @@ void blz_toolkit_sbs_window::EmitSbsEvent(vlg::subscription_event_int
     emit SignalSbsEvent(sbs_evt);
 }
 
-void blz_toolkit_sbs_window::SbsStartedActions()
+void vlg_toolkit_sbs_window::SbsStartedActions()
 {
     ui->sbs_params_gbox->setEnabled(false);
     ui->actionStart_SBS->setEnabled(false);
@@ -356,7 +356,7 @@ void blz_toolkit_sbs_window::SbsStartedActions()
     ui->sbsid_label_disp->setText(QString("%1").arg(sbs_.sbsid()));
 }
 
-void blz_toolkit_sbs_window::SbsStoppedActions()
+void vlg_toolkit_sbs_window::SbsStoppedActions()
 {
     ui->sbs_params_gbox->setEnabled(true);
     ui->actionStart_SBS->setEnabled(true);
@@ -364,12 +364,12 @@ void blz_toolkit_sbs_window::SbsStoppedActions()
     ui->sbsid_label_disp->setText(QString("%1").arg(sbs_.sbsid()));
 }
 
-vlg::subscription_int &blz_toolkit_sbs_window::sbs() const
+vlg::subscription_int &vlg_toolkit_sbs_window::sbs() const
 {
     return sbs_;
 }
 
-void blz_toolkit_sbs_window::closeEvent(QCloseEvent *event)
+void vlg_toolkit_sbs_window::closeEvent(QCloseEvent *event)
 {
 }
 

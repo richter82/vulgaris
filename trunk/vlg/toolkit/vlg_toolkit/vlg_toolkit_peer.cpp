@@ -19,43 +19,43 @@
  *
  */
 
-#include "blz_toolkit_peer.h"
+#include "vlg_toolkit_peer.h"
 
-namespace blz_tlkt {
+namespace vlg_tlkt {
 
-unsigned int BLZ_TOOLKIT_PEER_VER[] = {0,0,0,0};
+unsigned int VLG_TOOLKIT_PEER_VER[] = {0,0,0,0};
 
 //------------------------------------------------------------------------------
-// ****BLZ_TOOLKIT_PEER****
+// ****VLG_TOOLKIT_PEER****
 //------------------------------------------------------------------------------
 toolkit_peer::toolkit_peer(unsigned int id) : peer_int(id)
 {}
 
 //------------------------------------------------------------------------------
-// BLZ_PEER_LFCYC ABS METHS
+// VLG_PEER_LFCYC ABS METHS
 //------------------------------------------------------------------------------
 
 vlg::RetCode toolkit_peer::peer_load_cfg_usr(int pnum, const char *param,
-                                               const char *value)
+                                             const char *value)
 {
     return peer_int::peer_load_cfg_usr(pnum, param, value);
 }
 
 vlg::RetCode toolkit_peer::peer_init_usr()
 {
-    IFLOG(dbg(TH_ID, LS_APL"[CALLED BLZ_TOOLKIT_PEER APPLINIT HNDL]"))
+    IFLOG(dbg(TH_ID, LS_APL"[CALLED VLG_TOOLKIT_PEER APPLINIT HNDL]"))
     return peer_int::peer_init_usr();
 }
 
 vlg::RetCode toolkit_peer::peer_start_usr()
 {
-    IFLOG(dbg(TH_ID, LS_APL"[CALLED BLZ_TOOLKIT_PEER APPLSTART HNDL]"))
+    IFLOG(dbg(TH_ID, LS_APL"[CALLED VLG_TOOLKIT_PEER APPLSTART HNDL]"))
     return peer_int::peer_start_usr();
 }
 
 vlg::RetCode toolkit_peer::peer_dying_breath_handler()
 {
-    IFLOG(dbg(TH_ID, LS_APL"[CALLED BLZ_TOOLKIT_PEER DYINGBRTH HNDL]"))
+    IFLOG(dbg(TH_ID, LS_APL"[CALLED VLG_TOOLKIT_PEER DYINGBRTH HNDL]"))
     return peer_int::peer_dying_breath_handler();
 }
 
@@ -66,7 +66,7 @@ const char *toolkit_peer::peer_name_usr()
 
 const unsigned int *toolkit_peer::peer_ver_usr()
 {
-    return BLZ_TOOLKIT_PEER_VER;
+    return VLG_TOOLKIT_PEER_VER;
 }
 
 }

@@ -19,9 +19,9 @@
  *
  */
 
-#include "blaze_logger.h"
-#include "blaze_model.h"
-#include "blz_glob_int.h"
+#include "vlg_logger.h"
+#include "vlg_model.h"
+#include "vlg_globint.h"
 
 #ifdef WIN32
 #define SF_GBB_READ_H(bbuf, meth, cmd)\
@@ -63,10 +63,10 @@ namespace vlg {
 // FldSeqA_Restore
 //-----------------------------
 inline vlg::RetCode FldSeqA_Restore(void *entity_ptr,
-                                      const entity_manager *em,
-                                      Encode enctyp,
-                                      const member_desc *mmbrd,
-                                      vlg::grow_byte_buffer *ibb)
+                                    const entity_manager *em,
+                                    Encode enctyp,
+                                    const member_desc *mmbrd,
+                                    vlg::grow_byte_buffer *ibb)
 {
     size_t array_sz = 0, start_pos = 0;
     unsigned short array_idx = 0;
@@ -116,8 +116,8 @@ inline vlg::RetCode FldSeqA_Restore(void *entity_ptr,
 // nclass
 //-----------------------------
 vlg::RetCode nclass::restore(const entity_manager *em,
-                               Encode enctyp,
-                               vlg::grow_byte_buffer *ibb)
+                             Encode enctyp,
+                             vlg::grow_byte_buffer *ibb)
 {
     size_t obj_sz = 0, fld_sz = 0, start_pos = 0;
     unsigned short fld_idx = 0;
@@ -144,9 +144,9 @@ vlg::RetCode nclass::restore(const entity_manager *em,
                 //compute fld offset
                 fld_cptr = reinterpret_cast<char *>(this);
                 fld_cptr += mmbrd->get_field_offset();
-                if(mmbrd->get_field_blz_type() != Type_ENTITY) {
+                if(mmbrd->get_field_vlg_type() != Type_ENTITY) {
                     //primitive type.
-                    if(mmbrd->get_field_blz_type() == Type_ASCII &&
+                    if(mmbrd->get_field_vlg_type() == Type_ASCII &&
                             mmbrd->get_field_nmemb() > 1) {
                         //strings
                         //read string len.

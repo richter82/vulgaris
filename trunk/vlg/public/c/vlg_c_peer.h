@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef BLZ_C_PEER_H_
-#define BLZ_C_PEER_H_
+#ifndef VLG_C_PEER_H_
+#define VLG_C_PEER_H_
 
 #ifdef WIN32
 #include <winsock2.h>
@@ -68,7 +68,7 @@ typedef void(*peer_error_handler_wr)(peer_wr p,
 typedef void(*peer_dying_breath_handler_wr)(peer_wr p,
                                             void *ud);
 
-    peer_wr peer_create(void);
+peer_wr peer_create(void);
 void    peer_destroy(peer_wr p);
 
 RetCode    peer_set_params_file_dir(peer_wr p,

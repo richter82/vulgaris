@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef BLZ_C_LOG_H_
-#define BLZ_C_LOG_H_
+#ifndef VLG_C_LOG_H_
+#define VLG_C_LOG_H_
 #include "vlg.h"
 
 #if defined(__cplusplus)
@@ -42,97 +42,97 @@ using namespace vlg;
 extern "C" {
 #endif
 
-size_t log_pln(blaze_logger_wr l,
+size_t log_pln(vlg_logger_wr l,
                const char *fmt,
                ...);
 
-size_t log_trc(blaze_logger_wr l,
+size_t log_trc(vlg_logger_wr l,
                uint32_t id,
                const char *fmt,
                ...);
 
-size_t log_dbg(blaze_logger_wr l,
+size_t log_dbg(vlg_logger_wr l,
                uint32_t id,
                const char *fmt,
                ...);
 
-size_t log_inf(blaze_logger_wr l,
+size_t log_inf(vlg_logger_wr l,
                uint32_t id,
                const char *fmt,
                ...);
 
-size_t log_wrn(blaze_logger_wr l,
+size_t log_wrn(vlg_logger_wr l,
                uint32_t id,
                const char *fmt,
                ...);
 
-size_t log_err(blaze_logger_wr l,
+size_t log_err(vlg_logger_wr l,
                uint32_t id,
                const char *fmt,
                ...);
 
-size_t log_cri(blaze_logger_wr l,
+size_t log_cri(vlg_logger_wr l,
                uint32_t id,
                const char *fmt,
                ...);
 
-size_t log_fat(blaze_logger_wr l,
+size_t log_fat(vlg_logger_wr l,
                uint32_t id,
                const char *fmt,
                ...);
 
 //CLASS SPECIFIC
 
-size_t log_trc_class(blaze_logger_wr l,
+size_t log_trc_class(vlg_logger_wr l,
                      uint32_t id,
                      const net_class_wr obj,
                      int print_class_name,
                      const char *fmt,
                      ...);
 
-size_t log_dbg_class(blaze_logger_wr l,
+size_t log_dbg_class(vlg_logger_wr l,
                      uint32_t id,
                      const net_class_wr obj,
                      int print_class_name,
                      const char *fmt,
                      ...);
 
-size_t log_inf_class(blaze_logger_wr l,
+size_t log_inf_class(vlg_logger_wr l,
                      uint32_t id,
                      const net_class_wr obj,
                      int print_class_name,
                      const char *fmt,
                      ...);
 
-size_t log_wrn_class(blaze_logger_wr l,
+size_t log_wrn_class(vlg_logger_wr l,
                      uint32_t id,
                      const net_class_wr obj,
                      int print_class_name,
                      const char *fmt,
                      ...);
 
-size_t log_err_class(blaze_logger_wr l,
+size_t log_err_class(vlg_logger_wr l,
                      uint32_t id,
                      const net_class_wr obj,
                      int print_class_name,
                      const char *fmt,
                      ...);
 
-size_t log_cri_class(blaze_logger_wr l,
+size_t log_cri_class(vlg_logger_wr l,
                      uint32_t id,
                      const net_class_wr obj,
                      int print_class_name,
                      const char *fmt,
                      ...);
 
-size_t log_fat_class(blaze_logger_wr l,
+size_t log_fat_class(vlg_logger_wr l,
                      uint32_t id,
                      const net_class_wr obj,
                      int print_class_name,
                      const char *fmt,
                      ...);
 
-blaze_logger_wr get_blaze_logger_wr(const char *logger_name);
+vlg_logger_wr get_vlg_logger_wr(const char *logger_name);
 
 #if defined(__cplusplus)
 }

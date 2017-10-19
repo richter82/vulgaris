@@ -19,45 +19,45 @@
  *
  */
 
-#include "blz_compiler.h"
+#include "vlg_compiler.h"
 
 #ifndef min
 #define min(a,b)            (((a) < (b)) ? (a) : (b))
 #endif
 
 //--C++
-#define BLZ_COMP_CPP_TYPE_UNSIGN    "unsigned"
-#define BLZ_COMP_CPP_TYPE_BOOL      "bool"
-#define BLZ_COMP_CPP_TYPE_INT       "int"
-#define BLZ_COMP_CPP_TYPE_SHORT     "short"
-#define BLZ_COMP_CPP_TYPE_LONG      "long"
-#define BLZ_COMP_CPP_TYPE_INT64     "int64_t"
-#define BLZ_COMP_CPP_TYPE_UINT64    "uint64_t"
-#define BLZ_COMP_CPP_TYPE_FLOAT     "float"
-#define BLZ_COMP_CPP_TYPE_DOUBLE    "double"
-#define BLZ_COMP_CPP_TYPE_CHAR      "char"
-#define BLZ_COMP_CPP_TYPE_WCHAR     "wchar_t"
+#define VLG_COMP_CPP_TYPE_UNSIGN    "unsigned"
+#define VLG_COMP_CPP_TYPE_BOOL      "bool"
+#define VLG_COMP_CPP_TYPE_INT       "int"
+#define VLG_COMP_CPP_TYPE_SHORT     "short"
+#define VLG_COMP_CPP_TYPE_LONG      "long"
+#define VLG_COMP_CPP_TYPE_INT64     "int64_t"
+#define VLG_COMP_CPP_TYPE_UINT64    "uint64_t"
+#define VLG_COMP_CPP_TYPE_FLOAT     "float"
+#define VLG_COMP_CPP_TYPE_DOUBLE    "double"
+#define VLG_COMP_CPP_TYPE_CHAR      "char"
+#define VLG_COMP_CPP_TYPE_WCHAR     "wchar_t"
 
 //--Java
-#define BLZ_COMP_JAVA_TYPE_BYTE      "Byte"
-#define BLZ_COMP_JAVA_TYPE_BOOL      "Boolean"
-#define BLZ_COMP_JAVA_TYPE_INT       "Integer"
-#define BLZ_COMP_JAVA_TYPE_SHORT     "Short"
-#define BLZ_COMP_JAVA_TYPE_LONG      "Long"
-#define BLZ_COMP_JAVA_TYPE_FLOAT     "Float"
-#define BLZ_COMP_JAVA_TYPE_DOUBLE    "Double"
-#define BLZ_COMP_JAVA_TYPE_CHAR      "Character"
-#define BLZ_COMP_JAVA_TYPE_STRING    "String"
+#define VLG_COMP_JAVA_TYPE_BYTE      "Byte"
+#define VLG_COMP_JAVA_TYPE_BOOL      "Boolean"
+#define VLG_COMP_JAVA_TYPE_INT       "Integer"
+#define VLG_COMP_JAVA_TYPE_SHORT     "Short"
+#define VLG_COMP_JAVA_TYPE_LONG      "Long"
+#define VLG_COMP_JAVA_TYPE_FLOAT     "Float"
+#define VLG_COMP_JAVA_TYPE_DOUBLE    "Double"
+#define VLG_COMP_JAVA_TYPE_CHAR      "Character"
+#define VLG_COMP_JAVA_TYPE_STRING    "String"
 
 #define NOTFNDINHASH "key not found in hash"
 
 namespace vlg {
 
 //-----------------------------
-// BLZ_COMP_ARCH: x86_64
-// BLZ_COMP_OS: unix
-// BLZ_COMP_LANG: CPP
-// BLZ_COMP_TCOMP: GCC
+// VLG_COMP_ARCH: x86_64
+// VLG_COMP_OS: unix
+// VLG_COMP_LANG: CPP
+// VLG_COMP_TCOMP: GCC
 //-----------------------------
 static size_t  get_in_arch_type_size_x86_64_unix_CPP_GCC(Type type)
 {
@@ -89,10 +89,10 @@ static size_t  get_in_arch_type_size_x86_64_unix_CPP_GCC(Type type)
 }
 
 //-----------------------------
-// BLZ_COMP_ARCH: x86_64
-// BLZ_COMP_OS: win
-// BLZ_COMP_LANG: CPP
-// BLZ_COMP_TCOMP: MSVC
+// VLG_COMP_ARCH: x86_64
+// VLG_COMP_OS: win
+// VLG_COMP_LANG: CPP
+// VLG_COMP_TCOMP: MSVC
 //-----------------------------
 static size_t  get_in_arch_type_size_x86_64_win_CPP_MSVC(Type type)
 {
@@ -124,10 +124,10 @@ static size_t  get_in_arch_type_size_x86_64_win_CPP_MSVC(Type type)
 }
 
 static size_t  get_in_arch_type_size_x86_64_unix_CPP(Type type,
-                                                     BLZ_COMP_TCOMP tcomp)
+                                                     VLG_COMP_TCOMP tcomp)
 {
     switch(tcomp) {
-        case BLZ_COMP_TCOMP_GCC:
+        case VLG_COMP_TCOMP_GCC:
             return get_in_arch_type_size_x86_64_unix_CPP_GCC(type);
         default:
             EXIT_ACTION_STDOUT(__func__)
@@ -136,10 +136,10 @@ static size_t  get_in_arch_type_size_x86_64_unix_CPP(Type type,
 }
 
 static size_t  get_in_arch_type_size_x86_64_win_CPP(Type type,
-                                                    BLZ_COMP_TCOMP tcomp)
+                                                    VLG_COMP_TCOMP tcomp)
 {
     switch(tcomp) {
-        case BLZ_COMP_TCOMP_MSVC:
+        case VLG_COMP_TCOMP_MSVC:
             return get_in_arch_type_size_x86_64_win_CPP_MSVC(type);
         default:
             EXIT_ACTION_STDOUT(__func__)
@@ -148,11 +148,11 @@ static size_t  get_in_arch_type_size_x86_64_win_CPP(Type type,
 }
 
 static size_t  GetInArchTypeSize_x86_64_unix(Type type,
-                                             BLZ_COMP_LANG lang,
-                                             BLZ_COMP_TCOMP tcomp)
+                                             VLG_COMP_LANG lang,
+                                             VLG_COMP_TCOMP tcomp)
 {
     switch(lang) {
-        case BLZ_COMP_LANG_CPP:
+        case VLG_COMP_LANG_CPP:
             return get_in_arch_type_size_x86_64_unix_CPP(type, tcomp);
         default:
             EXIT_ACTION_STDOUT(__func__)
@@ -161,11 +161,11 @@ static size_t  GetInArchTypeSize_x86_64_unix(Type type,
 }
 
 static size_t  GetInArchTypeSize_x86_64_win(Type type,
-                                            BLZ_COMP_LANG lang,
-                                            BLZ_COMP_TCOMP tcomp)
+                                            VLG_COMP_LANG lang,
+                                            VLG_COMP_TCOMP tcomp)
 {
     switch(lang) {
-        case BLZ_COMP_LANG_CPP:
+        case VLG_COMP_LANG_CPP:
             return get_in_arch_type_size_x86_64_win_CPP(type, tcomp);
         default:
             EXIT_ACTION_STDOUT(__func__)
@@ -174,14 +174,14 @@ static size_t  GetInArchTypeSize_x86_64_win(Type type,
 }
 
 static size_t  GetInArchTypeSize_x86_64(Type type,
-                                        BLZ_COMP_OS os,
-                                        BLZ_COMP_LANG lang,
-                                        BLZ_COMP_TCOMP tcomp)
+                                        VLG_COMP_OS os,
+                                        VLG_COMP_LANG lang,
+                                        VLG_COMP_TCOMP tcomp)
 {
     switch(os) {
-        case BLZ_COMP_OS_win:
+        case VLG_COMP_OS_win:
             return GetInArchTypeSize_x86_64_win(type, lang, tcomp);
-        case BLZ_COMP_OS_unix:
+        case VLG_COMP_OS_unix:
             return GetInArchTypeSize_x86_64_unix(type, lang, tcomp);
         default:
             EXIT_ACTION_STDOUT(__func__)
@@ -190,13 +190,13 @@ static size_t  GetInArchTypeSize_x86_64(Type type,
 }
 
 size_t  get_in_arch_type_size(Type type,
-                              BLZ_COMP_ARCH arch,
-                              BLZ_COMP_OS os,
-                              BLZ_COMP_LANG lang,
-                              BLZ_COMP_TCOMP tcomp)
+                              VLG_COMP_ARCH arch,
+                              VLG_COMP_OS os,
+                              VLG_COMP_LANG lang,
+                              VLG_COMP_TCOMP tcomp)
 {
     switch(arch) {
-        case BLZ_COMP_ARCH_x86_64:
+        case VLG_COMP_ARCH_x86_64:
             return GetInArchTypeSize_x86_64(type, os, lang, tcomp);
         default:
             EXIT_ACTION_STDOUT(__func__)
@@ -239,7 +239,7 @@ size_t  get_network_type_size(Type type)
 }
 
 /***********************************
-BLZ_MEMBER_DESC_COMP
+VLG_MEMBER_DESC_COMP
 ***********************************/
 member_desc_comp::member_desc_comp(unsigned short mmbrid,
                                    MemberType mmbr_type,
@@ -300,10 +300,10 @@ Type member_desc_comp::get_field_type() const
     return fild_type_;
 }
 
-size_t member_desc_comp::get_field_offset(BLZ_COMP_ARCH arch,
-                                          BLZ_COMP_OS os,
-                                          BLZ_COMP_LANG lang,
-                                          BLZ_COMP_TCOMP tcomp) const
+size_t member_desc_comp::get_field_offset(VLG_COMP_ARCH arch,
+                                          VLG_COMP_OS os,
+                                          VLG_COMP_LANG lang,
+                                          VLG_COMP_TCOMP tcomp) const
 {
     unsigned int key = TCOMP_DEP_GEN_KEY(arch, os, lang, tcomp);
     char outmsg[256] = {0};
@@ -314,10 +314,10 @@ size_t member_desc_comp::get_field_offset(BLZ_COMP_ARCH arch,
     return val;
 }
 
-size_t member_desc_comp::get_field_type_size(BLZ_COMP_ARCH arch,
-                                             BLZ_COMP_OS os,
-                                             BLZ_COMP_LANG lang,
-                                             BLZ_COMP_TCOMP tcomp) const
+size_t member_desc_comp::get_field_type_size(VLG_COMP_ARCH arch,
+                                             VLG_COMP_OS os,
+                                             VLG_COMP_LANG lang,
+                                             VLG_COMP_TCOMP tcomp) const
 {
     unsigned int key = TCOMP_DEP_GEN_KEY(arch, os, lang, tcomp);
     char outmsg[256] = {0};
@@ -354,20 +354,20 @@ long member_desc_comp::get_enum_value() const
 }
 
 void member_desc_comp::set_field_offset(size_t val,
-                                        BLZ_COMP_ARCH arch,
-                                        BLZ_COMP_OS os,
-                                        BLZ_COMP_LANG lang,
-                                        BLZ_COMP_TCOMP tcomp)
+                                        VLG_COMP_ARCH arch,
+                                        VLG_COMP_OS os,
+                                        VLG_COMP_LANG lang,
+                                        VLG_COMP_TCOMP tcomp)
 {
     unsigned int key = TCOMP_DEP_GEN_KEY(arch, os, lang, tcomp);
     COMMAND_IF_NOT_OK(fild_offset_map_.put(&key, &val), exit(1))
 }
 
 void member_desc_comp::set_field_type_size(size_t val,
-                                           BLZ_COMP_ARCH arch,
-                                           BLZ_COMP_OS os,
-                                           BLZ_COMP_LANG lang,
-                                           BLZ_COMP_TCOMP tcomp)
+                                           VLG_COMP_ARCH arch,
+                                           VLG_COMP_OS os,
+                                           VLG_COMP_LANG lang,
+                                           VLG_COMP_TCOMP tcomp)
 {
     unsigned int key = TCOMP_DEP_GEN_KEY(arch, os, lang, tcomp);
     COMMAND_IF_NOT_OK(fild_type_size_map_.put(&key, &val), exit(1))
@@ -375,7 +375,7 @@ void member_desc_comp::set_field_type_size(size_t val,
 
 
 /***********************************
-BLZ_ENTITY_DESC_COMP
+VLG_ENTITY_DESC_COMP
 ***********************************/
 entity_desc_comp::entity_desc_comp(unsigned int entityid,
                                    EntityType entitytype,
@@ -411,7 +411,7 @@ vlg::RetCode entity_desc_comp::init()
 }
 
 vlg::RetCode entity_desc_comp::extend(vlg::hash_map *mmbrmap,
-                                        vlg::hash_map *keymap)
+                                      vlg::hash_map *keymap)
 {
     member_desc_comp *mdesc = NULL;
     mmbrmap->start_iteration();
@@ -444,10 +444,10 @@ unsigned int entity_desc_comp::get_entityid()  const
     return entityid_;
 }
 
-size_t entity_desc_comp::get_entity_size(BLZ_COMP_ARCH arch,
-                                         BLZ_COMP_OS os,
-                                         BLZ_COMP_LANG lang,
-                                         BLZ_COMP_TCOMP tcomp) const
+size_t entity_desc_comp::get_entity_size(VLG_COMP_ARCH arch,
+                                         VLG_COMP_OS os,
+                                         VLG_COMP_LANG lang,
+                                         VLG_COMP_TCOMP tcomp) const
 {
     unsigned int key = TCOMP_DEP_GEN_KEY(arch, os, lang, tcomp);
     char outmsg[256] = {0};
@@ -458,10 +458,10 @@ size_t entity_desc_comp::get_entity_size(BLZ_COMP_ARCH arch,
     return val;
 }
 
-size_t entity_desc_comp::get_entity_max_align(BLZ_COMP_ARCH arch,
-                                              BLZ_COMP_OS os,
-                                              BLZ_COMP_LANG lang,
-                                              BLZ_COMP_TCOMP tcomp) const
+size_t entity_desc_comp::get_entity_max_align(VLG_COMP_ARCH arch,
+                                              VLG_COMP_OS os,
+                                              VLG_COMP_LANG lang,
+                                              VLG_COMP_TCOMP tcomp) const
 {
     unsigned int key = TCOMP_DEP_GEN_KEY(arch, os, lang, tcomp);
     char outmsg[256] = {0};
@@ -542,20 +542,20 @@ void entity_desc_comp::enum_member_desc(enum_member_desc_comp_func func) const
 }
 
 void entity_desc_comp::set_entity_size(size_t val,
-                                       BLZ_COMP_ARCH arch,
-                                       BLZ_COMP_OS os,
-                                       BLZ_COMP_LANG lang,
-                                       BLZ_COMP_TCOMP tcomp)
+                                       VLG_COMP_ARCH arch,
+                                       VLG_COMP_OS os,
+                                       VLG_COMP_LANG lang,
+                                       VLG_COMP_TCOMP tcomp)
 {
     unsigned int key = TCOMP_DEP_GEN_KEY(arch, os, lang, tcomp);
     COMMAND_IF_NOT_OK(entity_size_map_.put(&key, &val), exit(1))
 }
 
 void entity_desc_comp::set_entity_max_align(size_t val,
-                                            BLZ_COMP_ARCH arch,
-                                            BLZ_COMP_OS os,
-                                            BLZ_COMP_LANG lang,
-                                            BLZ_COMP_TCOMP tcomp)
+                                            VLG_COMP_ARCH arch,
+                                            VLG_COMP_OS os,
+                                            VLG_COMP_LANG lang,
+                                            VLG_COMP_TCOMP tcomp)
 {
     unsigned int key = TCOMP_DEP_GEN_KEY(arch, os, lang, tcomp);
     COMMAND_IF_NOT_OK(entity_max_align_map_.put(&key, &val), exit(1))
@@ -615,14 +615,14 @@ vlg::linked_list &key_desc_comp::get_key_member_set_m()
 }
 
 
-vlg::RetCode get_zero_val_for_BLZ_TYPE(Type type,
-                                         vlg::ascii_string &out)
+vlg::RetCode get_zero_val_for_VLG_TYPE(Type type,
+                                       vlg::ascii_string &out)
 {
     switch(comp_cfg.lang) {
-        case BLZ_COMP_LANG_C:
+        case VLG_COMP_LANG_C:
             return vlg::RetCode_UNSP;
             break;
-        case BLZ_COMP_LANG_CPP:
+        case VLG_COMP_LANG_CPP:
             switch(type) {
                 case Type_BOOL:
                     RETURN_IF_NOT_OK(out.assign("false"))
@@ -658,7 +658,7 @@ vlg::RetCode get_zero_val_for_BLZ_TYPE(Type type,
                     return vlg::RetCode_KO;
             }
             break;
-        case BLZ_COMP_LANG_JAVA:
+        case VLG_COMP_LANG_JAVA:
             switch(type) {
                 case Type_BOOL:
                     RETURN_IF_NOT_OK(out.assign("false"))
@@ -693,86 +693,86 @@ vlg::RetCode get_zero_val_for_BLZ_TYPE(Type type,
     }
 }
 
-vlg::RetCode target_type_from_builtin_BLZ_TYPE(member_desc_comp &mdsc,
-                                                 vlg::ascii_string &out)
+vlg::RetCode target_type_from_builtin_VLG_TYPE(member_desc_comp &mdsc,
+                                               vlg::ascii_string &out)
 {
     switch(comp_cfg.lang) {
-        case BLZ_COMP_LANG_C:
+        case VLG_COMP_LANG_C:
             return vlg::RetCode_UNSP;
             break;
-        case BLZ_COMP_LANG_CPP:
+        case VLG_COMP_LANG_CPP:
             switch(mdsc.get_field_type()) {
                 case Type_BOOL:
-                    RETURN_IF_NOT_OK(out.assign(BLZ_COMP_CPP_TYPE_BOOL))
+                    RETURN_IF_NOT_OK(out.assign(VLG_COMP_CPP_TYPE_BOOL))
                     return vlg::RetCode_OK;
                 case Type_INT16:
-                    RETURN_IF_NOT_OK(out.assign(BLZ_COMP_CPP_TYPE_SHORT))
+                    RETURN_IF_NOT_OK(out.assign(VLG_COMP_CPP_TYPE_SHORT))
                     return vlg::RetCode_OK;
                 case Type_UINT16:
-                    RETURN_IF_NOT_OK(out.assign(BLZ_COMP_CPP_TYPE_UNSIGN
+                    RETURN_IF_NOT_OK(out.assign(VLG_COMP_CPP_TYPE_UNSIGN
                                                 CR_TK_SP
-                                                BLZ_COMP_CPP_TYPE_SHORT))
+                                                VLG_COMP_CPP_TYPE_SHORT))
                     return vlg::RetCode_OK;
                 case Type_INT32:
-                    RETURN_IF_NOT_OK(out.assign(BLZ_COMP_CPP_TYPE_INT))
+                    RETURN_IF_NOT_OK(out.assign(VLG_COMP_CPP_TYPE_INT))
                     return vlg::RetCode_OK;
                 case Type_UINT32:
-                    RETURN_IF_NOT_OK(out.assign(BLZ_COMP_CPP_TYPE_UNSIGN
+                    RETURN_IF_NOT_OK(out.assign(VLG_COMP_CPP_TYPE_UNSIGN
                                                 CR_TK_SP
-                                                BLZ_COMP_CPP_TYPE_INT))
+                                                VLG_COMP_CPP_TYPE_INT))
                     return vlg::RetCode_OK;
                 case Type_INT64:
-                    RETURN_IF_NOT_OK(out.assign(BLZ_COMP_CPP_TYPE_INT64))
+                    RETURN_IF_NOT_OK(out.assign(VLG_COMP_CPP_TYPE_INT64))
                     return vlg::RetCode_OK;
                 case Type_UINT64:
-                    RETURN_IF_NOT_OK(out.assign(BLZ_COMP_CPP_TYPE_UINT64))
+                    RETURN_IF_NOT_OK(out.assign(VLG_COMP_CPP_TYPE_UINT64))
                     return vlg::RetCode_OK;
                 case Type_FLOAT32:
-                    RETURN_IF_NOT_OK(out.assign(BLZ_COMP_CPP_TYPE_FLOAT))
+                    RETURN_IF_NOT_OK(out.assign(VLG_COMP_CPP_TYPE_FLOAT))
                     return vlg::RetCode_OK;
                 case Type_FLOAT64:
-                    RETURN_IF_NOT_OK(out.assign(BLZ_COMP_CPP_TYPE_DOUBLE))
+                    RETURN_IF_NOT_OK(out.assign(VLG_COMP_CPP_TYPE_DOUBLE))
                     return vlg::RetCode_OK;
                 case Type_ASCII:
-                    RETURN_IF_NOT_OK(out.assign(BLZ_COMP_CPP_TYPE_CHAR))
+                    RETURN_IF_NOT_OK(out.assign(VLG_COMP_CPP_TYPE_CHAR))
                     return vlg::RetCode_OK;
                 default:
                     return vlg::RetCode_KO;
             }
             break;
-        case BLZ_COMP_LANG_JAVA:
+        case VLG_COMP_LANG_JAVA:
             switch(mdsc.get_field_type()) {
                 case Type_BOOL:
-                    RETURN_IF_NOT_OK(out.assign(BLZ_COMP_JAVA_TYPE_BOOL))
+                    RETURN_IF_NOT_OK(out.assign(VLG_COMP_JAVA_TYPE_BOOL))
                     return vlg::RetCode_OK;
                 case Type_INT16:
-                    RETURN_IF_NOT_OK(out.assign(BLZ_COMP_JAVA_TYPE_SHORT))
+                    RETURN_IF_NOT_OK(out.assign(VLG_COMP_JAVA_TYPE_SHORT))
                     return vlg::RetCode_OK;
                 case Type_UINT16:
-                    RETURN_IF_NOT_OK(out.assign(BLZ_COMP_JAVA_TYPE_SHORT))
+                    RETURN_IF_NOT_OK(out.assign(VLG_COMP_JAVA_TYPE_SHORT))
                     return vlg::RetCode_OK;
                 case Type_INT32:
-                    RETURN_IF_NOT_OK(out.assign(BLZ_COMP_JAVA_TYPE_INT))
+                    RETURN_IF_NOT_OK(out.assign(VLG_COMP_JAVA_TYPE_INT))
                     return vlg::RetCode_OK;
                 case Type_UINT32:
-                    RETURN_IF_NOT_OK(out.assign(BLZ_COMP_JAVA_TYPE_INT))
+                    RETURN_IF_NOT_OK(out.assign(VLG_COMP_JAVA_TYPE_INT))
                     return vlg::RetCode_OK;
                 case Type_INT64:
-                    RETURN_IF_NOT_OK(out.assign(BLZ_COMP_JAVA_TYPE_LONG))
+                    RETURN_IF_NOT_OK(out.assign(VLG_COMP_JAVA_TYPE_LONG))
                     return vlg::RetCode_OK;
                 case Type_UINT64:
-                    RETURN_IF_NOT_OK(out.assign(BLZ_COMP_JAVA_TYPE_LONG))
+                    RETURN_IF_NOT_OK(out.assign(VLG_COMP_JAVA_TYPE_LONG))
                     return vlg::RetCode_OK;
                 case Type_FLOAT32:
-                    RETURN_IF_NOT_OK(out.assign(BLZ_COMP_JAVA_TYPE_FLOAT))
+                    RETURN_IF_NOT_OK(out.assign(VLG_COMP_JAVA_TYPE_FLOAT))
                     return vlg::RetCode_OK;
                 case Type_FLOAT64:
-                    RETURN_IF_NOT_OK(out.assign(BLZ_COMP_JAVA_TYPE_DOUBLE))
+                    RETURN_IF_NOT_OK(out.assign(VLG_COMP_JAVA_TYPE_DOUBLE))
                     return vlg::RetCode_OK;
                 case Type_ASCII:
                     RETURN_IF_NOT_OK(out.assign((mdsc.get_nmemb() > 1) ?
-                                                BLZ_COMP_JAVA_TYPE_STRING :
-                                                BLZ_COMP_JAVA_TYPE_CHAR))
+                                                VLG_COMP_JAVA_TYPE_STRING :
+                                                VLG_COMP_JAVA_TYPE_CHAR))
                     return vlg::RetCode_OK;
                 default:
                     return vlg::RetCode_KO;
@@ -783,9 +783,9 @@ vlg::RetCode target_type_from_builtin_BLZ_TYPE(member_desc_comp &mdsc,
     }
 }
 
-vlg::RetCode target_type_from_BLZ_TYPE(member_desc_comp &mdsc,
-                                         vlg::hash_map &entitymap,
-                                         vlg::ascii_string &out)
+vlg::RetCode target_type_from_VLG_TYPE(member_desc_comp &mdsc,
+                                       vlg::hash_map &entitymap,
+                                       vlg::ascii_string &out)
 {
     switch(mdsc.get_field_type()) {
         case Type_UNDEFINED:
@@ -803,16 +803,16 @@ vlg::RetCode target_type_from_BLZ_TYPE(member_desc_comp &mdsc,
         case Type_FLOAT32:
         case Type_FLOAT64:
         case Type_ASCII:
-            RETURN_IF_NOT_OK(target_type_from_builtin_BLZ_TYPE(mdsc, out))
+            RETURN_IF_NOT_OK(target_type_from_builtin_VLG_TYPE(mdsc, out))
             return vlg::RetCode_OK;
         default:
             return vlg::RetCode_KO;
     }
 }
 
-vlg::RetCode printf_percent_from_BLZ_TYPE(member_desc_comp &mdsc,
-                                            vlg::ascii_string &out,
-                                            bool strict_linux)
+vlg::RetCode printf_percent_from_VLG_TYPE(member_desc_comp &mdsc,
+                                          vlg::ascii_string &out,
+                                          bool strict_linux)
 {
     switch(mdsc.get_field_type()) {
         case Type_BOOL:
@@ -848,19 +848,19 @@ vlg::RetCode printf_percent_from_BLZ_TYPE(member_desc_comp &mdsc,
     }
 }
 
-BLZ_COMP_ARCH arch_from_str(const char *str)
+VLG_COMP_ARCH arch_from_str(const char *str)
 {
-    if(!strcmp(str, BLZ_COMP_ARCH_TK_X86_64)) {
-        return BLZ_COMP_ARCH_x86_64;
+    if(!strcmp(str, VLG_COMP_ARCH_TK_X86_64)) {
+        return VLG_COMP_ARCH_x86_64;
     } else {
         EXIT_ACTION_STDOUT(__func__)
     }
 }
 
-vlg::RetCode str_from_arch(BLZ_COMP_ARCH arch, vlg::ascii_string &out)
+vlg::RetCode str_from_arch(VLG_COMP_ARCH arch, vlg::ascii_string &out)
 {
     switch(arch) {
-        case BLZ_COMP_ARCH_x86_64:
+        case VLG_COMP_ARCH_x86_64:
             out.assign("x86_64");
             break;
         default:
@@ -870,34 +870,34 @@ vlg::RetCode str_from_arch(BLZ_COMP_ARCH arch, vlg::ascii_string &out)
     return vlg::RetCode_OK;
 }
 
-BLZ_COMP_LANG lang_from_str(const char *str)
+VLG_COMP_LANG lang_from_str(const char *str)
 {
-    if(!strcmp(str, BLZ_COMP_LANG_TK_C)) {
-        return BLZ_COMP_LANG_C;
-    } else if(!strcmp(str, BLZ_COMP_LANG_TK_CPP)) {
-        return BLZ_COMP_LANG_CPP;
-    } else if(!strcmp(str, BLZ_COMP_LANG_TK_JAVA)) {
-        return BLZ_COMP_LANG_JAVA;
-    } else if(!strcmp(str, BLZ_COMP_LANG_TK_OBJC)) {
-        return BLZ_COMP_LANG_OBJC;
+    if(!strcmp(str, VLG_COMP_LANG_TK_C)) {
+        return VLG_COMP_LANG_C;
+    } else if(!strcmp(str, VLG_COMP_LANG_TK_CPP)) {
+        return VLG_COMP_LANG_CPP;
+    } else if(!strcmp(str, VLG_COMP_LANG_TK_JAVA)) {
+        return VLG_COMP_LANG_JAVA;
+    } else if(!strcmp(str, VLG_COMP_LANG_TK_OBJC)) {
+        return VLG_COMP_LANG_OBJC;
     } else {
         EXIT_ACTION_STDOUT(__func__)
     }
 }
 
-vlg::RetCode str_from_lang(BLZ_COMP_LANG lang, vlg::ascii_string &out)
+vlg::RetCode str_from_lang(VLG_COMP_LANG lang, vlg::ascii_string &out)
 {
     switch(lang) {
-        case BLZ_COMP_LANG_C:
+        case VLG_COMP_LANG_C:
             out.assign("C");
             break;
-        case BLZ_COMP_LANG_CPP:
+        case VLG_COMP_LANG_CPP:
             out.assign("C++");
             break;
-        case BLZ_COMP_LANG_JAVA:
+        case VLG_COMP_LANG_JAVA:
             out.assign("Java");
             break;
-        case BLZ_COMP_LANG_OBJC:
+        case VLG_COMP_LANG_OBJC:
             out.assign("Objective C");
             break;
         default:
@@ -907,24 +907,24 @@ vlg::RetCode str_from_lang(BLZ_COMP_LANG lang, vlg::ascii_string &out)
     return vlg::RetCode_OK;
 }
 
-BLZ_COMP_TCOMP tcomp_from_str(const char *str)
+VLG_COMP_TCOMP tcomp_from_str(const char *str)
 {
-    if(!strcmp(str, BLZ_COMP_TCOMP_TK_MSVC)) {
-        return BLZ_COMP_TCOMP_MSVC;
-    } else if(!strcmp(str, BLZ_COMP_TCOMP_TK_GCC)) {
-        return BLZ_COMP_TCOMP_GCC;
+    if(!strcmp(str, VLG_COMP_TCOMP_TK_MSVC)) {
+        return VLG_COMP_TCOMP_MSVC;
+    } else if(!strcmp(str, VLG_COMP_TCOMP_TK_GCC)) {
+        return VLG_COMP_TCOMP_GCC;
     } else {
         EXIT_ACTION_STDOUT(__func__)
     }
 }
 
-vlg::RetCode str_from_tcomp(BLZ_COMP_TCOMP tcomp, vlg::ascii_string &out)
+vlg::RetCode str_from_tcomp(VLG_COMP_TCOMP tcomp, vlg::ascii_string &out)
 {
     switch(tcomp) {
-        case BLZ_COMP_TCOMP_MSVC:
+        case VLG_COMP_TCOMP_MSVC:
             out.assign("msvc");
             break;
-        case BLZ_COMP_TCOMP_GCC:
+        case VLG_COMP_TCOMP_GCC:
             out.assign("gcc");
             break;
         default:
@@ -953,17 +953,17 @@ size_t get_next_valid_offset(size_t &cur_offset,
 
 size_t adjust_entity_size(size_t cur_offset,
                           size_t max_align,
-                          BLZ_COMP_ARCH arch,
-                          BLZ_COMP_OS os,
-                          BLZ_COMP_LANG lang,
-                          BLZ_COMP_TCOMP tcomp)
+                          VLG_COMP_ARCH arch,
+                          VLG_COMP_OS os,
+                          VLG_COMP_LANG lang,
+                          VLG_COMP_TCOMP tcomp)
 {
     size_t rem = cur_offset % max_align;
     return rem ? (cur_offset + (max_align - rem)) : cur_offset;
 }
 
 /***********************************
-OPEN- BLZ_COMP_OpenInputFile
+OPEN- VLG_COMP_OpenInputFile
 ***********************************/
 vlg::RetCode open_input_file(const char *fname, FILE **fdesc)
 {
@@ -988,7 +988,7 @@ vlg::RetCode open_input_file(const char *fname, FILE **fdesc)
 }
 
 /***********************************
-OPEN- BLZ_COMP_OpenOutputFile
+OPEN- VLG_COMP_OpenOutputFile
 ***********************************/
 vlg::RetCode open_output_file(const char *fname, FILE **fdesc)
 {
@@ -1006,7 +1006,7 @@ vlg::RetCode open_output_file(const char *fname, FILE **fdesc)
 }
 
 /***********************************
-PUT- BLZ_COMP_Put_NewLine
+PUT- VLG_COMP_Put_NewLine
 ***********************************/
 vlg::RetCode put_newline(FILE *file)
 {
@@ -1015,7 +1015,7 @@ vlg::RetCode put_newline(FILE *file)
 }
 
 /***********************************
-GET- BLZ_COMP_Get_LocalDate
+GET- VLG_COMP_Get_LocalDate
 ***********************************/
 vlg::RetCode get_local_date(char *out)
 {
@@ -1032,10 +1032,10 @@ vlg::RetCode get_local_date(char *out)
 }
 
 /***********************************
-RENDER- BLZ_COMP_Render_Hdr
+RENDER- VLG_COMP_Render_Hdr
 ***********************************/
 vlg::RetCode render_hdr(compile_unit &cunit, vlg::ascii_string &fname,
-                          FILE *file)
+                        FILE *file)
 {
     fprintf(file,  "/********************************************************");
     RETURN_IF_NOT_OK(put_newline(file))
@@ -1059,10 +1059,10 @@ vlg::RetCode render_hdr(compile_unit &cunit, vlg::ascii_string &fname,
 }
 
 compiler_config::compiler_config() :    verblvl(0),
-    lang(BLZ_COMP_LANG_Undef),
+    lang(VLG_COMP_LANG_Undef),
     path_list(vlg::sngl_cstr_obj_mng()),
     file_list(vlg::sngl_cstr_obj_mng()),
-    out_dir(BLZ_COMP_DFLT_DIR) {}
+    out_dir(VLG_COMP_DFLT_DIR) {}
 
 vlg::RetCode compiler_config::init()
 {
@@ -1122,11 +1122,11 @@ vlg::RetCode compile_unit::parse()
 vlg::RetCode compile_unit::compile()
 {
     switch(comp_cfg.lang) {
-        case BLZ_COMP_LANG_C:
+        case VLG_COMP_LANG_C:
             return vlg::RetCode_UNSP;
-        case BLZ_COMP_LANG_CPP:
+        case VLG_COMP_LANG_CPP:
             RETURN_IF_NOT_OK(compile_CPP(*this)) break;
-        case BLZ_COMP_LANG_JAVA:
+        case VLG_COMP_LANG_JAVA:
             RETURN_IF_NOT_OK(compile_Java(*this)) break;
         default:
             return vlg::RetCode_UNSP;

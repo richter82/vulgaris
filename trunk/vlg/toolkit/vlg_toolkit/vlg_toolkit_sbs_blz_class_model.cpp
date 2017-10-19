@@ -19,25 +19,25 @@
  *
  */
 
-#include "blz_toolkit_sbs_blz_class_model.h"
+#include "vlg_toolkit_sbs_vlg_class_model.h"
 
-BLZ_CLASS_ROW_IDX_PAIR::BLZ_CLASS_ROW_IDX_PAIR(int rowidx,
+VLG_CLASS_ROW_IDX_PAIR::VLG_CLASS_ROW_IDX_PAIR(int rowidx,
                                                vlg::nclass *obj) :
     rowidx_(rowidx),
     obj_(obj)
 {}
 
-BLZ_CLASS_ROW_IDX_PAIR &BLZ_CLASS_ROW_IDX_PAIR::operator =
-(const BLZ_CLASS_ROW_IDX_PAIR &src)
+VLG_CLASS_ROW_IDX_PAIR &VLG_CLASS_ROW_IDX_PAIR::operator =
+(const VLG_CLASS_ROW_IDX_PAIR &src)
 {
-    memcpy(this, &src, sizeof(BLZ_CLASS_ROW_IDX_PAIR));
+    memcpy(this, &src, sizeof(VLG_CLASS_ROW_IDX_PAIR));
     return *this;
 }
 
 //-----------------------------------------------------------------------------
 // subscription support structs
 //-----------------------------------------------------------------------------
-sbs_col_data_timer::sbs_col_data_timer(BLZ_SBS_COL_DATA_ENTRY &parent) :
+sbs_col_data_timer::sbs_col_data_timer(VLG_SBS_COL_DATA_ENTRY &parent) :
     parent_(parent)
 {
     connect(this, SIGNAL(timeout()), this, SLOT(OnTimeout()));
@@ -48,19 +48,19 @@ void sbs_col_data_timer::OnTimeout()
     emit SignalCellResetColor(parent_);
 }
 
-BLZ_SBS_COL_DATA_ENTRY::BLZ_SBS_COL_DATA_ENTRY() :
+VLG_SBS_COL_DATA_ENTRY::VLG_SBS_COL_DATA_ENTRY() :
     col_act_(BlazeSbsEntryActUndef),
     color_timer_(new sbs_col_data_timer(*this)),
     row_idx_(-1),
     col_idx_(-1)
 {}
 
-BLZ_SBS_COL_DATA_ENTRY::~BLZ_SBS_COL_DATA_ENTRY()
+VLG_SBS_COL_DATA_ENTRY::~VLG_SBS_COL_DATA_ENTRY()
 {
     delete color_timer_;
 }
 
-BLZ_SBS_DATA_ENTRY::BLZ_SBS_DATA_ENTRY(vlg::nclass *entry,
+VLG_SBS_DATA_ENTRY::VLG_SBS_DATA_ENTRY(vlg::nclass *entry,
                                        int row_idx,
                                        int col_num) :
     entry_(entry),
@@ -72,7 +72,7 @@ BLZ_SBS_DATA_ENTRY::BLZ_SBS_DATA_ENTRY(vlg::nclass *entry,
     }
 }
 
-void blz_toolkit_sbs_blz_class_model::OnCellResetColor(BLZ_SBS_COL_DATA_ENTRY
+void vlg_toolkit_sbs_vlg_class_model::OnCellResetColor(VLG_SBS_COL_DATA_ENTRY
                                                        &scde)
 {
     const QModelIndex &chng_index = createIndex(scde.row_idx_, scde.col_idx_);
@@ -85,7 +85,7 @@ void blz_toolkit_sbs_blz_class_model::OnCellResetColor(BLZ_SBS_COL_DATA_ENTRY
 // GENERATE REP SECTION BGN
 //------------------------------------------------------------------------------
 
-ENM_GEN_SBS_REP_REC_UD::ENM_GEN_SBS_REP_REC_UD(blz_toolkit_sbs_blz_class_model
+ENM_GEN_SBS_REP_REC_UD::ENM_GEN_SBS_REP_REC_UD(vlg_toolkit_sbs_vlg_class_model
                                                &mdl,
                                                const vlg::entity_manager &bem,
                                                vlg::ascii_string *prfx,
@@ -122,7 +122,7 @@ void enum_generate_sbs_model_rep(const vlg::hash_map &map,
         idx_prfx.append(idx_b);
     }
 
-    if(mmbrd->get_field_blz_type() == vlg::Type_ENTITY) {
+    if(mmbrd->get_field_vlg_type() == vlg::Type_ENTITY) {
         if(mmbrd->get_field_entity_type() == vlg::EntityType_ENUM) {
             //treat enum as number
             if(mmbrd->get_field_nmemb() > 1) {
@@ -176,7 +176,7 @@ void enum_generate_sbs_model_rep(const vlg::hash_map &map,
         }
     } else {
         //primitive type
-        if(mmbrd->get_field_blz_type() == vlg::Type_ASCII) {
+        if(mmbrd->get_field_vlg_type() == vlg::Type_ASCII) {
             if(rud->prfx_->length()) {
                 hdr_col_nm.append(idx_prfx);
                 hdr_col_nm.append("_");
@@ -218,7 +218,7 @@ void enum_generate_sbs_model_rep(const vlg::hash_map &map,
 // UPDATE NCLASS ROW SECTION BGN
 //------------------------------------------------------------------------------
 
-ENM_UPD_CLS_ROW_REC_UD::ENM_UPD_CLS_ROW_REC_UD(blz_toolkit_sbs_blz_class_model
+ENM_UPD_CLS_ROW_REC_UD::ENM_UPD_CLS_ROW_REC_UD(vlg_toolkit_sbs_vlg_class_model
                                                &mdl,
                                                const vlg::entity_manager &bem,
                                                const char *obj_ptr,
@@ -250,7 +250,7 @@ void enum_update_class_row(const vlg::hash_map &map,
     QString val;
     QModelIndex qindex;
 
-    if(mmbrd->get_field_blz_type() == vlg::Type_ENTITY) {
+    if(mmbrd->get_field_vlg_type() == vlg::Type_ENTITY) {
         if(mmbrd->get_field_entity_type() == vlg::EntityType_ENUM) {
             //treat enum as number
             if(mmbrd->get_field_nmemb() > 1) {
@@ -314,7 +314,7 @@ void enum_update_class_row(const vlg::hash_map &map,
         }
     } else {
         //primitive type
-        if(mmbrd->get_field_blz_type() == vlg::Type_ASCII) {
+        if(mmbrd->get_field_vlg_type() == vlg::Type_ASCII) {
             //new value ptr
             obj_f_ptr_new = rud->obj_ptr_ + mmbrd->get_field_offset();
 
@@ -372,11 +372,11 @@ void enum_update_class_row(const vlg::hash_map &map,
 }
 
 //------------------------------------------------------------------------------
-// blz_toolkit_sbs_blz_class_model
+// vlg_toolkit_sbs_vlg_class_model
 //------------------------------------------------------------------------------
 
 
-blz_toolkit_sbs_blz_class_model::blz_toolkit_sbs_blz_class_model(
+vlg_toolkit_sbs_vlg_class_model::vlg_toolkit_sbs_vlg_class_model(
     const vlg::entity_desc &edesc,
     const vlg::entity_manager &bem,
     QObject *parent) :
@@ -388,23 +388,23 @@ blz_toolkit_sbs_blz_class_model::blz_toolkit_sbs_blz_class_model(
     GenerateModelRep();
 }
 
-blz_toolkit_sbs_blz_class_model::~blz_toolkit_sbs_blz_class_model()
+vlg_toolkit_sbs_vlg_class_model::~vlg_toolkit_sbs_vlg_class_model()
 {
 
 }
 
-int blz_toolkit_sbs_blz_class_model::columnCount(const QModelIndex &parent)
+int vlg_toolkit_sbs_vlg_class_model::columnCount(const QModelIndex &parent)
 const
 {
     return colnum_;
 }
 
-int blz_toolkit_sbs_blz_class_model::rowCount(const QModelIndex &parent) const
+int vlg_toolkit_sbs_vlg_class_model::rowCount(const QModelIndex &parent) const
 {
     return data_.size();
 }
 
-QModelIndex blz_toolkit_sbs_blz_class_model::index(int row,
+QModelIndex vlg_toolkit_sbs_vlg_class_model::index(int row,
                                                    int column,
                                                    const QModelIndex &parent) const
 {
@@ -414,7 +414,7 @@ QModelIndex blz_toolkit_sbs_blz_class_model::index(int row,
     return createIndex(row, column, data_[row].entry_);
 }
 
-QVariant blz_toolkit_sbs_blz_class_model::headerData(int section,
+QVariant vlg_toolkit_sbs_vlg_class_model::headerData(int section,
                                                      Qt::Orientation orientation,
                                                      int role) const
 {
@@ -429,7 +429,7 @@ QVariant blz_toolkit_sbs_blz_class_model::headerData(int section,
     return QVariant();
 }
 
-QVariant blz_toolkit_sbs_blz_class_model::data(const QModelIndex &index,
+QVariant vlg_toolkit_sbs_vlg_class_model::data(const QModelIndex &index,
                                                int role) const
 {
     if(!index.isValid()) {
@@ -449,7 +449,7 @@ QVariant blz_toolkit_sbs_blz_class_model::data(const QModelIndex &index,
             if((obj_fld_ptr = obj->get_term_field_ref_by_plain_idx(index.column(), bem_,
                                                                    &obj_fld_mdesc))) {
                 QString out;
-                if((obj_fld_mdesc->get_field_blz_type() == vlg::Type_ASCII) &&
+                if((obj_fld_mdesc->get_field_vlg_type() == vlg::Type_ASCII) &&
                         obj_fld_mdesc->get_field_nmemb() > 1) {
                     out = QString::fromLatin1(obj_fld_ptr, obj_fld_mdesc->get_field_nmemb());
                 } else {
@@ -474,7 +474,7 @@ QVariant blz_toolkit_sbs_blz_class_model::data(const QModelIndex &index,
     return QVariant();
 }
 
-bool blz_toolkit_sbs_blz_class_model::setData(const QModelIndex &index,
+bool vlg_toolkit_sbs_vlg_class_model::setData(const QModelIndex &index,
                                               const QVariant &value,
                                               int role)
 {
@@ -493,12 +493,12 @@ bool blz_toolkit_sbs_blz_class_model::setData(const QModelIndex &index,
         const QModelIndex &chng_index = createIndex(index.row(), index.column());
         data_[index.row()].fld_act_[index.column()].col_act_ = BlazeSbsEntryActRwt;
         data_[index.row()].fld_act_[index.column()].color_timer_->start(
-            BLZ_TKT_INT_CELL_COLOR_RST_MSEC);
+            VLG_TKT_INT_CELL_COLOR_RST_MSEC);
 
         connect(data_[index.row()].fld_act_[index.column()].color_timer_,
-                SIGNAL(SignalCellResetColor(BLZ_SBS_COL_DATA_ENTRY &)),
+                SIGNAL(SignalCellResetColor(VLG_SBS_COL_DATA_ENTRY &)),
                 this,
-                SLOT(OnCellResetColor(BLZ_SBS_COL_DATA_ENTRY &)));
+                SLOT(OnCellResetColor(VLG_SBS_COL_DATA_ENTRY &)));
 
         emit(dataChanged(chng_index, chng_index));
         return true;
@@ -506,32 +506,32 @@ bool blz_toolkit_sbs_blz_class_model::setData(const QModelIndex &index,
     return false;
 }
 
-bool blz_toolkit_sbs_blz_class_model::insertRows(int position,
+bool vlg_toolkit_sbs_vlg_class_model::insertRows(int position,
                                                  int rows,
                                                  const QModelIndex &index)
 {
     Q_UNUSED(index);
     beginInsertRows(QModelIndex(), position, position);
     vlg::nclass *insert_obj = static_cast<vlg::nclass *>
-                                (index.internalPointer());
-    BLZ_SBS_DATA_ENTRY sbs_data_entry(insert_obj, position, colnum_);
+                              (index.internalPointer());
+    VLG_SBS_DATA_ENTRY sbs_data_entry(insert_obj, position, colnum_);
     data_.append(sbs_data_entry);
     endInsertRows();
     return true;
 }
 
-bool blz_toolkit_sbs_blz_class_model::removeRows(int position, int rows,
+bool vlg_toolkit_sbs_vlg_class_model::removeRows(int position, int rows,
                                                  const QModelIndex &index)
 {
     return false;
 }
 
-void blz_toolkit_sbs_blz_class_model::GenerateModelRep()
+void vlg_toolkit_sbs_vlg_class_model::GenerateModelRep()
 {
     GenerateHeader();
 }
 
-void blz_toolkit_sbs_blz_class_model::GenerateHeader()
+void vlg_toolkit_sbs_vlg_class_model::GenerateHeader()
 {
     vlg::ascii_string prfx;
     prfx.assign("");
@@ -540,7 +540,7 @@ void blz_toolkit_sbs_blz_class_model::GenerateHeader()
     nm_desc.enum_elements(enum_generate_sbs_model_rep, &gen_rep_rud);
 }
 
-void blz_toolkit_sbs_blz_class_model::updateEntry(int rowidx,
+void vlg_toolkit_sbs_vlg_class_model::updateEntry(int rowidx,
                                                   vlg::nclass *entry,
                                                   vlg::nclass *prev_entry)
 {
@@ -557,10 +557,10 @@ void blz_toolkit_sbs_blz_class_model::updateEntry(int rowidx,
                           &upd_cls_row_rud);
 }
 
-void blz_toolkit_sbs_blz_class_model::offerEntry(vlg::nclass *entry)
+void vlg_toolkit_sbs_vlg_class_model::offerEntry(vlg::nclass *entry)
 {
     int rowidx = 0;
-    BLZ_CLASS_ROW_IDX_PAIR crip;
+    VLG_CLASS_ROW_IDX_PAIR crip;
     vlg::ascii_string entry_key;
     entry->primary_key_string_value(&entry_key);
     QString hkey(entry_key.internal_buff());
@@ -579,17 +579,17 @@ void blz_toolkit_sbs_blz_class_model::offerEntry(vlg::nclass *entry)
     }
 }
 
-void blz_toolkit_sbs_blz_class_model::AppendHdrColumn(const char *colname)
+void vlg_toolkit_sbs_vlg_class_model::AppendHdrColumn(const char *colname)
 {
     hdr_colidx_colname_[colnum_] = QString(colname);
 }
 
-void blz_toolkit_sbs_blz_class_model::IncrColnum()
+void vlg_toolkit_sbs_vlg_class_model::IncrColnum()
 {
     colnum_++;
 }
 
-QHash<int, QString> &blz_toolkit_sbs_blz_class_model::hdr_colidx_colname()
+QHash<int, QString> &vlg_toolkit_sbs_vlg_class_model::hdr_colidx_colname()
 {
     return hdr_colidx_colname_;
 }

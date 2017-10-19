@@ -19,7 +19,7 @@
  *
  */
 
-#include "blz_toolkit_mainwindow.h"
+#include "vlg_toolkit_mainwindow.h"
 #include <QApplication>
 
 #define QUOTE_(x) #x
@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     qApp->setApplicationName(QUOTE(APP_NAME));
     qApp->setOrganizationName("Blaze");
     qApp->setOrganizationDomain("www.vlg-tech.net");
-    blz_toolkit_MainWindow w;
+    vlg_toolkit_MainWindow w;
     w.setWindowTitle(qApp->applicationName() + QString(" - ") +
                      qApp->applicationVersion() + " - " + __DATE__);
     w.show();

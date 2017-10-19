@@ -411,7 +411,7 @@ class cstr_obj_mng : public obj_mng {
 };
 
 class int_obj_mng : public obj_mng {
-        friend int_obj_mng &sngl_int_obj_mng();
+        friend int_obj_mng &sngl_impl_obj_mng();
     public:
         int_obj_mng();
     private:
@@ -453,7 +453,7 @@ int_obj_mng::int_obj_mng() : obj_mng(0,
                                          int_hash_func) {}
 
 int_obj_mng *int_obj_mng::instance_ = NULL;
-int_obj_mng &sngl_int_obj_mng()
+int_obj_mng &sngl_impl_obj_mng()
 {
     if(int_obj_mng::instance_ == NULL) {
         int_obj_mng::instance_ = new int_obj_mng();

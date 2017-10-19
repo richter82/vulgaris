@@ -19,8 +19,8 @@
  *
  */
 
-#include "blaze_persistence.h"
-#include "blz_persistence_int.h"
+#include "vlg_persistence.h"
+#include "vlg_persistence_impl.h"
 
 namespace vlg {
 
@@ -122,7 +122,7 @@ persistence_connection::~persistence_connection()
 }
 
 vlg::RetCode persistence_connection::bind(unsigned int nclass_id,
-                                            persistence_driver_int &driver)
+                                          persistence_driver_int &driver)
 {
     impl_->set_driver(driver);
     return impl_->set_connection(nclass_id);
@@ -167,46 +167,46 @@ vlg::RetCode persistence_connection::create_entity_schema(
 }
 
 vlg::RetCode persistence_connection::save_entity(const entity_manager &em,
-                                                   unsigned int ts0,
-                                                   unsigned int ts1,
-                                                   const nclass &in_obj)
+                                                 unsigned int ts0,
+                                                 unsigned int ts1,
+                                                 const nclass &in_obj)
 {
     return impl_->get_conn_int()->save_entity(em, ts0, ts1, in_obj);
 }
 
 vlg::RetCode persistence_connection::update_entity(unsigned short key,
-                                                     const entity_manager &em,
-                                                     unsigned int ts0,
-                                                     unsigned int ts1,
-                                                     const nclass &in_obj)
+                                                   const entity_manager &em,
+                                                   unsigned int ts0,
+                                                   unsigned int ts1,
+                                                   const nclass &in_obj)
 {
     return impl_->get_conn_int()->update_entity(key, em, ts0, ts1, in_obj);
 }
 
 vlg::RetCode persistence_connection::save_or_update_entity(unsigned short key,
-                                                             const entity_manager &em,
-                                                             unsigned int ts0,
-                                                             unsigned int ts1,
-                                                             const nclass &in_obj)
+                                                           const entity_manager &em,
+                                                           unsigned int ts0,
+                                                           unsigned int ts1,
+                                                           const nclass &in_obj)
 {
     return impl_->get_conn_int()->save_or_update_entity(key, em, ts0, ts1, in_obj);
 }
 
 vlg::RetCode persistence_connection::remove_entity(unsigned short key,
-                                                     const entity_manager &em,
-                                                     unsigned int ts0,
-                                                     unsigned int ts1,
-                                                     PersistenceDeletionMode mode,
-                                                     const nclass &in_obj)
+                                                   const entity_manager &em,
+                                                   unsigned int ts0,
+                                                   unsigned int ts1,
+                                                   PersistenceDeletionMode mode,
+                                                   const nclass &in_obj)
 {
     return impl_->get_conn_int()->remove_entity(key, em, ts0, ts1, mode, in_obj);
 }
 
 vlg::RetCode persistence_connection::load_entity(unsigned short key,
-                                                   const entity_manager &em,
-                                                   unsigned int &ts0_out,
-                                                   unsigned int &ts1_out,
-                                                   nclass &in_out_obj)
+                                                 const entity_manager &em,
+                                                 unsigned int &ts0_out,
+                                                 unsigned int &ts1_out,
+                                                 nclass &in_out_obj)
 {
     return impl_->get_conn_int()->load_entity(key, em, ts0_out, ts1_out,
                                               in_out_obj);
@@ -297,7 +297,7 @@ const entity_manager &persistence_query::get_entity_manager() const
 }
 
 vlg::RetCode persistence_query::next_entity(unsigned int &ts0_out,
-                                              unsigned int &ts1_out, nclass &out_obj)
+                                            unsigned int &ts1_out, nclass &out_obj)
 {
     return impl_->get_query_int()->load_next_entity(ts0_out, ts1_out, out_obj);
 }

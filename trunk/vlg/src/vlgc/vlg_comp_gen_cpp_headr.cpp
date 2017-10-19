@@ -19,24 +19,24 @@
  *
  */
 
-#include "blz_compiler.h"
+#include "vlg_compiler.h"
 
 namespace vlg {
 
 /***********************************
-RENDER- BLZ_COMP_Render__CPP_
+RENDER- VLG_COMP_Render__CPP_
 ***********************************/
-extern vlg::RetCode BLZ_COMP_Render__CPP_(compile_unit &cunit);
+extern vlg::RetCode VLG_COMP_Render__CPP_(compile_unit &cunit);
 
-vlg::RetCode BLZ_COMP_CPP_Calc_NMspc(entity_desc_comp &edesc,
-                                       vlg::ascii_string &out)
+vlg::RetCode VLG_COMP_CPP_Calc_NMspc(entity_desc_comp &edesc,
+                                     vlg::ascii_string &out)
 {
     vlg::ascii_string_tok nmtknz;
     vlg::ascii_string nmtkn, ent_nmspace;
     ent_nmspace.assign("");
     RETURN_IF_NOT_OK(nmtknz.init(edesc.get_entity_namespace()))
     bool first = true;
-    while(!nmtknz.next_token(nmtkn, BLZ_COMP_DOT)) {
+    while(!nmtknz.next_token(nmtkn, VLG_COMP_DOT)) {
         if(!first) {
             RETURN_IF_NOT_OK(ent_nmspace.append("_"))
         } else {
@@ -49,9 +49,9 @@ vlg::RetCode BLZ_COMP_CPP_Calc_NMspc(entity_desc_comp &edesc,
 }
 
 /***********************************
-RENDER- BLZ_COMP_Render_Define
+RENDER- VLG_COMP_Render_Define
 ***********************************/
-vlg::RetCode BLZ_COMP_Render_Define(compile_unit &cunit, FILE *file)
+vlg::RetCode VLG_COMP_Render_Define(compile_unit &cunit, FILE *file)
 {
     vlg::hash_map &definemap = cunit.get_define_map();
     definemap.start_iteration();
@@ -63,15 +63,15 @@ vlg::RetCode BLZ_COMP_Render_Define(compile_unit &cunit, FILE *file)
 }
 
 /***********************************
-RENDER- BLZ_COMP_Render_ModelVersion_decl__H_
+RENDER- VLG_COMP_Render_ModelVersion_decl__H_
 ***********************************/
-vlg::RetCode BLZ_COMP_Render_ModelVersion_decl__H_(compile_unit &cunit,
-                                                     FILE *file)
+vlg::RetCode VLG_COMP_Render_ModelVersion_decl__H_(compile_unit &cunit,
+                                                   FILE *file)
 {
     vlg::ascii_string name;
     vlg::ascii_string_tok tknz;
     RETURN_IF_NOT_OK(tknz.init(cunit.get_file_name()))
-    RETURN_IF_NOT_OK(tknz.next_token(name, BLZ_COMP_DOT))
+    RETURN_IF_NOT_OK(tknz.next_token(name, VLG_COMP_DOT))
     fprintf(file, OPN_CMMNT_LN
             "model version\n"
             CLS_CMMNT_LN);
@@ -83,15 +83,15 @@ vlg::RetCode BLZ_COMP_Render_ModelVersion_decl__H_(compile_unit &cunit,
 }
 
 /***********************************
-RENDER- BLZ_COMP_Render_EntryPoint_decl__H_
+RENDER- VLG_COMP_Render_EntryPoint_decl__H_
 ***********************************/
-vlg::RetCode BLZ_COMP_Render_EntryPoint_decl__H_(compile_unit &cunit,
-                                                   FILE *file)
+vlg::RetCode VLG_COMP_Render_EntryPoint_decl__H_(compile_unit &cunit,
+                                                 FILE *file)
 {
     vlg::ascii_string name;
     vlg::ascii_string_tok tknz;
     RETURN_IF_NOT_OK(tknz.init(cunit.get_file_name()))
-    RETURN_IF_NOT_OK(tknz.next_token(name, BLZ_COMP_DOT))
+    RETURN_IF_NOT_OK(tknz.next_token(name, VLG_COMP_DOT))
     fprintf(file, OPN_CMMNT_LN
             "BEM entry point\n"
             CLS_CMMNT_LN);
@@ -103,15 +103,15 @@ vlg::RetCode BLZ_COMP_Render_EntryPoint_decl__H_(compile_unit &cunit,
 }
 
 /***********************************
-RENDER- BLZ_COMP_Render_EntryPoint_C_decl__H_
+RENDER- VLG_COMP_Render_EntryPoint_C_decl__H_
 ***********************************/
-vlg::RetCode BLZ_COMP_Render_EntryPoint_C_decl__H_(compile_unit &cunit,
-                                                     FILE *file)
+vlg::RetCode VLG_COMP_Render_EntryPoint_C_decl__H_(compile_unit &cunit,
+                                                   FILE *file)
 {
     vlg::ascii_string name;
     vlg::ascii_string_tok tknz;
     RETURN_IF_NOT_OK(tknz.init(cunit.get_file_name()))
-    RETURN_IF_NOT_OK(tknz.next_token(name, BLZ_COMP_DOT))
+    RETURN_IF_NOT_OK(tknz.next_token(name, VLG_COMP_DOT))
     fprintf(file, "#else\n");
     fprintf(file, OPN_CMMNT_LN
             "BEM entry point C\n"
@@ -122,11 +122,11 @@ vlg::RetCode BLZ_COMP_Render_EntryPoint_C_decl__H_(compile_unit &cunit,
 }
 
 /***********************************
-RENDER- BLZ_COMP_Render_Rep__H_
+RENDER- VLG_COMP_Render_Rep__H_
 ***********************************/
-vlg::RetCode BLZ_COMP_Render_Rep__H_(vlg::hash_map &entitymap,
-                                       entity_desc_comp &edesc,
-                                       FILE *file)
+vlg::RetCode VLG_COMP_Render_Rep__H_(vlg::hash_map &entitymap,
+                                     entity_desc_comp &edesc,
+                                     FILE *file)
 {
     //render rep
     fprintf(file, OPN_CMMNT_LN
@@ -138,7 +138,7 @@ vlg::RetCode BLZ_COMP_Render_Rep__H_(vlg::hash_map &entitymap,
     member_desc_comp *mdsc = NULL;
     while(!mmbr_map.next(NULL, &mdsc)) {
         vlg::ascii_string type_str;
-        RETURN_IF_NOT_OK(target_type_from_BLZ_TYPE(*mdsc, entitymap, type_str))
+        RETURN_IF_NOT_OK(target_type_from_VLG_TYPE(*mdsc, entitymap, type_str))
         fprintf(file,  "%s %s", type_str.internal_buff(), mdsc->get_member_name());
         if(mdsc->get_nmemb() > 1) {
             fprintf(file, "[%lu]",mdsc->get_nmemb());
@@ -150,11 +150,11 @@ vlg::RetCode BLZ_COMP_Render_Rep__H_(vlg::hash_map &entitymap,
 }
 
 /***********************************
-RENDER- BLZ_COMP_Render_ClassVirtualMeths__H_
+RENDER- VLG_COMP_Render_ClassVirtualMeths__H_
 ***********************************/
-vlg::RetCode BLZ_COMP_Render_ClassVirtualMeths__H_(vlg::hash_map &entitymap,
-                                                     entity_desc_comp &class_desc,
-                                                     FILE *file)
+vlg::RetCode VLG_COMP_Render_ClassVirtualMeths__H_(vlg::hash_map &entitymap,
+                                                   entity_desc_comp &class_desc,
+                                                   FILE *file)
 {
     fprintf(file, OPN_CMMNT_LN "virtual methods\n" CLS_CMMNT_LN);
     fprintf(file, EXPORT_SYMBOL"virtual unsigned int get_nclass_id() const;");
@@ -196,11 +196,11 @@ vlg::RetCode BLZ_COMP_Render_ClassVirtualMeths__H_(vlg::hash_map &entitymap,
 }
 
 /***********************************
-RENDER- BLZ_COMP_Render_GenMeths__H_
+RENDER- VLG_COMP_Render_GenMeths__H_
 ***********************************/
-vlg::RetCode BLZ_COMP_Render_GenMeths__H_(compile_unit &cunit,
-                                            entity_desc_comp &edsc,
-                                            FILE *file)
+vlg::RetCode VLG_COMP_Render_GenMeths__H_(compile_unit &cunit,
+                                          entity_desc_comp &edsc,
+                                          FILE *file)
 {
     fprintf(file,  OPN_CMMNT_LN
             "getter(s) / setter(s) / is_zero(s)\n"
@@ -217,9 +217,9 @@ vlg::RetCode BLZ_COMP_Render_GenMeths__H_(compile_unit &cunit,
         Getter
         ******************************************/
         vlg::ascii_string type_str;
-        RETURN_IF_NOT_OK(target_type_from_BLZ_TYPE(*mdsc, entitymap, type_str))
+        RETURN_IF_NOT_OK(target_type_from_VLG_TYPE(*mdsc, entitymap, type_str))
         vlg::ascii_string meth_name;
-        RETURN_IF_NOT_OK(meth_name.assign(BLZ_COMP_CPP_GETTER_PFX"_"))
+        RETURN_IF_NOT_OK(meth_name.assign(VLG_COMP_CPP_GETTER_PFX"_"))
         vlg::ascii_string fld_name;
         RETURN_IF_NOT_OK(fld_name.assign(mdsc->get_member_name()))
         //fld_name.first_char_uppercase();
@@ -278,7 +278,7 @@ vlg::RetCode BLZ_COMP_Render_GenMeths__H_(compile_unit &cunit,
         /******************************************
         Setter
         ******************************************/
-        RETURN_IF_NOT_OK(meth_name.assign(BLZ_COMP_CPP_SETTER_PFX"_"))
+        RETURN_IF_NOT_OK(meth_name.assign(VLG_COMP_CPP_SETTER_PFX"_"))
         RETURN_IF_NOT_OK(meth_name.append(fld_name))
         if(mdsc->get_field_type() == Type_ENTITY) {
             entity_desc_comp *edsc = NULL;
@@ -356,9 +356,9 @@ vlg::RetCode BLZ_COMP_Render_GenMeths__H_(compile_unit &cunit,
 }
 
 /***********************************
-RENDER- BLZ_COMP_Render_Enum__H_
+RENDER- VLG_COMP_Render_Enum__H_
 ***********************************/
-vlg::RetCode BLZ_COMP_Render_Enum__H_(compile_unit &cunit, FILE *file)
+vlg::RetCode VLG_COMP_Render_Enum__H_(compile_unit &cunit, FILE *file)
 {
     vlg::hash_map &entitymap = cunit.get_entity_map();
     entitymap.start_iteration();
@@ -366,7 +366,7 @@ vlg::RetCode BLZ_COMP_Render_Enum__H_(compile_unit &cunit, FILE *file)
     while(!entitymap.next(NULL, &edsc)) {
         if(edsc->get_entity_type() == EntityType_ENUM) {
             fprintf(file,   OPN_CMMNT_LN
-                    "blaze_enum: %s\n"
+                    "vlg_enum: %s\n"
                     CLS_CMMNT_LN, edsc->get_entity_name());
             fprintf(file, "enum %s{", edsc->get_entity_name());
             RETURN_IF_NOT_OK(put_newline(file))
@@ -395,9 +395,9 @@ vlg::RetCode BLZ_COMP_Render_Enum__H_(compile_unit &cunit, FILE *file)
 }
 
 /***********************************
-RENDER- BLZ_COMP_Render_Class__H_
+RENDER- VLG_COMP_Render_Class__H_
 ***********************************/
-vlg::RetCode BLZ_COMP_Render_Class__H_(compile_unit &cunit, FILE *file)
+vlg::RetCode VLG_COMP_Render_Class__H_(compile_unit &cunit, FILE *file)
 {
     vlg::hash_map &entitymap = cunit.get_entity_map();
     entitymap.start_iteration();
@@ -409,7 +409,7 @@ vlg::RetCode BLZ_COMP_Render_Class__H_(compile_unit &cunit, FILE *file)
                     CLS_CMMNT_LN, edsc->get_entity_name(),
                     edsc->get_entityid());
             vlg::ascii_string nmsp;
-            RETURN_IF_NOT_OK(BLZ_COMP_CPP_Calc_NMspc(*edsc, nmsp))
+            RETURN_IF_NOT_OK(VLG_COMP_CPP_Calc_NMspc(*edsc, nmsp))
             fprintf(file, "namespace %s{\n", nmsp.internal_buff());
             RETURN_IF_NOT_OK(put_newline(file))
             fprintf(file, "#define %s_ENTITY_ID %u\n", edsc->get_entity_name(),
@@ -426,11 +426,11 @@ vlg::RetCode BLZ_COMP_Render_Class__H_(compile_unit &cunit, FILE *file)
             fprintf(file, EXPORT_SYMBOL"virtual ~%s();\n", edsc->get_entity_name());
             RETURN_IF_NOT_OK(put_newline(file))
             fprintf(file, "public:\n");
-            RETURN_IF_NOT_OK(BLZ_COMP_Render_ClassVirtualMeths__H_(entitymap, *edsc, file))
+            RETURN_IF_NOT_OK(VLG_COMP_Render_ClassVirtualMeths__H_(entitymap, *edsc, file))
             RETURN_IF_NOT_OK(put_newline(file))
-            RETURN_IF_NOT_OK(BLZ_COMP_Render_GenMeths__H_(cunit, *edsc, file))
+            RETURN_IF_NOT_OK(VLG_COMP_Render_GenMeths__H_(cunit, *edsc, file))
             RETURN_IF_NOT_OK(put_newline(file))
-            RETURN_IF_NOT_OK(BLZ_COMP_Render_Rep__H_(entitymap, *edsc, file))
+            RETURN_IF_NOT_OK(VLG_COMP_Render_Rep__H_(entitymap, *edsc, file))
             //zero obj
             fprintf(file, "\npublic:\n");
             fprintf(file, "static const %s ZERO_OBJ;\n", edsc->get_entity_name());
@@ -444,49 +444,49 @@ vlg::RetCode BLZ_COMP_Render_Class__H_(compile_unit &cunit, FILE *file)
 }
 
 /***********************************
-RENDER- BLZ_COMP_Render__H_
+RENDER- VLG_COMP_Render__H_
 ***********************************/
-vlg::RetCode BLZ_COMP_Render__H_(compile_unit &cunit)
+vlg::RetCode VLG_COMP_Render__H_(compile_unit &cunit)
 {
     vlg::ascii_string fname;
     vlg::ascii_string_tok tknz;
     RETURN_IF_NOT_OK(tknz.init(cunit.get_file_name()))
-    RETURN_IF_NOT_OK(tknz.next_token(fname, BLZ_COMP_DOT))
-    RETURN_IF_NOT_OK(fname.append(BLZ_COMP_DOT))
+    RETURN_IF_NOT_OK(tknz.next_token(fname, VLG_COMP_DOT))
+    RETURN_IF_NOT_OK(fname.append(VLG_COMP_DOT))
     RETURN_IF_NOT_OK(fname.append("h"))
     FILE *file = NULL;
     COMMAND_IF_NOT_OK(open_output_file(fname.internal_buff(), &file), exit(1))
     //ifdef open
     vlg::ascii_string name;
     tknz.reset();
-    RETURN_IF_NOT_OK(tknz.next_token(name, BLZ_COMP_DOT))
+    RETURN_IF_NOT_OK(tknz.next_token(name, VLG_COMP_DOT))
     name.uppercase();
     //header
     RETURN_IF_NOT_OK(render_hdr(cunit, fname, file))
     RETURN_IF_NOT_OK(put_newline(file))
-    fprintf(file, "#ifndef BLZ_GEN_H_%s\n"
-            "#define BLZ_GEN_H_%s\n", name.internal_buff(),
+    fprintf(file, "#ifndef VLG_GEN_H_%s\n"
+            "#define VLG_GEN_H_%s\n", name.internal_buff(),
             name.internal_buff());
 
     fprintf(file, CPP_ONLY_BEGIN);
     //include
-    fprintf(file, "#include \"blaze_model.h\"\n");
+    fprintf(file, "#include \"vlg_model.h\"\n");
     //dll sign.
     fprintf(file, EXPORT_SYMBOL_DECL"\n");
 
     //render defines
-    RETURN_IF_NOT_OK(BLZ_COMP_Render_Define(cunit, file))
+    RETURN_IF_NOT_OK(VLG_COMP_Render_Define(cunit, file))
     RETURN_IF_NOT_OK(put_newline(file))
     //render enums
-    RETURN_IF_NOT_OK(BLZ_COMP_Render_Enum__H_(cunit, file))
+    RETURN_IF_NOT_OK(VLG_COMP_Render_Enum__H_(cunit, file))
     //render classes
-    RETURN_IF_NOT_OK(BLZ_COMP_Render_Class__H_(cunit, file))
+    RETURN_IF_NOT_OK(VLG_COMP_Render_Class__H_(cunit, file))
     //render model version
-    RETURN_IF_NOT_OK(BLZ_COMP_Render_ModelVersion_decl__H_(cunit, file))
+    RETURN_IF_NOT_OK(VLG_COMP_Render_ModelVersion_decl__H_(cunit, file))
     //render entry point
-    RETURN_IF_NOT_OK(BLZ_COMP_Render_EntryPoint_decl__H_(cunit, file))
+    RETURN_IF_NOT_OK(VLG_COMP_Render_EntryPoint_decl__H_(cunit, file))
     //render C entry point
-    RETURN_IF_NOT_OK(BLZ_COMP_Render_EntryPoint_C_decl__H_(cunit, file))
+    RETURN_IF_NOT_OK(VLG_COMP_Render_EntryPoint_C_decl__H_(cunit, file))
     //ifdef close
     fprintf(file, "#endif\n");
     RETURN_IF_NOT_OK(put_newline(file))
@@ -495,12 +495,12 @@ vlg::RetCode BLZ_COMP_Render__H_(compile_unit &cunit)
 }
 
 /***********************************
-ENTRYPOINT- BLZ_COMP_Compile_CPP
+ENTRYPOINT- VLG_COMP_Compile_CPP
 ***********************************/
 vlg::RetCode compile_CPP(compile_unit &cunit)
 {
-    RETURN_IF_NOT_OK(BLZ_COMP_Render__H_(cunit))
-    RETURN_IF_NOT_OK(BLZ_COMP_Render__CPP_(cunit))
+    RETURN_IF_NOT_OK(VLG_COMP_Render__H_(cunit))
+    RETURN_IF_NOT_OK(VLG_COMP_Render__CPP_(cunit))
     return vlg::RetCode_OK;
 }
 

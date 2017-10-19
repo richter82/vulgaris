@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef BLZ_BBUF_H_
-#define BLZ_BBUF_H_
+#ifndef VLG_BBUF_H_
+#define VLG_BBUF_H_
 #include "vlg.h"
 
 namespace vlg {

@@ -19,7 +19,7 @@
  *
  */
 
-#include "blz_glob_int.h"
+#include "vlg_globint.h"
 #include "cr_structs_rep.h"
 
 namespace vlg {

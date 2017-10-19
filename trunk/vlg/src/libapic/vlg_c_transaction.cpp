@@ -19,8 +19,8 @@
  *
  */
 
-#include "blaze_c_transaction.h"
-#include "blaze_transaction.h"
+#include "vlg_c_transaction.h"
+#include "vlg_transaction.h"
 
 namespace vlg {
 class c_transaction : public transaction {

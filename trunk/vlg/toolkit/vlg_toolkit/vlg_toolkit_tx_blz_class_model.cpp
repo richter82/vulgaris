@@ -19,13 +19,13 @@
  *
  */
 
-#include "blz_toolkit_tx_blz_class_model.h"
+#include "vlg_toolkit_tx_vlg_class_model.h"
 
 //------------------------------------------------------------------------------
 // GENERATE REP SECTION BGN
 //------------------------------------------------------------------------------
 
-ENM_GEN_TX_REP_REC_UD::ENM_GEN_TX_REP_REC_UD(blz_toolkit_tx_blz_class_model
+ENM_GEN_TX_REP_REC_UD::ENM_GEN_TX_REP_REC_UD(vlg_toolkit_tx_vlg_class_model
                                              &mdl,
                                              const vlg::entity_manager &bem,
                                              vlg::ascii_string *prfx,
@@ -60,7 +60,7 @@ void enum_generate_tx_model_rep(const vlg::hash_map &map, const void *key,
         idx_prfx.append(idx_b);
     }
 
-    if(mmbrd->get_field_blz_type() == vlg::Type_ENTITY) {
+    if(mmbrd->get_field_vlg_type() == vlg::Type_ENTITY) {
         if(mmbrd->get_field_entity_type() == vlg::EntityType_ENUM) {
             //treat enum as number
             if(mmbrd->get_field_nmemb() > 1) {
@@ -114,7 +114,7 @@ void enum_generate_tx_model_rep(const vlg::hash_map &map, const void *key,
         }
     } else {
         //primitive type
-        if(mmbrd->get_field_blz_type() == vlg::Type_ASCII) {
+        if(mmbrd->get_field_vlg_type() == vlg::Type_ASCII) {
             if(rud->prfx_->length()) {
                 hdr_row_nm.append(idx_prfx);
                 hdr_row_nm.append("_");
@@ -152,7 +152,7 @@ void enum_generate_tx_model_rep(const vlg::hash_map &map, const void *key,
 // GENERATE REP SECTION END
 //------------------------------------------------------------------------------
 
-blz_toolkit_tx_blz_class_model::blz_toolkit_tx_blz_class_model(
+vlg_toolkit_tx_vlg_class_model::vlg_toolkit_tx_vlg_class_model(
     const vlg::entity_desc &edesc,
     const vlg::entity_manager &bem,
     vlg::transaction_int &tx,
@@ -171,19 +171,19 @@ blz_toolkit_tx_blz_class_model::blz_toolkit_tx_blz_class_model(
     GenerateModelRep();
 }
 
-blz_toolkit_tx_blz_class_model::~blz_toolkit_tx_blz_class_model()
+vlg_toolkit_tx_vlg_class_model::~vlg_toolkit_tx_vlg_class_model()
 {
     if(local_obj_) {
         delete local_obj_;
     }
 }
 
-void blz_toolkit_tx_blz_class_model::GenerateModelRep()
+void vlg_toolkit_tx_vlg_class_model::GenerateModelRep()
 {
     GenerateHeader();
 }
 
-void blz_toolkit_tx_blz_class_model::GenerateHeader()
+void vlg_toolkit_tx_vlg_class_model::GenerateHeader()
 {
     vlg::ascii_string prfx;
     prfx.assign("");
@@ -193,27 +193,27 @@ void blz_toolkit_tx_blz_class_model::GenerateHeader()
     int test = 0;
 }
 
-void blz_toolkit_tx_blz_class_model::IncrRownum()
+void vlg_toolkit_tx_vlg_class_model::IncrRownum()
 {
     rownum_++;
 }
 
-vlg::nclass *blz_toolkit_tx_blz_class_model::local_obj() const
+vlg::nclass *vlg_toolkit_tx_vlg_class_model::local_obj() const
 {
     return local_obj_;
 }
 
-int blz_toolkit_tx_blz_class_model::columnCount(const QModelIndex &parent) const
+int vlg_toolkit_tx_vlg_class_model::columnCount(const QModelIndex &parent) const
 {
     return 1;
 }
 
-int blz_toolkit_tx_blz_class_model::rowCount(const QModelIndex &parent) const
+int vlg_toolkit_tx_vlg_class_model::rowCount(const QModelIndex &parent) const
 {
     return rownum_;
 }
 
-QVariant blz_toolkit_tx_blz_class_model::headerData(int section,
+QVariant vlg_toolkit_tx_vlg_class_model::headerData(int section,
                                                     Qt::Orientation orientation, int role) const
 {
     if(role != Qt::DisplayRole) {
@@ -229,7 +229,7 @@ QVariant blz_toolkit_tx_blz_class_model::headerData(int section,
     return QVariant();
 }
 
-QVariant blz_toolkit_tx_blz_class_model::data(const QModelIndex &index,
+QVariant vlg_toolkit_tx_vlg_class_model::data(const QModelIndex &index,
                                               int role) const
 {
     if(!index.isValid()) {
@@ -248,7 +248,7 @@ QVariant blz_toolkit_tx_blz_class_model::data(const QModelIndex &index,
             if((obj_fld_ptr = local_obj_->get_term_field_ref_by_plain_idx(index.row(), bem_,
                                                                           &obj_fld_mdesc))) {
                 QString out;
-                if((obj_fld_mdesc->get_field_blz_type() == vlg::Type_ASCII) &&
+                if((obj_fld_mdesc->get_field_vlg_type() == vlg::Type_ASCII) &&
                         obj_fld_mdesc->get_field_nmemb() > 1) {
                     out = QString::fromLatin1(obj_fld_ptr, obj_fld_mdesc->get_field_nmemb());
                 } else {
@@ -265,7 +265,7 @@ QVariant blz_toolkit_tx_blz_class_model::data(const QModelIndex &index,
     return QVariant();
 }
 
-Qt::ItemFlags blz_toolkit_tx_blz_class_model::flags(const QModelIndex &index)
+Qt::ItemFlags vlg_toolkit_tx_vlg_class_model::flags(const QModelIndex &index)
 const
 {
     if(!index.isValid()) {
@@ -274,7 +274,7 @@ const
     return QAbstractTableModel::flags(index) | Qt::ItemIsEditable;
 }
 
-bool blz_toolkit_tx_blz_class_model::setData(const QModelIndex &index,
+bool vlg_toolkit_tx_vlg_class_model::setData(const QModelIndex &index,
                                              const QVariant &value, int role)
 {
     if(!index.isValid()) {
@@ -305,19 +305,19 @@ bool blz_toolkit_tx_blz_class_model::setData(const QModelIndex &index,
     return false;
 }
 
-bool blz_toolkit_tx_blz_class_model::insertRows(int position, int rows,
+bool vlg_toolkit_tx_vlg_class_model::insertRows(int position, int rows,
                                                 const QModelIndex &index)
 {
     return false;
 }
 
-bool blz_toolkit_tx_blz_class_model::removeRows(int position, int rows,
+bool vlg_toolkit_tx_vlg_class_model::removeRows(int position, int rows,
                                                 const QModelIndex &index)
 {
     return false;
 }
 
-void blz_toolkit_tx_blz_class_model::AppendHdrRow(const char *rowname)
+void vlg_toolkit_tx_vlg_class_model::AppendHdrRow(const char *rowname)
 {
     hdr_rowidx_rowname_[rownum_] = QString(rowname);
 }

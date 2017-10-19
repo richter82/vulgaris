@@ -19,9 +19,9 @@
  *
  */
 
-#ifndef BLZ_CPP_CONNECTION_H_
-#define BLZ_CPP_CONNECTION_H_
-#include "blaze_memory.h"
+#ifndef VLG_CPP_CONNECTION_H_
+#define VLG_CPP_CONNECTION_H_
+#include "vlg_memory.h"
 #ifdef WIN32
 #include <winsock2.h>
 #else
