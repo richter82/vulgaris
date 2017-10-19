@@ -19,32 +19,31 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\libvlg\vlg_acceptor_impl.h" />
-    <ClInclude Include="..\src\libvlg\vlg_connection_impl.h" />
-    <ClInclude Include="..\src\libvlg\vlg_peer_automa.h" />
-    <ClInclude Include="..\src\libvlg\vlg_peer_impl.h" />
-    <ClInclude Include="..\src\libvlg\vlg_pers_impl.h" />
-    <ClInclude Include="..\src\libvlg\vlg_proto.h" />
-    <ClInclude Include="..\src\libvlg\vlg_selector.h" />
-    <ClInclude Include="..\src\libvlg\vlg_subscription_impl.h" />
-    <ClInclude Include="..\src\libvlg\vlg_transaction_impl.h" />
-    <ClInclude Include="..\src\vlg_globint.h" />
+    <ClInclude Include="..\src\vlg\vlg_acceptor_impl.h" />
+    <ClInclude Include="..\src\vlg\vlg_connection_impl.h" />
+    <ClInclude Include="..\src\vlg\vlg_peer_automa.h" />
+    <ClInclude Include="..\src\vlg\vlg_peer_impl.h" />
+    <ClInclude Include="..\src\vlg\vlg_pers_impl.h" />
+    <ClInclude Include="..\src\vlg\vlg_proto.h" />
+    <ClInclude Include="..\src\vlg\vlg_selector.h" />
+    <ClInclude Include="..\src\vlg\vlg_subscription_impl.h" />
+    <ClInclude Include="..\src\vlg\vlg_transaction_impl.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\libvlg\vlg_acceptor.cpp" />
-    <ClCompile Include="..\src\libvlg\vlg_connection_impl.cpp" />
-    <ClCompile Include="..\src\libvlg\vlg_connection_proto.cpp" />
-    <ClCompile Include="..\src\libvlg\vlg_model.cpp" />
-    <ClCompile Include="..\src\libvlg\vlg_model_utl.cpp" />
-    <ClCompile Include="..\src\libvlg\vlg_peer_automa.cpp" />
-    <ClCompile Include="..\src\libvlg\vlg_peer_impl.cpp" />
-    <ClCompile Include="..\src\libvlg\vlg_peer_pers_sbs.cpp" />
-    <ClCompile Include="..\src\libvlg\vlg_pers_impl.cpp" />
-    <ClCompile Include="..\src\libvlg\vlg_pers_mng.cpp" />
-    <ClCompile Include="..\src\libvlg\vlg_restore.cpp" />
-    <ClCompile Include="..\src\libvlg\vlg_selector.cpp" />
-    <ClCompile Include="..\src\libvlg\vlg_subscription_impl.cpp" />
-    <ClCompile Include="..\src\libvlg\vlg_transaction_impl.cpp" />
+    <ClCompile Include="..\src\vlg\vlg_acceptor.cpp" />
+    <ClCompile Include="..\src\vlg\vlg_connection_impl.cpp" />
+    <ClCompile Include="..\src\vlg\vlg_connection_proto.cpp" />
+    <ClCompile Include="..\src\vlg\vlg_model.cpp" />
+    <ClCompile Include="..\src\vlg\vlg_model_utl.cpp" />
+    <ClCompile Include="..\src\vlg\vlg_peer_automa.cpp" />
+    <ClCompile Include="..\src\vlg\vlg_peer_impl.cpp" />
+    <ClCompile Include="..\src\vlg\vlg_peer_pers_sbs.cpp" />
+    <ClCompile Include="..\src\vlg\vlg_pers_impl.cpp" />
+    <ClCompile Include="..\src\vlg\vlg_pers_mng.cpp" />
+    <ClCompile Include="..\src\vlg\vlg_restore.cpp" />
+    <ClCompile Include="..\src\vlg\vlg_selector.cpp" />
+    <ClCompile Include="..\src\vlg\vlg_subscription_impl.cpp" />
+    <ClCompile Include="..\src\vlg\vlg_transaction_impl.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D8E08F30-6822-4398-9C58-9589811537D8}</ProjectGuid>
@@ -113,7 +112,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src;..\src\libcr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINSOCK_DEPRECATED_NO_WARNINGS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -136,7 +135,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src;..\src\libcr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINSOCK_DEPRECATED_NO_WARNINGS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -157,7 +156,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\src;..\src\libcr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -180,7 +179,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\src;..\src\libcr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>

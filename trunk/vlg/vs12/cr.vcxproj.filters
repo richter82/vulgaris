@@ -10,72 +10,72 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\libcr\cr_structs_mt.h">
+    <ClInclude Include="..\src\cr\cr_time.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\libcr\cr_structs_rep.h">
+    <ClInclude Include="..\src\cr\cr.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\libcr\cr_time.h">
+    <ClInclude Include="..\src\cr\cr_cfg.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\libcr\cr.h">
+    <ClInclude Include="..\src\cr\cr_concurrent.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\libcr\cr_cfg.h">
+    <ClInclude Include="..\src\cr\cr_dl.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\libcr\cr_concurrent.h">
+    <ClInclude Include="..\src\cr\cr_parse.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\libcr\cr_dl.h">
+    <ClInclude Include="..\src\cr\cr_structs.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\libcr\cr_parse.h">
+    <ClInclude Include="..\src\cr\cr_structs_mt.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\libcr\cr_structs.h">
+    <ClInclude Include="..\src\cr\cr_structs_rep.h">
       <Filter>h</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\libcr\cr_dl.cpp">
+    <ClCompile Include="..\src\cr\cr_time.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\libcr\cr_logger.cpp">
+    <ClCompile Include="..\src\cr\cr_bbuf.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\libcr\cr_obj_coll.cpp">
+    <ClCompile Include="..\src\cr\cr_cfg.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\libcr\cr_parse.cpp">
+    <ClCompile Include="..\src\cr\cr_concurrent.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\libcr\cr_strings.cpp">
+    <ClCompile Include="..\src\cr\cr_core.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\libcr\cr_structs.cpp">
+    <ClCompile Include="..\src\cr\cr_dl.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\libcr\cr_structs_mt.cpp">
+    <ClCompile Include="..\src\cr\cr_logger.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\libcr\cr_structs_rep.cpp">
+    <ClCompile Include="..\src\cr\cr_obj_coll.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\libcr\cr_time.cpp">
+    <ClCompile Include="..\src\cr\cr_parse.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\libcr\cr_bbuf.cpp">
+    <ClCompile Include="..\src\cr\cr_strings.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\libcr\cr_cfg.cpp">
+    <ClCompile Include="..\src\cr\cr_structs.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\libcr\cr_concurrent.cpp">
+    <ClCompile Include="..\src\cr\cr_structs_mt.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\libcr\cr_core.cpp">
+    <ClCompile Include="..\src\cr\cr_structs_rep.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

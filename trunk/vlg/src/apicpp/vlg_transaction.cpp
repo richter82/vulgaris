@@ -21,8 +21,8 @@
 
 #include "vlg_connection.h"
 #include "vlg_transaction.h"
-#include "vlg_connection_impl.h"
-#include "vlg_transaction_impl.h"
+#include "vlg/vlg_connection_impl.h"
+#include "vlg/vlg_transaction_impl.h"
 
 namespace vlg {
 
@@ -30,7 +30,7 @@ extern vlg::synch_hash_map &int_publ_peer_map();
 extern vlg::synch_hash_map &int_publ_srv_conn_map();
 
 vlg::synch_hash_map *int_publ_srv_tx_map_ =
-    NULL;  //transaction_int --> transaction
+    NULL;  //transaction_impl --> transaction
 vlg::synch_hash_map &int_publ_srv_tx_map()
 {
     if(int_publ_srv_tx_map_) {
@@ -51,12 +51,12 @@ vlg::synch_hash_map &int_publ_srv_tx_map()
 class transaction_impl {
     private:
         //-----------------------------
-        // CLASS timpl_transaction_int_client
+        // CLASS timpl_transaction_impl_client
         //-----------------------------
-        class timpl_transaction_int_client : public transaction_int {
+        class timpl_transaction_impl_client : public transaction_impl {
             public:
-                timpl_transaction_int_client(connection_int &conn,
-                                             transaction &publ) : transaction_int(conn), publ_(publ) {}
+                timpl_transaction_impl_client(connection_impl &conn,
+                                              transaction &publ) : transaction_impl(conn), publ_(publ) {}
             public:
                 virtual void on_request() {
                     publ_.on_request();
@@ -71,13 +71,14 @@ class transaction_impl {
         //-----------------------------
         // callbacks
         //-----------------------------
-        static transaction_int *vlg_client_tx_factory_timpl(connection_int &connection,
-                                                            void *ud) {
+        static transaction_impl *vlg_client_tx_factory_timpl(connection_impl
+                                                             &connection,
+                                                             void *ud) {
             transaction *publ = static_cast<transaction *>(ud);
-            return new timpl_transaction_int_client(connection, *publ);
+            return new timpl_transaction_impl_client(connection, *publ);
         }
 
-        static void transaction_status_change_hndlr_timpl(transaction_int &trans,
+        static void transaction_status_change_hndlr_timpl(transaction_impl &trans,
                                                           TransactionStatus status, void *ud) {
             transaction_impl *timpl = static_cast<transaction_impl *>(ud);
             if(timpl->tsh_) {
@@ -104,10 +105,10 @@ class transaction_impl {
             }
         }
 
-        transaction_int *get_tx() const {
+        transaction_impl *get_tx() const {
             return int_;
         }
-        void set_tx(transaction_int *val) {
+        void set_tx(transaction_impl *val) {
             int_ = val;
         }
 
@@ -146,15 +147,15 @@ class transaction_impl {
             clh_ud_ = val;
         }
 
-        vlg::RetCode bind_internal(connection &conn) {
+        vlg::RetCode bind_implernal(connection &conn) {
             vlg::RetCode cdrs_res = vlg::RetCode_OK;
             if(conn.get_connection_type() == ConnectionType_OUTGOING) {
-                transaction_int *t_int = NULL;
-                if((cdrs_res = conn.get_internal()->new_transaction(&t_int,
-                                                                    vlg_client_tx_factory_timpl,
-                                                                    true,
-                                                                    &publ_)) == vlg::RetCode_OK) {
-                    int_ = t_int;
+                transaction_impl *t_impl = NULL;
+                if((cdrs_res = conn.get_implernal()->new_transaction(&t_impl,
+                                                                     vlg_client_tx_factory_timpl,
+                                                                     true,
+                                                                     &publ_)) == vlg::RetCode_OK) {
+                    int_ = t_impl;
                     vlg::collector &c = int_->get_collector();
                     c.retain(int_);
                 }
@@ -167,7 +168,7 @@ class transaction_impl {
     private:
         transaction &publ_;
         connection *conn_;
-        transaction_int *int_;
+        transaction_impl *int_;
         transaction::transaction_status_change tsh_;
         void *tsh_ud_;
         transaction::transaction_closure clh_;
@@ -228,7 +229,7 @@ transaction::~transaction()
 vlg::RetCode transaction::bind(connection &conn)
 {
     impl_->set_conn(conn);
-    return impl_->bind_internal(conn);
+    return impl_->bind_implernal(conn);
 }
 
 connection *transaction::get_connection()
@@ -484,25 +485,25 @@ void transaction::on_close()
 {
 }
 
-transaction_int *transaction::get_internal()
+transaction_impl *transaction::get_implernal()
 {
     return impl_->get_tx();
 }
 
-void transaction::set_internal(transaction_int *tx)
+void transaction::set_implernal(transaction_impl *tx)
 {
     impl_->set_tx(tx);
 }
 
 //-----------------------------
-// CLASS timpl_transaction_int_server
+// CLASS timpl_transaction_impl_server
 //-----------------------------
-class timpl_transaction_int_server : public transaction_int {
+class timpl_transaction_impl_server : public transaction_impl {
     public:
-        timpl_transaction_int_server(connection_int &conn,
-                                     transaction &publ) : transaction_int(conn), publ_(publ) {}
+        timpl_transaction_impl_server(connection_impl &conn,
+                                      transaction &publ) : transaction_impl(conn), publ_(publ) {}
     public:
-        virtual ~timpl_transaction_int_server() {
+        virtual ~timpl_transaction_impl_server() {
             void *self = this;
             int_publ_srv_tx_map().remove(&self, NULL);
             /************************
@@ -536,13 +537,13 @@ transaction_factory *transaction_factory::default_transaction_factory()
     return default_tx_factory;
 }
 
-transaction_int *transaction_factory::tx_factory_int_f(connection_int &conn,
-                                                       void *ud)
+transaction_impl *transaction_factory::tx_factory_impl_f(connection_impl &conn,
+                                                         void *ud)
 {
     transaction_factory *tsf = static_cast<transaction_factory *>(ud);
-    connection_int *connection_int_ptr = &conn;
+    connection_impl *connection_impl_ptr = &conn;
     connection *c_publ = NULL;
-    if(int_publ_srv_conn_map().get(&connection_int_ptr, &c_publ)) {
+    if(int_publ_srv_conn_map().get(&connection_impl_ptr, &c_publ)) {
         EXIT_ACTION("failed get instance from int_publ_srv_conn_map\n")
     }
     transaction *publ = tsf->new_transaction(*c_publ);
@@ -552,10 +553,10 @@ transaction_int *transaction_factory::tx_factory_int_f(connection_int &conn,
     ************************/
     c.retain(publ);
 
-    transaction_int *int_tx =
-        new timpl_transaction_int_server(conn, *publ);
+    transaction_impl *int_tx =
+        new timpl_transaction_impl_server(conn, *publ);
 
-    publ->set_internal(int_tx);
+    publ->set_implernal(int_tx);
     publ->bind(*c_publ);
     int_publ_srv_tx_map().put(&int_tx, &publ);
     return int_tx;

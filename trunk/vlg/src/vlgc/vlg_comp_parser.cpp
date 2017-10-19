@@ -547,7 +547,7 @@ vlg::RetCode VLG_COMP_ParseNMemb(unsigned long &lnum,
             exp_valid = plus_allwd = true;
         } else if((define_val = (const char *)definemap.get(tkn.internal_buff()))) {
             //this is a @define
-			if (vlg::string_is_number(define_val)) {
+            if(vlg::string_is_number(define_val)) {
                 nmemb += atol(define_val);
                 exp_valid = plus_allwd = true;
             } else {
@@ -877,13 +877,13 @@ vlg::RetCode VLG_COMP_ParseId(unsigned long &lnum,
     const char *define_val = NULL;
     while(!tknz.next_token(tkn, CR_DF_DLMT, true)) {
         CR_SKIP_SP_TABS(tkn)
-			if (vlg::string_is_number(tkn.internal_buff())) {
+        if(vlg::string_is_number(tkn.internal_buff())) {
             //this is a number
             id = atoi(tkn.internal_buff());
             break;
         } else if((define_val = (const char *)definemap.get(tkn.internal_buff()))) {
             //this is a @define
-			if (vlg::string_is_number(define_val)) {
+            if(vlg::string_is_number(define_val)) {
                 id = atoi(define_val);
                 break;
             } else {

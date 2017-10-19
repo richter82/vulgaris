@@ -57,8 +57,8 @@ class subscription_event : public vlg::collectable {
 */
 class subscription_factory {
     public:
-        static subscription_int     *sbs_factory_int_f(connection_int &conn,
-                                                       void *ud);
+        static subscription_impl     *sbs_factory_impl_f(connection_impl &conn,
+                                                         void *ud);
 
     public:
         subscription_factory();
@@ -175,8 +175,8 @@ class subscription : public vlg::collectable {
         on_event_accept(const subscription_event &sbs_evt);
 
     public:
-        subscription_int *get_internal();
-        void              set_internal(subscription_int *sbs);
+        subscription_impl *get_implernal();
+        void              set_implernal(subscription_impl *sbs);
 
     private:
         subscription_impl *impl_;
