@@ -20,7 +20,7 @@
  */
 
 #include "vlg_drv_sqlite.h"
-#include "vlg_persistence_impl.h"
+#include "vlg/vlg_pers_impl.h"
 #include "sqlite3.h"
 
 #if defined(_MSC_VER)
@@ -536,11 +536,11 @@ struct SQLTE_ENM_INSERT_REC_UD {
 //-----------------------------
 // VLG_PERS_QUERY_SQLITE
 //-----------------------------
-class pers_query_sqlite : public persistence_query_int {
+class pers_query_sqlite : public persistence_query_impl {
     public:
         //---ctors
         pers_query_sqlite(unsigned int id,
-                          persistence_connection_int &conn,
+                          persistence_connection_impl &conn,
                           const entity_manager &bem,
                           sqlite3_stmt *stmt);
 
@@ -553,10 +553,10 @@ class pers_query_sqlite : public persistence_query_int {
 };
 
 pers_query_sqlite::pers_query_sqlite(unsigned int id,
-                                     persistence_connection_int &conn,
+                                     persistence_connection_impl &conn,
                                      const entity_manager &bem,
                                      sqlite3_stmt *stmt) :
-    persistence_query_int(id, conn, bem),
+    persistence_query_impl(id, conn, bem),
     stmt_(stmt)
 {}
 
@@ -571,7 +571,7 @@ sqlite3_stmt *pers_query_sqlite::get_sqlite_stmt()
 //-----------------------------
 // VLG_PERS_CONN_SQLITE - CONNECTION
 //-----------------------------
-class pers_conn_sqlite : public persistence_connection_int {
+class pers_conn_sqlite : public persistence_connection_impl {
     public:
         pers_conn_sqlite(unsigned int id,
                          persistence_connection_pool &conn_pool);
@@ -627,11 +627,11 @@ class pers_conn_sqlite : public persistence_connection_int {
 
         virtual vlg::RetCode do_execute_query(const entity_manager &bem,
                                               const char *sql,
-                                              persistence_query_int **qry_out);
+                                              persistence_query_impl **qry_out);
 
-        virtual vlg::RetCode do_release_query(persistence_query_int *qry);
+        virtual vlg::RetCode do_release_query(persistence_query_impl *qry);
 
-        virtual vlg::RetCode do_next_entity_from_query(persistence_query_int *qry,
+        virtual vlg::RetCode do_next_entity_from_query(persistence_query_impl *qry,
                                                        unsigned int &ts0_out,
                                                        unsigned int &ts1_out,
                                                        nclass &out_obj);
@@ -833,7 +833,7 @@ class pers_conn_sqlite : public persistence_connection_int {
 
 pers_conn_sqlite::pers_conn_sqlite(unsigned int id,
                                    persistence_connection_pool &conn_pool) :
-    persistence_connection_int(id, conn_pool),
+    persistence_connection_impl(id, conn_pool),
     db_(NULL),
     worker_(NULL)
 {
@@ -1797,7 +1797,7 @@ vlg::RetCode pers_conn_sqlite::do_insert(const entity_manager &bem,
 //--------------------- QUERY -------------------------------------------------
 
 vlg::RetCode pers_conn_sqlite::do_execute_query(const entity_manager &bem,
-                                                const char *sql, persistence_query_int **qry_out)
+                                                const char *sql, persistence_query_impl **qry_out)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sql:%p, qry_out:%p)", __func__, sql, qry_out))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
@@ -1818,7 +1818,7 @@ vlg::RetCode pers_conn_sqlite::do_execute_query(const entity_manager &bem,
     return cdrs_res;
 }
 
-vlg::RetCode pers_conn_sqlite::do_release_query(persistence_query_int *qry)
+vlg::RetCode pers_conn_sqlite::do_release_query(persistence_query_impl *qry)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(qry:%p)", __func__, qry))
     vlg::RetCode cdrs_res = vlg::RetCode_OK;
@@ -1836,7 +1836,7 @@ vlg::RetCode pers_conn_sqlite::do_release_query(persistence_query_int *qry)
     return cdrs_res;
 }
 
-vlg::RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_int
+vlg::RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_impl
                                                          *qry,
                                                          unsigned int &ts0_out,
                                                          unsigned int &ts1_out,
@@ -1925,7 +1925,7 @@ unsigned int GetSQLITE_NEXT_CONNID()
 //-----------------------------
 // pers_driv_sqlite
 //-----------------------------
-class pers_driv_sqlite : public persistence_driver_int {
+class pers_driv_sqlite : public persistence_driver_impl {
     public:
         static pers_driv_sqlite *get_instance();
 
@@ -1936,9 +1936,9 @@ class pers_driv_sqlite : public persistence_driver_int {
 
     public:
         virtual vlg::RetCode new_connection(persistence_connection_pool &conn_pool,
-                                            persistence_connection_int **new_conn);
+                                            persistence_connection_impl **new_conn);
 
-        virtual vlg::RetCode close_connection(persistence_connection_int &conn);
+        virtual vlg::RetCode close_connection(persistence_connection_impl &conn);
 
         virtual const char *get_driver_name();
 };
@@ -1964,7 +1964,7 @@ pers_driv_sqlite *pers_driv_sqlite::get_instance()
 }
 
 pers_driv_sqlite::pers_driv_sqlite() :
-    persistence_driver_int(VLG_PERS_DRIV_SQLITE_ID)
+    persistence_driver_impl(VLG_PERS_DRIV_SQLITE_ID)
 {
     IFLOG(trc(TH_ID, LS_CTR "%s(id:%d)", __func__, id_))
 }
@@ -1976,7 +1976,7 @@ pers_driv_sqlite::~pers_driv_sqlite()
 
 vlg::RetCode pers_driv_sqlite::new_connection(persistence_connection_pool
                                               &conn_pool,
-                                              persistence_connection_int **new_conn)
+                                              persistence_connection_impl **new_conn)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(url:%s, usr:%s, psswd:%s, new_conn:%p)", __func__,
               conn_pool.url(), conn_pool.user(),
@@ -1997,7 +1997,7 @@ vlg::RetCode pers_driv_sqlite::new_connection(persistence_connection_pool
     return cdrs_res;
 }
 
-vlg::RetCode pers_driv_sqlite::close_connection(persistence_connection_int
+vlg::RetCode pers_driv_sqlite::close_connection(persistence_connection_impl
                                                 &conn)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
@@ -2025,7 +2025,7 @@ extern "C" {
 VLG_PERS_DRIV_SQLITE ENTRY POINT
 *******************************/
 extern "C" {
-    EXP_SYM persistence_driver_int *get_pers_driv_sqlite()
+    EXP_SYM persistence_driver_impl *get_pers_driv_sqlite()
     {
         return pers_driv_sqlite::get_instance();
     }
