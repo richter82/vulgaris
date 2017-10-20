@@ -25,9 +25,9 @@
 namespace vlg {
 extern "C" {
 
-    persistence_driver_int_wr persistence_driver_sqlite_get_instance()
+    persistence_driver_impl_wr persistence_driver_sqlite_get_instance()
     {
-        return (persistence_driver_int_wr)get_pers_driv_sqlite();
+        return (persistence_driver_impl_wr)get_pers_driv_sqlite();
     }
 
     const char *persistence_driver_sqlite_get_version()

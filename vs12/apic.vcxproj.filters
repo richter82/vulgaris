@@ -15,51 +15,51 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\blz_c_public_impl\blaze_c_connection.cpp">
+    <ClCompile Include="..\src\apic\vlg_c_transaction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\blz_c_public_impl\blaze_c_peer.cpp">
+    <ClCompile Include="..\src\apic\vlg_c_connection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\blz_c_public_impl\blaze_c_pers_driv_sqlite.cpp">
+    <ClCompile Include="..\src\apic\vlg_c_model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\blz_c_public_impl\blaze_c_persistence.cpp">
+    <ClCompile Include="..\src\apic\vlg_c_peer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\blz_c_public_impl\blaze_c_subscription.cpp">
+    <ClCompile Include="..\src\apic\vlg_c_pers_driv_sqlite.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\blz_c_public_impl\blaze_c_transaction.cpp">
+    <ClCompile Include="..\src\apic\vlg_c_persistence.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\blz_c_public_impl\blaze_c_model.cpp">
+    <ClCompile Include="..\src\apic\vlg_c_subscription.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\public\c\blaze_c_peer.h">
+    <ClInclude Include="..\public\c\vlg_c_transaction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\c\blaze_c_pers_driv_sqlite.h">
+    <ClInclude Include="..\public\c\vlg_c_connection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\c\blaze_c_persistence.h">
+    <ClInclude Include="..\public\c\vlg_c_logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\c\blaze_c_subscription.h">
+    <ClInclude Include="..\public\c\vlg_c_model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\c\blaze_c_transaction.h">
+    <ClInclude Include="..\public\c\vlg_c_peer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\c\blaze_c_connection.h">
+    <ClInclude Include="..\public\c\vlg_c_pers_driv_sqlite.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\c\blaze_c_model.h">
+    <ClInclude Include="..\public\c\vlg_c_persistence.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\c\blaze_c_logger.h">
+    <ClInclude Include="..\public\c\vlg_c_subscription.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

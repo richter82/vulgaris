@@ -32,11 +32,11 @@ extern "C" {
         drivers_num);
     }
 
-    RetCode persistence_manager_load_persistence_driver(persistence_driver_int_wr
+    RetCode persistence_manager_load_persistence_driver(persistence_driver_impl_wr
     drivers[],
     int drivers_num)
     {
-        return persistence_manager::load_persistence_driver((persistence_driver_int **)
+        return persistence_manager::load_persistence_driver((persistence_driver_impl **)
         drivers, drivers_num);
     }
 
@@ -60,19 +60,19 @@ extern "C" {
         return persistence_manager::start_all_persistence_drivers();
     }
 
-    persistence_driver_int_wr persistence_manager_available_driver(
+    persistence_driver_impl_wr persistence_manager_available_driver(
         unsigned int nclass_id)
     {
-        return (persistence_driver_int *)persistence_manager::available_driver(
+        return (persistence_driver_impl *)persistence_manager::available_driver(
             nclass_id);
     }
 
     RetCode persistence_connection_bind(persistence_connection_wr pconn,
     unsigned int nclass_id,
-    persistence_driver_int_wr driver)
+    persistence_driver_impl_wr driver)
     {
         return static_cast<persistence_connection *>(pconn)->bind(nclass_id,
-        *(persistence_driver_int *)driver);
+        *(persistence_driver_impl *)driver);
     }
 
     PersistenceConnectionStatus persistence_connection_get_status(

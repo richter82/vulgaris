@@ -36,11 +36,11 @@ RetCode persistence_manager_load_persistence_driver_dynamic(
     const char *drivers[],
     int drivers_num);
 /*static*/
-RetCode persistence_manager_load_persistence_driver(persistence_driver_int_wr
+RetCode persistence_manager_load_persistence_driver(persistence_driver_impl_wr
                                                     drivers[],
                                                     int drivers_num);
 //returns null if no driver is available.
-persistence_driver_int_wr persistence_manager_available_driver(
+persistence_driver_impl_wr persistence_manager_available_driver(
     unsigned int nclass_id);
 
 RetCode persistence_manager_set_cfg_file_dir(const char *dir);
@@ -53,7 +53,7 @@ RetCode persistence_manager_start_all_drivers(void);
 
 RetCode persistence_connection_bind(persistence_connection_wr pconn,
                                     unsigned int nclass_id,
-                                    persistence_driver_int_wr driver);
+                                    persistence_driver_impl_wr driver);
 
 PersistenceConnectionStatus persistence_connection_get_status(
     persistence_connection_wr

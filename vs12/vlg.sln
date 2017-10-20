@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vlgc", "vlgc.vcxproj", "{C547BD3F-6B6D-44DF-B6D6-8EECB1F56752}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vlg", "vlg.vcxproj", "{D8E08F30-6822-4398-9C58-9589811537D8}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "apicpp", "apicpp.vcxproj", "{86051208-762D-4D3D-A490-59DF7ECE67EA}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "apic", "apic.vcxproj", "{F63BB707-8F3C-4933-B9D0-82B50681145F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,14 @@ Global
 		{86051208-762D-4D3D-A490-59DF7ECE67EA}.Release|Win32.Build.0 = Release|Win32
 		{86051208-762D-4D3D-A490-59DF7ECE67EA}.Release|x64.ActiveCfg = Release|x64
 		{86051208-762D-4D3D-A490-59DF7ECE67EA}.Release|x64.Build.0 = Release|x64
+		{F63BB707-8F3C-4933-B9D0-82B50681145F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F63BB707-8F3C-4933-B9D0-82B50681145F}.Debug|Win32.Build.0 = Debug|Win32
+		{F63BB707-8F3C-4933-B9D0-82B50681145F}.Debug|x64.ActiveCfg = Debug|x64
+		{F63BB707-8F3C-4933-B9D0-82B50681145F}.Debug|x64.Build.0 = Debug|x64
+		{F63BB707-8F3C-4933-B9D0-82B50681145F}.Release|Win32.ActiveCfg = Release|Win32
+		{F63BB707-8F3C-4933-B9D0-82B50681145F}.Release|Win32.Build.0 = Release|Win32
+		{F63BB707-8F3C-4933-B9D0-82B50681145F}.Release|x64.ActiveCfg = Release|x64
+		{F63BB707-8F3C-4933-B9D0-82B50681145F}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
