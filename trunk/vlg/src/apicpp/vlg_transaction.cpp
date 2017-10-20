@@ -48,7 +48,7 @@ vlg::synch_hash_map &int_publ_srv_tx_map()
 //-----------------------------
 // CLASS transaction_impl
 //-----------------------------
-class transaction_impl {
+class transaction_impl_pub {
     private:
         //-----------------------------
         // CLASS timpl_transaction_impl_client
@@ -80,7 +80,7 @@ class transaction_impl {
 
         static void transaction_status_change_hndlr_timpl(transaction_impl &trans,
                                                           TransactionStatus status, void *ud) {
-            transaction_impl *timpl = static_cast<transaction_impl *>(ud);
+            transaction_impl_pub *timpl = static_cast<transaction_impl_pub *>(ud);
             if(timpl->tsh_) {
                 timpl->tsh_(timpl->publ_, status, timpl->tsh_ud_);
             }
@@ -90,7 +90,7 @@ class transaction_impl {
         // transaction_impl meths
         //-----------------------------
     public:
-        transaction_impl(transaction &publ) :
+        transaction_impl_pub(transaction &publ) :
             publ_(publ),
             conn_(NULL),
             int_(NULL),
@@ -98,7 +98,7 @@ class transaction_impl {
             tsh_ud_(NULL),
             clh_(NULL),
             clh_ud_(NULL) {}
-        ~transaction_impl() {
+        ~transaction_impl_pub() {
             if(int_ && int_->get_connection().conn_type() == ConnectionType_OUTGOING) {
                 vlg::collector &c = int_->get_collector();
                 c.release(int_);
@@ -210,7 +210,7 @@ nclass_logger *transaction::log_ = NULL;
 transaction::transaction()
 {
     log_ = get_nclass_logger("transaction");
-    impl_ = new transaction_impl(*this);
+    impl_ = new transaction_impl_pub(*this);
     IFLOG(trc(TH_ID, LS_CTR "%s(ptr:%p)", __func__, this))
 }
 

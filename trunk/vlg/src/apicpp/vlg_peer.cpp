@@ -41,10 +41,10 @@ vlg::synch_hash_map &int_publ_peer_map()
 }
 
 //-----------------------------
-// peer_impl
+// peer_impl_pub
 //-----------------------------
 
-class peer_impl {
+class peer_impl_pub {
     private:
         class pimpl_peer_impl : public peer_impl {
             public:
@@ -133,14 +133,14 @@ class peer_impl {
         static void peer_lfcyc_status_change_hndlr_pimpl(peer_automa &peer,
                                                          PeerStatus status,
                                                          void *ud) {
-            peer_impl *pimpl = static_cast<peer_impl *>(ud);
+            peer_impl_pub *pimpl = static_cast<peer_impl_pub *>(ud);
             if(pimpl->psh_) {
                 pimpl->psh_(pimpl->publ_, status, pimpl->psh_ud_);
             }
         }
 
     public:
-        peer_impl(peer &publ) : publ_(publ), int_(NULL), psh_(NULL), psh_ud_(NULL),
+        peer_impl_pub(peer &publ) : publ_(publ), int_(NULL), psh_(NULL), psh_ud_(NULL),
             conn_factory_(connection_factory::default_connection_factory()) {
             int_ = new pimpl_peer_impl(publ_, 0);
             peer *publ_ptr = &publ;
@@ -148,7 +148,7 @@ class peer_impl {
             int_->set_peer_status_change_hndlr(peer_lfcyc_status_change_hndlr_pimpl, this);
         }
 
-        ~peer_impl() {
+        ~peer_impl_pub() {
             if(int_) {
                 if(int_->peer_status() > PeerStatus_INITIALIZED) {
                     int_->stop_peer(true);
@@ -199,14 +199,13 @@ class peer_impl {
         connection_factory *conn_factory_;
 };
 
-
 //-----------------------------
 // peer
 //-----------------------------
 
 peer::peer()
 {
-    impl_ = new peer_impl(*this);
+    impl_ = new peer_impl_pub(*this);
 }
 
 peer::~peer()

@@ -45,7 +45,7 @@ class transaction_factory {
 
 /** @brief transaction class.
 */
-class transaction_impl;
+class transaction_impl_pub;
 class transaction : public vlg::collectable {
     public:
         typedef void (*transaction_status_change)(transaction &tx,
@@ -152,7 +152,7 @@ class transaction : public vlg::collectable {
         void             set_implernal(transaction_impl *tx);
 
     private:
-        transaction_impl *impl_;
+        transaction_impl_pub *impl_;
 
     protected:
         static nclass_logger *log_;

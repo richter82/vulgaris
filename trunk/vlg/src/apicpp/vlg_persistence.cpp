@@ -78,10 +78,10 @@ persistence_driver_impl *persistence_manager::available_driver(
 // CLASS persistence_connection_impl
 //-----------------------------
 
-class persistence_connection_impl {
+class persistence_connection_impl_pub {
     public:
-        persistence_connection_impl() : driv_(NULL), conn_(NULL) {}
-        ~persistence_connection_impl() {}
+        persistence_connection_impl_pub() : driv_(NULL), conn_(NULL) {}
+        ~persistence_connection_impl_pub() {}
 
         persistence_driver_impl *get_driver() const {
             return driv_;
@@ -111,7 +111,7 @@ class persistence_connection_impl {
 
 persistence_connection::persistence_connection()
 {
-    impl_ = new persistence_connection_impl();
+    impl_ = new persistence_connection_impl_pub();
 }
 
 persistence_connection::~persistence_connection()
@@ -218,13 +218,13 @@ vlg::RetCode persistence_connection::execute_statement(const char *stmt)
 }
 
 //-----------------------------
-// CLASS persistence_query_impl
+// CLASS persistence_query_impl_pub
 //-----------------------------
-class persistence_query_impl {
+class persistence_query_impl_pub {
     public:
-        persistence_query_impl(const entity_manager &em) : em_(em),
+        persistence_query_impl_pub(const entity_manager &em) : em_(em),
             int_(NULL) {}
-        ~persistence_query_impl() {
+        ~persistence_query_impl_pub() {
             if(int_) {
                 persistence_connection_impl &conn_impl_ref = int_->get_connection();
                 persistence_connection_impl *conn_impl_ptr = &conn_impl_ref;
@@ -266,7 +266,7 @@ class persistence_query_impl {
 
 persistence_query::persistence_query(const entity_manager &em)
 {
-    impl_ = new persistence_query_impl(em);
+    impl_ = new persistence_query_impl_pub(em);
 }
 
 persistence_query::~persistence_query()
