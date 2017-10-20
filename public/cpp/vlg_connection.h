@@ -56,7 +56,7 @@ class connection_factory {
 
 /** @brief class connection.
 */
-class connection_impl;
+class connection_impl_pub;
 class connection : public vlg::collectable {
     public:
         typedef void (*connection_status_change)(connection &conn,
@@ -148,7 +148,7 @@ class connection : public vlg::collectable {
         void            set_implernal(connection_impl *conn);
 
     private:
-        connection_impl *impl_;
+        connection_impl_pub *impl_;
 
     protected:
         static nclass_logger *log_;

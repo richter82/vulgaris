@@ -66,7 +66,7 @@ class persistence_manager {
 
 /** @brief persistence_connection class.
 */
-class persistence_connection_impl;
+class persistence_connection_impl_pub;
 class persistence_connection {
 
         //---ctors
@@ -127,12 +127,12 @@ class persistence_connection {
         vlg::RetCode    execute_statement(const char *stmt);
 
     private:
-        persistence_connection_impl *impl_;
+        persistence_connection_impl_pub *impl_;
 };
 
 /** @brief persistence_query class.
 */
-class persistence_query_impl;
+class persistence_query_impl_pub;
 class persistence_query {
 
     public:
@@ -154,7 +154,7 @@ class persistence_query {
         vlg::RetCode    release();
 
     private:
-        persistence_query_impl *impl_;
+        persistence_query_impl_pub *impl_;
 };
 
 }

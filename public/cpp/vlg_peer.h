@@ -37,7 +37,7 @@ namespace vlg {
 
 /** @brief peer class.
 */
-class peer_impl;
+class peer_impl_pub;
 class peer {
     public:
         typedef void (*peer_status_change)(peer &p,
@@ -212,7 +212,7 @@ class peer {
         peer_impl *get_implernal();
 
     private:
-        peer_impl *impl_;
+        peer_impl_pub *impl_;
 };
 
 

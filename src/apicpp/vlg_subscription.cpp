@@ -45,12 +45,12 @@ vlg::synch_hash_map &int_publ_srv_sbs_map()
 }
 
 //-----------------------------
-// CLASS subscription_event_impl
+// CLASS subscription_event_impl_pub
 //-----------------------------
-class subscription_event_impl {
+class subscription_event_impl_pub {
     public:
-        subscription_event_impl() : sbs_(NULL), int_(NULL) {}
-        ~subscription_event_impl() {
+        subscription_event_impl_pub() : sbs_(NULL), int_(NULL) {}
+        ~subscription_event_impl_pub() {
             if(int_) {
                 vlg::collector &c = int_->get_collector();
                 c.release(int_);
@@ -115,7 +115,7 @@ vlg::collector &subscription_event::get_collector()
 
 subscription_event::subscription_event()
 {
-    impl_ = new subscription_event_impl();
+    impl_ = new subscription_event_impl_pub();
 }
 
 subscription_event::~subscription_event()
@@ -165,7 +165,7 @@ nclass *subscription_event::get_object()
     return impl_->get_sbs_evt()->get_obj();
 }
 
-subscription_event_impl *subscription_event::get_opaque()
+subscription_event_impl_pub *subscription_event::get_opaque()
 {
     return impl_;
 }
@@ -174,7 +174,7 @@ subscription_event_impl *subscription_event::get_opaque()
 // CLASS subscription_impl
 //-----------------------------
 
-class subscription_impl {
+class subscription_impl_pub {
     private:
         class simpl_subscription_impl : public subscription_impl {
             public:
@@ -211,7 +211,7 @@ class subscription_impl {
         static void subscription_status_change_hndlr_simpl(subscription_impl &sbs,
                                                            SubscriptionStatus status,
                                                            void *ud) {
-            subscription_impl *simpl = static_cast<subscription_impl *>(ud);
+            subscription_impl_pub *simpl = static_cast<subscription_impl_pub *>(ud);
             if(simpl->ssh_) {
                 simpl->ssh_(simpl->publ_, status, simpl->ssh_ud_);
             }
@@ -220,7 +220,7 @@ class subscription_impl {
         static void subscription_evt_notify_hndlr_simpl(subscription_impl &sbs,
                                                         subscription_event_impl &sbs_evt_impl,
                                                         void *ud) {
-            subscription_impl *simpl = static_cast<subscription_impl *>(ud);
+            subscription_impl_pub *simpl = static_cast<subscription_impl_pub *>(ud);
             if(simpl->senh_) {
                 subscription_event *sbs_evt = new subscription_event();
                 sbs_evt->get_opaque()->set_sbs_evt(&sbs_evt_impl);
@@ -230,7 +230,7 @@ class subscription_impl {
         }
 
     public:
-        subscription_impl(subscription &publ)
+        subscription_impl_pub(subscription &publ)
             : publ_(publ),
               conn_(NULL),
               int_(NULL),
@@ -239,7 +239,7 @@ class subscription_impl {
               senh_(NULL),
               senh_ud_(NULL)  {}
 
-        ~subscription_impl() {
+        ~subscription_impl_pub() {
             if(int_ && int_->get_connection().conn_type() == ConnectionType_OUTGOING) {
                 if(int_->status() == SubscriptionStatus_REQUEST_SENT ||
                         int_->status() == SubscriptionStatus_STARTED) {
@@ -359,7 +359,7 @@ nclass_logger *subscription::log_ = NULL;
 subscription::subscription()
 {
     log_ = get_nclass_logger("subscription");
-    impl_ = new subscription_impl(*this);
+    impl_ = new subscription_impl_pub(*this);
     IFLOG(trc(TH_ID, LS_CTR "%s(ptr:%p)", __func__, this))
 }
 

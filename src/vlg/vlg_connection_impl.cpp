@@ -1289,8 +1289,7 @@ vlg::RetCode connection_impl::next_tx_id(tx_id &txid)
 transaction_impl *connection_impl::vlg_tx_factory_default_func(
     connection_impl &connection, void *ud)
 {
-    transaction_impl *new_transaction = new transaction_impl(
-        connection);
+    transaction_impl *new_transaction = new transaction_impl(connection);
     return new_transaction;
 }
 

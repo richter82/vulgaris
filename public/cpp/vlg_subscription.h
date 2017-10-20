@@ -27,7 +27,7 @@ namespace vlg {
 
 /** @brief subscription_event class.
 */
-class subscription_event_impl;
+class subscription_event_impl_pub;
 class subscription_event : public vlg::collectable {
 
     public:
@@ -47,10 +47,10 @@ class subscription_event : public vlg::collectable {
         nclass               *get_object();
 
     public:
-        subscription_event_impl *get_opaque();
+        subscription_event_impl_pub *get_opaque();
 
     private:
-        subscription_event_impl *impl_;
+        subscription_event_impl_pub *impl_;
 };
 
 /** @brief subscription_factory class.
@@ -73,7 +73,7 @@ class subscription_factory {
 
 /** @brief subscription class.
 */
-class subscription_impl;
+class subscription_impl_pub;
 class subscription : public vlg::collectable {
     public:
         typedef void (*subscription_status_change)(subscription &sbs,
@@ -179,7 +179,7 @@ class subscription : public vlg::collectable {
         void              set_implernal(subscription_impl *sbs);
 
     private:
-        subscription_impl *impl_;
+        subscription_impl_pub *impl_;
 
     protected:
         static nclass_logger *log_;

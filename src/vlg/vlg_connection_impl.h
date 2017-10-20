@@ -35,7 +35,7 @@ namespace vlg {
 // CONNECTION
 //-----------------------------
 class connection_impl : public vlg::collectable {
-        friend class connection_impl;
+        friend class connection_impl_pub;
         friend class acceptor;
         friend class selector;
         friend class peer_impl;

@@ -46,9 +46,9 @@ vlg::synch_hash_map &int_publ_srv_conn_map()
 }
 
 //-----------------------------
-// CLASS connection_impl
+// CLASS connection_impl_pub
 //-----------------------------
-class connection_impl {
+class connection_impl_pub {
     private:
         class cimpl_conn_impl : public connection_impl {
             public:
@@ -83,14 +83,14 @@ class connection_impl {
         static void connection_impl_status_change_hndlr_cimpl(connection_impl &conn,
                                                               ConnectionStatus status,
                                                               void *ud) {
-            connection_impl *cimpl = static_cast<connection_impl *>(ud);
+            connection_impl_pub *cimpl = static_cast<connection_impl_pub *>(ud);
             if(cimpl->csh_) {
                 cimpl->csh_(cimpl->publ_, status, cimpl->csh_ud_);
             }
         }
 
     public:
-        connection_impl(connection &publ) :
+        connection_impl_pub(connection &publ) :
             publ_(publ),
             peer_(NULL),
             int_(NULL),
@@ -98,7 +98,7 @@ class connection_impl {
             csh_ud_(NULL),
             tx_factory_(transaction_factory::default_transaction_factory()),
             sbs_factory_(subscription_factory::default_subscription_factory()) {}
-        ~connection_impl() {
+        ~connection_impl_pub() {
             if(int_) {
                 //destroy of underling object must be done only for outgoing-client connections
                 if(int_->conn_type() == ConnectionType_OUTGOING) {
@@ -229,7 +229,7 @@ nclass_logger *connection::log_ = NULL;
 connection::connection()
 {
     log_ = get_nclass_logger("connection");
-    impl_ = new connection_impl(*this);
+    impl_ = new connection_impl_pub(*this);
     IFLOG(trc(TH_ID, LS_CTR "%s(ptr:%p)", __func__, this))
 }
 
