@@ -1,7 +1,7 @@
-@include "blz_model_sample_glob_mid.blz"
+@include "vlg_model_sample_glob_mid.vlg"
 
-@model_name		"blz_model_sample"
-@namespace 		"blz_model_sample"
+@model_name		"vlg_model_sample"
+@namespace 		"vlg_model_sample"
 @model_version	"0.0.0"
 
 @define NAME_LEN 128

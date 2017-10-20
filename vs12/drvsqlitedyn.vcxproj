@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>vlg_drv_sqlite_dyn</ProjectName>
+    <ProjectName>drvsqlite_dyn</ProjectName>
     <ProjectGuid>{A1A1B12B-86CE-4BB4-B784-201EF3F0329B}</ProjectGuid>
     <RootNamespace>blz_drv_sqlite</RootNamespace>
     <Keyword>Win32Proj</Keyword>
@@ -67,25 +67,25 @@
     <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\blzdrvsqlite\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\blzdrvsqlite\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\blzdrvsqlite\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\blzdrvsqlite\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\blzdrvsqlite\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\blzdrvsqlite\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\blzdrvsqlite\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\blzdrvsqlite\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\contrib\pthread;..\contrib\sqlite</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;BLZ_PERS_DRIV_EXPORTS;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;BLZ_PERS_DRIV_EXPORTS;DSQLITE_THREADSAFE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -112,7 +112,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\contrib\pthread;..\contrib\sqlite</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;BLZ_PERS_DRIV_EXPORTS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -134,7 +134,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\contrib\pthread;..\contrib\sqlite</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;BLZ_PERS_DRIV_EXPORTS;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -158,7 +158,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\contrib\pthread;..\contrib\sqlite</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;BLZ_PERS_DRIV_EXPORTS;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -176,31 +176,22 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="blz_model.vcxproj">
-      <Project>{850366a9-57fa-4f2d-b210-5f1ea2a2b5a8}</Project>
-      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="blz_persistence.vcxproj">
-      <Project>{b34a16af-5db0-4994-a397-e340070a641c}</Project>
-      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="crlib.vcxproj">
-      <Project>{c2dc0e98-a7ef-4ab6-bd82-de4bf7a0b56c}</Project>
-      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\contrib\sqlite\sqlite3.c" />
-    <ClCompile Include="..\src\blzdrisqlitelib\blz_drv_sqlite.cpp" />
+    <ClCompile Include="..\src\drisqlite\vlg_drv_sqlite.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\contrib_lib\nt10_x64\pthreadVC2.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </Library>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="cr.vcxproj">
+      <Project>{c2dc0e98-a7ef-4ab6-bd82-de4bf7a0b56c}</Project>
+    </ProjectReference>
+    <ProjectReference Include="vlg.vcxproj">
+      <Project>{d8e08f30-6822-4398-9c58-9589811537d8}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

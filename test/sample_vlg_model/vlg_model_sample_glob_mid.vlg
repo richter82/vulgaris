@@ -18,7 +18,7 @@ enum SIMPLE_ENUM_MID
 }
 
 
-@include "blz_model_sample_glob.blz"
+@include "vlg_model_sample_glob.vlg"
 
 
 #---MAX LINE 150 --MAX LINE 150------------------------------------------------------------------------------------------------------------------#
