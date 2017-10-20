@@ -1,4 +1,4 @@
 -lang JAVA
--I "../../sample_blz_model"
--O "../../../../jblaze/src/blz_model_sample"
--F "blz_model_sample.blz"
+-I "../../sample_vlg_model"
+-O "../../../../jblaze/src/vlg_model_sample"
+-F "vlg_model_sample.vlg"
