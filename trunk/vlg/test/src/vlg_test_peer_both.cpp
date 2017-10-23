@@ -65,7 +65,7 @@ int load_class_position(const char *filename,
 //-----------------------------
 //  fill_user
 //-----------------------------
-int fill_user(vlg_model_sample::USER &usr, int count)
+int fill_user(smplmdl::USER &usr, int count)
 {
     usr.set_user_id(count);
     usr.set_name("John");
@@ -77,7 +77,7 @@ int fill_user(vlg_model_sample::USER &usr, int count)
     usr.set_active(true);
     usr.set_cap(10001);
     usr.set_type('K');
-    vlg_model_sample::ROLE r0, r1, r4;
+	smplmdl::ROLE r0, r1, r4;
     return 0;
 }
 
@@ -384,9 +384,9 @@ class entry_point {
 
         vlg::RetCode init() {
 #if STA_L
-            vlg::persistence_driver_int *sqlite_dri = vlg::get_pers_driv_sqlite();
+            vlg::persistence_driver_impl *sqlite_dri = vlg::get_pers_driv_sqlite();
             vlg::persistence_manager::load_persistence_driver(&sqlite_dri, 1);
-            tpeer_.extend_model(get_em_vlg_model_sample());
+			tpeer_.extend_model(get_em_smplmdl());
 #endif
             return vlg::RetCode_OK;
         }
@@ -442,7 +442,7 @@ class entry_point {
             return out_sbs_.await_for_start_result(resp, pcode, TEST_TMOUT);
         }
 
-        vlg::RetCode send_user_tx(vlg_model_sample::USER &user) {
+		vlg::RetCode send_user_tx(smplmdl::USER &user) {
             if(first_tx_send_) {
                 out_tx_.bind(out_conn_);
                 first_tx_send_ = false;
@@ -506,7 +506,7 @@ class entry_point {
                     while(true) {
                         vlg::RetCode cdrs_res = vlg::RetCode_OK;
                         vlg::persistence_query p_qry(ep_.tpeer_.get_entity_manager());
-                        vlg_model_sample::USER qry_obj;
+						smplmdl::USER qry_obj;
                         cdrs_res = p_qry.bind(USER_ENTITY_ID, "select * from USER");
                         if(!cdrs_res) {
                             do_qry_distr(p_qry, qry_obj);
@@ -561,7 +561,7 @@ int main(int argc, char *argv[])
     int count = 0;
     while(true) {
         entry_point::wait_for_enter();
-        vlg_model_sample::USER user;
+		smplmdl::USER user;
         fill_user(user, ++count);
         ep.send_user_tx(user);
         vlg::mssleep(50);

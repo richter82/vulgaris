@@ -1,7 +1,7 @@
 @include "vlg_model_sample_glob_mid.vlg"
 
-@model_name		"vlg_model_sample"
-@namespace 		"vlg_model_sample"
+@model_name		"smplmdl"
+@namespace 		"smplmdl"
 @model_version	"0.0.0"
 
 @define NAME_LEN 128

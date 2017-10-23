@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>vlg_test_peer_dyn</ProjectName>
+    <ProjectName>test_peer_dyn</ProjectName>
     <ProjectGuid>{0D87A4AD-DEC6-45EB-A1FC-037B56EB9358}</ProjectGuid>
     <RootNamespace>blz_test_model</RootNamespace>
     <Keyword>Win32Proj</Keyword>
@@ -67,33 +67,33 @@
     <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\blzpeerdyna\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\blzpeerdyna\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
-    <TargetName>peer_dyna</TargetName>
+    <TargetName>peer</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\blzpeerdyna\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\blzpeerdyna\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
-    <TargetName>peer_dyna</TargetName>
+    <TargetName>peer</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\blzpeerdyna\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\blzpeerdyna\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <TargetName>peer_dyna</TargetName>
+    <TargetName>peer</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\blzpeerdyna\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\blzpeerdyna\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <TargetName>peer_dyna</TargetName>
+    <TargetName>peer</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\public\c;..\contrib\pthread;..\contrib\sqlite;..\test\sample_blz_model</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public;..\test\sample_vlg_model</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINSOCK_DEPRECATED_NO_WARNINGS;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -121,7 +121,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\public\c;..\contrib\pthread;..\contrib\sqlite;..\test\sample_blz_model</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public;..\test\sample_vlg_model</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINSOCK_DEPRECATED_NO_WARNINGS;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -147,7 +147,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\public\c;..\contrib\pthread;..\contrib\sqlite;..\test\sample_blz_model</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public;..\test\sample_vlg_model</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -176,7 +176,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\public\c;..\contrib\pthread;..\contrib\sqlite;..\test\sample_blz_model</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public;..\test\sample_vlg_model</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -199,30 +199,21 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="blz_cpp_interface.vcxproj">
-      <Project>{86051208-762d-4d3d-a490-59df7ece67ea}</Project>
-    </ProjectReference>
-    <ProjectReference Include="blz_model.vcxproj">
-      <Project>{850366a9-57fa-4f2d-b210-5f1ea2a2b5a8}</Project>
-    </ProjectReference>
-    <ProjectReference Include="blz_peer_lib.vcxproj">
-      <Project>{d8e08f30-6822-4398-9c58-9589811537d8}</Project>
-    </ProjectReference>
-    <ProjectReference Include="blz_persistence.vcxproj">
-      <Project>{b34a16af-5db0-4994-a397-e340070a641c}</Project>
-    </ProjectReference>
-    <ProjectReference Include="crlib.vcxproj">
-      <Project>{c2dc0e98-a7ef-4ab6-bd82-de4bf7a0b56c}</Project>
-    </ProjectReference>
-    <ProjectReference Include="sample_blz_model_static.vcxproj">
-      <Project>{258d0d7e-f056-4cb8-a5df-a77d35b802a0}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Library Include="..\contrib_lib\nt10_x64\pthreadVC2.lib" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\test\src\blz_test_peer_both.cpp" />
+    <ClCompile Include="..\test\src\vlg_test_peer_both.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="apicpp.vcxproj">
+      <Project>{86051208-762d-4d3d-a490-59df7ece67ea}</Project>
+    </ProjectReference>
+    <ProjectReference Include="cr.vcxproj">
+      <Project>{c2dc0e98-a7ef-4ab6-bd82-de4bf7a0b56c}</Project>
+    </ProjectReference>
+    <ProjectReference Include="vlg.vcxproj">
+      <Project>{d8e08f30-6822-4398-9c58-9589811537d8}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

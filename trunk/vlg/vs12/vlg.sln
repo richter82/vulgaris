@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vlgc", "vlgc.vcxproj", "{C547BD3F-6B6D-44DF-B6D6-8EECB1F56752}"
 EndProject
@@ -15,7 +15,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "apic", "apic.vcxproj", "{F6
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "drvsqlite", "drvsqlite.vcxproj", "{4FD13D0B-33A4-4A4C-B9D3-33DB732B7AFC}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "drvsql_dyn", "drvsqlitedyn.vcxproj", "{A1A1B12B-86CE-4BB4-B784-201EF3F0329B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "drvsqlite_dyn", "drvsqlitedyn.vcxproj", "{A1A1B12B-86CE-4BB4-B784-201EF3F0329B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_smplmdl", "test_smplmdl.vcxproj", "{258D0D7E-F056-4CB8-A5DF-A77D35B802A0}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_peer", "test_peer.vcxproj", "{C80E2B6A-86FB-4910-9877-4D6D948ED674}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_peer_dyn", "test_peerdyn.vcxproj", "{0D87A4AD-DEC6-45EB-A1FC-037B56EB9358}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,6 +87,30 @@ Global
 		{A1A1B12B-86CE-4BB4-B784-201EF3F0329B}.Release|Win32.Build.0 = Release|Win32
 		{A1A1B12B-86CE-4BB4-B784-201EF3F0329B}.Release|x64.ActiveCfg = Release|x64
 		{A1A1B12B-86CE-4BB4-B784-201EF3F0329B}.Release|x64.Build.0 = Release|x64
+		{258D0D7E-F056-4CB8-A5DF-A77D35B802A0}.Debug|Win32.ActiveCfg = Debug|Win32
+		{258D0D7E-F056-4CB8-A5DF-A77D35B802A0}.Debug|Win32.Build.0 = Debug|Win32
+		{258D0D7E-F056-4CB8-A5DF-A77D35B802A0}.Debug|x64.ActiveCfg = Debug|x64
+		{258D0D7E-F056-4CB8-A5DF-A77D35B802A0}.Debug|x64.Build.0 = Debug|x64
+		{258D0D7E-F056-4CB8-A5DF-A77D35B802A0}.Release|Win32.ActiveCfg = Release|Win32
+		{258D0D7E-F056-4CB8-A5DF-A77D35B802A0}.Release|Win32.Build.0 = Release|Win32
+		{258D0D7E-F056-4CB8-A5DF-A77D35B802A0}.Release|x64.ActiveCfg = Release|x64
+		{258D0D7E-F056-4CB8-A5DF-A77D35B802A0}.Release|x64.Build.0 = Release|x64
+		{C80E2B6A-86FB-4910-9877-4D6D948ED674}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C80E2B6A-86FB-4910-9877-4D6D948ED674}.Debug|Win32.Build.0 = Debug|Win32
+		{C80E2B6A-86FB-4910-9877-4D6D948ED674}.Debug|x64.ActiveCfg = Debug|x64
+		{C80E2B6A-86FB-4910-9877-4D6D948ED674}.Debug|x64.Build.0 = Debug|x64
+		{C80E2B6A-86FB-4910-9877-4D6D948ED674}.Release|Win32.ActiveCfg = Release|Win32
+		{C80E2B6A-86FB-4910-9877-4D6D948ED674}.Release|Win32.Build.0 = Release|Win32
+		{C80E2B6A-86FB-4910-9877-4D6D948ED674}.Release|x64.ActiveCfg = Release|x64
+		{C80E2B6A-86FB-4910-9877-4D6D948ED674}.Release|x64.Build.0 = Release|x64
+		{0D87A4AD-DEC6-45EB-A1FC-037B56EB9358}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0D87A4AD-DEC6-45EB-A1FC-037B56EB9358}.Debug|Win32.Build.0 = Debug|Win32
+		{0D87A4AD-DEC6-45EB-A1FC-037B56EB9358}.Debug|x64.ActiveCfg = Debug|x64
+		{0D87A4AD-DEC6-45EB-A1FC-037B56EB9358}.Debug|x64.Build.0 = Debug|x64
+		{0D87A4AD-DEC6-45EB-A1FC-037B56EB9358}.Release|Win32.ActiveCfg = Release|Win32
+		{0D87A4AD-DEC6-45EB-A1FC-037B56EB9358}.Release|Win32.Build.0 = Release|Win32
+		{0D87A4AD-DEC6-45EB-A1FC-037B56EB9358}.Release|x64.ActiveCfg = Release|x64
+		{0D87A4AD-DEC6-45EB-A1FC-037B56EB9358}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
