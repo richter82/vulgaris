@@ -19,13 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\test\sample_blz_model\blz_model_sample.h" />
+    <ClInclude Include="..\test\sample_vlg_model\vlg_model_sample.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\test\sample_blz_model\blz_model_sample.cpp" />
+    <ClCompile Include="..\test\sample_vlg_model\vlg_model_sample.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>vlg_test_smplmdl_sta</ProjectName>
+    <ProjectName>test_smplmdl</ProjectName>
     <ProjectGuid>{258D0D7E-F056-4CB8-A5DF-A77D35B802A0}</ProjectGuid>
     <RootNamespace>blz_test_model_dll</RootNamespace>
     <Keyword>Win32Proj</Keyword>
@@ -73,29 +73,29 @@
     <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\blzmdlsmplsta\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\blzmdlsmplsta\</IntDir>
-    <TargetName>blz_model_sample</TargetName>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</IntDir>
+    <TargetName>smplmdl</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\blzmdlsmplsta\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\blzmdlsmplsta\</IntDir>
-    <TargetName>blz_model_sample</TargetName>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</IntDir>
+    <TargetName>smplmdl</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\blzmdlsmplsta\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\blzmdlsmplsta\</IntDir>
-    <TargetName>blz_model_sample</TargetName>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</IntDir>
+    <TargetName>smplmdl</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\blzmdlsmplsta\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\blzmdlsmplsta\</IntDir>
-    <TargetName>blz_model_sample</TargetName>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</IntDir>
+    <TargetName>smplmdl</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\public\c;..\contrib\pthread;..\contrib\sqlite</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;BLZ_DMODEL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -117,7 +117,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\public\c;..\contrib\pthread;..\contrib\sqlite</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;BLZ_DMODEL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -137,7 +137,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\public\c;..\contrib\pthread;..\contrib\sqlite</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;BLZ_DMODEL_EXPORTS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -159,7 +159,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\src;..\src\crlib;..\public\cpp;..\public\c;..\contrib\pthread;..\contrib\sqlite</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;BLZ_DMODEL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
