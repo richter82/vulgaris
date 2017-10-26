@@ -1,4 +1,4 @@
 -lang JAVA
 -I "../../sample_vlg_model"
--O "../../../../jblaze/src/vlg_model_sample"
+-O "../../../../vlg4j/src/smplmdl"
 -F "vlg_model_sample.vlg"
