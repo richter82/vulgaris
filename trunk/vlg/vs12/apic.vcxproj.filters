@@ -58,5 +58,8 @@
     <ClInclude Include="..\public\c\vlg_c_subscription.h">
       <Filter>h</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\vlg.h">
+      <Filter>h</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

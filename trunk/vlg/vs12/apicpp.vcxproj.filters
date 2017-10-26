@@ -44,6 +44,9 @@
     <ClInclude Include="..\public\cpp\vlg_memory.h">
       <Filter>h</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\vlg.h">
+      <Filter>h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\apicpp\vlg_subscription.cpp">

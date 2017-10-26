@@ -30,6 +30,7 @@
     <ClInclude Include="..\public\cpp\vlg_persistence.h" />
     <ClInclude Include="..\public\cpp\vlg_subscription.h" />
     <ClInclude Include="..\public\cpp\vlg_transaction.h" />
+    <ClInclude Include="..\public\vlg.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\apicpp\vlg_connection.cpp" />
