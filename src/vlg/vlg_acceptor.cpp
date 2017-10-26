@@ -178,16 +178,16 @@ vlg::RetCode acceptor::accept(unsigned int new_connid,
     ************************/
     vlg::collector &c = (*new_conn)->get_collector();
     c.retain(*new_conn);
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
-    if((cdrs_res = (*new_conn)->set_connection_established(socket))) {
+    vlg::RetCode rcode = vlg::RetCode_OK;
+    if((rcode = (*new_conn)->set_connection_established(socket))) {
         IFLOG(err(TH_ID, LS_CLO
                   "%s(new_conn:%p) - setting connection established fail with res:%d", __func__,
                   *new_conn,
-                  cdrs_res))
+                  rcode))
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(new_conn:%p, res:%d)", __func__, *new_conn,
-              cdrs_res))
-    return cdrs_res;
+              rcode))
+    return rcode;
 }
 
 }

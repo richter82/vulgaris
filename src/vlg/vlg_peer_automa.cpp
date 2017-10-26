@@ -223,12 +223,12 @@ vlg::RetCode peer_automa::await_for_peer_status_reached_or_outdated(
         IFLOG2(peer_log_, err(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_BADSTTS;
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     while(peer_status_ < test) {
         int pthres;
         if((pthres = peer_mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res =  vlg::RetCode_TIMEOUT;
+                rcode =  vlg::RetCode_TIMEOUT;
                 break;
             }
         }
@@ -237,11 +237,11 @@ vlg::RetCode peer_automa::await_for_peer_status_reached_or_outdated(
     IFLOG2(peer_log_, dbg(TH_ID,
                           LS_CLO "%s(peer_id:%d, res:%d) - test:%d [reached or outdated] current:%d",
                           __func__,
-                          peer_id_, cdrs_res,
+                          peer_id_, rcode,
                           test,
                           peer_status_))
     CHK_CUST_MON_ERR(peer_mon_, unlock)
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode peer_automa::await_for_peer_status_condition(
@@ -259,12 +259,12 @@ vlg::RetCode peer_automa::await_for_peer_status_condition(
                               peer_id_, cond_cllbk))
         return vlg::RetCode_BADSTTS;
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     while(!cond_cllbk(this)) {
         int pthres;
         if((pthres = peer_mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res =  vlg::RetCode_TIMEOUT;
+                rcode =  vlg::RetCode_TIMEOUT;
                 break;
             }
         }
@@ -273,8 +273,8 @@ vlg::RetCode peer_automa::await_for_peer_status_condition(
     IFLOG2(peer_log_, dbg(TH_ID,
                           LS_CLO "%s(peer_id:%d, res:%d) - [condition denoted by this callback:%p has been reached]",
                           __func__,
-                          peer_id_, cdrs_res, cond_cllbk))
-    return cdrs_res;
+                          peer_id_, rcode, cond_cllbk))
+    return rcode;
 }
 
 vlg::RetCode peer_automa::await_for_peer_status_change(PeerStatus
@@ -290,12 +290,12 @@ vlg::RetCode peer_automa::await_for_peer_status_change(PeerStatus
         IFLOG2(peer_log_, err(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_BADSTTS;
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     while(peer_status == peer_status_) {
         int pthres;
         if((pthres = peer_mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res =  vlg::RetCode_TIMEOUT;
+                rcode =  vlg::RetCode_TIMEOUT;
                 break;
             }
         }
@@ -304,10 +304,10 @@ vlg::RetCode peer_automa::await_for_peer_status_change(PeerStatus
     IFLOG2(peer_log_, dbg(TH_ID,
                           LS_CLO "%s(peer_id:%d, res:%d) - status:%d [changed] current:%d", __func__,
                           peer_id_,
-                          cdrs_res, peer_status,
+                          rcode, peer_status,
                           peer_status_))
     CHK_CUST_MON_ERR(peer_mon_, unlock)
-    return cdrs_res;
+    return rcode;
 }
 
 //-----------------------------
@@ -394,10 +394,10 @@ vlg::RetCode peer_automa::stop_peer(bool force_disconnect)
         return vlg::RetCode_BADSTTS;
     }
     force_disconnect_on_stop_ = force_disconnect;
-    vlg::RetCode cdrs_res = set_peer_stop_request();
+    vlg::RetCode rcode = set_peer_stop_request();
     IFLOG2(peer_log_, trc(TH_ID, LS_CLO "%s(peer_id:%d, res:%d)", __func__,
-                          peer_id_, cdrs_res))
-    return cdrs_res;
+                          peer_id_, rcode))
+    return rcode;
 }
 
 //LIFECYCL
@@ -621,18 +621,18 @@ vlg::RetCode peer_automa::set_peer_error()
 vlg::RetCode peer_automa::peer_dying_breath()
 {
     IFLOG2(peer_log_, inf(TH_ID, LS_APL"[DYING BREATH]"))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
-    if((cdrs_res = peer_dying_breath_handler()) == vlg::RetCode_OK) {
+    vlg::RetCode rcode = vlg::RetCode_OK;
+    if((rcode = peer_dying_breath_handler()) == vlg::RetCode_OK) {
         IFLOG2(peer_log_, inf(TH_ID, LS_APL"[DYING BREATH EMITTED]"))
     } else {
         IFLOG2(peer_log_, cri(TH_ID, LS_APL"[DYING BREATH EMITTED][%d]",
                               peer_last_error_))
     }
-    cdrs_res = set_peer_status(PeerStatus_DIED);
-    if(cdrs_res) {
-        IFLOG2(peer_log_, cri(TH_ID, LS_APL"[DYING BREATH FAIL WITH RES:%d]", cdrs_res))
+    rcode = set_peer_status(PeerStatus_DIED);
+    if(rcode) {
+        IFLOG2(peer_log_, cri(TH_ID, LS_APL"[DYING BREATH FAIL WITH RES:%d]", rcode))
     }
-    return cdrs_res;
+    return rcode;
 }
 
 const char *peer_automa::peer_name_usr()

@@ -701,7 +701,7 @@ class p_executor_service_impl {
                                               time_t sec,
                                               long nsec) {
         IFLOG(trc(TH_ID, LS_OPN "%s(id:%d, test:%d)", __func__, id_, test))
-        RetCode cdrs_res = RetCode_OK;
+        RetCode rcode = RetCode_OK;
         mon_.lock();
         if(status_ < PEXEC_SERVICE_STATUS_INIT) {
             mon_.unlock();
@@ -712,17 +712,17 @@ class p_executor_service_impl {
             int pthres;
             if((pthres = mon_.wait(sec, nsec))) {
                 if(pthres == ETIMEDOUT) {
-                    cdrs_res =  RetCode_TIMEOUT;
+                    rcode =  RetCode_TIMEOUT;
                     break;
                 }
             }
         }
         current = status_;
-        IFLOG(log(cdrs_res ? TL_WRN : TL_DBG ,TH_ID, LS_CLO "%s(id:%d, res:%d) - test:%d [reached or outdated] current:%d",
-                  __func__, id_, cdrs_res, test,
+        IFLOG(log(rcode ? TL_WRN : TL_DBG ,TH_ID, LS_CLO "%s(id:%d, res:%d) - test:%d [reached or outdated] current:%d",
+                  __func__, id_, rcode, test,
                   status_))
         mon_.unlock();
-        return cdrs_res;
+        return rcode;
     }
 
     RetCode await_termination() {
@@ -802,7 +802,7 @@ class p_executor_service_impl {
 
     RetCode submit(p_task *task) {
         IFLOG(low(TH_ID, LS_OPN "%s(id:%d, task:%p)", __func__, id_, task))
-        RetCode cdrs_res = RetCode_OK;
+        RetCode rcode = RetCode_OK;
         mon_.lock();
         if(status_ != PEXEC_SERVICE_STATUS_STARTED) {
             task->set_status(PTASK_STATUS_REJECTED);
@@ -810,30 +810,30 @@ class p_executor_service_impl {
             IFLOG(err(TH_ID, LS_CLO "%s", __func__))
             return RetCode_BADSTTS;
         }
-        if((cdrs_res = task_queue_.put(0, 20*MSEC_F, &task))) {
+        if((rcode = task_queue_.put(0, 20*MSEC_F, &task))) {
             task->set_status(PTASK_STATUS_REJECTED);
-            switch(cdrs_res) {
+            switch(rcode) {
                 case RetCode_QFULL:
                 case RetCode_TIMEOUT:
                     IFLOG(wrn(TH_ID, LS_TRL "%s(id:%d) - [queue full]", __func__, id_))
                 case RetCode_PTHERR:
                     IFLOG(cri(TH_ID, LS_TRL "%s(id:%d) - [pthread error]", __func__, id_))
                 default:
-                    IFLOG(err(TH_ID, LS_TRL "%s(id:%d) - RetCode_CODE:%d", __func__, id_, cdrs_res))
+                    IFLOG(err(TH_ID, LS_TRL "%s(id:%d) - RetCode_CODE:%d", __func__, id_, rcode))
             }
         }
         else{
             task->set_status(PTASK_STATUS_SUBMITTED);
         }
         IFLOG(low(TH_ID, LS_TRL "%s() - PUT[res:%d, id:%d, task:%p, qsz:%u, qrm:%u]", __func__,
-                  cdrs_res,
+                  rcode,
                   id_,
                   task,
                   task_queue_.size(),
                   task_queue_.remain_capacity()))
         mon_.unlock();
-        IFLOG(low(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-        return cdrs_res;
+        IFLOG(low(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+        return rcode;
     }
 
     private:

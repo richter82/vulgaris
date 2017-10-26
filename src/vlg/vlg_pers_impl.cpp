@@ -268,16 +268,16 @@ vlg::RetCode persistence_connection_pool::init()
 
 vlg::RetCode persistence_connection_pool::start()
 {
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     persistence_connection_impl *conn = NULL;
     for(unsigned int i=0; i<conn_pool_sz_; i++) {
-        if((cdrs_res = driv_.new_connection(*this, &conn))) {
+        if((rcode = driv_.new_connection(*this, &conn))) {
             break;
         }
         conn_idx_conn_hm_.put(&i, &conn);
         conn->connect();
     }
-    return cdrs_res;
+    return rcode;
 }
 
 persistence_connection_impl *persistence_connection_pool::request_connection()
@@ -340,27 +340,27 @@ persistence_worker::~persistence_worker()
 
 vlg::RetCode persistence_worker::submit_task(persistence_task *task)
 {
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
-    if((cdrs_res = task_queue_.put(&task))) {
+    vlg::RetCode rcode = vlg::RetCode_OK;
+    if((rcode = task_queue_.put(&task))) {
         task->set_status(vlg::PTASK_STATUS_REJECTED);
-        IFLOG(cri(TH_ID, LS_TRL "%s() - [RetCode_CODE:%d]", __func__, cdrs_res))
+        IFLOG(cri(TH_ID, LS_TRL "%s() - [RetCode_CODE:%d]", __func__, rcode))
     } else {
         task->set_status(vlg::PTASK_STATUS_SUBMITTED);
     }
-    return cdrs_res;
+    return rcode;
 }
 
 void *persistence_worker::run()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     vlg::p_task *task = NULL;
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     do {
-        if(!(cdrs_res = task_queue_.get(&task))) {
+        if(!(rcode = task_queue_.get(&task))) {
             task->set_execution_result(task->execute());
             task->set_status(vlg::PTASK_STATUS_EXECUTED);
         } else {
-            IFLOG(cri(TH_ID, LS_CLO "%s(%d) - end", __func__, cdrs_res))
+            IFLOG(cri(TH_ID, LS_CLO "%s(%d) - end", __func__, rcode))
             return (void *)1;
         }
     } while(true);
@@ -421,12 +421,12 @@ vlg::RetCode persistence_connection_impl::connect()
         IFLOG(err(TH_ID, LS_CLO "%s() -  pers-conn bad status:%d", __func__, status_))
         return vlg::RetCode_BADSTTS;
     }
-    vlg::RetCode cdrs_res = do_connect();
-    if(cdrs_res == vlg::RetCode_OK) {
+    vlg::RetCode rcode = do_connect();
+    if(rcode == vlg::RetCode_OK) {
         status_ = PersistenceConnectionStatus_CONNECTED;
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode persistence_connection_impl::create_entity_schema(
@@ -434,7 +434,7 @@ vlg::RetCode persistence_connection_impl::create_entity_schema(
     unsigned int nclass_id)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(mode:%d, nclass_id:%d)", __func__, mode, nclass_id))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     const entity_desc *edesc = NULL;
     if(bem.get_entity_descriptor(nclass_id, &edesc)) {
         IFLOG(err(TH_ID, LS_CLO "%s() - cannot find entity(nclass_id:%d)", __func__,
@@ -448,19 +448,19 @@ vlg::RetCode persistence_connection_impl::create_entity_schema(
     }
     switch(mode) {
         case PersistenceAlteringMode_CREATE_ONLY:
-            cdrs_res = do_create_table(bem, *edesc, false);
+            rcode = do_create_table(bem, *edesc, false);
             break;
         case PersistenceAlteringMode_DROP_IF_EXIST:
-            cdrs_res = do_create_table(bem, *edesc, true);
+            rcode = do_create_table(bem, *edesc, true);
             break;
         case PersistenceAlteringMode_CREATE_OR_UPDATE:
-            cdrs_res = vlg::RetCode_UNSP;
+            rcode = vlg::RetCode_UNSP;
             break;
         default:
-            cdrs_res = vlg::RetCode_BADARG;
+            rcode = vlg::RetCode_BADARG;
     }
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode persistence_connection_impl::create_entity_schema(
@@ -468,7 +468,7 @@ vlg::RetCode persistence_connection_impl::create_entity_schema(
     const entity_desc &edesc)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(mode:%d)", __func__, mode))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     if(!edesc.is_persistent()) {
         IFLOG(err(TH_ID, LS_CLO "%s(nclass_id:%d) - not persistent", __func__,
                   edesc.get_nclass_id()))
@@ -476,19 +476,19 @@ vlg::RetCode persistence_connection_impl::create_entity_schema(
     }
     switch(mode) {
         case PersistenceAlteringMode_CREATE_ONLY:
-            cdrs_res = do_create_table(bem, edesc, false);
+            rcode = do_create_table(bem, edesc, false);
             break;
         case PersistenceAlteringMode_DROP_IF_EXIST:
-            cdrs_res = do_create_table(bem, edesc, true);
+            rcode = do_create_table(bem, edesc, true);
             break;
         case PersistenceAlteringMode_CREATE_OR_UPDATE:
-            cdrs_res = vlg::RetCode_UNSP;
+            rcode = vlg::RetCode_UNSP;
             break;
         default:
-            cdrs_res = vlg::RetCode_BADARG;
+            rcode = vlg::RetCode_BADARG;
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode persistence_connection_impl::load_entity(unsigned short key,
@@ -498,16 +498,16 @@ vlg::RetCode persistence_connection_impl::load_entity(unsigned short key,
                                                       nclass &in_out_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%d)", __func__, key))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     const entity_desc *edesc = in_out_obj.get_entity_descriptor();
     if(!edesc->is_persistent()) {
         IFLOG(err(TH_ID, LS_CLO "(nclass_id:%d) - not persistent", __func__,
                   edesc->get_nclass_id()))
         return vlg::RetCode_BADARG;
     }
-    cdrs_res = do_select(key, bem, ts0_out, ts1_out, in_out_obj);
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    rcode = do_select(key, bem, ts0_out, ts1_out, in_out_obj);
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode persistence_connection_impl::save_entity(const entity_manager
@@ -517,16 +517,16 @@ vlg::RetCode persistence_connection_impl::save_entity(const entity_manager
                                                       const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     const entity_desc *edesc = in_obj.get_entity_descriptor();
     if(!edesc->is_persistent()) {
         IFLOG(err(TH_ID, LS_CLO "%s(nclass_id:%d) - not persistent", __func__,
                   edesc->get_nclass_id()))
         return vlg::RetCode_BADARG;
     }
-    cdrs_res = do_insert(bem, ts0, ts1, in_obj);
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    rcode = do_insert(bem, ts0, ts1, in_obj);
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode persistence_connection_impl::update_entity(unsigned short key,
@@ -536,16 +536,16 @@ vlg::RetCode persistence_connection_impl::update_entity(unsigned short key,
                                                         const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     const entity_desc *edesc = in_obj.get_entity_descriptor();
     if(!edesc->is_persistent()) {
         IFLOG(err(TH_ID, LS_CLO "%s(nclass_id:%d) - not persistent", __func__,
                   edesc->get_nclass_id()))
         return vlg::RetCode_BADARG;
     }
-    cdrs_res = do_update(key, bem, ts0, ts1, in_obj);
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    rcode = do_update(key, bem, ts0, ts1, in_obj);
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode persistence_connection_impl::save_or_update_entity(
@@ -556,19 +556,19 @@ vlg::RetCode persistence_connection_impl::save_or_update_entity(
     const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     const entity_desc *edesc = in_obj.get_entity_descriptor();
     if(!edesc->is_persistent()) {
         IFLOG(err(TH_ID, LS_CLO "%s(nclass_id:%d) - not persistent", __func__,
                   edesc->get_nclass_id()))
         return vlg::RetCode_BADARG;
     }
-    cdrs_res = do_insert(bem, ts0, ts1, in_obj, false);
-    if(cdrs_res) {
-        cdrs_res = do_update(key, bem, ts0, ts1, in_obj);
+    rcode = do_insert(bem, ts0, ts1, in_obj, false);
+    if(rcode) {
+        rcode = do_update(key, bem, ts0, ts1, in_obj);
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode persistence_connection_impl::remove_entity(unsigned short key,
@@ -579,16 +579,16 @@ vlg::RetCode persistence_connection_impl::remove_entity(unsigned short key,
                                                         const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     const entity_desc *edesc = in_obj.get_entity_descriptor();
     if(!edesc->is_persistent()) {
         IFLOG(err(TH_ID, LS_CLO "%s(nclass_id:%d) - not persistent", __func__,
                   edesc->get_nclass_id()))
         return vlg::RetCode_BADARG;
     }
-    cdrs_res = do_delete(key, bem, ts0, ts1, mode, in_obj);
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    rcode = do_delete(key, bem, ts0, ts1, mode, in_obj);
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode persistence_connection_impl::execute_query(const char *sql,
@@ -596,9 +596,9 @@ vlg::RetCode persistence_connection_impl::execute_query(const char *sql,
                                                         persistence_query_impl **query_out)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = do_execute_query(bem, sql, query_out);
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    vlg::RetCode rcode = do_execute_query(bem, sql, query_out);
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode persistence_connection_impl::destroy_query(persistence_query_impl
@@ -606,7 +606,7 @@ vlg::RetCode persistence_connection_impl::destroy_query(persistence_query_impl
                                                         bool release_before_destroy)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     if(query) {
         persistence_connection_impl &conn_ref =  query->get_connection();
         persistence_connection_impl *conn_ptr = &conn_ref;
@@ -619,22 +619,22 @@ vlg::RetCode persistence_connection_impl::destroy_query(persistence_query_impl
             IFLOG(err(TH_ID, LS_TRL
                       "%s(res:%d) - invalid query:%p, should be relased-destroyed using connection:%p",
                       __func__,
-                      cdrs_res, query, conn_ptr))
-            cdrs_res = vlg::RetCode_BADARG;
+                      rcode, query, conn_ptr))
+            rcode = vlg::RetCode_BADARG;
         }
     } else {
-        cdrs_res = vlg::RetCode_BADARG;
+        rcode = vlg::RetCode_BADARG;
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode persistence_connection_impl::execute_statement(const char *sql)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = do_execute_statement(sql);
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    vlg::RetCode rcode = do_execute_statement(sql);
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 //-----------------------------
@@ -684,25 +684,25 @@ vlg::RetCode persistence_query_impl::load_next_entity(unsigned int &ts0_out,
                                                       nclass &out_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     const entity_desc *edesc = out_obj.get_entity_descriptor();
     if(!edesc->is_persistent()) {
         IFLOG(err(TH_ID, LS_CLO "%s(nclass_id:%d) - not persistent", __func__,
                   edesc->get_nclass_id()))
         return vlg::RetCode_BADARG;
     }
-    cdrs_res = conn_.do_next_entity_from_query(this, ts0_out, ts1_out, out_obj);
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    rcode = conn_.do_next_entity_from_query(this, ts0_out, ts1_out, out_obj);
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode persistence_query_impl::release()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
-    cdrs_res = conn_.do_release_query(this);
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    vlg::RetCode rcode = vlg::RetCode_OK;
+    rcode = conn_.do_release_query(this);
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 //-----------------------------
@@ -722,17 +722,17 @@ vlg::RetCode persistence_driver_impl::load_driver_dyna(const char *drvname,
     }
 #ifdef WIN32
     wchar_t w_drvname[VLG_DRV_NAME_LEN] = {0};
-    swprintf(w_drvname, VLG_DRV_NAME_LEN, L"blzdri%hs", drvname);
+    swprintf(w_drvname, VLG_DRV_NAME_LEN, L"drv%hs", drvname);
     void *dynalib = vlg::dynamic_lib_open(w_drvname);
 #endif
 #ifdef __linux
     char slib_name[VLG_DRV_NAME_LEN] = {0};
-    sprintf(slib_name, "libblzdri%s.so", drvname);
+    sprintf(slib_name, "libdrv%s.so", drvname);
     void *dynalib = vlg::dynamic_lib_open(slib_name);
 #endif
 #if defined (__MACH__) || defined (__APPLE__)
     char slib_name[VLG_DRV_NAME_LEN] = {0};
-    sprintf(slib_name, "libblzdri%s.dylib", drvname);
+    sprintf(slib_name, "libdrv%s.dylib", drvname);
     void *dynalib = vlg::dynamic_lib_open(slib_name);
 #endif
     if(!dynalib) {
@@ -797,19 +797,19 @@ unsigned int persistence_driver_impl::get_id() const
 vlg::RetCode persistence_driver_impl::start_all_pools()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     char conn_pool_name[64];
     persistence_connection_pool *conn_pool = NULL;
     conn_pool_hm_.start_iteration();
     while(!conn_pool_hm_.next(conn_pool_name, &conn_pool)) {
-        if((cdrs_res = conn_pool->start())) {
+        if((rcode = conn_pool->start())) {
             IFLOG(cri(TH_ID, LS_TRL "%s() - failed to start conn_pool_name:%s.", __func__,
                       conn_pool_name))
             break;
         }
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode persistence_driver_impl::add_pool(const char *conn_pool_name,
@@ -827,7 +827,7 @@ vlg::RetCode persistence_driver_impl::add_pool(const char *conn_pool_name,
               usr,
               conn_pool_sz,
               conn_pool_th_max_sz))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     persistence_connection_pool *conn_pool = new
     persistence_connection_pool(*this,
                                 url,
@@ -837,8 +837,8 @@ vlg::RetCode persistence_driver_impl::add_pool(const char *conn_pool_name,
                                 conn_pool_th_max_sz);
     conn_pool->init();
     conn_pool_hm_.put(conn_pool_name, &conn_pool);
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode persistence_driver_impl::map_nclassid_to_pool(
@@ -847,43 +847,34 @@ vlg::RetCode persistence_driver_impl::map_nclassid_to_pool(
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(nclass_id:%d, conn_pool_name:%s)", __func__,
               nclass_id, conn_pool_name))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     persistence_connection_pool *conn_pool = NULL;
-    if(!(cdrs_res = conn_pool_hm_.get(conn_pool_name, &conn_pool))) {
+    if(!(rcode = conn_pool_hm_.get(conn_pool_name, &conn_pool))) {
         nclassid_conn_pool_hm_.put(&nclass_id, &conn_pool);
     } else {
         IFLOG(cri(TH_ID, LS_TRL "%s() - conn_pool_name:%s - not defined.", __func__,
                   conn_pool_name))
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 persistence_connection_impl *persistence_driver_impl::available_connection(
     unsigned int nclass_id)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(nclass_id:%d)", __func__, nclass_id))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     persistence_connection_pool *conn_pool = NULL;
     persistence_connection_impl *conn_out = NULL;
-    if(!(cdrs_res = nclassid_conn_pool_hm_.get(&nclass_id, &conn_pool))) {
+    if(!(rcode = nclassid_conn_pool_hm_.get(&nclass_id, &conn_pool))) {
         conn_out = conn_pool->request_connection();
     } else {
         IFLOG(err(TH_ID, LS_TRL "%s() - nclass_id:%d - no connection-pool available.",
                   __func__, nclass_id))
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d, conn_out:%p)", __func__, cdrs_res,
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d, conn_out:%p)", __func__, rcode,
               conn_out))
     return conn_out;
-}
-
-//-----------------------------
-// #VER#
-//-----------------------------
-const char *pers_lib_ver(void)
-{
-    static char str[] = "lib.blzpers.ver.0.0.0.date:" __DATE__;
-    return str;
 }
 
 }

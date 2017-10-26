@@ -140,21 +140,21 @@ vlg::RetCode VLG_COMP_JAVA_VLG_Entity_Ctor(compile_unit &cunit,
 }
 
 /*************************************************************
-java BlazeEntity abstract meths
+java NEntity abstract meths
 **************************************************************/
-#define ABSR_METH_ENT_COPY "public void copy(BlazeEntity out){"
-#define ABSR_METH_ENT_CLONE "public BlazeEntity clone(){"
+#define ABSR_METH_ENT_COPY "public void copy(NEntity out){"
+#define ABSR_METH_ENT_CLONE "public NEntity clone(){"
 #define ABSR_METH_ENT_ISZERO "public boolean isZero(){"
 #define ABSR_METH_ENT_SETZERO "public void setZero(){"
-#define ABSR_METH_ENT_SET "public void set(BlazeEntity in){"
+#define ABSR_METH_ENT_SET "public void set(NEntity in){"
 #define ABSR_METH_ENT_GCOMPVER "public int getCompile_Ver(){"
-#define ABSR_METH_ENT_GENTDSC "public BlazeEntityDesc getEntityDesc(){"
+#define ABSR_METH_ENT_GENTDSC "public NEntityDesc getEntityDesc(){"
 #define ABSR_METH_ENT_PTOBUF "public int printToBuff(StringBuffer buff, boolean print_cname, int mode){"
-#define ABSR_METH_ENT_SER "public int serialize(int enctyp, BlazeEntity prev_image, BlazeByteBuffer out_buf){"
+#define ABSR_METH_ENT_SER "public int serialize(int enctyp, NEntity prev_image, VLGByteBuffer out_buf){"
 
 
 /*************************************************************
-java BlazeClass abstract meths
+java NClass abstract meths
 **************************************************************/
 #define ABSR_METH_GETENTID "public int getClassId(){"
 
@@ -240,7 +240,7 @@ vlg::RetCode ABSR_METH_ENT_CLONE__Body_impl(compile_unit &cunit,
                                             entity_desc_comp &edsc,
                                             FILE *file)
 {
-    fprintf(file, CR_1IND"BlazeEntity ne = new %s();\n", edsc.get_entity_name());
+    fprintf(file, CR_1IND"NClass ne = new %s();\n", edsc.get_entity_name());
     fprintf(file, CR_1IND"ne.set(this);\n");
     fprintf(file, CR_1IND"return ne;\n");
     return vlg::RetCode_OK;
@@ -694,12 +694,12 @@ vlg::RetCode ABSR_METH_ENT_PTOBUF__Body_impl(compile_unit &cunit,
     //class opening curl brace
     fprintf(file, CR_1IND "buff.append(\"{\");\n");
     fprintf(file, CR_1IND "switch(mode){\n");
-    fprintf(file, CR_2IND "case BlazeFramework.VLG_PRINT_MODE_Undef:\n");
-    fprintf(file, CR_2IND "case BlazeFramework.VLG_PRINT_MODE_NotZero:\n");
+    fprintf(file, CR_2IND "case VLGFramework.VLG_PRINT_MODE_Undef:\n");
+    fprintf(file, CR_2IND "case VLGFramework.VLG_PRINT_MODE_NotZero:\n");
     //NOTZERO MODE
     RETURN_IF_NOT_OK(ABSR_METH_ENT_PTOBUF__NotZeroMode(cunit, edsc, file))
     fprintf(file, CR_2IND "break;\n");
-    fprintf(file, CR_2IND "case BlazeFramework.VLG_PRINT_MODE_All:\n");
+    fprintf(file, CR_2IND "case VLGFramework.VLG_PRINT_MODE_All:\n");
     //ALL MODE
     RETURN_IF_NOT_OK(ABSR_METH_ENT_PTOBUF__AllFildMode(cunit, edsc, file))
     fprintf(file, CR_2IND "break;\n");
@@ -722,7 +722,7 @@ vlg::RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
     fprintf(file, CR_3IND"ByteBuffer bb = ByteBuffer.allocate(8);\n");
     fprintf(file, CR_3IND"bb.order(ByteOrder.LITTLE_ENDIAN);\n");
     fprintf(file, CR_3IND"int tlen_offst = out_buf.getPos();\n");
-    fprintf(file, CR_3IND"out_buf.mvPos(BlazeFramework.ENTLN_B_SZ);\n");
+    fprintf(file, CR_3IND"out_buf.mvPos(VLGFramework.ENTLN_B_SZ);\n");
     fprintf(file,
             CR_3IND"tlen = out_buf.getPos();  //we are reserving 4 bytes for total entity len.\n");
     vlg::ascii_string mb_nm;
@@ -752,7 +752,7 @@ vlg::RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
                     } else {
                         //enum  nmemb > 1
                         fprintf(file, CR_4IND"int alen = 0, alen_offst = out_buf.getPos();\n");
-                        fprintf(file, CR_4IND"out_buf.mvPos(BlazeFramework.ARRAY_B_SZ);\n");
+                        fprintf(file, CR_4IND"out_buf.mvPos(VLGFramework.ARRAY_B_SZ);\n");
                         fprintf(file,
                                 CR_4IND"alen = out_buf.getPos();  //we are reserving 4 bytes for array len.\n");
                         fprintf(file, CR_4IND"for(short i=0; i<%s.length; i++){\n",
@@ -769,7 +769,7 @@ vlg::RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
                         fprintf(file, CR_4IND"}\n");
                         fprintf(file, CR_4IND"bb.putInt(out_buf.getPos() - alen).flip();\n");
                         fprintf(file,
-                                CR_4IND"out_buf.putByteBuffer(bb, alen_offst, BlazeFramework.ARRAY_B_SZ);\n"
+                                CR_4IND"out_buf.putByteBuffer(bb, alen_offst, VLGFramework.ARRAY_B_SZ);\n"
                                 CR_4IND"bb.clear();\n");
                     }
                 } else {
@@ -780,7 +780,7 @@ vlg::RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
                     } else {
                         //class, struct  nmemb > 1
                         fprintf(file, CR_4IND"int alen = 0, alen_offst = out_buf.getPos();\n");
-                        fprintf(file, CR_4IND"out_buf.mvPos(BlazeFramework.ARRAY_B_SZ);\n");
+                        fprintf(file, CR_4IND"out_buf.mvPos(VLGFramework.ARRAY_B_SZ);\n");
                         fprintf(file,
                                 CR_4IND"alen = out_buf.getPos();  //we are reserving 4 bytes for array len.\n");
                         fprintf(file, CR_4IND"for(short i=0; i<%s.length; i++){\n",
@@ -795,7 +795,7 @@ vlg::RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
                         fprintf(file, CR_4IND"}\n");
                         fprintf(file, CR_4IND"bb.putInt(out_buf.getPos() - alen).flip();\n");
                         fprintf(file,
-                                CR_4IND"out_buf.putByteBuffer(bb, alen_offst, BlazeFramework.ARRAY_B_SZ);\n"
+                                CR_4IND"out_buf.putByteBuffer(bb, alen_offst, VLGFramework.ARRAY_B_SZ);\n"
                                 CR_4IND"bb.clear();\n");
                     }
                 }
@@ -805,7 +805,7 @@ vlg::RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
             switch(mdsc->get_field_type()) {
                 case Type_BOOL:
                     fprintf(file,
-                            CR_4IND"bb.put(%s ? BlazeFramework.TRUE_BYTE : BlazeFramework.FALSE_BYTE).flip();\n"
+                            CR_4IND"bb.put(%s ? VLGFramework.TRUE_BYTE : VLGFramework.FALSE_BYTE).flip();\n"
                             CR_4IND"out_buf.apndByteBuffer(bb);\n"
                             CR_4IND"bb.clear();\n", mdsc->get_member_name());
                     break;
@@ -871,7 +871,7 @@ vlg::RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
                 vlg::ascii_string zero_val;
                 RETURN_IF_NOT_OK(get_zero_val_for_VLG_TYPE(mdsc->get_field_type(), zero_val))
                 fprintf(file, CR_4IND"int alen = 0, alen_offst = out_buf.getPos();\n");
-                fprintf(file, CR_4IND"out_buf.mvPos(BlazeFramework.ARRAY_B_SZ);\n");
+                fprintf(file, CR_4IND"out_buf.mvPos(VLGFramework.ARRAY_B_SZ);\n");
                 fprintf(file,
                         CR_4IND"alen = out_buf.getPos();  //we are reserving 4 bytes for array len.\n");
                 fprintf(file, CR_4IND"for(short i=0; i<%s.length; i++){\n",
@@ -884,7 +884,7 @@ vlg::RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
                 switch(mdsc->get_field_type()) {
                     case Type_BOOL:
                         fprintf(file,
-                                CR_6IND"bb.put(%s[i] ? BlazeFramework.TRUE_BYTE : BlazeFramework.FALSE_BYTE).flip();\n"
+                                CR_6IND"bb.put(%s[i] ? VLGFramework.TRUE_BYTE : VLGFramework.FALSE_BYTE).flip();\n"
                                 CR_6IND"out_buf.apndByteBuffer(bb);\n"
                                 CR_6IND"bb.clear();\n", mdsc->get_member_name());
                         break;
@@ -923,7 +923,7 @@ vlg::RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
                 fprintf(file, CR_4IND"}\n");
                 fprintf(file, CR_4IND"bb.putInt(out_buf.getPos() - alen).flip();\n");
                 fprintf(file,
-                        CR_4IND"out_buf.putByteBuffer(bb, alen_offst, BlazeFramework.ARRAY_B_SZ);\n"
+                        CR_4IND"out_buf.putByteBuffer(bb, alen_offst, VLGFramework.ARRAY_B_SZ);\n"
                         CR_4IND"bb.clear();\n");
             }
         }
@@ -931,7 +931,7 @@ vlg::RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
     }
     fprintf(file, CR_3IND"bb.putInt(out_buf.getPos() - tlen).flip();\n");
     fprintf(file,
-            CR_3IND"out_buf.putByteBuffer(bb, tlen_offst, BlazeFramework.ENTLN_B_SZ);\n");
+            CR_3IND"out_buf.putByteBuffer(bb, tlen_offst, VLGFramework.ENTLN_B_SZ);\n");
     fprintf(file, CR_3IND"bb.clear();\n");
     return vlg::RetCode_OK;
 }
@@ -946,7 +946,7 @@ vlg::RetCode ABSR_METH_ENT_SER__Body_impl(compile_unit &cunit,
 {
     fprintf(file, CR_1IND"int tlen = 0;\n");
     fprintf(file, CR_1IND"switch(enctyp){\n");
-    fprintf(file, CR_2IND"case BlazeFramework.VLG_CLASS_ENCODE_IndexedNotZero:\n");
+    fprintf(file, CR_2IND"case VLGFramework.VLG_CLASS_ENCODE_IndexedNotZero:\n");
     RETURN_IF_NOT_OK(ABSR_METH_ENT_SER__IndexedNotZero(cunit, edsc, file))
     fprintf(file, CR_3IND"break;\n");
     fprintf(file, CR_2IND"default: return -1;\n");
@@ -964,7 +964,7 @@ vlg::RetCode VLG_COMP_JAVA_VLG_Entity_abs_meths(compile_unit &cunit,
                                                 FILE *file)
 {
     fprintf(file,  "/*****************************************************\n"
-            "BlazeEntity methods\n"
+            "NClass methods\n"
             "*****************************************************/\n");
     fprintf(file,  ABSR_METH_ENT_COPY"\n");
     RETURN_IF_NOT_OK(ABSR_METH_ENT_COPY__Body_impl(cunit, edsc, file))
@@ -1004,7 +1004,7 @@ vlg::RetCode VLG_COMP_JAVA_VLG_Class_abs_meths(compile_unit &cunit,
                                                FILE *file)
 {
     fprintf(file,  "/*****************************************************\n"
-            "BlazeClass methods\n"
+            "NClass methods\n"
             "*****************************************************/\n");
     fprintf(file,  ABSR_METH_GETENTID"\n");
     fprintf(file,  CR_1IND"return %d;\n", edsc.get_entityid());
@@ -1120,7 +1120,7 @@ vlg::RetCode VLG_COMP_JAVA_getter_setter(compile_unit &cunit,
                 fprintf(file, "public void %s(%s val){\n", meth_name.internal_buff(),
                         type_str.internal_buff());
                 fprintf(file,
-                        CR_1IND"BlazeMemberDesc mdsc = getEntityDesc().getMmbrid_mdesc_Map().get((short)%d);\n",
+                        CR_1IND"VLGMemberDesc mdsc = getEntityDesc().getMmbrid_mdesc_Map().get((short)%d);\n",
                         mdsc->get_member_id());
                 fprintf(file,
                         CR_1IND"%s = val.substring(0, Math.min(val.length(), mdsc.getNmemb()));\n",
@@ -1149,7 +1149,7 @@ vlg::RetCode VLG_COMP_JAVA_getter_setter(compile_unit &cunit,
                         fprintf(file, CR_1IND"return %s.getValue() == 0;\n", mdsc->get_member_name());
                     } else {
                         //enum  nmemb > 1
-                        fprintf(file, CR_1IND"for(BlazeEnum e : %s){\n"
+                        fprintf(file, CR_1IND"for(VLGEnum e : %s){\n"
                                 CR_2IND"if(e.getValue() != 0) return false;\n"
                                 CR_1IND"}\n"
                                 CR_1IND"return true;\n", mdsc->get_member_name());
@@ -1161,7 +1161,7 @@ vlg::RetCode VLG_COMP_JAVA_getter_setter(compile_unit &cunit,
                         fprintf(file, CR_1IND"return %s.isZero();\n", mdsc->get_member_name());
                     } else {
                         //class, struct  nmemb > 1
-                        fprintf(file, CR_1IND"for(BlazeEntity e : %s){\n"
+                        fprintf(file, CR_1IND"for(VLGEntity e : %s){\n"
                                 CR_2IND"if(!(e.isZero())) return false;\n"
                                 CR_1IND"}\n"
                                 CR_1IND"return true;\n", mdsc->get_member_name());
@@ -1204,7 +1204,7 @@ vlg::RetCode VLG_COMP_JAVA_rep(compile_unit &cunit,
     fprintf(file,  "/*****************************************************\n"
             "rep.\n"
             "Fields have been declared public to efficiently perform\n"
-            "BlazeEntity.restore() method.\n"
+            "VLGEntity.restore() method.\n"
             "**USE GETTERS AND SETTERS TO ACCESS REP FIELDS.**\n"
             "*****************************************************/\n");
     vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
@@ -1253,13 +1253,13 @@ vlg::RetCode VLG_COMP_JAVA_vlg_import(FILE *file)
 }
 
 /***********************************
-RENDER- VLG_COMP_JAVA_BlzEnum
+RENDER- VLG_COMP_JAVA_VLGEnum
 ***********************************/
-vlg::RetCode VLG_COMP_JAVA_BlzEnum(compile_unit &cunit,
+vlg::RetCode VLG_COMP_JAVA_VLGEnum(compile_unit &cunit,
                                    entity_desc_comp &edsc,
                                    FILE *efile)
 {
-    fprintf(efile, "public class %s extends BlazeEnum{\n", edsc.get_entity_name());
+    fprintf(efile, "public class %s extends VLGEnum{\n", edsc.get_entity_name());
     fprintf(efile, "/*****************************************************\n"
             "Enum values\n"
             "*****************************************************/\n");
@@ -1275,17 +1275,17 @@ vlg::RetCode VLG_COMP_JAVA_BlzEnum(compile_unit &cunit,
 }
 
 /***********************************
-RENDER- VLG_COMP_JAVA_BlzClass
+RENDER- VLG_COMP_JAVA_NClass
 ***********************************/
-vlg::RetCode VLG_COMP_JAVA_BlzClass(compile_unit &cunit,
-                                    entity_desc_comp &edsc,
-                                    FILE *efile)
+vlg::RetCode VLG_COMP_JAVA_NClass(compile_unit &cunit,
+                                  entity_desc_comp &edsc,
+                                  FILE *efile)
 {
-    fprintf(efile, "public class %s extends BlazeClass{\n", edsc.get_entity_name());
+    fprintf(efile, "public class %s extends NClass{\n", edsc.get_entity_name());
     fprintf(efile,  "/*****************************************************\n"
-            "CLASS ID\n"
+            "NClass ID\n"
             "*****************************************************/\n");
-    fprintf(efile, "public static final int %s_CLASS_ID=%u;\n",
+    fprintf(efile, "public static final int %s_NClass_ID=%u;\n",
             edsc.get_entity_name(), edsc.get_entityid());
     RETURN_IF_NOT_OK(VLG_COMP_JAVA_VLG_Entity_Ctor(cunit, edsc, efile))
     RETURN_IF_NOT_OK(put_newline(efile))
@@ -1302,35 +1302,13 @@ vlg::RetCode VLG_COMP_JAVA_BlzClass(compile_unit &cunit,
 }
 
 /***********************************
-RENDER- VLG_COMP_JAVA_BlzStruct
+RENDER- VLG_COMP_JAVA_VLGEntityDesc
 ***********************************/
-vlg::RetCode VLG_COMP_JAVA_BlzStruct(compile_unit &cunit,
-                                     entity_desc_comp &edsc,
-                                     FILE *efile)
-{
-    fprintf(efile, "public class %s extends BlazeStruct{\n",
-            edsc.get_entity_name());
-    RETURN_IF_NOT_OK(put_newline(efile))
-    RETURN_IF_NOT_OK(VLG_COMP_JAVA_VLG_Entity_Ctor(cunit, edsc, efile))
-    RETURN_IF_NOT_OK(put_newline(efile))
-    RETURN_IF_NOT_OK(VLG_COMP_JAVA_VLG_Entity_abs_meths(cunit, edsc, efile))
-    RETURN_IF_NOT_OK(put_newline(efile))
-    RETURN_IF_NOT_OK(VLG_COMP_JAVA_getter_setter(cunit, edsc, efile))
-    RETURN_IF_NOT_OK(put_newline(efile))
-    RETURN_IF_NOT_OK(VLG_COMP_JAVA_rep(cunit, edsc, efile))
-    RETURN_IF_NOT_OK(put_newline(efile))
-    fprintf(efile, "}");
-    return vlg::RetCode_OK;
-}
-
-/***********************************
-RENDER- VLG_COMP_JAVA_BlzEntityDesc
-***********************************/
-vlg::RetCode VLG_COMP_JAVA_BlzEntityDesc(compile_unit &cunit,
+vlg::RetCode VLG_COMP_JAVA_VLGEntityDesc(compile_unit &cunit,
                                          entity_desc_comp &edsc,
                                          FILE *file)
 {
-    fprintf(file,   CR_1IND"BlazeEntityDesc %s_edesc = new BlazeEntityDesc\n"
+    fprintf(file,   CR_1IND"VLGEntityDesc %s_edesc = new VLGEntityDesc\n"
             CR_1IND"(\n"
             CR_2IND"%u, //int entityid\n"
             CR_2IND"%d, //int entitytype\n"
@@ -1350,7 +1328,7 @@ vlg::RetCode VLG_COMP_JAVA_BlzEntityDesc(compile_unit &cunit,
     mmbr_map.start_iteration();
     member_desc_comp *mdsc = NULL;
     while(!mmbr_map.next(NULL, &mdsc)) {
-        fprintf(file,   CR_1IND"BlazeMemberDesc %s_%s_mdesc = new BlazeMemberDesc\n"
+        fprintf(file,   CR_1IND"VLGMemberDesc %s_%s_mdesc = new VLGMemberDesc\n"
                 CR_1IND"(\n"
                 CR_2IND"(short)%u, // short mmbrid\n"
                 CR_2IND"%d, // int mmbr_type\n"
@@ -1386,7 +1364,7 @@ vlg::RetCode VLG_COMP_JAVA_BlzEntityDesc(compile_unit &cunit,
         key_desc_comp *kdesc = NULL;
         while(!kdesc_map.next(NULL, &kdesc)) {
             fprintf(file,
-                    CR_1IND"BlazeKeyDesc %s_%d_kdesc = new BlazeKeyDesc((short)%d, %s);\n",
+                    CR_1IND"VLGKeyDesc %s_%d_kdesc = new VLGKeyDesc((short)%d, %s);\n",
                     edsc.get_entity_name(),
                     kdesc->get_key_id(),
                     kdesc->get_key_id(),
@@ -1452,18 +1430,18 @@ vlg::RetCode VLG_COMP_JAVA_EntryPoint(compile_unit &cunit,
             "*****************************************************/\n");
     fprintf(file, "public final class %s{\n", ep_name.internal_buff());
     RETURN_IF_NOT_OK(put_newline(file))
-    fprintf(file, "private static BlazeEntityManager bem;\n");
+    fprintf(file, "private static VLGEntityManager bem;\n");
     RETURN_IF_NOT_OK(put_newline(file))
-    fprintf(file, "public static BlazeEntityManager getBem(){\n");
+    fprintf(file, "public static VLGEntityManager getBem(){\n");
     fprintf(file, CR_1IND"if(bem != null){\n"
             CR_2IND"return bem;\n"
             CR_1IND"}\n");
-    fprintf(file, CR_1IND"bem = new BlazeEntityManager();\n");
+    fprintf(file, CR_1IND"bem = new VLGEntityManager();\n");
     vlg::hash_map &entitymap = cunit.get_entity_map();
     entitymap.start_iteration();
     entity_desc_comp *edsc = NULL;
     while(!entitymap.next(NULL, &edsc)) {
-        RETURN_IF_NOT_OK(VLG_COMP_JAVA_BlzEntityDesc(cunit, *edsc, file))
+        RETURN_IF_NOT_OK(VLG_COMP_JAVA_VLGEntityDesc(cunit, *edsc, file))
         fprintf(file, CR_1IND"bem.extend(%s_edesc);\n", edsc->get_entity_name());
     }
     fprintf(file, CR_1IND"return bem;\n");
@@ -1499,10 +1477,10 @@ vlg::RetCode compile_Java(compile_unit &cunit)
         RETURN_IF_NOT_OK(put_newline(efile))
         switch(edsc->get_entity_type()) {
             case EntityType_ENUM:
-                RETURN_IF_NOT_OK(VLG_COMP_JAVA_BlzEnum(cunit, *edsc, efile))
+                RETURN_IF_NOT_OK(VLG_COMP_JAVA_VLGEnum(cunit, *edsc, efile))
                 break;
             case EntityType_NCLASS:
-                RETURN_IF_NOT_OK(VLG_COMP_JAVA_BlzClass(cunit, *edsc, efile))
+                RETURN_IF_NOT_OK(VLG_COMP_JAVA_NClass(cunit, *edsc, efile))
                 break;
             default:
                 return vlg::RetCode_KO;

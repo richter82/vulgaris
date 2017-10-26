@@ -68,10 +68,10 @@ class peer_recv_task : public vlg::p_task {
 
         /*this method will be called when this task will be run by an executor*/
         virtual vlg::RetCode execute() {
-            vlg::RetCode cdrs_res = vlg::RetCode_OK;
-            if((cdrs_res = rcvn_peer_.recv_and_route_pkt(conn_, pkt_hdr_, pkt_body_))) {
+            vlg::RetCode rcode = vlg::RetCode_OK;
+            if((rcode = rcvn_peer_.recv_and_route_pkt(conn_, pkt_hdr_, pkt_body_))) {
                 IFLOG(dbg(TH_ID, LS_EXE "[recv task:%d - execution failed - res:%d]", get_id(),
-                          cdrs_res))
+                          rcode))
             } else {
                 IFLOG(trc(TH_ID, LS_EXE "[recv task:%d - executed]", get_id()))
             }
@@ -87,7 +87,7 @@ class peer_recv_task : public vlg::p_task {
                     conn_.set_status(ConnectionStatus_DISCONNECTED);
                 }
             }
-            return cdrs_res;
+            return rcode;
         }
 
     private:
@@ -152,7 +152,7 @@ vlg::RetCode peer_impl::set_params_file_dir(const char *dir)
 vlg::RetCode peer_impl::init_peer()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(peer_id_:%d)", __func__, peer_id_))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     RETURN_IF_NOT_OK(selector_.init(srv_exectrs_,
                                     srv_pkt_q_len_,
                                     cli_exectrs_,
@@ -165,37 +165,37 @@ vlg::RetCode peer_impl::init_peer()
 #elif TARGET_OS_IPHONE
     //dynamic linking not allowed
 #elif TARGET_OS_MAC
-    cdrs_res = init_peer_dyna();
+    rcode = init_peer_dyna();
 #else
 #endif
 #else
-    cdrs_res = init_peer_dyna();
+    rcode = init_peer_dyna();
 #endif
     if(pers_enabled_) {
         IFLOG(dbg(TH_ID, LS_TRL "%s() - loading persistence-configuration..", __func__))
-        if((cdrs_res = pers_mng_.load_cfg())) {
-            if(cdrs_res == vlg::RetCode_IOERR) {
+        if((rcode = pers_mng_.load_cfg())) {
+            if(rcode == vlg::RetCode_IOERR) {
                 IFLOG(wrn(TH_ID, LS_TRL
                           "%s() - no persistence-configuration file available. proceeding anyway.",
                           __func__))
-                cdrs_res = vlg::RetCode_OK;
+                rcode = vlg::RetCode_OK;
             } else {
                 IFLOG(cri(TH_ID, LS_TRL
                           "%s(res:%d) - critical error loading persistence-configuration.", __func__,
-                          cdrs_res))
+                          rcode))
             }
         } else {
             IFLOG(inf(TH_ID, LS_TRL "%s() - persistence configuration loaded.", __func__))
         }
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode peer_impl::init_peer_dyna()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(peer_id_:%d)", __func__, peer_id_))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     IFLOG(dbg(TH_ID, LS_TRL "%s() - extending model..", __func__))
     char model_name[VLG_MDL_NAME_LEN] = {0};
     if(model_map_.size() > 0) {
@@ -211,8 +211,8 @@ vlg::RetCode peer_impl::init_peer_dyna()
                              pers_dri_load_))
         IFLOG(inf(TH_ID, LS_TRL "%s() - persistence drivers loaded.", __func__))
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 selector &peer_impl::get_selector()
@@ -425,25 +425,25 @@ vlg::RetCode peer_impl::next_connid(unsigned int &connid)
 vlg::RetCode peer_impl::extend_model(entity_manager *emng)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(emng:%p)", __func__, emng))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
-    if((cdrs_res = bem_.extend(emng))) {
+    vlg::RetCode rcode = vlg::RetCode_OK;
+    if((rcode = bem_.extend(emng))) {
         IFLOG(cri(TH_ID, LS_MDL "%s(res:%d) - [failed to extend bem]", __func__,
-                  cdrs_res))
+                  rcode))
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(emng:%p)", __func__, emng))
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode peer_impl::extend_model(const char *model_name)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(model:%s)", __func__, model_name))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
-    if((cdrs_res = bem_.extend(model_name))) {
+    vlg::RetCode rcode = vlg::RetCode_OK;
+    if((rcode = bem_.extend(model_name))) {
         IFLOG(cri(TH_ID, LS_MDL "%s(model:%s, res:%d) - [failed to extend bem]",
-                  __func__, model_name, cdrs_res))
+                  __func__, model_name, rcode))
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(model:%s)", __func__, model_name))
-    return cdrs_res;
+    return rcode;
 }
 
 connection_impl *peer_impl::vlg_conn_factory_default(peer_impl &peer,
@@ -491,7 +491,7 @@ vlg::RetCode peer_impl::new_connection(connection_impl **new_connection,
 vlg::RetCode peer_impl::release_connection(connection_impl *connection)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     if(!connection) {
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_BADARG;
@@ -506,7 +506,7 @@ vlg::RetCode peer_impl::release_connection(connection_impl *connection)
         return vlg::RetCode_KO;
     }
     vlg::collector &c = connection->get_collector();
-    if((cdrs_res = c.release(connection)) == vlg::RetCode_MEMNOTR) {
+    if((rcode = c.release(connection)) == vlg::RetCode_MEMNOTR) {
         IFLOG(err(TH_ID, LS_CLO
                   "%s(connection:%p) - [connection not released: refcount not zero]",
                   __func__,
@@ -516,7 +516,7 @@ vlg::RetCode peer_impl::release_connection(connection_impl *connection)
     IFLOG(inf(TH_ID, LS_TRL "%s(connection:%p) - [connection released]", __func__,
               connection))
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode peer_impl::new_incoming_connection_accept(connection_impl
@@ -695,7 +695,7 @@ vlg::RetCode peer_impl::peer_init_usr()
 vlg::RetCode peer_impl::peer_start_usr()
 {
     VLG_ASYNCH_SELECTOR_STATUS current = VLG_ASYNCH_SELECTOR_STATUS_UNDEF;
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     IFLOG(inf(TH_ID, LS_APL"[CALLED VLG_PEER PEERSTART HNDL]"))
     IFLOG(inf(TH_ID, LS_APL"[PEER PERSONALITY: << %s >>]",
               (personality_ == PeerPersonality_BOTH) ? "BOTH" :
@@ -704,10 +704,10 @@ vlg::RetCode peer_impl::peer_start_usr()
     if(personality_ == PeerPersonality_PURE_SERVER ||
             personality_ == PeerPersonality_BOTH) {
         vlg::PEXEC_SERVICE_STATUS current_exc_srv = vlg::PEXEC_SERVICE_STATUS_ZERO;
-        if((cdrs_res = srv_sbs_exec_serv_.start())) {
+        if((rcode = srv_sbs_exec_serv_.start())) {
             IFLOG(cri(TH_ID, LS_CLO "%s() - starting subscription executor service, res:%d",
-                      __func__, cdrs_res))
-            return cdrs_res;
+                      __func__, rcode))
+            return rcode;
         }
         srv_sbs_exec_serv_.await_for_status_reached_or_outdated(
             vlg::PEXEC_SERVICE_STATUS_STARTED, current_exc_srv);
@@ -735,10 +735,10 @@ vlg::RetCode peer_impl::peer_start_usr()
     }
     //persistence driv. end
     IFLOG(dbg(TH_ID, LS_TRL "%s() - start selector thread.", __func__))
-    if((cdrs_res = selector_.on_peer_start_actions())) {
+    if((rcode = selector_.on_peer_start_actions())) {
         IFLOG(err(TH_ID, LS_CLO "%s(res:%d) - selector failed to move started",
-                  __func__, cdrs_res))
-        return cdrs_res;
+                  __func__, rcode))
+        return rcode;
     }
     if((selector_.start())) {
         IFLOG(err(TH_ID, LS_CLO "%s() - selector failed to start", __func__))
@@ -749,20 +749,20 @@ vlg::RetCode peer_impl::peer_start_usr()
                          VLG_ASYNCH_SELECTOR_STATUS_INIT, current,
                          VLG_INT_AWT_TIMEOUT,
                          0))
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode peer_impl::peer_move_running_usr()
 {
     VLG_ASYNCH_SELECTOR_STATUS current = VLG_ASYNCH_SELECTOR_STATUS_UNDEF;
     IFLOG2(peer_log_, inf(TH_ID, LS_APL"[CALLED VLG_PEER MOVE RUNNING HNDL]"))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
-    if((cdrs_res = selector_.on_peer_move_running_actions())) {
+    vlg::RetCode rcode = vlg::RetCode_OK;
+    if((rcode = selector_.on_peer_move_running_actions())) {
         IFLOG(err(TH_ID, LS_CLO "%s(res:%d) - selector failed to move running",
                   __func__,
-                  cdrs_res))
-        return cdrs_res;
+                  rcode))
+        return rcode;
     }
     IFLOG(dbg(TH_ID, LS_TRL "%s() - request selector go ready.", __func__))
     selector_.set_status(VLG_ASYNCH_SELECTOR_STATUS_REQUEST_READY);
@@ -773,13 +773,13 @@ vlg::RetCode peer_impl::peer_move_running_usr()
                          0))
     IFLOG(dbg(TH_ID, LS_TRL "%s() - request selector go selecting.", __func__))
     selector_.set_status(VLG_ASYNCH_SELECTOR_STATUS_REQUEST_SELECT);
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode peer_impl::peer_stop_usr()
 {
     IFLOG(inf(TH_ID, LS_APL"[CALLED VLG_PEER PEERSTOP HNDL]"))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     if(selector_.inco_conn_count() || selector_.outg_conn_count()) {
         if(!force_disconnect_on_stop_) {
             IFLOG(err(TH_ID, LS_CLO "%s() - active connections detected. cannot stop peer.",
@@ -798,8 +798,8 @@ vlg::RetCode peer_impl::peer_stop_usr()
     srv_sbs_exec_serv_.shutdown();
     srv_sbs_exec_serv_.await_termination();
     IFLOG(dbg(TH_ID, LS_TRL "%s() - srv_sbs_exec_serv_ terminated.", __func__))
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode peer_impl::peer_dying_breath_handler()
@@ -818,61 +818,61 @@ vlg::RetCode peer_impl::recv_and_route_pkt(connection_impl &conn,
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sockid:%d, hdr:%p, body:%p)", __func__,
               conn.get_socket(), hdr, body))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     switch(hdr->phdr.pkttyp) {
         case VLG_PKT_TSTREQ_ID:
             /*TEST REQUEST******************************************************************/
-            cdrs_res = conn.recv_test_request(hdr);
+            rcode = conn.recv_test_request(hdr);
             break;
         case VLG_PKT_CONREQ_ID:
             /*CONNECTION REQUEST************************************************************/
-            cdrs_res = conn.recv_connection_request(hdr);
+            rcode = conn.recv_connection_request(hdr);
             break;
         case VLG_PKT_CONRES_ID:
             /*CONNECTION RESPONSE***********************************************************/
-            cdrs_res = conn.recv_connection_response(hdr);
+            rcode = conn.recv_connection_response(hdr);
             break;
         case VLG_PKT_DSCOND_ID:
             /*DISCONNECTED******************************************************************/
-            cdrs_res = conn.recv_disconnection(hdr);
+            rcode = conn.recv_disconnection(hdr);
             break;
         case VLG_PKT_TXRQST_ID:
             /*TRANSACTION REQUEST***********************************************************/
-            cdrs_res = conn.recv_tx_req(hdr, body);
+            rcode = conn.recv_tx_req(hdr, body);
             break;
         case VLG_PKT_TXRESP_ID:
             /*TRANSACTION RESPONSE**********************************************************/
-            cdrs_res = conn.recv_tx_res(hdr, body);
+            rcode = conn.recv_tx_res(hdr, body);
             break;
         case VLG_PKT_SBSREQ_ID:
             /*SUBSCRIPTION REQUEST**********************************************************/
-            cdrs_res = conn.recv_sbs_start_req(hdr);
+            rcode = conn.recv_sbs_start_req(hdr);
             break;
         case VLG_PKT_SBSRES_ID:
             /*SUBSCRIPTION RESPONSE*********************************************************/
-            cdrs_res = conn.recv_sbs_start_res(hdr);
+            rcode = conn.recv_sbs_start_res(hdr);
             break;
         case VLG_PKT_SBSEVT_ID:
             /*SUBSCRIPTION EVENT************************************************************/
-            cdrs_res = conn.recv_sbs_evt(hdr, body);
+            rcode = conn.recv_sbs_evt(hdr, body);
             break;
         case VLG_PKT_SBSACK_ID:
             /*SUBSCRIPTION EVENT ACK********************************************************/
-            cdrs_res = conn.recv_sbs_evt_ack(hdr);
+            rcode = conn.recv_sbs_evt_ack(hdr);
             break;
         case VLG_PKT_SBSTOP_ID:
             /*SUBSCRIPTION STOP REQUEST*****************************************************/
-            cdrs_res = conn.recv_sbs_stop_req(hdr);
+            rcode = conn.recv_sbs_stop_req(hdr);
             break;
         case VLG_PKT_SBSSPR_ID:
             /*SUBSCRIPTION STOP RESPONSE****************************************************/
-            cdrs_res = conn.recv_sbs_stop_res(hdr);
+            rcode = conn.recv_sbs_stop_res(hdr);
             break;
         default:
             break;
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 //-----------------------------
@@ -925,10 +925,10 @@ void per_nclassid_helper_rec::next_time_stamp(unsigned int &ts0,
 vlg::RetCode peer_impl::add_subscriber(subscription_impl *sbsdesc)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     unsigned int nclsid = sbsdesc->nclass_id();
     per_nclassid_helper_rec *sdrec = NULL;
-    if((cdrs_res = srv_sbs_nclassid_condesc_set_.get(&nclsid, &sdrec))) {
+    if((rcode = srv_sbs_nclassid_condesc_set_.get(&nclsid, &sdrec))) {
         if(!(sdrec = new per_nclassid_helper_rec())) {
             IFLOG(cri(TH_ID, LS_CLO "%s - memory", __func__))
             return vlg::RetCode_MEMERR;
@@ -943,34 +943,34 @@ vlg::RetCode peer_impl::add_subscriber(subscription_impl *sbsdesc)
               "%s() - [added subscriber: connid:%d for nclass_id:%d]",
               __func__, sbsdesc->conn_.connid_,
               nclsid))
-    cdrs_res = vlg::RetCode_OK;
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    rcode = vlg::RetCode_OK;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode peer_impl::remove_subscriber(subscription_impl *sbsdesc)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     unsigned int nclsid = sbsdesc->nclass_id();
     per_nclassid_helper_rec *sdrec = NULL;
-    if((cdrs_res = srv_sbs_nclassid_condesc_set_.get(&nclsid, &sdrec))) {
+    if((rcode = srv_sbs_nclassid_condesc_set_.get(&nclsid, &sdrec))) {
         IFLOG(cri(TH_ID, LS_CLO
                   "%s() - [subscriber: connid:%d not found for nclass_id:%d, hash srv_sbs_clssid_condesc_set_]",
                   __func__,
                   sbsdesc->conn_.connid_, nclsid))
         return vlg::RetCode_GENERR;
     }
-    if((cdrs_res = sdrec->get_srv_connid_condesc_set().remove(
-                       &sbsdesc->conn_.connid_, NULL))) {
+    if((rcode = sdrec->get_srv_connid_condesc_set().remove(
+                    &sbsdesc->conn_.connid_, NULL))) {
         IFLOG(cri(TH_ID, LS_CLO
                   "%s() - [subscriber: connid:%d not found for nclass_id:%d, hash srv_connid_condesc_set]",
                   __func__,
                   sbsdesc->conn_.connid_, nclsid))
         return vlg::RetCode_GENERR;
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 //-----------------------------
@@ -987,7 +987,7 @@ class peer_sbs_task;
 struct srv_connid_condesc_set_ashsnd_rud {
     unsigned int    nclass_id;
     peer_sbs_task   *tsk;
-    vlg::RetCode            cdrs_res;
+    vlg::RetCode            rcode;
 };
 
 class peer_sbs_task : public vlg::p_task {
@@ -1014,7 +1014,7 @@ class peer_sbs_task : public vlg::p_task {
                                                           const void      *key,
                                                           const void      *ptr,
                                                           void            *ud) {
-            vlg::RetCode cdrs_res = vlg::RetCode_OK;
+            vlg::RetCode rcode = vlg::RetCode_OK;
             srv_connid_condesc_set_ashsnd_rud *rud =
                 static_cast<srv_connid_condesc_set_ashsnd_rud *>(ud);
             connection_impl *conn = *(connection_impl **)ptr;
@@ -1027,20 +1027,20 @@ class peer_sbs_task : public vlg::p_task {
             IFLOG(trc(TH_ID, LS_EXE "%s() - [connid:%u, conndesc:%p, sbsdesc:%p]", __func__,
                       conn->connid(), conn,
                       sbs_desc))
-            if((cdrs_res = sbs_desc->submit_live_event(&rud->tsk->sbs_evt_))) {
+            if((rcode = sbs_desc->submit_live_event(&rud->tsk->sbs_evt_))) {
                 IFLOG(err(TH_ID, LS_EXE
                           "%s() - [sbs task:%d - asynch event send failed for sbsid:%d - res:%d]",
                           __func__,
                           rud->tsk->get_id(),
                           sbs_desc->sbsid(),
-                          cdrs_res))
-                rud->cdrs_res = cdrs_res;
+                          rcode))
+                rud->rcode = rcode;
             }
         }
 
         /*this method will be called when this task will be run by an executor*/
         virtual vlg::RetCode execute() {
-            vlg::RetCode cdrs_res = vlg::RetCode_OK;
+            vlg::RetCode rcode = vlg::RetCode_OK;
             vlg::collector &c = sbs_evt_.get_collector();
             /*
             External Event Adoption.
@@ -1054,12 +1054,12 @@ class peer_sbs_task : public vlg::p_task {
             srv_connid_condesc_set_ashsnd_rud rud;
             rud.nclass_id = sbs_evt_.get_obj()->get_nclass_id();
             rud.tsk = this;
-            rud.cdrs_res = vlg::RetCode_OK;
+            rud.rcode = vlg::RetCode_OK;
             srv_connid_connection_map_.enum_elements_safe_read(
                 enum_srv_connid_connection_map_ashsnd, &rud);
-            if((rud.cdrs_res)) {
+            if((rud.rcode)) {
                 IFLOG(dbg(TH_ID, LS_EXE "%s() - [sbs task:%d - execution failed - res:%d]",
-                          __func__, get_id(), cdrs_res))
+                          __func__, get_id(), rcode))
             } else {
                 IFLOG(trc(TH_ID, LS_EXE "%s() - [sbs task:%d - executed]", __func__, get_id()))
             }
@@ -1070,7 +1070,7 @@ class peer_sbs_task : public vlg::p_task {
             RELEASE_ID: SBE_SRV_01
             ************************/
             c.release(&sbs_evt_);
-            return cdrs_res;
+            return rcode;
         }
 
         peer_impl &get_peer() {
@@ -1105,25 +1105,25 @@ vlg::RetCode peer_impl::get_per_classid_helper_class(unsigned int nclass_id,
                                                      per_nclassid_helper_rec **out)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     per_nclassid_helper_rec *sdrec = NULL;
-    if((cdrs_res = srv_sbs_nclassid_condesc_set_.get(&nclass_id, &sdrec))) {
+    if((rcode = srv_sbs_nclassid_condesc_set_.get(&nclass_id, &sdrec))) {
         if(!(sdrec = new per_nclassid_helper_rec())) {
             IFLOG(cri(TH_ID, LS_CLO "%s - memory", __func__))
             return vlg::RetCode_MEMERR;
         }
-        if((cdrs_res = sdrec->init())) {
+        if((rcode = sdrec->init())) {
             IFLOG(cri(TH_ID, LS_CLO "%s - init", __func__))
-            return cdrs_res;
+            return rcode;
         }
-        if((cdrs_res = srv_sbs_nclassid_condesc_set_.put(&nclass_id, &sdrec))) {
+        if((rcode = srv_sbs_nclassid_condesc_set_.put(&nclass_id, &sdrec))) {
             IFLOG(cri(TH_ID, LS_CLO "%s - put", __func__))
-            return cdrs_res;
+            return rcode;
         }
     }
     *out = sdrec;
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode peer_impl::build_sbs_event(unsigned int evt_id,
@@ -1136,7 +1136,7 @@ vlg::RetCode peer_impl::build_sbs_event(unsigned int evt_id,
                                         subscription_event_impl **new_sbs_event)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     if((subscription_event_impl::new_instance(new_sbs_event))) {
         IFLOG(cri(TH_ID, LS_CLO "%s - memory", __func__))
         return vlg::RetCode_MEMERR;
@@ -1148,27 +1148,27 @@ vlg::RetCode peer_impl::build_sbs_event(unsigned int evt_id,
     (*new_sbs_event)->set_tmstp1(sbs_tmstp1);
     (*new_sbs_event)->set_act(sbs_act);
     (*new_sbs_event)->set_obj(sbs_data);
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode peer_impl::submit_sbs_evt_task(subscription_event_impl &sbs_evt,
                                             vlg::synch_hash_map &srv_connid_condesc_set)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     vlg::p_task *sbs_tsk = new_sbs_evt_task(sbs_evt, srv_connid_condesc_set);
     if(!sbs_tsk) {
         IFLOG(cri(TH_ID, LS_CLO "%s - memory", __func__))
         return vlg::RetCode_MEMERR;
     }
-    if((cdrs_res = srv_sbs_exec_serv_.submit(sbs_tsk))) {
-        IFLOG(cri(TH_ID, LS_TRL "%s() - submit failed, res:%d.", __func__, cdrs_res))
+    if((rcode = srv_sbs_exec_serv_.submit(sbs_tsk))) {
+        IFLOG(cri(TH_ID, LS_TRL "%s() - submit failed, res:%d.", __func__, rcode))
     } else {
         IFLOG(dbg(TH_ID, LS_TRL "%s() - task sent.", __func__))
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 //-----------------------------
@@ -1176,7 +1176,7 @@ vlg::RetCode peer_impl::submit_sbs_evt_task(subscription_event_impl &sbs_evt,
 //-----------------------------
 const char *PEERLIB_VER(void)
 {
-    static char str[] = "lib.blzpeer.ver.0.0.0.date:" __DATE__;
+    static char str[] = "lib.vlg.ver.0.0.0.date:" __DATE__;
     return str;
 }
 

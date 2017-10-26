@@ -62,52 +62,52 @@ class peer_impl_pub {
 
                 virtual vlg::RetCode peer_load_cfg_usr(int pnum, const char *param,
                                                        const char *value) {
-                    vlg::RetCode cdrs_res = peer_impl::peer_load_cfg_usr(pnum, param, value);
-                    if(cdrs_res) {
-                        return cdrs_res;
+                    vlg::RetCode rcode = peer_impl::peer_load_cfg_usr(pnum, param, value);
+                    if(rcode) {
+                        return rcode;
                     }
                     return publ_.on_load_config(pnum, param, value);
                 }
 
                 virtual vlg::RetCode peer_init_usr() {
-                    vlg::RetCode cdrs_res = peer_impl::peer_init_usr();
-                    if(cdrs_res) {
-                        return cdrs_res;
+                    vlg::RetCode rcode = peer_impl::peer_init_usr();
+                    if(rcode) {
+                        return rcode;
                     }
                     return publ_.on_init();
                 }
 
                 virtual vlg::RetCode peer_start_usr() {
-                    vlg::RetCode cdrs_res = peer_impl::peer_start_usr();
-                    if(cdrs_res) {
-                        return cdrs_res;
+                    vlg::RetCode rcode = peer_impl::peer_start_usr();
+                    if(rcode) {
+                        return rcode;
                     }
                     return publ_.on_starting();
                 }
 
                 virtual vlg::RetCode peer_stop_usr() {
-                    vlg::RetCode cdrs_res = peer_impl::peer_stop_usr();
-                    if(cdrs_res) {
-                        return cdrs_res;
+                    vlg::RetCode rcode = peer_impl::peer_stop_usr();
+                    if(rcode) {
+                        return rcode;
                     }
                     return publ_.on_stopping();
                 }
 
                 virtual vlg::RetCode peer_move_running() {
-                    vlg::RetCode cdrs_res = peer_impl::peer_move_running_usr();
-                    if(cdrs_res) {
-                        return cdrs_res;
+                    vlg::RetCode rcode = peer_impl::peer_move_running_usr();
+                    if(rcode) {
+                        return rcode;
                     }
                     return publ_.on_transit_on_air();
                 }
 
                 virtual vlg::RetCode peer_error_handler() {
-                    vlg::RetCode cdrs_res = peer_impl::peer_error_handler();
-                    if(cdrs_res) {
-                        return cdrs_res;
+                    vlg::RetCode rcode = peer_impl::peer_error_handler();
+                    if(rcode) {
+                        return rcode;
                     }
                     publ_.on_error();
-                    return cdrs_res;
+                    return rcode;
                 }
 
                 virtual vlg::RetCode peer_dying_breath_handler() {

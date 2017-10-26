@@ -178,22 +178,22 @@ vlg::RetCode selector::await_for_status_reached_or_outdated(
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_BADSTTS;
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     while(status_ < test) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res =  vlg::RetCode_TIMEOUT;
+                rcode =  vlg::RetCode_TIMEOUT;
                 break;
             }
         }
     }
     current = status_;
-    IFLOG(log(cdrs_res ? vlg::TL_WRN : vlg::TL_DBG, TH_ID,
+    IFLOG(log(rcode ? vlg::TL_WRN : vlg::TL_DBG, TH_ID,
               LS_CLO "%s(selid:%d) - test:%d [reached or outdated] current:%d", __func__,
               id_, test, status_))
     CHK_MON_ERR_0(unlock)
-    return cdrs_res;
+    return rcode;
 }
 
 void selector::set_srv_sock_addr(sockaddr_in srv_sockaddr_in)
@@ -328,10 +328,10 @@ vlg::RetCode selector::evt_enqueue_and_notify(const selector_event *evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, evt:%p, connid:%u)", __func__, this, evt,
               evt->connid_))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
-    cdrs_res = asynch_notify(evt);
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    vlg::RetCode rcode = vlg::RetCode_OK;
+    rcode = asynch_notify(evt);
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode selector::interrupt()
@@ -446,7 +446,7 @@ vlg::RetCode selector::process_inco_sock_inco_events()
     SOCKET srv_cli_sock = INVALID_SOCKET;
     connection_impl *srv_cli_conn = NULL;
     unsigned int connid = 0;
-    vlg::RetCode cdrs_res = vlg::RetCode_OK, sub_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK, sub_res = vlg::RetCode_OK;
     //**** HANDLE INCOMING EVENTS BEGIN****
     if(sel_res_) {
         srv_incoming_sock_map_.start_iteration();
@@ -470,7 +470,7 @@ vlg::RetCode selector::process_inco_sock_inco_events()
                 vlg_hdr_rec *pkt_hdr = new vlg_hdr_rec();
                 DECLINITH_GBB(pkt_body, VLG_RECV_BUFF_SZ)
                 //read data from socket.
-                if(!(cdrs_res = srv_cli_conn->recv_single_pkt(pkt_hdr, pkt_body))) {
+                if(!(rcode = srv_cli_conn->recv_single_pkt(pkt_hdr, pkt_body))) {
                     vlg::p_task *task = NULL;
                     pkt_body->flip();
                     if((task = peer_.new_peer_recv_task(*srv_cli_conn, pkt_hdr, pkt_body))) {
@@ -515,7 +515,7 @@ vlg::RetCode selector::process_inco_sock_inco_events()
 vlg::RetCode selector::process_sock_outg_events()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     SOCKET write_pending_sock = INVALID_SOCKET;
     connection_impl *wp_conn = NULL;
     write_pending_sockets_.start_iteration();
@@ -531,7 +531,7 @@ vlg::RetCode selector::process_sock_outg_events()
                 SET_ERROR_AND_RETURRetCodeKO_ACT
             }
             //read data from socket.
-            if((cdrs_res = wp_conn->send_single_pkt(sending_pkt))) {
+            if((rcode = wp_conn->send_single_pkt(sending_pkt))) {
                 IFLOG(err(TH_ID, LS_TRL
                           "%s(sockid:%d, connid:%d) - failed sending packet on this writepending socket.",
                           __func__,
@@ -565,7 +565,7 @@ vlg::RetCode selector::process_outg_sock_inco_events()
     connection_impl *outg_conn = NULL;
     vlg::p_task *task = NULL;
     unsigned int connid = 0;
-    vlg::RetCode cdrs_res = vlg::RetCode_OK, sub_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK, sub_res = vlg::RetCode_OK;
     //**** HANDLE INCOMING EVENTS BEGIN****
     //EARLY CONNECTIONS
     if(sel_res_) {
@@ -587,7 +587,7 @@ vlg::RetCode selector::process_outg_sock_inco_events()
                 vlg_hdr_rec *pkt_hdr = new vlg_hdr_rec();
                 DECLINITH_GBB(pkt_body, VLG_RECV_BUFF_SZ)
                 //read data from socket.
-                if(!(cdrs_res = outg_conn->recv_single_pkt(pkt_hdr, pkt_body))) {
+                if(!(rcode = outg_conn->recv_single_pkt(pkt_hdr, pkt_body))) {
                     pkt_body->flip();
                     if((task = peer_.new_peer_recv_task(*outg_conn, pkt_hdr, pkt_body))) {
                         IFLOG(trc(TH_ID, LS_TRL
@@ -642,7 +642,7 @@ vlg::RetCode selector::process_outg_sock_inco_events()
                 vlg_hdr_rec *pkt_hdr = new vlg_hdr_rec();
                 DECLINITH_GBB(pkt_body, VLG_RECV_BUFF_SZ)
                 //read data from socket.
-                if(!(cdrs_res = outg_conn->recv_single_pkt(pkt_hdr, pkt_body))) {
+                if(!(rcode = outg_conn->recv_single_pkt(pkt_hdr, pkt_body))) {
                     pkt_body->flip();
                     if((task = peer_.new_peer_recv_task(*outg_conn, pkt_hdr, pkt_body))) {
                         IFLOG(trc(TH_ID, LS_TRL
@@ -919,13 +919,13 @@ inline vlg::RetCode selector::manage_disconnect_conn(
     selector_event *conn_evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     vlg::grow_byte_buffer *sending_pkt = NULL;
     if(conn_evt->conn_->pkt_snd_q().get(&sending_pkt)) {
         IFLOG(cri(TH_ID, LS_CLO "%s() - reading from queue.", __func__))
         SET_ERROR_AND_RETURRetCodeKO_ACT
     }
-    if((cdrs_res = conn_evt->conn_->send_single_pkt(sending_pkt))) {
+    if((rcode = conn_evt->conn_->send_single_pkt(sending_pkt))) {
         IFLOG(err(TH_ID, LS_TRL "%s(sockid:%d) - failed sending disconnection packet.",
                   __func__,
                   conn_evt->conn_->get_socket()))
@@ -940,23 +940,23 @@ inline vlg::RetCode selector::manage_disconnect_conn(
     conn_evt->conn_->notify_for_connectivity_result(
         ConnectivityEventResult_OK,
         ConnectivityEventType_APPLICATIVE);
-    IFLOG(trc(TH_ID, LS_CLO "%s%s", __func__, "(res:%d)", cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s%s", __func__, "(res:%d)", rcode))
+    return rcode;
 }
 
 
 inline vlg::RetCode selector::add_early_outg_conn(selector_event *conn_evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     vlg::grow_byte_buffer *sending_pkt = NULL;
-    if((cdrs_res = conn_evt->conn_->establish_connection(conn_evt->saddr_))) {
+    if((rcode = conn_evt->conn_->establish_connection(conn_evt->saddr_))) {
         if(conn_evt->conn_->pkt_snd_q().get(&sending_pkt)) {
             IFLOG(cri(TH_ID, LS_CLO "%s() - reading from queue.", __func__))
             SET_ERROR_AND_RETURRetCodeKO_ACT
         }
         delete sending_pkt;
-        return cdrs_res;
+        return rcode;
     }
     if(conn_evt->conn_->set_socket_blocking_mode(false)) {
         IFLOG(cri(TH_ID, LS_CLO "%s() - setting socket not blocking.", __func__))
@@ -967,11 +967,11 @@ inline vlg::RetCode selector::add_early_outg_conn(selector_event *conn_evt)
         IFLOG(cri(TH_ID, LS_CLO "%s() - reading from queue.", __func__))
         SET_ERROR_AND_RETURRetCodeKO_ACT
     }
-    if((cdrs_res = conn_evt->conn_->send_single_pkt(sending_pkt))) {
+    if((rcode = conn_evt->conn_->send_single_pkt(sending_pkt))) {
         IFLOG(err(TH_ID, LS_TRL "%s(sockid:%d) - failed sending conn-req packet.",
                   __func__, new_conn_socket))
         delete sending_pkt;
-        return cdrs_res;
+        return rcode;
     }
     delete sending_pkt;
     if(cli_early_outgoing_sock_map_.put(&new_conn_socket, &conn_evt->conn_)) {
@@ -979,8 +979,8 @@ inline vlg::RetCode selector::add_early_outg_conn(selector_event *conn_evt)
                   __func__))
         SET_ERROR_AND_RETURRetCodeKO_ACT
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 inline vlg::RetCode selector::promote_early_outg_conn(connection_impl *conn)
@@ -1190,7 +1190,7 @@ vlg::RetCode selector::server_socket_shutdown()
 vlg::RetCode selector::stop_and_clean()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     connection_impl *conn = NULL;
     if(peer_.personality_ == PeerPersonality_PURE_SERVER ||
             peer_.personality_ == PeerPersonality_BOTH) {
@@ -1268,8 +1268,8 @@ vlg::RetCode selector::stop_and_clean()
     FD_ZERO(&read_FDs_);
     FD_ZERO(&write_FDs_);
     FD_ZERO(&excep_FDs_);
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 void *selector::run()
