@@ -199,7 +199,7 @@ vlg::RetCode persistence_manager_impl::load_pers_driver_dyna(
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(drivers:%p, drivers_num:%d)", __func__, drivers,
               drivers_num))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     for(int i = 0; i < drivers_num; i++) {
         if(!get_instance().drivname_driv_hm_.contains_key(drivers[i])) {
             IFLOG(wrn(TH_ID, LS_TRL "%s() - driver already loaded, skipping:%s", __func__,
@@ -207,42 +207,42 @@ vlg::RetCode persistence_manager_impl::load_pers_driver_dyna(
             continue;
         }
         persistence_driver_impl *driv = NULL;
-        if((cdrs_res = persistence_driver_impl::load_driver_dyna(drivers[i], &driv))) {
+        if((rcode = persistence_driver_impl::load_driver_dyna(drivers[i], &driv))) {
             IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - failed loading driver:%s", __func__,
-                      cdrs_res, drivers[i]))
-            return cdrs_res;
+                      rcode, drivers[i]))
+            return rcode;
         }
         RETURN_IF_NOT_OK(get_instance().drivname_driv_hm_.put(drivers[i], &driv))
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode persistence_manager_impl::load_pers_driver_dyna(
     vlg::hash_map &drivmap)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(drivers_num:%d)", __func__, drivmap.size()))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     char driv_name[VLG_DRV_NAME_LEN] = {0};
     drivmap.start_iteration();
     while(!drivmap.next(driv_name, NULL)) {
         persistence_driver_impl *driv = NULL;
-        if((cdrs_res = persistence_driver_impl::load_driver_dyna(driv_name, &driv))) {
+        if((rcode = persistence_driver_impl::load_driver_dyna(driv_name, &driv))) {
             IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - failed loading driver:%s", __func__,
-                      cdrs_res, driv_name))
-            return cdrs_res;
+                      rcode, driv_name))
+            return rcode;
         }
         RETURN_IF_NOT_OK(get_instance().drivname_driv_hm_.put(driv_name, &driv))
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode persistence_manager_impl::load_pers_driver(persistence_driver_impl
                                                         *drivers[], int drivers_num)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(drivers_num:%d)", __func__, drivers_num))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     for(int i = 0; i < drivers_num; i++) {
         if(!get_instance().drivname_driv_hm_.contains_key(
                     drivers[i]->get_driver_name())) {
@@ -253,8 +253,8 @@ vlg::RetCode persistence_manager_impl::load_pers_driver(persistence_driver_impl
         RETURN_IF_NOT_OK(get_instance().drivname_driv_hm_.put(
                              drivers[i]->get_driver_name(), &drivers[i]))
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 persistence_manager_impl::persistence_manager_impl() :
@@ -290,19 +290,19 @@ vlg::RetCode persistence_manager_impl::map_classid_driver(
 vlg::RetCode persistence_manager_impl::start_all_drivers()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     char driv_name[64];
     persistence_driver_impl *driver = NULL;
     drivname_driv_hm_.start_iteration();
     while(!drivname_driv_hm_.next(driv_name, &driver)) {
-        if((cdrs_res = driver->start_all_pools())) {
+        if((rcode = driver->start_all_pools())) {
             IFLOG(cri(TH_ID, LS_TRL "%s() - failed to start pers-driver:%s", __func__,
                       driv_name))
             break;
         }
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 persistence_driver_impl *persistence_manager_impl::available_driver(
@@ -611,14 +611,14 @@ vlg::RetCode persistence_manager_impl::load_cfg(const char *filename)
 vlg::RetCode persistence_manager_impl::load_cfg()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s()", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     if(strlen(pers_cfg_file_path_name)) {
-        cdrs_res = load_cfg(pers_cfg_file_path_name);
+        rcode = load_cfg(pers_cfg_file_path_name);
     } else {
-        cdrs_res = load_cfg("perscfg");
+        rcode = load_cfg("perscfg");
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 }

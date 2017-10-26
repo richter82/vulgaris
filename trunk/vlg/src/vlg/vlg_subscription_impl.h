@@ -369,7 +369,7 @@ class subscription_impl : public vlg::collectable {
 
     private:
         SubscriptionResponse        sbresl_;         //set by srv - start/stop
-        ProtocolCode                last_blzcod_;    //set by srv
+        ProtocolCode                last_vlgcod_;    //set by srv
 
         //--asynch evt notify
         subscription_evt_notify_hndlr   sen_hndl_;

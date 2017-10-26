@@ -304,7 +304,7 @@ subscription_impl::subscription_impl(connection_impl &conn) :
     open_tmstp0_(0),
     open_tmstp1_(0),
     sbresl_(SubscriptionResponse_UNDEFINED),
-    last_blzcod_(ProtocolCode_SUCCESS),
+    last_vlgcod_(ProtocolCode_SUCCESS),
     sen_hndl_(NULL),
     sen_hndl_ud_(NULL),
     cli_evt_sts_(VLG_SBS_Evt_Undef),
@@ -592,23 +592,23 @@ vlg::RetCode subscription_impl::await_for_status_reached_or_outdated(
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_BADSTTS;
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     while(status_ < test) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res =  vlg::RetCode_TIMEOUT;
+                rcode =  vlg::RetCode_TIMEOUT;
                 break;
             }
         }
     }
     current = status_;
-    IFLOG(log(cdrs_res ? vlg::TL_WRN : vlg::TL_DBG, TH_ID,
+    IFLOG(log(rcode ? vlg::TL_WRN : vlg::TL_DBG, TH_ID,
               LS_CLO "%s(ptr:%p, res:%d) - test:%d [reached or outdated] current:%d",
-              __func__, this, cdrs_res,
+              __func__, this, rcode,
               test, status_))
     CHK_MON_ERR_0(unlock)
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode subscription_impl::await_for_start_result(
@@ -625,29 +625,29 @@ vlg::RetCode subscription_impl::await_for_start_result(
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_BADSTTS;
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     while(!start_stop_evt_occur_) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res =  vlg::RetCode_TIMEOUT;
+                rcode =  vlg::RetCode_TIMEOUT;
                 break;
             }
         }
     }
     sbs_start_result = sbresl_;
-    sbs_start_protocode = last_blzcod_;
-    IFLOG(log(cdrs_res ? vlg::TL_WRN : vlg::TL_DBG, TH_ID, LS_CLO
+    sbs_start_protocode = last_vlgcod_;
+    IFLOG(log(rcode ? vlg::TL_WRN : vlg::TL_DBG, TH_ID, LS_CLO
               "%s(ptr:%p, res:%d, status:%d) - [subscription start result available] - sbs_start_result:%d, sbs_start_protocode:%d",
               __func__,
               this,
-              cdrs_res,
+              rcode,
               status_,
               sbresl_,
-              last_blzcod_))
+              last_vlgcod_))
     start_stop_evt_occur_ = false;
     CHK_MON_ERR_0(unlock)
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode subscription_impl::await_for_stop_result(SubscriptionResponse
@@ -663,29 +663,29 @@ vlg::RetCode subscription_impl::await_for_stop_result(SubscriptionResponse
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_BADSTTS;
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     while(!start_stop_evt_occur_) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res =  vlg::RetCode_TIMEOUT;
+                rcode =  vlg::RetCode_TIMEOUT;
                 break;
             }
         }
     }
     sbs_stop_result = sbresl_;
-    sbs_stop_protocode = last_blzcod_;
-    IFLOG(log(cdrs_res ? vlg::TL_WRN : vlg::TL_DBG, TH_ID, LS_CLO
+    sbs_stop_protocode = last_vlgcod_;
+    IFLOG(log(rcode ? vlg::TL_WRN : vlg::TL_DBG, TH_ID, LS_CLO
               "%s(ptr:%p, res:%d, status:%d) - [subscription stop result available] - sbs_stop_result:%d, sbs_stop_protocode:%d",
               __func__,
               this,
-              cdrs_res,
+              rcode,
               status_,
               sbresl_,
-              last_blzcod_))
+              last_vlgcod_))
     start_stop_evt_occur_ = false;
     CHK_MON_ERR_0(unlock)
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode subscription_impl::notify_for_start_stop_result()
@@ -716,20 +716,20 @@ vlg::RetCode subscription_impl::start()
     vlg::collector &c = get_collector();
     c.retain(this);
 
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     reqid_ = conn_.next_reqid();
     vlg::synch_hash_map &reqid_sbs_map = conn_.reqid_sbs_map();
     subscription_impl *self = this;
-    if((cdrs_res = reqid_sbs_map.put(&reqid_, &self))) {
-        IFLOG(cri(TH_ID, LS_CLO "%s() - hash put, res:%d", __func__, cdrs_res))
-        return cdrs_res;
+    if((rcode = reqid_sbs_map.put(&reqid_, &self))) {
+        IFLOG(cri(TH_ID, LS_CLO "%s() - hash put, res:%d", __func__, rcode))
+        return rcode;
     }
-    if((cdrs_res = send_start_request())) {
+    if((rcode = send_start_request())) {
         IFLOG(err(TH_ID, LS_TRL "%s() - send request failed, res:%d", __func__,
-                  cdrs_res))
+                  rcode))
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode subscription_impl::start(SubscriptionType sbscr_type,
@@ -753,7 +753,7 @@ vlg::RetCode subscription_impl::start(SubscriptionType sbscr_type,
               nclass_id,
               start_timestamp_0,
               start_timestamp_1))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     if(status_ != SubscriptionStatus_INITIALIZED &&
             status_ != SubscriptionStatus_STOPPED) {
         IFLOG(err(TH_ID, LS_CLO "%s() - [status:%d]", __func__, status_))
@@ -767,9 +767,9 @@ vlg::RetCode subscription_impl::start(SubscriptionType sbscr_type,
     nclassid_ = nclass_id;
     open_tmstp0_ = start_timestamp_0;
     open_tmstp1_ = start_timestamp_1;
-    cdrs_res = start();
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    rcode = start();
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode subscription_impl::stop()
@@ -779,7 +779,7 @@ vlg::RetCode subscription_impl::stop()
         IFLOG(err(TH_ID, LS_CLO "%s() - [status:%d]", __func__, status_))
         return vlg::RetCode_BADSTTS;
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     if(!initial_query_ended_) {
         if(initial_query_) {
             initial_query_->release();
@@ -795,12 +795,12 @@ vlg::RetCode subscription_impl::stop()
     RETURN_IF_NOT_OK(conn_.pkt_snd_q().put(&gbb))
     selector_event *evt = new selector_event(
         VLG_SELECTOR_Evt_SendPacket, &conn_);
-    cdrs_res = peer_.get_selector().evt_enqueue_and_notify(evt);
-    if(cdrs_res) {
+    rcode = peer_.get_selector().evt_enqueue_and_notify(evt);
+    if(rcode) {
         set_status(SubscriptionStatus_ERROR);
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, rcode))
+    return rcode;
 }
 
 // VLG_SUBSCRIPTION SENDING METHS
@@ -808,7 +808,7 @@ vlg::RetCode subscription_impl::stop()
 vlg::RetCode subscription_impl::send_start_request()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     set_req_sent();
     start_stop_evt_occur_ = false;
     DECLINITH_GBB(gbb, VLG_BUFF_DEF_SZ)
@@ -827,20 +827,20 @@ vlg::RetCode subscription_impl::send_start_request()
     RETURN_IF_NOT_OK(conn_.pkt_snd_q().put(&gbb))
     selector_event *evt = new selector_event(
         VLG_SELECTOR_Evt_SendPacket, &conn_);
-    if((cdrs_res = peer_.get_selector().evt_enqueue_and_notify(evt))) {
+    if((rcode = peer_.get_selector().evt_enqueue_and_notify(evt))) {
         set_status(SubscriptionStatus_ERROR);
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, rcode))
+    return rcode;
 }
 
 vlg::RetCode subscription_impl::send_start_response()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     DECLINITH_GBB(gbb, VLG_BUFF_DEF_SZ)
     build_PKT_SBSRES(sbresl_,
-                     last_blzcod_,
+                     last_vlgcod_,
                      reqid_,
                      sbsid_,
                      gbb);
@@ -848,19 +848,19 @@ vlg::RetCode subscription_impl::send_start_response()
     RETURN_IF_NOT_OK(conn_.pkt_snd_q().put(&gbb))
     selector_event *evt = new selector_event(
         VLG_SELECTOR_Evt_SendPacket, &conn_);
-    cdrs_res = peer_.get_selector().evt_enqueue_and_notify(evt);
-    if(cdrs_res) {
+    rcode = peer_.get_selector().evt_enqueue_and_notify(evt);
+    if(rcode) {
         set_status(SubscriptionStatus_ERROR);
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, rcode))
+    return rcode;
 }
 
 vlg::RetCode subscription_impl::send_event(const subscription_event_impl
                                            *sbs_evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, sbs_evt:%p)", __func__, this, sbs_evt))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     DECLINITH_GBB(gbb, VLG_BUFF_DEF_SZ)
     build_PKT_SBSEVT(sbsid_,
                      sbs_evt->sbs_evttype_,
@@ -886,18 +886,18 @@ vlg::RetCode subscription_impl::send_event(const subscription_event_impl
     set_sbs_to_ack_evt_id(sbs_evt->sbs_evtid_);
     IFLOG(dbg(TH_ID, LS_SBS"[sbsid:[%d] - sbs event[%u] set to ack]", sbsid_,
               srv_sbs_to_ack_evtid_))
-    cdrs_res = peer_.get_selector().evt_enqueue_and_notify(evt);
-    if(cdrs_res) {
+    rcode = peer_.get_selector().evt_enqueue_and_notify(evt);
+    if(rcode) {
         set_status(SubscriptionStatus_ERROR);
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, rcode))
+    return rcode;
 }
 
 vlg::RetCode subscription_impl::send_event_ack()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     DECLINITH_GBB(gbb, VLG_BUFF_DEF_SZ)
     build_PKT_SBSACK(sbsid_,
                      cli_last_evt_->sbs_evtid_,
@@ -906,12 +906,12 @@ vlg::RetCode subscription_impl::send_event_ack()
     RETURN_IF_NOT_OK(conn_.pkt_snd_q().put(&gbb))
     selector_event *evt = new selector_event(
         VLG_SELECTOR_Evt_SendPacket, &conn_);
-    cdrs_res = peer_.get_selector().evt_enqueue_and_notify(evt);
-    if(cdrs_res) {
+    rcode = peer_.get_selector().evt_enqueue_and_notify(evt);
+    if(rcode) {
         set_status(SubscriptionStatus_ERROR);
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, rcode))
+    return rcode;
 }
 
 // VLG_SUBSCRIPTION ASYNCH SENDING
@@ -920,27 +920,27 @@ vlg::RetCode subscription_impl::store_sbs_evt_srv_asynch(subscription_event_impl
                                                          *evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, evt:%p)", __func__, this, evt))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     vlg::ascii_string pkey;
     vlg::blocking_queue *classkeyvalue_inst_evt_q = NULL;
     sbs_event_wrapper *sev_wrpr = NULL;
     if(evt->get_evttype() == SubscriptionEventType_LIVE) {
         //class instance.
         evt->get_obj()->primary_key_string_value(&pkey);
-        if((cdrs_res = srv_sbs_classkey_evt_q_hm_.get(pkey.internal_buff(),
-                                                      &classkeyvalue_inst_evt_q))) {
+        if((rcode = srv_sbs_classkey_evt_q_hm_.get(pkey.internal_buff(),
+                                                   &classkeyvalue_inst_evt_q))) {
             //not found.
             classkeyvalue_inst_evt_q =
                 new vlg::blocking_queue(vlg::sngl_ptr_obj_mng());
             classkeyvalue_inst_evt_q->init();
 
-            if((cdrs_res = srv_sbs_classkey_evt_q_hm_.put(pkey.internal_buff(),
-                                                          &classkeyvalue_inst_evt_q))) {
+            if((rcode = srv_sbs_classkey_evt_q_hm_.put(pkey.internal_buff(),
+                                                       &classkeyvalue_inst_evt_q))) {
                 IFLOG(cri(TH_ID, LS_CLO
                           "%s(res:%d) - failed to put into srv_sbs_classkey_evt_q_hm_",
                           __func__,
-                          cdrs_res))
-                return cdrs_res;
+                          rcode))
+                return rcode;
             } else {
                 IFLOG(trc(TH_ID, LS_TRL
                           "%s() - put into srv_sbs_classkey_evt_q_hm_ {%p} - [key:%s]",
@@ -954,19 +954,19 @@ vlg::RetCode subscription_impl::store_sbs_evt_srv_asynch(subscription_event_impl
                       classkeyvalue_inst_evt_q, pkey.internal_buff()))
         }
         if(flotyp_ == SubscriptionFlowType_LAST) {
-            if((cdrs_res = classkeyvalue_inst_evt_q->peek(0, 0, &sev_wrpr))) {
+            if((rcode = classkeyvalue_inst_evt_q->peek(0, 0, &sev_wrpr))) {
                 //not found.
                 if(!(sev_wrpr = new sbs_event_wrapper(evt))) {
                     IFLOG(cri(TH_ID, LS_CLO "%s - memory", __func__))
                     return vlg::RetCode_MEMERR;
                 }
-                if((cdrs_res = classkeyvalue_inst_evt_q->put(&sev_wrpr))) {
+                if((rcode = classkeyvalue_inst_evt_q->put(&sev_wrpr))) {
                     IFLOG(cri(TH_ID, LS_CLO
                               "%s(res:%d) - event:[%u] - failed to put sev_wrpr:%p into classkeyvalue_inst_evt_q",
                               __func__,
-                              cdrs_res, evt->get_evtid(),
+                              rcode, evt->get_evtid(),
                               sev_wrpr))
-                    return cdrs_res;
+                    return rcode;
                 } else {
                     IFLOG(trc(TH_ID, LS_TRL
                               "%s() - event:[%u] - put sev_wrpr:%p into classkeyvalue_inst_evt_q - [key:%s]",
@@ -975,14 +975,14 @@ vlg::RetCode subscription_impl::store_sbs_evt_srv_asynch(subscription_event_impl
                               sev_wrpr,
                               pkey.internal_buff()))
                 }
-                if((cdrs_res = srv_sbs_evt_glob_q_.put(&sev_wrpr))) {
+                if((rcode = srv_sbs_evt_glob_q_.put(&sev_wrpr))) {
                     IFLOG(cri(TH_ID, LS_CLO
                               "%s(res:%d) - event:[%u] - failed to put sev_wrpr:%p into srv_sbs_evt_glob_q_",
                               __func__,
-                              cdrs_res,
+                              rcode,
                               evt->get_evtid(),
                               sev_wrpr))
-                    return cdrs_res;
+                    return rcode;
                 } else {
                     IFLOG(trc(TH_ID, LS_TRL
                               "%s() - event:[%u] - put sev_wrpr:%p into srv_sbs_evt_glob_q_ - [key:%s]",
@@ -1008,22 +1008,22 @@ vlg::RetCode subscription_impl::store_sbs_evt_srv_asynch(subscription_event_impl
                 IFLOG(cri(TH_ID, LS_CLO "%s - memory", __func__))
                 return vlg::RetCode_MEMERR;
             }
-            if((cdrs_res = classkeyvalue_inst_evt_q->put(&sev_wrpr))) {
+            if((rcode = classkeyvalue_inst_evt_q->put(&sev_wrpr))) {
                 IFLOG(cri(TH_ID, LS_CLO
                           "%s(res:%d) - failed to put sev_wrpr:%p into classkeyvalue_inst_evt_q",
-                          __func__, cdrs_res,
+                          __func__, rcode,
                           sev_wrpr))
-                return cdrs_res;
+                return rcode;
             } else {
                 IFLOG(trc(TH_ID, LS_TRL "%s() - put sev_wrpr:%p into classkeyvalue_inst_evt_q",
                           __func__, sev_wrpr))
             }
-            if((cdrs_res = srv_sbs_evt_glob_q_.put(&sev_wrpr))) {
+            if((rcode = srv_sbs_evt_glob_q_.put(&sev_wrpr))) {
                 IFLOG(cri(TH_ID, LS_CLO
                           "%s(res:%d) - failed to put sev_wrpr:%p into srv_sbs_evt_glob_q_", __func__,
-                          cdrs_res,
+                          rcode,
                           sev_wrpr))
-                return cdrs_res;
+                return rcode;
             } else {
                 IFLOG(trc(TH_ID, LS_TRL "%s() - put sev_wrpr:%p into srv_sbs_evt_glob_q_",
                           __func__, sev_wrpr))
@@ -1036,23 +1036,23 @@ vlg::RetCode subscription_impl::store_sbs_evt_srv_asynch(subscription_event_impl
             IFLOG(cri(TH_ID, LS_CLO "%s", __func__))
             return vlg::RetCode_MEMERR;
         }
-        if((cdrs_res = srv_sbs_evt_glob_q_.put(&sev_wrpr))) {
+        if((rcode = srv_sbs_evt_glob_q_.put(&sev_wrpr))) {
             IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - failed to put into srv_sbs_evt_glob_q_",
-                      __func__, cdrs_res))
-            return cdrs_res;
+                      __func__, rcode))
+            return rcode;
         }
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, rcode))
+    return rcode;
 }
 
 vlg::RetCode subscription_impl::consume_sbs_evt_srv_asynch(
     subscription_event_impl **evt_out)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, evt_out:%p)", __func__, this, evt_out))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     sbs_event_wrapper *sev_wrpr_1 = NULL, *sev_wrpr_2 = NULL;
-    if(!(cdrs_res = srv_sbs_evt_glob_q_.get(0, 0, &sev_wrpr_1))) {
+    if(!(rcode = srv_sbs_evt_glob_q_.get(0, 0, &sev_wrpr_1))) {
         vlg::ascii_string pkey;
         sev_wrpr_1->get_evt()->get_obj()->primary_key_string_value(&pkey);
         IFLOG(trc(TH_ID, LS_TRL "%s() - new event[%u] available. - [key:%s]",
@@ -1062,14 +1062,14 @@ vlg::RetCode subscription_impl::consume_sbs_evt_srv_asynch(
         if(sev_wrpr_1->get_evt()->get_evttype() ==
                 SubscriptionEventType_LIVE) {
             vlg::blocking_queue *classkeyvalue_inst_evt_q = NULL;
-            if(!(cdrs_res = srv_sbs_classkey_evt_q_hm_.get(pkey.internal_buff(),
-                                                           &classkeyvalue_inst_evt_q))) {
-                if(!(cdrs_res = classkeyvalue_inst_evt_q->get(0, 0, &sev_wrpr_2))) {
+            if(!(rcode = srv_sbs_classkey_evt_q_hm_.get(pkey.internal_buff(),
+                                                        &classkeyvalue_inst_evt_q))) {
+                if(!(rcode = classkeyvalue_inst_evt_q->get(0, 0, &sev_wrpr_2))) {
                     if(sev_wrpr_1 != sev_wrpr_2) { //check for same obj.
                         IFLOG(cri(TH_ID, LS_CLO
                                   "%s(res:%d) - inconsistence: [sev_wrpr_1:%p != sev_wrpr_2:%p] - [key:%s] - [clsskeyval_q:%p] - aborting.",
                                   __func__,
-                                  cdrs_res, sev_wrpr_1, sev_wrpr_2, pkey.internal_buff(),
+                                  rcode, sev_wrpr_1, sev_wrpr_2, pkey.internal_buff(),
                                   classkeyvalue_inst_evt_q))
                         return vlg::RetCode_GENERR;
                     }
@@ -1078,7 +1078,7 @@ vlg::RetCode subscription_impl::consume_sbs_evt_srv_asynch(
                     IFLOG(cri(TH_ID, LS_CLO
                               "%s(res:%d) - failed to get sev_wrpr_2 from classkeyvalue_inst_evt_q - [key:%s] - aborting",
                               __func__,
-                              cdrs_res, pkey.internal_buff()))
+                              rcode, pkey.internal_buff()))
                     return vlg::RetCode_GENERR;
                 }
             } else {
@@ -1086,7 +1086,7 @@ vlg::RetCode subscription_impl::consume_sbs_evt_srv_asynch(
                 IFLOG(cri(TH_ID, LS_CLO
                           "%s(res:%d) - failed to get event from srv_sbs_classkey_evt_q_hm_ - [key:%s] - aborting",
                           __func__,
-                          cdrs_res, pkey.internal_buff()))
+                          rcode, pkey.internal_buff()))
                 return vlg::RetCode_GENERR;
             }
         }
@@ -1100,9 +1100,9 @@ vlg::RetCode subscription_impl::consume_sbs_evt_srv_asynch(
     } else {
         IFLOG(trc(TH_ID, LS_TRL "%s() - no new event available.", __func__))
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d, *evt_out:%p)", __func__, cdrs_res,
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d, *evt_out:%p)", __func__, rcode,
               &evt_out))
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode subscription_impl::accept_event(subscription_event_impl *sbs_evt)
@@ -1117,8 +1117,8 @@ vlg::RetCode subscription_impl::submit_live_event(subscription_event_impl
               __func__,
               this,
               sbs_evt))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
-    if((cdrs_res = accept_event(sbs_evt))) {
+    vlg::RetCode rcode = vlg::RetCode_OK;
+    if((rcode = accept_event(sbs_evt))) {
         IFLOG(trc(TH_ID, LS_TRL
                   "%s() - unauthorized event:[%d] skipped for subscriber[%d].",
                   __func__,
@@ -1131,7 +1131,7 @@ vlg::RetCode subscription_impl::submit_live_event(subscription_event_impl
             IFLOG(trc(TH_ID, LS_TRL "%s() - send new live event:[%d].",
                       __func__,
                       sbs_evt->sbs_evtid_))
-            if((cdrs_res = send_event(sbs_evt))) {
+            if((rcode = send_event(sbs_evt))) {
                 IFLOG(err(TH_ID, LS_TRL "%s() - new live event:[%d] failed to send.",
                           __func__,
                           sbs_evt->sbs_evtid_))
@@ -1142,15 +1142,15 @@ vlg::RetCode subscription_impl::submit_live_event(subscription_event_impl
                       "%s() - an event:[%d], has not been ack by client yet, storing new live event:[%d].",
                       __func__,
                       srv_sbs_to_ack_evtid_, sbs_evt->sbs_evtid_))
-            if((cdrs_res = store_sbs_evt_srv_asynch(sbs_evt))) {
+            if((rcode = store_sbs_evt_srv_asynch(sbs_evt))) {
                 IFLOG(cri(TH_ID, LS_TRL "%s() - event storing failed:[%d].", __func__,
-                          cdrs_res))
+                          rcode))
             }
         }
         pthread_rwlock_unlock(&lock_srv_sbs_rep_asynch_);
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, rcode))
+    return rcode;
 }
 
 // VLG_SUBSCRIPTION RECVING METHS
@@ -1166,23 +1166,23 @@ vlg::RetCode subscription_impl::receive_event(const vlg_hdr_rec *pkt_hdr,
               pkt_body,
               sbs_evt))
 
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     if(sbs_evt->get_evttype() != SubscriptionEventType_DOWNLOAD_END) {
         nclass *nobj = NULL;
-        if((cdrs_res = bem_.new_class_instance(nclass_id(), &nobj))) {
+        if((rcode = bem_.new_class_instance(nclass_id(), &nobj))) {
             IFLOG(cri(TH_ID,
                       LS_SBS"[sbs event receive failed - new class fail:%d, nclass_id:%d, aborting]",
-                      cdrs_res, nclass_id()))
-            return cdrs_res;
+                      rcode, nclass_id()))
+            return rcode;
         } else {
             vlg::collector &c = nobj->get_collector();
             c.retain(nobj);
         }
         sbs_evt->set_obj_on_event_receive(nobj);
-        if((cdrs_res = nobj->restore(&bem_, enctyp_, pkt_body))) {
+        if((rcode = nobj->restore(&bem_, enctyp_, pkt_body))) {
             IFLOG(cri(TH_ID,
                       LS_SBS"[sbs event receive failed - class restore fail:%d, nclass_id:%d]",
-                      cdrs_res,
+                      rcode,
                       nclass_id()))
         } else {
             IFLOG(inf_class(TH_ID,
@@ -1193,19 +1193,19 @@ vlg::RetCode subscription_impl::receive_event(const vlg_hdr_rec *pkt_hdr,
         }
     }
 
-    if((cdrs_res = cli_evt_q_.put(&sbs_evt))) {
-        switch(cdrs_res) {
+    if((rcode = cli_evt_q_.put(&sbs_evt))) {
+        switch(rcode) {
             case vlg::RetCode_QFULL:
             case vlg::RetCode_TIMEOUT:
                 IFLOG(cri(TH_ID, LS_CLO "%s() - queue full.", __func__))
             case vlg::RetCode_PTHERR:
                 IFLOG(cri(TH_ID, LS_CLO "%s() - pthread error.", __func__))
             default:
-                IFLOG(cri(TH_ID, LS_CLO "%s() - RetCode_CODE:%d", __func__, cdrs_res))
+                IFLOG(cri(TH_ID, LS_CLO "%s() - RetCode_CODE:%d", __func__, rcode))
         }
     }
     mon_.lock();
-    if(!cdrs_res) {
+    if(!rcode) {
         cli_last_evt_ = sbs_evt;
         evt_ready();
         if(sen_hndl_) {
@@ -1216,8 +1216,8 @@ vlg::RetCode subscription_impl::receive_event(const vlg_hdr_rec *pkt_hdr,
         }
     }
     mon_.unlock();
-    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, rcode))
+    return rcode;
 }
 
 /*Server only*/
@@ -1226,37 +1226,37 @@ vlg::RetCode subscription_impl::receive_event_ack(const vlg_hdr_rec *hdr)
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     IFLOG(dbg(TH_ID, LS_SBS"[sbsid:[%d] - sbs event[%u] ack received]", sbsid_,
               srv_sbs_to_ack_evtid_))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     pthread_rwlock_wrlock(&lock_srv_sbs_rep_asynch_);
     set_sbs_last_ack_evt_id();
     subscription_event_impl *sbs_evt = NULL;
     if(!initial_query_ended_) {
-        cdrs_res = submit_dwnl_event();
+        rcode = submit_dwnl_event();
     }
     /***********************************
-     if cdrs_res == OK initial query has ended.
-     if cdrs_res == RetCode_ENMEND initial query has ended now.
+     if rcode == OK initial query has ended.
+     if rcode == RetCode_ENMEND initial query has ended now.
      in both cases we must check for pending live events.
     ***********************************/
-    if((!cdrs_res || cdrs_res == vlg::RetCode_ENMEND) &&
-            !(cdrs_res = consume_sbs_evt_srv_asynch(&sbs_evt))) {
+    if((!rcode || rcode == vlg::RetCode_ENMEND) &&
+            !(rcode = consume_sbs_evt_srv_asynch(&sbs_evt))) {
         //there is a new event to send.
         IFLOG(trc(TH_ID, LS_TRL
                   "%s() - last event:[%d], has been ack by client, there is a new stored event to send:[%d].",
                   __func__,
                   srv_sbs_last_ack_evtid_,
                   sbs_evt->sbs_evtid_))
-        if((cdrs_res = send_event(sbs_evt))) {
+        if((rcode = send_event(sbs_evt))) {
             IFLOG(err(TH_ID, LS_TRL "%s() - new event:[%d] failed to send.",
                       __func__,
                       sbs_evt->sbs_evtid_))
         }
-    } else if(cdrs_res == vlg::RetCode_EMPTY) {
+    } else if(rcode == vlg::RetCode_EMPTY) {
         IFLOG(trc(TH_ID, LS_TRL
                   "%s() - last event:[%d], has been ack by client, no new event to send.",
                   __func__,
                   srv_sbs_last_ack_evtid_))
-        cdrs_res = vlg::RetCode_OK;
+        rcode = vlg::RetCode_OK;
     }
     pthread_rwlock_unlock(&lock_srv_sbs_rep_asynch_);
     if(sbs_evt) {
@@ -1266,32 +1266,32 @@ vlg::RetCode subscription_impl::receive_event_ack(const vlg_hdr_rec *hdr)
         ************************/
         c.release(sbs_evt);
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, rcode))
+    return rcode;
 }
 
 /*Server only*/
 vlg::RetCode subscription_impl::submit_dwnl_event()
 {
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     per_nclassid_helper_rec *sdr = NULL;
     subscription_event_impl *new_dwnl_sbs_event = NULL;
     const entity_manager &bem = peer_.get_em();
     nclass *dwnl_obj = NULL;
     unsigned int ts0 = 0, ts1 = 0;
-    if((cdrs_res = peer_.get_per_classid_helper_class(nclassid_, &sdr))) {
+    if((rcode = peer_.get_per_classid_helper_class(nclassid_, &sdr))) {
         IFLOG(cri(TH_ID, LS_CLO "%s() - failed get per-nclass_id helper class [res:%d]",
-                  __func__, cdrs_res))
-        return cdrs_res;
+                  __func__, rcode))
+        return rcode;
     }
     //we need to newinstance here because we do not know if query has ended here.
     bem.new_class_instance(nclassid_, &dwnl_obj);
     vlg::collector &c = dwnl_obj->get_collector();
     c.retain(dwnl_obj);
 
-    if((cdrs_res = initial_query_->load_next_entity(ts0, ts1,
-                                                    *dwnl_obj)) == vlg::RetCode_DBROW) {
+    if((rcode = initial_query_->load_next_entity(ts0, ts1,
+                                                 *dwnl_obj)) == vlg::RetCode_DBROW) {
         RETURN_IF_NOT_OK(peer_.build_sbs_event(sdr->next_sbs_evt_id(),
                                                SubscriptionEventType_DOWNLOAD,
                                                ProtocolCode_SUCCESS,
@@ -1305,7 +1305,7 @@ vlg::RetCode subscription_impl::submit_dwnl_event()
         ************************/
         vlg::collector &c1 = new_dwnl_sbs_event->get_collector();
         c1.retain(new_dwnl_sbs_event);
-        if((cdrs_res = accept_event(new_dwnl_sbs_event))) {
+        if((rcode = accept_event(new_dwnl_sbs_event))) {
             IFLOG(trc(TH_ID, LS_TRL
                       "%s() - unauthorized event:[%d] skipped for subscriber[%d].",
                       __func__,
@@ -1316,7 +1316,7 @@ vlg::RetCode subscription_impl::submit_dwnl_event()
                       __func__,
                       new_dwnl_sbs_event->sbs_evtid_))
 
-            if((cdrs_res = send_event(new_dwnl_sbs_event))) {
+            if((rcode = send_event(new_dwnl_sbs_event))) {
                 IFLOG(err(TH_ID, LS_TRL "%s() - new dwnl event:[%d] failed to send.",
                           __func__,
                           new_dwnl_sbs_event->sbs_evtid_))
@@ -1326,10 +1326,10 @@ vlg::RetCode subscription_impl::submit_dwnl_event()
         RELEASE_ID: SBE_SRV_03
         ************************/
         c1.release(new_dwnl_sbs_event);
-    } else if(cdrs_res == vlg::RetCode_QRYEND) {
+    } else if(rcode == vlg::RetCode_QRYEND) {
         IFLOG(dbg(TH_ID, LS_TRL "%s(res:%d) - initial query has ended.",
                   __func__,
-                  cdrs_res))
+                  rcode))
 
         RETURN_IF_NOT_OK(peer_.build_sbs_event(sdr->next_sbs_evt_id(),
                                                SubscriptionEventType_DOWNLOAD_END,
@@ -1348,7 +1348,7 @@ vlg::RetCode subscription_impl::submit_dwnl_event()
         IFLOG(trc(TH_ID, LS_TRL "%s() - send dwnl-end event:[%d].", __func__,
                   new_dwnl_sbs_event->sbs_evtid_))
 
-        if((cdrs_res = send_event(new_dwnl_sbs_event))) {
+        if((rcode = send_event(new_dwnl_sbs_event))) {
             IFLOG(err(TH_ID, LS_TRL "%s() - dwnl-end event:[%d] failed to send.", __func__,
                       new_dwnl_sbs_event->sbs_evtid_))
         }
@@ -1356,29 +1356,29 @@ vlg::RetCode subscription_impl::submit_dwnl_event()
         RELEASE_ID: SBE_SRV_03b
         ************************/
         c1.release(new_dwnl_sbs_event);
-        if(!(cdrs_res = initial_query_->release())) {
+        if(!(rcode = initial_query_->release())) {
             IFLOG(dbg(TH_ID, LS_TRL "%s() - initial query released.", __func__))
         } else {
             IFLOG(cri(TH_ID, LS_TRL "%s(res:%d) - initial query releasing failed.",
-                      __func__, cdrs_res))
+                      __func__, rcode))
         }
         initial_query_ = NULL;
         initial_query_ended_ = true;
     } else {
         IFLOG(cri(TH_ID, LS_TRL "%s(res:%d) - initial query failed.", __func__,
-                  cdrs_res))
+                  rcode))
     }
     c.release(dwnl_obj);
-    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, rcode))
+    return rcode;
 }
 
 vlg::RetCode subscription_impl::execute_initial_query()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     const entity_desc *class_desc = NULL;
-    if(!(cdrs_res = bem_.get_entity_descriptor(nclassid_, &class_desc))) {
+    if(!(rcode = bem_.get_entity_descriptor(nclassid_, &class_desc))) {
         if(class_desc->is_persistent()) {
             persistence_driver_impl *driv = NULL;
             if((driv = peer_.get_pers_mng().available_driver(nclassid_))) {
@@ -1402,47 +1402,47 @@ vlg::RetCode subscription_impl::execute_initial_query()
                         qry_s.append(")");
                     }
                     qry_s.append(';');
-                    cdrs_res = conn->execute_query(qry_s.internal_buff(), peer_.get_em(),
-                                                   &initial_query_);
+                    rcode = conn->execute_query(qry_s.internal_buff(), peer_.get_em(),
+                                                &initial_query_);
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%u",
                               __func__, nclassid_))
-                    cdrs_res = vlg::RetCode_KO;
+                    rcode = vlg::RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-driver for nclass_id:%u",
                           __func__, nclassid_))
-                cdrs_res = vlg::RetCode_KO;
+                rcode = vlg::RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "%s() - class is not persistable. [nclass_id:%u]",
                       __func__, nclassid_))
-            cdrs_res = vlg::RetCode_KO;
+            rcode = vlg::RetCode_KO;
         }
     } else {
         IFLOG(cri(TH_ID, LS_TRL "%s() - class descriptor not found. [nclass_id:%u]",
                   __func__, nclassid_))
     }
-    if(cdrs_res) {
+    if(rcode) {
         initial_query_ended_ = true;
         if(initial_query_) {
             initial_query_->release();
         }
         initial_query_ = NULL;
         IFLOG(err(TH_ID, LS_CLO "%s() - sbsid:[%d] - Initial Query FAILED [res:%d].",
-                  __func__, sbsid_, cdrs_res))
+                  __func__, sbsid_, rcode))
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, rcode))
+    return rcode;
 }
 
 
 vlg::RetCode subscription_impl::safe_submit_dwnl_event()
 {
     pthread_rwlock_wrlock(&lock_srv_sbs_rep_asynch_);
-    vlg::RetCode cdrs_res = submit_dwnl_event();
+    vlg::RetCode rcode = submit_dwnl_event();
     pthread_rwlock_unlock(&lock_srv_sbs_rep_asynch_);
-    return cdrs_res;
+    return rcode;
 }
 
 // VLG_SUBSCRIPTION EVENT MNGMNT
@@ -1453,7 +1453,7 @@ vlg::RetCode subscription_impl::await_for_next_event(
     long nsec)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     CHK_MON_ERR_0(lock)
     if(status_ < SubscriptionStatus_STARTED) {
         CHK_MON_ERR_0(unlock)
@@ -1464,47 +1464,47 @@ vlg::RetCode subscription_impl::await_for_next_event(
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res =  vlg::RetCode_TIMEOUT;
+                rcode =  vlg::RetCode_TIMEOUT;
                 break;
             }
         }
     }
-    if(!cdrs_res) {
-        IFLOG(log(cdrs_res ? vlg::TL_WRN : vlg::TL_DBG, TH_ID,
+    if(!rcode) {
+        IFLOG(log(rcode ? vlg::TL_WRN : vlg::TL_DBG, TH_ID,
                   LS_TRL "%s(ptr:%p) - [event occurred]",
                   __func__,
                   this))
 
-        cdrs_res = consume_event(sbs_evt);
+        rcode = consume_event(sbs_evt);
     }
     CHK_MON_ERR_0(unlock)
-    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, rcode))
+    return rcode;
 }
 
 vlg::RetCode subscription_impl::ack_event()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     CHK_MON_ERR_0(lock)
     if(status_ < SubscriptionStatus_STARTED) {
         CHK_MON_ERR_0(unlock)
         IFLOG(err(TH_ID, LS_CLO "%s() - status[%d]", __func__, status_))
         return vlg::RetCode_BADSTTS;
     }
-    cdrs_res = ack_event_priv();
+    rcode = ack_event_priv();
     CHK_MON_ERR_0(unlock)
     IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d) - [event ack sent]", __func__,
-              this, cdrs_res))
-    return cdrs_res;
+              this, rcode))
+    return rcode;
 }
 
 vlg::RetCode subscription_impl::consume_event(subscription_event_impl **sbs_evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
-    if((cdrs_res = cli_evt_q_.get(sbs_evt))) {
-        switch(cdrs_res) {
+    vlg::RetCode rcode = vlg::RetCode_OK;
+    if((rcode = cli_evt_q_.get(sbs_evt))) {
+        switch(rcode) {
             case vlg::RetCode_EMPTY:
             case vlg::RetCode_TIMEOUT:
                 IFLOG(cri(TH_ID, LS_CLO "%s(ptr:%p) - empty queue.", __func__, this))
@@ -1512,23 +1512,23 @@ vlg::RetCode subscription_impl::consume_event(subscription_event_impl **sbs_evt)
                 IFLOG(cri(TH_ID, LS_CLO "%s(ptr:%p) - pthread error.", __func__, this))
             default:
                 IFLOG(cri(TH_ID, LS_CLO "%s(ptr:%p) - RetCode_CODE:%d", __func__, this,
-                          cdrs_res))
+                          rcode))
         }
     }
-    if(!cdrs_res) {
+    if(!rcode) {
         evt_to_ack();
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d) - [event consumed]",
               __func__,
               this,
-              cdrs_res))
-    return cdrs_res;
+              rcode))
+    return rcode;
 }
 
 vlg::RetCode subscription_impl::ack_event_priv()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     if(cli_evt_sts_ != VLG_SBS_Evt_ToAck || !cli_last_evt_) {
         IFLOG(wrn(TH_ID, LS_CLO "%s() - cli_last_evt_[%p] evt_status[%d]",
                   __func__,
@@ -1536,10 +1536,10 @@ vlg::RetCode subscription_impl::ack_event_priv()
                   cli_evt_sts_))
         return vlg::RetCode_BADSTTS;
     }
-    if((cdrs_res = send_event_ack())) {
+    if((rcode = send_event_ack())) {
         IFLOG(err(TH_ID, LS_TRL "%s() - [event ack sending failed res:%d]",
                   __func__,
-                  cdrs_res))
+                  rcode))
     } else {
         vlg::collector &c = cli_last_evt_->get_collector();
         /************************
@@ -1547,13 +1547,13 @@ vlg::RetCode subscription_impl::ack_event_priv()
         ************************/
         c.release(cli_last_evt_);
         cli_last_evt_ = NULL;
-        if(!cdrs_res) {
+        if(!rcode) {
             evt_reset();
         }
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d) - [event ack sent]", __func__,
-              this, cdrs_res))
-    return cdrs_res;
+              this, rcode))
+    return rcode;
 }
 
 vlg::RetCode subscription_impl::evt_reset()

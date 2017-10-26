@@ -179,7 +179,7 @@ TXRESW WORD RECORD
 ******************************************/
 struct VLG_WRD_TXRESW_REC {
     TransactionResult   txresl;
-    ProtocolCode        blzcod;
+    ProtocolCode        vlgcod;
     bool                rescls;
 };
 
@@ -240,7 +240,7 @@ SBRESW WORD RECORD
 ******************************************/
 struct VLG_WRD_SBRESW_REC {
     SubscriptionResponse    sbresl;
-    ProtocolCode            blzcod;
+    ProtocolCode            vlgcod;
 };
 
 /*****************************************
@@ -263,7 +263,7 @@ SEVTID WORD RECORD
 struct VLG_WRD_SEVTTP_REC {
     SubscriptionEventType   sevttp;
     Action                  sbeact;
-    ProtocolCode            blzcod;
+    ProtocolCode            vlgcod;
 };
 
 /*****************************************
@@ -371,7 +371,7 @@ void build_PKT_TXRQST(TransactionRequestType    txtype,
 
 //TRANSACTION RESPONSE
 void build_PKT_TXRESP(TransactionResult         txresl,
-                      ProtocolCode              blzcod,
+                      ProtocolCode              vlgcod,
                       tx_id                     *txid,
                       bool                      rescls,
                       Encode                    enctyp,
@@ -393,7 +393,7 @@ void build_PKT_SBSREQ(SubscriptionType          sbstyp,
 
 //SUBSCRIPTION RESPONSE
 void build_PKT_SBSRES(SubscriptionResponse      sbresl,
-                      ProtocolCode              blzcod,
+                      ProtocolCode              vlgcod,
                       unsigned int              rqstid,
                       unsigned int              sbsrid,
                       vlg::grow_byte_buffer   *obb);
@@ -402,7 +402,7 @@ void build_PKT_SBSRES(SubscriptionResponse      sbresl,
 void build_PKT_SBSEVT(unsigned int              sbsrid,
                       SubscriptionEventType     sevttp,
                       Action                    sbeact,
-                      ProtocolCode              blzcod,
+                      ProtocolCode              vlgcod,
                       unsigned int              sevtid,
                       unsigned int              tmstp0,
                       unsigned int              tmstp1,
@@ -419,7 +419,7 @@ void build_PKT_SBSTOP(unsigned int              sbsrid,
 
 //SUBSCRIPTION STOP RESPONSE
 void build_PKT_SBSSPR(SubscriptionResponse      sbresl,
-                      ProtocolCode              blzcod,
+                      ProtocolCode              vlgcod,
                       unsigned int              sbsrid,
                       vlg::grow_byte_buffer   *obb);
 

@@ -4,7 +4,6 @@
 
 @define	MID_MYVALUE						57
 @define	MID_ANOTH_DEFINE				107
-@define	MID_BLZ_CLASS_SAMPLE_A_ID		10017
 
 #AN ENUM
 

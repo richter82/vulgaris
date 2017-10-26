@@ -165,14 +165,14 @@ class connection_impl_pub {
         }
 
         vlg::RetCode bind_implernal(peer &p) {
-            vlg::RetCode cdrs_res = vlg::RetCode_OK;
+            vlg::RetCode rcode = vlg::RetCode_OK;
             if(!int_) { //ugly test to detect outgoing/ingoing connection type..
                 connection_impl *c_impl = NULL;
-                if((cdrs_res = p.get_implernal()->new_connection(&c_impl,
-                                                                 vlg_conn_factory_cimpl,
-                                                                 ConnectionType_OUTGOING,
-                                                                 0,
-                                                                 &publ_)) == vlg::RetCode_OK) {
+                if((rcode = p.get_implernal()->new_connection(&c_impl,
+                                                              vlg_conn_factory_cimpl,
+                                                              ConnectionType_OUTGOING,
+                                                              0,
+                                                              &publ_)) == vlg::RetCode_OK) {
                     int_ = c_impl;
                     vlg::collector &c = int_->get_collector();
                     c.retain(int_);
@@ -181,7 +181,7 @@ class connection_impl_pub {
             }
             int_->set_connection_status_change_handler(
                 connection_impl_status_change_hndlr_cimpl, this);
-            return cdrs_res;
+            return rcode;
         }
 
     private:

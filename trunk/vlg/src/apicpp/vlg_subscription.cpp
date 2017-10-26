@@ -296,11 +296,11 @@ class subscription_impl_pub {
         }
 
         vlg::RetCode bind_implernal(connection &conn) {
-            vlg::RetCode cdrs_res = vlg::RetCode_OK;
+            vlg::RetCode rcode = vlg::RetCode_OK;
             if(conn.get_connection_type() == ConnectionType_OUTGOING) {
                 subscription_impl *s_impl = NULL;
-                if((cdrs_res = conn.get_implernal()->new_subscription(&s_impl,
-                                                                      vlg_sbs_factory_simpl, &publ_)) == vlg::RetCode_OK) {
+                if((rcode = conn.get_implernal()->new_subscription(&s_impl,
+                                                                   vlg_sbs_factory_simpl, &publ_)) == vlg::RetCode_OK) {
                     int_ = s_impl;
                     vlg::collector &c = int_->get_collector();
                     c.retain(int_);
@@ -310,7 +310,7 @@ class subscription_impl_pub {
                 subscription_status_change_hndlr_simpl, this);
             int_->set_subscription_event_notify_handler(subscription_evt_notify_hndlr_simpl,
                                                         this);
-            return cdrs_res;
+            return rcode;
         }
 
     private:
@@ -610,9 +610,9 @@ class timpl_subscription_impl_server : public subscription_impl {
         virtual vlg::RetCode accept_event(subscription_event_impl *sbs_evt) {
             subscription_event *publ_evt = new subscription_event();
             publ_evt->get_opaque()->set_sbs_evt(sbs_evt);
-            vlg::RetCode cdrs_res = publ_.on_event_accept(*publ_evt);
+            vlg::RetCode rcode = publ_.on_event_accept(*publ_evt);
             delete publ_evt;
-            return cdrs_res;
+            return rcode;
         }
 
     private:

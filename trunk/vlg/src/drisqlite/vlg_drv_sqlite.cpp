@@ -63,11 +63,10 @@ class key_desc_impl {
         const vlg::linked_list &GetKeyFieldSet() const;
 };
 
-
 //-----------------------------
 // general utils
 //-----------------------------
-const char *SQLITE_TypeStr_From_BLZType(Type type)
+const char *SQLITE_TypeStr_From_VLGType(Type type)
 {
     switch(type) {
         case Type_BOOL:
@@ -668,15 +667,15 @@ class pers_conn_sqlite : public persistence_connection_impl {
                     persistence_connection_pool &pcp = sql_conn_.get_connection_pool();
                     IFLOG(trc(TH_ID, LS_OPN "%s(url:%s, usr:%s, psswd:%s)", __func__, pcp.url(),
                               pcp.user(), pcp.password()))
-                    vlg::RetCode cdrs_res = sql_conn_.sqlite_connect(pcp.url(),
-                                                                     SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
-                    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-                    return cdrs_res;
+                    vlg::RetCode rcode = sql_conn_.sqlite_connect(pcp.url(),
+                                                                  SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
+                    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+                    return rcode;
                 }
 
                 virtual vlg::RetCode do_create_table() {
-                    vlg::RetCode cdrs_res = vlg::RetCode_OK;
-                    if((cdrs_res = sql_conn_.sqlite_exec_stmt(stmt_bf_->internal_buff(), false))) {
+                    vlg::RetCode rcode = vlg::RetCode_OK;
+                    if((rcode = sql_conn_.sqlite_exec_stmt(stmt_bf_->internal_buff(), false))) {
                         if(in_drop_if_exist_) {
                             vlg::ascii_string drop_stmt;
                             RETURN_IF_NOT_OK(drop_stmt.assign("DROP TABLE "))
@@ -684,32 +683,32 @@ class pers_conn_sqlite : public persistence_connection_impl {
                             RETURN_IF_NOT_OK(drop_stmt.append(";"))
                             IFLOG(dbg(TH_ID, LS_STM "%s() - drop_stmt:%s", __func__,
                                       drop_stmt.internal_buff()))
-                            if((cdrs_res = sql_conn_.sqlite_exec_stmt(drop_stmt.internal_buff()))) {
-                                IFLOG(err(TH_ID, LS_CLO "%s(res:%d) - drop failed.", __func__, cdrs_res))
-                                return cdrs_res;
+                            if((rcode = sql_conn_.sqlite_exec_stmt(drop_stmt.internal_buff()))) {
+                                IFLOG(err(TH_ID, LS_CLO "%s(res:%d) - drop failed.", __func__, rcode))
+                                return rcode;
                             }
-                            if((cdrs_res = sql_conn_.sqlite_exec_stmt(stmt_bf_->internal_buff()))) {
+                            if((rcode = sql_conn_.sqlite_exec_stmt(stmt_bf_->internal_buff()))) {
                                 IFLOG(err(TH_ID, LS_CLO "%s(res:%d) - create after drop failed.", __func__,
-                                          cdrs_res))
-                                return cdrs_res;
+                                          rcode))
+                                return rcode;
                             }
                         } else {
-                            IFLOG(err(TH_ID, LS_CLO "%s(res:%d) - create failed.", __func__, cdrs_res))
-                            return cdrs_res;
+                            IFLOG(err(TH_ID, LS_CLO "%s(res:%d) - create failed.", __func__, rcode))
+                            return rcode;
                         }
                     }
-                    return cdrs_res;
+                    return rcode;
                 }
 
                 virtual vlg::RetCode do_select() {
-                    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+                    vlg::RetCode rcode = vlg::RetCode_OK;
                     sqlite3_stmt *stmt = NULL;
-                    if((cdrs_res = sql_conn_.sqlite_prepare_stmt(stmt_bf_->internal_buff(),
-                                                                 &stmt))) {
+                    if((rcode = sql_conn_.sqlite_prepare_stmt(stmt_bf_->internal_buff(),
+                                                              &stmt))) {
                         IFLOG(err(TH_ID, LS_CLO "%s(res:%d) - sqlite_prepare_stmt failed.", __func__,
-                                  cdrs_res))
+                                  rcode))
                     } else {
-                        if(!(cdrs_res = sql_conn_.sqlite_step_stmt(stmt, *sel_rud_->sqlite_rc))) {
+                        if(!(rcode = sql_conn_.sqlite_step_stmt(stmt, *sel_rud_->sqlite_rc))) {
                             if(*sel_rud_->sqlite_rc == SQLITE_ROW) {
                                 const vlg::hash_map &nm_desc =
                                     in_out_obj_->get_entity_descriptor()->get_opaque()->GetMap_NM_MMBRDSC();
@@ -717,105 +716,105 @@ class pers_conn_sqlite : public persistence_connection_impl {
                                                                    in_out_ts1_, NULL);
                                 sel_rud_->stmt = stmt;
                                 nm_desc.enum_elements(enum_mmbrs_fill_entity, sel_rud_);
-                                cdrs_res = vlg::RetCode_DBROW;
+                                rcode = vlg::RetCode_DBROW;
                             } else if(*sel_rud_->sqlite_rc == SQLITE_DONE) {
                                 IFLOG(trc(TH_ID, LS_TRL "%s() - no data.", __func__))
-                                cdrs_res = vlg::RetCode_NODATA;
+                                rcode = vlg::RetCode_NODATA;
                             } else {
                                 IFLOG(err(TH_ID, LS_TRL "%s(rc:%d) - sqlite_step_stmt - unhandled sqlite code.",
                                           __func__, *sel_rud_->sqlite_rc))
-                                cdrs_res = vlg::RetCode_DBERR;
+                                rcode = vlg::RetCode_DBERR;
                             }
-                            vlg::RetCode rels_cdrs_res = vlg::RetCode_OK;
-                            if((rels_cdrs_res = sql_conn_.sqlite_release_stmt(stmt))) {
+                            vlg::RetCode rels_rcode = vlg::RetCode_OK;
+                            if((rels_rcode = sql_conn_.sqlite_release_stmt(stmt))) {
                                 IFLOG(err(TH_ID, LS_TRL "%s(res:%d) - sqlite_release_stmt failed.", __func__,
-                                          rels_cdrs_res))
+                                          rels_rcode))
                             }
                         } else {
                             IFLOG(err(TH_ID, LS_TRL "%s(res:%d) - sqlite_step_stmt failed.", __func__,
-                                      cdrs_res))
+                                      rcode))
                         }
                     }
-                    return cdrs_res;
+                    return rcode;
                 }
 
                 virtual vlg::RetCode do_update() {
-                    vlg::RetCode cdrs_res = vlg::RetCode_OK;
-                    if((cdrs_res = sql_conn_.sqlite_exec_stmt(stmt_bf_->internal_buff()))) {
+                    vlg::RetCode rcode = vlg::RetCode_OK;
+                    if((rcode = sql_conn_.sqlite_exec_stmt(stmt_bf_->internal_buff()))) {
                         IFLOG(err(TH_ID, LS_TRL "%s(res:%d) - sqlite_exec_stmt failed.", __func__,
-                                  cdrs_res))
+                                  rcode))
                     }
-                    return cdrs_res;
+                    return rcode;
                 }
 
                 virtual vlg::RetCode do_delete() {
-                    vlg::RetCode cdrs_res = vlg::RetCode_OK;
-                    if((cdrs_res = sql_conn_.sqlite_exec_stmt(stmt_bf_->internal_buff()))) {
+                    vlg::RetCode rcode = vlg::RetCode_OK;
+                    if((rcode = sql_conn_.sqlite_exec_stmt(stmt_bf_->internal_buff()))) {
                         IFLOG(err(TH_ID, LS_TRL "%s(res:%d) - sqlite_exec_stmt failed.", __func__,
-                                  cdrs_res))
+                                  rcode))
                     }
-                    return cdrs_res;
+                    return rcode;
                 }
 
                 virtual vlg::RetCode do_insert() {
-                    vlg::RetCode cdrs_res = vlg::RetCode_OK;
-                    if((cdrs_res = sql_conn_.sqlite_exec_stmt(stmt_bf_->internal_buff(),
-                                                              in_fail_is_error_))) {
+                    vlg::RetCode rcode = vlg::RetCode_OK;
+                    if((rcode = sql_conn_.sqlite_exec_stmt(stmt_bf_->internal_buff(),
+                                                           in_fail_is_error_))) {
                         if(in_fail_is_error_) {
                             IFLOG(err(TH_ID, LS_TRL "%s(res:%d) - sqlite_exec_stmt failed.", __func__,
-                                      cdrs_res))
+                                      rcode))
                         } else {
                             IFLOG(dbg(TH_ID, LS_TRL "%s(res:%d) - sqlite_exec_stmt failed.", __func__,
-                                      cdrs_res))
+                                      rcode))
                         }
                     }
-                    return cdrs_res;
+                    return rcode;
                 }
 
                 virtual vlg::RetCode do_execute_query() {
-                    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+                    vlg::RetCode rcode = vlg::RetCode_OK;
                     sqlite3_stmt *stmt = NULL;
-                    if((cdrs_res = sql_conn_.sqlite_prepare_stmt(in_sql_, &stmt))) {
+                    if((rcode = sql_conn_.sqlite_prepare_stmt(in_sql_, &stmt))) {
                         IFLOG(err(TH_ID, LS_CLO "%s(res:%d) - sqlite_prepare_stmt failed.", __func__,
-                                  cdrs_res))
-                        return cdrs_res;
+                                  rcode))
+                        return rcode;
                     }
                     in_out_query_ = new pers_query_sqlite(0, sql_conn_, *in_bem_,
                                                           stmt);  //@fixme sanity and id..
-                    return cdrs_res;
+                    return rcode;
                 }
 
                 virtual vlg::RetCode do_release_query() {
                     pers_query_sqlite *qry_sqlite = static_cast<pers_query_sqlite *>(in_out_query_);
-                    vlg::RetCode cdrs_res = sql_conn_.sqlite_release_stmt(
-                                                qry_sqlite->get_sqlite_stmt());
-                    return cdrs_res;
+                    vlg::RetCode rcode = sql_conn_.sqlite_release_stmt(
+                                             qry_sqlite->get_sqlite_stmt());
+                    return rcode;
                 }
 
                 virtual vlg::RetCode do_next_entity_from_query() {
-                    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+                    vlg::RetCode rcode = vlg::RetCode_OK;
                     pers_query_sqlite *qry_sqlite = static_cast<pers_query_sqlite *>(in_out_query_);
-                    if(!(cdrs_res = sql_conn_.sqlite_step_stmt(qry_sqlite->get_sqlite_stmt(),
-                                                               *sel_rud_->sqlite_rc))) {
+                    if(!(rcode = sql_conn_.sqlite_step_stmt(qry_sqlite->get_sqlite_stmt(),
+                                                            *sel_rud_->sqlite_rc))) {
                         if(*sel_rud_->sqlite_rc == SQLITE_ROW) {
                             const vlg::hash_map &nm_desc =
                                 in_out_obj_->get_entity_descriptor()->get_opaque()->GetMap_NM_MMBRDSC();
                             read_timestamp_and_del_from_record(qry_sqlite->get_sqlite_stmt(),
                                                                *sel_rud_->sqlite_rc, in_out_ts0_, in_out_ts1_, NULL);
                             nm_desc.enum_elements(enum_mmbrs_fill_entity, sel_rud_);
-                            cdrs_res = vlg::RetCode_DBROW;
+                            rcode = vlg::RetCode_DBROW;
                         } else if(*sel_rud_->sqlite_rc == SQLITE_DONE) {
-                            cdrs_res = vlg::RetCode_QRYEND;
+                            rcode = vlg::RetCode_QRYEND;
                         } else {
                             IFLOG(err(TH_ID, LS_TRL "%s(rc:%d) - sqlite_step_stmt unhandled sqlite code.",
                                       __func__, *sel_rud_->sqlite_rc))
-                            cdrs_res = vlg::RetCode_DBERR;
+                            rcode = vlg::RetCode_DBERR;
                         }
                     } else {
                         IFLOG(err(TH_ID, LS_TRL "%s(res:%d) - sqlite_step_stmt failed.", __func__,
-                                  cdrs_res))
+                                  rcode))
                     }
-                    return cdrs_res;
+                    return rcode;
                 }
 
                 virtual vlg::RetCode do_execute_statement() {
@@ -844,7 +843,7 @@ vlg::RetCode pers_conn_sqlite::sqlite_connect(const char *filename, int flags)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(id:%d, filename:%s, flags:%d)", __func__, id_,
               filename, flags))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     int last_rc = sqlite3_open_v2(filename, &db_, flags, 0);
     if(last_rc) {
         IFLOG(err(TH_ID, LS_TRL
@@ -852,18 +851,18 @@ vlg::RetCode pers_conn_sqlite::sqlite_connect(const char *filename, int flags)
                   __func__, id_,
                   filename, last_rc, sqlite3_errstr(last_rc)))
         status_ = PersistenceConnectionStatus_ERROR;
-        cdrs_res = vlg::RetCode_DBERR;
+        rcode = vlg::RetCode_DBERR;
     } else {
         status_ = PersistenceConnectionStatus_CONNECTED;
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(id:%d)", __func__, id_))
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode pers_conn_sqlite::sqlite_disconnect()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(id:%d)", __func__, id_))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     int last_rc = sqlite3_close_v2(db_);
     if(last_rc) {
         IFLOG(err(TH_ID, LS_CLO
@@ -871,19 +870,19 @@ vlg::RetCode pers_conn_sqlite::sqlite_disconnect()
                   last_rc,
                   sqlite3_errstr(last_rc)))
         status_ = PersistenceConnectionStatus_ERROR;
-        cdrs_res = vlg::RetCode_DBERR;
+        rcode = vlg::RetCode_DBERR;
     } else {
         status_ = PersistenceConnectionStatus_DISCONNECTED;
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(id:%d)", __func__, id_))
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode pers_conn_sqlite::sqlite_exec_stmt(const char *stmt,
                                                 bool fail_is_error)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(id:%d, stmt:%p)", __func__, id_, stmt))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     char *zErrMsg = 0;
     int last_rc = sqlite3_exec(db_, stmt, 0, 0, &zErrMsg);
     if(last_rc != SQLITE_OK) {
@@ -899,10 +898,10 @@ vlg::RetCode pers_conn_sqlite::sqlite_exec_stmt(const char *stmt,
                       zErrMsg))
         }
         sqlite3_free(zErrMsg);
-        cdrs_res = vlg::RetCode_DBOPFAIL;
+        rcode = vlg::RetCode_DBOPFAIL;
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(id:%d)", __func__, id_))
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode pers_conn_sqlite::sqlite_prepare_stmt(const char *sql_stmt,
@@ -913,24 +912,24 @@ vlg::RetCode pers_conn_sqlite::sqlite_prepare_stmt(const char *sql_stmt,
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_BADARG;
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     int last_rc = sqlite3_prepare_v2(db_, sql_stmt, (int)strlen(sql_stmt), stmt, 0);
     if(last_rc != SQLITE_OK) {
         IFLOG(err(TH_ID, LS_TRL
                   "%s(id:%d) - sqlite3_prepare_v2(rc:%d) - errdesc[%s] - db error.", __func__,
                   id_, last_rc,
                   sqlite3_errstr(last_rc)))
-        cdrs_res = vlg::RetCode_DBERR;
+        rcode = vlg::RetCode_DBERR;
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(id:%d)", __func__, id_))
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode pers_conn_sqlite::sqlite_step_stmt(sqlite3_stmt *stmt,
                                                 int &sqlite_rc)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(stmt:%p)", __func__, stmt))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     if(!stmt) {
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_BADARG;
@@ -941,16 +940,16 @@ vlg::RetCode pers_conn_sqlite::sqlite_step_stmt(sqlite3_stmt *stmt,
                   "%s(id:%d) - sqlite3_step(rc:%d) - errdesc[%s] - db operation fail.", __func__,
                   id_, sqlite_rc,
                   sqlite3_errstr(sqlite_rc)))
-        cdrs_res = vlg::RetCode_DBERR;
+        rcode = vlg::RetCode_DBERR;
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(id:%d, rc:%d)", __func__, id_, sqlite_rc))
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode pers_conn_sqlite::sqlite_release_stmt(sqlite3_stmt *stmt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(id:%d)", __func__, id_))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     if(!stmt) {
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_BADARG;
@@ -959,10 +958,10 @@ vlg::RetCode pers_conn_sqlite::sqlite_release_stmt(sqlite3_stmt *stmt)
     if(last_rc != SQLITE_OK) {
         IFLOG(err(TH_ID, LS_TRL "%s(id:%d) - sqlite3_finalize(rc:%d) - db error.",
                   __func__, id_, last_rc))
-        cdrs_res = vlg::RetCode_DBERR;
+        rcode = vlg::RetCode_DBERR;
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(id:%d)", __func__, id_))
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode pers_conn_sqlite::read_timestamp_and_del_from_record(
@@ -972,7 +971,7 @@ vlg::RetCode pers_conn_sqlite::read_timestamp_and_del_from_record(
     unsigned int  *ts1,
     bool          *del)
 {
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     //TS0
     *ts0 = (unsigned int)sqlite3_column_int(stmt, 0);
     //TS1
@@ -981,7 +980,7 @@ vlg::RetCode pers_conn_sqlite::read_timestamp_and_del_from_record(
     if(del) {
         *del = sqlite3_column_int(stmt, 2) ? true : false;
     }
-    return cdrs_res;
+    return rcode;
 }
 
 //--------------------- CONNECT -------------------------------------------------
@@ -989,7 +988,7 @@ vlg::RetCode pers_conn_sqlite::read_timestamp_and_del_from_record(
 vlg::RetCode pers_conn_sqlite::do_connect()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(id:%d)", __func__, id_))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     worker_ = conn_pool_.get_worker_rr_can_create_start();
     if(worker_ == NULL) {
         IFLOG(cri(TH_ID, LS_CLO "%s() - unavailable thread.", __func__,
@@ -998,15 +997,15 @@ vlg::RetCode pers_conn_sqlite::do_connect()
     }
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
                                                                 VLG_PERS_TASK_OP_CONNECT);
-    if((cdrs_res = worker_->submit_task(task))) {
-        IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, cdrs_res))
+    if((rcode = worker_->submit_task(task))) {
+        IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, rcode))
     } else {
         task->await_for_status(vlg::PTASK_STATUS_EXECUTED);
     }
-    cdrs_res = task->op_res();
+    rcode = task->op_res();
     delete task;
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 //--------------------- CREATE -------------------------------------------------
@@ -1105,7 +1104,7 @@ void enum_mmbrs_create_table(const vlg::hash_map &map, const void *key,
                 rud->create_stmt->append(mmbrd->get_member_name());
                 rud->create_stmt->append(idx_b);
                 rud->create_stmt->append(" ");
-                rud->create_stmt->append(SQLITE_TypeStr_From_BLZType(
+                rud->create_stmt->append(SQLITE_TypeStr_From_VLGType(
                                              mmbrd->get_field_vlg_type()));
                 rud->create_stmt->append(", ");
             }
@@ -1116,7 +1115,7 @@ void enum_mmbrs_create_table(const vlg::hash_map &map, const void *key,
             }
             rud->create_stmt->append(mmbrd->get_member_name());
             rud->create_stmt->append(" ");
-            rud->create_stmt->append(SQLITE_TypeStr_From_BLZType(
+            rud->create_stmt->append(SQLITE_TypeStr_From_VLGType(
                                          mmbrd->get_field_vlg_type()));
             rud->create_stmt->append(", ");
         }
@@ -1167,7 +1166,7 @@ vlg::RetCode pers_conn_sqlite::do_create_table(const entity_manager &bem,
                                                bool drop_if_exist)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(drop_if_exist:%d)", __func__, drop_if_exist))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     vlg::RetCode last_error_code = vlg::RetCode_OK;
     vlg::ascii_string last_error_str;
     vlg::ascii_string create_stmt;
@@ -1202,15 +1201,15 @@ vlg::RetCode pers_conn_sqlite::do_create_table(const entity_manager &bem,
     task->stmt_bf(create_stmt);
     IFLOG(dbg(TH_ID, LS_STM "%s() - create_stmt:%s", __func__,
               create_stmt.internal_buff()))
-    if((cdrs_res = worker_->submit_task(task))) {
-        IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, cdrs_res))
+    if((rcode = worker_->submit_task(task))) {
+        IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, rcode))
     } else {
         task->await_for_status(vlg::PTASK_STATUS_EXECUTED);
     }
-    cdrs_res = task->op_res();
+    rcode = task->op_res();
     delete task;
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return cdrs_res;
+    return rcode;
 }
 
 //--------------------- SELECT -------------------------------------------------
@@ -1260,7 +1259,7 @@ vlg::RetCode pers_conn_sqlite::do_select(unsigned int key,
                                          nclass &in_out_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%d)", __func__, key))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     vlg::RetCode last_error_code = vlg::RetCode_OK;
     vlg::ascii_string last_error_str;
     vlg::ascii_string select_stmt;
@@ -1322,18 +1321,18 @@ vlg::RetCode pers_conn_sqlite::do_select(unsigned int key,
     task->sel_rud_ = &rud;
     IFLOG(dbg(TH_ID, LS_QRY "%s() - select_stmt:%s", __func__,
               select_stmt.internal_buff()))
-    if((cdrs_res = worker_->submit_task(task))) {
-        IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, cdrs_res))
+    if((rcode = worker_->submit_task(task))) {
+        IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, rcode))
     } else {
         task->await_for_status(vlg::PTASK_STATUS_EXECUTED);
     }
-    cdrs_res = task->op_res();
+    rcode = task->op_res();
     delete task;
     if(enm_buff) {
         delete enm_buff;
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 //--------------------- UPDATE -------------------------------------------------
@@ -1383,7 +1382,7 @@ vlg::RetCode pers_conn_sqlite::do_update(unsigned int key,
                                          const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%d)", __func__, key))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     vlg::RetCode last_error_code = vlg::RetCode_OK;
     vlg::ascii_string last_error_str;
     vlg::ascii_string update_stmt;
@@ -1446,18 +1445,18 @@ vlg::RetCode pers_conn_sqlite::do_update(unsigned int key,
     task->stmt_bf(update_stmt);
     IFLOG(dbg(TH_ID, LS_STM "%s() - update_stmt:%s", __func__,
               update_stmt.internal_buff()))
-    if((cdrs_res = worker_->submit_task(task))) {
-        IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, cdrs_res))
+    if((rcode = worker_->submit_task(task))) {
+        IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, rcode))
     } else {
         task->await_for_status(vlg::PTASK_STATUS_EXECUTED);
     }
-    cdrs_res = task->op_res();
+    rcode = task->op_res();
     delete task;
     if(enm_buff) {
         delete enm_buff;
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 //--------------------- DELETE -------------------------------------------------
@@ -1508,7 +1507,7 @@ vlg::RetCode pers_conn_sqlite::do_delete(unsigned int key,
                                          const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%d)", __func__, key))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     vlg::RetCode last_error_code = vlg::RetCode_OK;
     vlg::ascii_string last_error_str;
     vlg::ascii_string delete_stmt;
@@ -1560,18 +1559,18 @@ vlg::RetCode pers_conn_sqlite::do_delete(unsigned int key,
     task->stmt_bf(delete_stmt);
     IFLOG(dbg(TH_ID, LS_STM "%s() - delete_stmt:%s", __func__,
               delete_stmt.internal_buff()))
-    if((cdrs_res = worker_->submit_task(task))) {
-        IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, cdrs_res))
+    if((rcode = worker_->submit_task(task))) {
+        IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, rcode))
     } else {
         task->await_for_status(vlg::PTASK_STATUS_EXECUTED);
     }
-    cdrs_res = task->op_res();
+    rcode = task->op_res();
     delete task;
     if(enm_buff) {
         delete enm_buff;
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 //--------------------- INSERT -------------------------------------------------
@@ -1735,7 +1734,7 @@ vlg::RetCode pers_conn_sqlite::do_insert(const entity_manager &bem,
                                          bool fail_is_error)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     vlg::RetCode last_error_code = vlg::RetCode_OK;
     vlg::ascii_string last_error_str;
     vlg::ascii_string insert_stmt;
@@ -1780,18 +1779,18 @@ vlg::RetCode pers_conn_sqlite::do_insert(const entity_manager &bem,
     task->stmt_bf(insert_stmt);
     IFLOG(dbg(TH_ID, LS_STM "%s() - insert_stmt:%s", __func__,
               insert_stmt.internal_buff()))
-    if((cdrs_res = worker_->submit_task(task))) {
-        IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, cdrs_res))
+    if((rcode = worker_->submit_task(task))) {
+        IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, rcode))
     } else {
         task->await_for_status(vlg::PTASK_STATUS_EXECUTED);
     }
-    cdrs_res = task->op_res();
+    rcode = task->op_res();
     delete task;
     if(enm_buff) {
         delete enm_buff;
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 //--------------------- QUERY -------------------------------------------------
@@ -1800,40 +1799,40 @@ vlg::RetCode pers_conn_sqlite::do_execute_query(const entity_manager &bem,
                                                 const char *sql, persistence_query_impl **qry_out)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sql:%p, qry_out:%p)", __func__, sql, qry_out))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     IFLOG(trc(TH_ID, LS_QRY "%s() - query-sql:%s", __func__, sql))
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
                                                                 VLG_PERS_TASK_OP_EXECUTEQUERY);
     task->in_bem(bem);
     task->in_sql(sql);
-    if((cdrs_res = worker_->submit_task(task))) {
-        IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, cdrs_res))
+    if((rcode = worker_->submit_task(task))) {
+        IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, rcode))
     } else {
         task->await_for_status(vlg::PTASK_STATUS_EXECUTED);
     }
-    cdrs_res = task->op_res();
+    rcode = task->op_res();
     *qry_out = task->in_out_query();
     delete task;
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d, qry:%p)", __func__, cdrs_res, *qry_out))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d, qry:%p)", __func__, rcode, *qry_out))
+    return rcode;
 }
 
 vlg::RetCode pers_conn_sqlite::do_release_query(persistence_query_impl *qry)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(qry:%p)", __func__, qry))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
                                                                 VLG_PERS_TASK_OP_RELEASEQUERY);
     task->in_out_query(qry);
-    if((cdrs_res = worker_->submit_task(task))) {
-        IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, cdrs_res))
+    if((rcode = worker_->submit_task(task))) {
+        IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, rcode))
     } else {
         task->await_for_status(vlg::PTASK_STATUS_EXECUTED);
     }
-    cdrs_res = task->op_res();
+    rcode = task->op_res();
     delete task;
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_impl
@@ -1844,7 +1843,7 @@ vlg::RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_impl
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(qry:%p)", __func__, qry))
     pers_query_sqlite *qry_sqlite = static_cast<pers_query_sqlite *>(qry);
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     vlg::RetCode last_error_code = vlg::RetCode_OK;
     vlg::ascii_string last_error_str;
     vlg::ascii_string select_stmt;
@@ -1878,18 +1877,18 @@ vlg::RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_impl
     task->in_out_ts1(ts1_out);
     task->in_out_obj(out_obj);
     task->sel_rud_ = &rud;
-    if((cdrs_res = worker_->submit_task(task))) {
-        IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, cdrs_res))
+    if((rcode = worker_->submit_task(task))) {
+        IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, rcode))
     } else {
         task->await_for_status(vlg::PTASK_STATUS_EXECUTED);
     }
-    cdrs_res = task->op_res();
+    rcode = task->op_res();
     delete task;
     if(enm_buff) {
         delete enm_buff;
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 //--------------------- EXEC STMT ----------------------------------------------
@@ -1897,20 +1896,20 @@ vlg::RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_impl
 vlg::RetCode pers_conn_sqlite::do_execute_statement(const char *sql)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sql:%p)", __func__, sql))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     IFLOG(trc(TH_ID, LS_STM "%s() - sql:%s", __func__, sql))
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
                                                                 VLG_PERS_TASK_OP_EXECUTESTATEMENT);
     task->in_sql(sql);
-    if((cdrs_res = worker_->submit_task(task))) {
-        IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, cdrs_res))
+    if((rcode = worker_->submit_task(task))) {
+        IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, rcode))
     } else {
         task->await_for_status(vlg::PTASK_STATUS_EXECUTED);
     }
-    cdrs_res = task->op_res();
+    rcode = task->op_res();
     delete task;
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 //-----------------------------
@@ -1981,20 +1980,20 @@ vlg::RetCode pers_driv_sqlite::new_connection(persistence_connection_pool
     IFLOG(trc(TH_ID, LS_OPN "%s(url:%s, usr:%s, psswd:%s, new_conn:%p)", __func__,
               conn_pool.url(), conn_pool.user(),
               conn_pool.password(), new_conn))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     pers_conn_sqlite *new_conn_instance = new pers_conn_sqlite(
         GetSQLITE_NEXT_CONNID(), conn_pool);
     if(!new_conn_instance) {
         IFLOG(cri(TH_ID, LS_CLO "%s() - new failed.", __func__))
         return vlg::RetCode_MEMERR;
     }
-    if(!cdrs_res) {
+    if(!rcode) {
         *new_conn = new_conn_instance;
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d, new_conn_instance:%p, id:%d)", __func__,
-              cdrs_res, new_conn_instance,
+              rcode, new_conn_instance,
               new_conn_instance->get_id()))
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode pers_driv_sqlite::close_connection(persistence_connection_impl

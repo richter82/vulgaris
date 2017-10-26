@@ -4,7 +4,6 @@
 
 @define	MYVALUE						5
 @define	ANOTH_DEFINE				10
-@define	BLZ_CLASS_SAMPLE_A_ID		1001
 
 #AN ENUM
 

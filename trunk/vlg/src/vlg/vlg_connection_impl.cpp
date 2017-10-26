@@ -278,23 +278,23 @@ vlg::RetCode connection_impl::await_for_status_reached_or_outdated(
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_BADSTTS;
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     while(status_ < test) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res =  vlg::RetCode_TIMEOUT;
+                rcode =  vlg::RetCode_TIMEOUT;
                 break;
             }
         }
     }
     current = status_;
-    IFLOG(log(cdrs_res ? vlg::TL_WRN : vlg::TL_DBG, TH_ID,
+    IFLOG(log(rcode ? vlg::TL_WRN : vlg::TL_DBG, TH_ID,
               LS_CLO "%s(connid:%d, res:%d) - status:%d [reached or outdated] current:%d",
               __func__, connid_,
-              cdrs_res, test, status_))
+              rcode, test, status_))
     CHK_MON_ERR_0(unlock)
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode connection_impl::await_for_status_change(ConnectionStatus
@@ -309,22 +309,22 @@ vlg::RetCode connection_impl::await_for_status_change(ConnectionStatus
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_BADSTTS;
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     while(status == status_) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res =  vlg::RetCode_TIMEOUT;
+                rcode =  vlg::RetCode_TIMEOUT;
                 break;
             }
         }
     }
     status = status_;
     CHK_MON_ERR_0(unlock)
-    IFLOG(log(cdrs_res ? vlg::TL_WRN : vlg::TL_DBG, TH_ID,
-              LS_CLO "%s(res:%d) - status:%d [changed] current:%d", __func__, cdrs_res,
+    IFLOG(log(rcode ? vlg::TL_WRN : vlg::TL_DBG, TH_ID,
+              LS_CLO "%s(res:%d) - status:%d [changed] current:%d", __func__, rcode,
               status, status_))
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode connection_impl::set_proto_connected()
@@ -631,7 +631,7 @@ vlg::RetCode connection_impl::set_socket_blocking_mode(bool blocking)
 
 vlg::RetCode connection_impl::socket_excptn_hndl(long sock_op_res)
 {
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     if(sock_op_res == SOCKET_ERROR) {
 #ifdef WIN32
         last_socket_err_ = WSAGetLastError();
@@ -645,7 +645,7 @@ vlg::RetCode connection_impl::socket_excptn_hndl(long sock_op_res)
             return vlg::RetCode_SCKEAGN;
         } else if(last_socket_err_ == EWOULDBLOCK) {
 #endif
-            cdrs_res = vlg::RetCode_SCKWBLK;
+            rcode = vlg::RetCode_SCKWBLK;
 #ifdef WIN32
         } else if(last_socket_err_ == WSAECONNRESET) {
 #else
@@ -654,34 +654,34 @@ vlg::RetCode connection_impl::socket_excptn_hndl(long sock_op_res)
             IFLOG(err(TH_ID, LS_CON
                       "[connid:%d][sockid:%d][connection reset by peer][err:%d]",connid_, socket_,
                       last_socket_err_))
-            cdrs_res = vlg::RetCode_SCKCLO;
+            rcode = vlg::RetCode_SCKCLO;
         } else {
             perror(__func__);
             IFLOG(err(TH_ID, LS_CON
                       "[connid:%d][sockid:%d][connection socket error][errno:%d][err:%d]",connid_,
                       socket_, errno,
                       last_socket_err_))
-            cdrs_res = vlg::RetCode_SCKERR;
+            rcode = vlg::RetCode_SCKERR;
         }
     } else if(!sock_op_res) {
         /*typically we can arrive here on client applicative disconnections*/
         IFLOG(dbg(TH_ID, LS_CON
                   "[connid:%d][sockid:%d][connection socket was closed by peer]",connid_,
                   socket_))
-        cdrs_res = vlg::RetCode_SCKCLO;
+        rcode = vlg::RetCode_SCKCLO;
     } else {
         IFLOG(err(TH_ID, LS_CON "[connid:%d][sockid:%d][connection unk. error]",
                   connid_, socket_))
-        cdrs_res = vlg::RetCode_UNKERR;
+        rcode = vlg::RetCode_UNKERR;
     }
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode connection_impl::establish_connection(sockaddr_in &params)
 {
     IFLOG(dbg(TH_ID, LS_OPN "%s() -> [host:%s - port:%d]", __func__,
               inet_ntoa(params.sin_addr), htons(params.sin_port)))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     int connect_res = 0;
     if((socket_ = socket(AF_INET, SOCK_STREAM, 0)) != INVALID_SOCKET) {
         IFLOG(trc(TH_ID, LS_TRL "%s(sockid:%d) -socket OK-", __func__, socket_))
@@ -697,9 +697,9 @@ vlg::RetCode connection_impl::establish_connection(sockaddr_in &params)
 #endif
             IFLOG(dbg(TH_ID, LS_CLO "%s(err:%d) -connect KO-", __func__, last_socket_err_))
             IFLOG(err(TH_ID, LS_CON "[connection failed][err:%d]", last_socket_err_))
-            if((cdrs_res = socket_shutdown())) {
+            if((rcode = socket_shutdown())) {
                 IFLOG(err(TH_ID, LS_CLO "%s(err:%d) - failed closing socket.", __func__,
-                          cdrs_res))
+                          rcode))
             }
         }
     } else {
@@ -711,16 +711,16 @@ vlg::RetCode connection_impl::establish_connection(sockaddr_in &params)
         IFLOG(err(TH_ID, LS_CLO "%s(err:%d) -socket KO-", __func__, last_socket_err_))
     }
     if(!connect_res) {
-        if((cdrs_res = set_connection_established(socket_))) {
-            IFLOG(err(TH_ID, LS_TRL "%s(res:%d)", __func__, cdrs_res))
+        if((rcode = set_connection_established(socket_))) {
+            IFLOG(err(TH_ID, LS_TRL "%s(res:%d)", __func__, rcode))
         }
     } else {
         notify_for_connectivity_result(ConnectivityEventResult_KO,
                                        ConnectivityEventType_NETWORK);
-        cdrs_res = vlg::RetCode_KO;
+        rcode = vlg::RetCode_KO;
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode connection_impl::send_single_pkt(vlg::grow_byte_buffer
@@ -738,7 +738,7 @@ vlg::RetCode connection_impl::send_single_pkt(vlg::grow_byte_buffer
         log_->trc(TH_ID, LS_OUT LS_PKT "%s", dump_raw_pkt(true, pkt_bbuf->buffer(),
                                                           pkt_bbuf->limit(), tmp));
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     bool stay = true;
     long bsent = 0, tot_bsent = 0, remaining = (long)pkt_bbuf->limit();
     while(stay) {
@@ -752,9 +752,9 @@ vlg::RetCode connection_impl::send_single_pkt(vlg::grow_byte_buffer
                       bsent, tot_bsent, remaining))
         }
         if(remaining) {
-            if(((cdrs_res = socket_excptn_hndl(bsent)) != vlg::RetCode_SCKEAGN) ||
-                    (cdrs_res != vlg::RetCode_SCKWBLK)) {
-                cdrs_res = vlg::RetCode_OK;
+            if(((rcode = socket_excptn_hndl(bsent)) != vlg::RetCode_SCKEAGN) ||
+                    (rcode != vlg::RetCode_SCKWBLK)) {
+                rcode = vlg::RetCode_OK;
                 stay = false;
             }
         } else {
@@ -763,17 +763,17 @@ vlg::RetCode connection_impl::send_single_pkt(vlg::grow_byte_buffer
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)(sockid:%d, tot_bsent:%d, remaining:%d)",
               __func__,
-              cdrs_res,
+              rcode,
               socket_,
               tot_bsent,
               remaining))
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode connection_impl::recv_body(unsigned int bodylen,
                                         vlg::grow_byte_buffer *pkt_body)
 {
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     bool stay = true;
     unsigned int tot_brecv = 0;
     long brecv = 0, recv_buf_sz = bodylen;
@@ -789,8 +789,8 @@ vlg::RetCode connection_impl::recv_body(unsigned int bodylen,
                       __func__, brecv, tot_brecv, recv_buf_sz))
         }
         if(tot_brecv != bodylen) {
-            if((cdrs_res = socket_excptn_hndl(brecv)) != vlg::RetCode_SCKEAGN) {
-                cdrs_res = vlg::RetCode_OK;
+            if((rcode = socket_excptn_hndl(brecv)) != vlg::RetCode_SCKEAGN) {
+                rcode = vlg::RetCode_OK;
                 stay = false;
             }
         } else {
@@ -798,7 +798,7 @@ vlg::RetCode connection_impl::recv_body(unsigned int bodylen,
         }
     }
     pkt_body->flip();
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode connection_impl::recv_single_pkt(vlg_hdr_rec *pkt_hdr,
@@ -811,9 +811,9 @@ vlg::RetCode connection_impl::recv_single_pkt(vlg_hdr_rec *pkt_hdr,
         return vlg::RetCode_BADARG;
     }
     int tot_brecv = 0;
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     //first phase: decode pkt header.
-    switch((cdrs_res = recv_and_decode_hdr(pkt_hdr))) {
+    switch((rcode = recv_and_decode_hdr(pkt_hdr))) {
         case vlg::RetCode_OK:
             break;
         case vlg::RetCode_SCKCLO:
@@ -825,7 +825,7 @@ vlg::RetCode connection_impl::recv_single_pkt(vlg_hdr_rec *pkt_hdr,
         case vlg::RetCode_SCKERR:
             clean_best_effort();
             socket_shutdown();
-            set_socket_error(cdrs_res);
+            set_socket_error(rcode);
             on_disconnect(ConnectivityEventResult_KO,
                           ConnectivityEventType_NETWORK);
             break;
@@ -833,14 +833,14 @@ vlg::RetCode connection_impl::recv_single_pkt(vlg_hdr_rec *pkt_hdr,
         case vlg::RetCode_DRPPKT:
             clean_best_effort();
             socket_shutdown();
-            set_proto_error(cdrs_res);
+            set_proto_error(rcode);
             on_disconnect(ConnectivityEventResult_KO,
                           ConnectivityEventType_PROTOCOL);
             break;
         default:
             clean_best_effort();
             socket_shutdown();
-            set_implernal_error(cdrs_res);
+            set_implernal_error(rcode);
             on_disconnect(ConnectivityEventResult_KO,
                           ConnectivityEventType_UNDEFINED);
             break;
@@ -848,7 +848,7 @@ vlg::RetCode connection_impl::recv_single_pkt(vlg_hdr_rec *pkt_hdr,
     //END first phase
     if(pkt_hdr->bdy_bytelen) {
         //second phase: read eventual remaining body.
-        switch((cdrs_res = recv_body(pkt_hdr->bdy_bytelen, pkt_body))) {
+        switch((rcode = recv_body(pkt_hdr->bdy_bytelen, pkt_body))) {
             case vlg::RetCode_OK:
                 break;
             case vlg::RetCode_SCKCLO:
@@ -860,7 +860,7 @@ vlg::RetCode connection_impl::recv_single_pkt(vlg_hdr_rec *pkt_hdr,
             case vlg::RetCode_SCKERR:
                 clean_best_effort();
                 socket_shutdown();
-                set_socket_error(cdrs_res);
+                set_socket_error(rcode);
                 on_disconnect(ConnectivityEventResult_KO,
                               ConnectivityEventType_NETWORK);
                 break;
@@ -868,21 +868,21 @@ vlg::RetCode connection_impl::recv_single_pkt(vlg_hdr_rec *pkt_hdr,
             case vlg::RetCode_DRPPKT:
                 clean_best_effort();
                 socket_shutdown();
-                set_proto_error(cdrs_res);
+                set_proto_error(rcode);
                 on_disconnect(ConnectivityEventResult_KO,
                               ConnectivityEventType_PROTOCOL);
                 break;
             default:
                 clean_best_effort();
                 socket_shutdown();
-                set_implernal_error(cdrs_res);
+                set_implernal_error(rcode);
                 on_disconnect(ConnectivityEventResult_KO,
                               ConnectivityEventType_UNDEFINED);
                 break;
         }
         //END second phase
     }
-    if(!cdrs_res) {
+    if(!rcode) {
         tot_brecv = pkt_hdr->hdr_bytelen + pkt_hdr->bdy_bytelen;
         if(log_ && log_->level() <= vlg::TL_TRC) {
             char dump_buf[DMP_OUT_BUF_LEN] = {0};
@@ -897,11 +897,11 @@ vlg::RetCode connection_impl::recv_single_pkt(vlg_hdr_rec *pkt_hdr,
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)(tot_brecv:%d, hdr_len:%d, bdy_len:%d)",
               __func__,
-              cdrs_res,
+              rcode,
               tot_brecv,
               pkt_hdr->hdr_bytelen,
               pkt_hdr->bdy_bytelen))
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode connection_impl::socket_shutdown()
@@ -944,7 +944,7 @@ vlg::RetCode connection_impl::socket_shutdown()
 vlg::RetCode connection_impl::client_connect(sockaddr_in &params)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     if(peer_.peer_status() != PeerStatus_RUNNING) {
         IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p) - invalid peer status.", __func__, this))
         return vlg::RetCode_BADSTTS;
@@ -971,17 +971,17 @@ vlg::RetCode connection_impl::client_connect(sockaddr_in &params)
     selector_event *evt =
         new selector_event(VLG_SELECTOR_Evt_ConnectRequest, this);
     memcpy(&evt->saddr_, &params, sizeof(sockaddr_in));
-    if((cdrs_res = peer_.get_selector().evt_enqueue_and_notify(evt))) {
+    if((rcode = peer_.get_selector().evt_enqueue_and_notify(evt))) {
         set_status(ConnectionStatus_ERROR);
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p) - RES:%d", __func__, this, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p) - RES:%d", __func__, this, rcode))
+    return rcode;
 }
 
 vlg::RetCode connection_impl::server_send_connect_res()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     if(status_ != ConnectionStatus_ESTABLISHED) {
         IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
         return vlg::RetCode_BADSTTS;
@@ -996,18 +996,18 @@ vlg::RetCode connection_impl::server_send_connect_res()
     RETURN_IF_NOT_OK(pkt_sending_q_.put(&gbb))
     selector_event *evt = new selector_event(
         VLG_SELECTOR_Evt_SendPacket, this);
-    if((cdrs_res = peer_.get_selector().evt_enqueue_and_notify(evt))) {
+    if((rcode = peer_.get_selector().evt_enqueue_and_notify(evt))) {
         set_status(ConnectionStatus_ERROR);
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p) - RES:%d", __func__, this, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p) - RES:%d", __func__, this, rcode))
+    return rcode;
 }
 
 vlg::RetCode connection_impl::disconnect(DisconnectionResultReason
                                          disres)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     if(status_ != ConnectionStatus_PROTOCOL_HANDSHAKE &&
             status_ != ConnectionStatus_AUTHENTICATED) {
         IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
@@ -1027,11 +1027,11 @@ vlg::RetCode connection_impl::disconnect(DisconnectionResultReason
     RETURN_IF_NOT_OK(pkt_sending_q_.put(&gbb))
     selector_event *evt = new selector_event(
         VLG_SELECTOR_Evt_Disconnect, this);
-    if((cdrs_res = peer_.get_selector().evt_enqueue_and_notify(evt))) {
+    if((rcode = peer_.get_selector().evt_enqueue_and_notify(evt))) {
         set_status(ConnectionStatus_ERROR);
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p) - RES:%d", __func__, this, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p) - RES:%d", __func__, this, rcode))
+    return rcode;
 }
 
 vlg::RetCode connection_impl::await_for_connection_result(
@@ -1046,24 +1046,24 @@ vlg::RetCode connection_impl::await_for_connection_result(
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_BADSTTS;
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     CHK_MON_ERR_0(lock)
     while(!connect_evt_occur_) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res =  vlg::RetCode_TIMEOUT;
+                rcode =  vlg::RetCode_TIMEOUT;
                 break;
             }
         }
     }
     con_evt_res = con_evt_res_;
     connectivity_evt_type = connectivity_evt_type_;
-    IFLOG(log(cdrs_res ? vlg::TL_WRN : vlg::TL_DBG, TH_ID, LS_CLO
+    IFLOG(log(rcode ? vlg::TL_WRN : vlg::TL_DBG, TH_ID, LS_CLO
               "%s(ptr:%p, res:%d, socket:%d, last_socket_err:%d, status:%d) - [connection result available] - con_evt_res:%d connectivity_evt_type:%d, conres:%d, resultcode:%d",
               __func__,
               this,
-              cdrs_res,
+              rcode,
               socket_,
               last_socket_err_,
               status_,
@@ -1073,7 +1073,7 @@ vlg::RetCode connection_impl::await_for_connection_result(
               conrescode_))
     connect_evt_occur_ = false;
     CHK_MON_ERR_0(unlock)
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode connection_impl::notify_for_connectivity_result(
@@ -1105,23 +1105,23 @@ vlg::RetCode connection_impl::await_for_disconnection_result(
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_BADSTTS;
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     while(!connect_evt_occur_) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res =  vlg::RetCode_TIMEOUT;
+                rcode =  vlg::RetCode_TIMEOUT;
                 break;
             }
         }
     }
     con_evt_res = con_evt_res_;
     connectivity_evt_type = connectivity_evt_type_;
-    IFLOG(log(cdrs_res ? vlg::TL_WRN : vlg::TL_DBG, TH_ID, LS_CLO
+    IFLOG(log(rcode ? vlg::TL_WRN : vlg::TL_DBG, TH_ID, LS_CLO
               "%s(connid:%d, res:%d, socket:%d, last_socket_err:%d, status:%d) - [disconnection result available] - con_evt_res:%d connectivity_evt_type:%d, conres:%d, resultcode:%d",
               __func__,
               connid_,
-              cdrs_res,
+              rcode,
               socket_,
               last_socket_err_,
               status_,
@@ -1131,7 +1131,7 @@ vlg::RetCode connection_impl::await_for_disconnection_result(
               conrescode_))
     connect_evt_occur_ = false;
     CHK_MON_ERR_0(unlock)
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode connection_impl::recv_connection_request(const vlg_hdr_rec
@@ -1139,7 +1139,7 @@ vlg::RetCode connection_impl::recv_connection_request(const vlg_hdr_rec
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sockid:%d, pkt_hdr:%p)", __func__, get_socket(),
               pkt_hdr))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     if(status() == ConnectionStatus_PROTOCOL_HANDSHAKE ||
             status() == ConnectionStatus_AUTHENTICATED) {
         set_disconnecting();
@@ -1165,9 +1165,9 @@ vlg::RetCode connection_impl::recv_connection_request(const vlg_hdr_rec
     sockaddr_in saddr;
     socklen_t len = sizeof(saddr);
     getpeername(socket_, (sockaddr *)&saddr, &len);
-    if(!(cdrs_res = peer_.new_incoming_connection_accept(*this))) {
-        if((cdrs_res = server_send_connect_res())) {
-            set_implernal_error(cdrs_res);
+    if(!(rcode = peer_.new_incoming_connection_accept(*this))) {
+        if((rcode = server_send_connect_res())) {
+            set_implernal_error(rcode);
             IFLOG(err(TH_ID,
                       LS_CON"[error responding to peer: sockid:%d, host:%s, port:%d]",
                       socket_,
@@ -1197,14 +1197,14 @@ vlg::RetCode connection_impl::recv_connection_request(const vlg_hdr_rec
                   connid_))
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(sockid:%d)", __func__, get_socket()))
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode connection_impl::recv_connection_response(
     const vlg_hdr_rec *pkt_hdr)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(pkt_hdr:%p)", __func__, pkt_hdr))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     ConnectivityEventResult con_evt_res = ConnectivityEventResult_OK;
     set_conn_response(pkt_hdr->row_1.srvcrs.conres);
     set_conn_res_code(pkt_hdr->row_1.srvcrs.errcod);
@@ -1237,9 +1237,9 @@ vlg::RetCode connection_impl::recv_connection_response(
             con_evt_res = ConnectivityEventResult_KO;
             break;
     }
-    if((cdrs_res = peer_.get_selector().evt_enqueue_and_notify(evt))) {
-        set_implernal_error(cdrs_res);
-        return cdrs_res;
+    if((rcode = peer_.get_selector().evt_enqueue_and_notify(evt))) {
+        set_implernal_error(rcode);
+        return rcode;
     }
     on_connect(con_evt_res, ConnectivityEventType_PROTOCOL);
     notify_for_connectivity_result(con_evt_res,
@@ -1353,7 +1353,7 @@ vlg::RetCode connection_impl::recv_tx_req(const vlg_hdr_rec *pkt_hdr,
               __func__, get_socket(), connid(),
               pkt_hdr,
               pkt_body))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     bool skip_appl_mng = false;
     bool aborted = false;
     transaction_impl *trans = NULL;
@@ -1379,7 +1379,7 @@ vlg::RetCode connection_impl::recv_tx_req(const vlg_hdr_rec *pkt_hdr,
               pkt_hdr->row_4.txcnid.txcnid,
               pkt_hdr->row_5.txprid.txprid,
               pkt_hdr->row_1.txresw.txresl,
-              pkt_hdr->row_1.txresw.blzcod,
+              pkt_hdr->row_1.txresw.vlgcod,
               pkt_hdr->row_1.txresw.rescls))
     if(!srv_flytx_repo_.contains_key(trans->tx_id_ptr())) {
         trans->set_tx_res(TransactionResult_FAILED);
@@ -1388,12 +1388,12 @@ vlg::RetCode connection_impl::recv_tx_req(const vlg_hdr_rec *pkt_hdr,
         aborted = true;
         IFLOG(err(TH_ID, LS_TXT"[same tx already flying]"))
     } else {
-        if((cdrs_res = srv_flytx_repo_.put(trans->tx_id_ptr(), &trans))) {
+        if((rcode = srv_flytx_repo_.put(trans->tx_id_ptr(), &trans))) {
             trans->set_tx_res(TransactionResult_FAILED);
             trans->set_tx_result_code(ProtocolCode_SERVER_ERROR);
             trans->set_result_class_set(false);
             aborted = true;
-            IFLOG(cri(TH_ID, LS_TXT"[error putting tx into flying map - res:%d]", cdrs_res))
+            IFLOG(cri(TH_ID, LS_TXT"[error putting tx into flying map - res:%d]", rcode))
         } else {
             IFLOG(trc(TH_ID, LS_TXT"[tx put into flying map]"))
         }
@@ -1405,26 +1405,26 @@ vlg::RetCode connection_impl::recv_tx_req(const vlg_hdr_rec *pkt_hdr,
             trans->set_tx_req_class_encode(pkt_hdr->row_7.clsenc.enctyp);
             trans->set_tx_res_class_encode(pkt_hdr->row_7.clsenc.enctyp);
             nclass *req_obj = NULL;
-            if((cdrs_res = peer_.bem_.new_class_instance(trans->tx_req_class_id(),
-                                                         &req_obj))) {
+            if((rcode = peer_.bem_.new_class_instance(trans->tx_req_class_id(),
+                                                      &req_obj))) {
                 trans->set_tx_res(TransactionResult_FAILED);
                 trans->set_tx_result_code(ProtocolCode_MALFORMED_REQUEST);
                 trans->set_result_class_set(false);
                 skip_appl_mng = true;
                 IFLOG(err(TH_ID,
-                          LS_TXT"[tx request receive failed - new class fail:%d, nclass_id:%d]", cdrs_res,
+                          LS_TXT"[tx request receive failed - new class fail:%d, nclass_id:%d]", rcode,
                           trans->tx_req_class_id()))
             } else {
                 trans->set_request_obj_on_request(req_obj);
-                if((cdrs_res = req_obj->restore(&peer_.bem_, trans->tx_req_class_encode(),
-                                                pkt_body))) {
+                if((rcode = req_obj->restore(&peer_.bem_, trans->tx_req_class_encode(),
+                                             pkt_body))) {
                     trans->set_tx_res(TransactionResult_FAILED);
                     trans->set_tx_result_code(ProtocolCode_MALFORMED_REQUEST);
                     trans->set_result_class_set(false);
                     skip_appl_mng = true;
                     IFLOG(err(TH_ID,
                               LS_TXT"[tx request receive failed - class restore fail:%d, nclass_id:%d]",
-                              cdrs_res,
+                              rcode,
                               trans->tx_req_class_id()))
                 }
             }
@@ -1433,12 +1433,12 @@ vlg::RetCode connection_impl::recv_tx_req(const vlg_hdr_rec *pkt_hdr,
             trans->on_request();
         }
     }
-    if((cdrs_res = trans->send_response())) {
-        IFLOG(err(TH_ID, LS_TXT"[tx response sending failed res:%d]", cdrs_res))
+    if((rcode = trans->send_response())) {
+        IFLOG(err(TH_ID, LS_TXT"[tx response sending failed res:%d]", rcode))
     }
-    if((cdrs_res = srv_flytx_repo_.remove(trans->tx_id_ptr(), NULL))) {
+    if((rcode = srv_flytx_repo_.remove(trans->tx_id_ptr(), NULL))) {
         IFLOG(cri(TH_ID, LS_TXT"[error removing tx from flying map - res:%d]",
-                  cdrs_res))
+                  rcode))
     } else {
         IFLOG(trc(TH_ID, LS_TXT"[tx removed from flying map]"))
     }
@@ -1448,8 +1448,8 @@ vlg::RetCode connection_impl::recv_tx_req(const vlg_hdr_rec *pkt_hdr,
         trans->set_closed();
     }
     release_transaction(trans);
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode connection_impl::recv_tx_res(const vlg_hdr_rec *pkt_hdr,
@@ -1459,7 +1459,7 @@ vlg::RetCode connection_impl::recv_tx_res(const vlg_hdr_rec *pkt_hdr,
               __func__, get_socket(), connid(),
               pkt_hdr,
               pkt_body))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     bool aborted = false;
     tx_id txid;
     txid.txplid = pkt_hdr->row_2.txplid.txplid;
@@ -1472,42 +1472,42 @@ vlg::RetCode connection_impl::recv_tx_res(const vlg_hdr_rec *pkt_hdr,
               txid.txcnid,
               txid.txprid,
               pkt_hdr->row_1.txresw.txresl,
-              pkt_hdr->row_1.txresw.blzcod,
+              pkt_hdr->row_1.txresw.vlgcod,
               pkt_hdr->row_1.txresw.rescls))
     transaction_impl *trans = NULL;
-    if((cdrs_res = cli_flytx_repo_.get(&txid, &trans))) {
+    if((rcode = cli_flytx_repo_.get(&txid, &trans))) {
         IFLOG(err(TH_ID, LS_TXT"[tx not found, aborting.]"))
         IFLOG(err(TH_ID, LS_CLO "%s(aborted)", __func__))
         return vlg::RetCode_ABORT;
     }
     trans->set_tx_res(pkt_hdr->row_1.txresw.txresl);
-    trans->set_tx_result_code(pkt_hdr->row_1.txresw.blzcod);
+    trans->set_tx_result_code(pkt_hdr->row_1.txresw.vlgcod);
     trans->set_result_class_set(pkt_hdr->row_1.txresw.rescls);
     if(pkt_hdr->phdr.hdrlen == 8) {
         trans->set_tx_res_class_id(pkt_hdr->row_7.clsenc.nclsid);
         trans->set_tx_res_class_encode(pkt_hdr->row_7.clsenc.enctyp);
         nclass *nobj = NULL;
-        if((cdrs_res = peer_.bem_.new_class_instance(trans->tx_res_class_id(),
-                                                     &nobj))) {
+        if((rcode = peer_.bem_.new_class_instance(trans->tx_res_class_id(),
+                                                  &nobj))) {
             IFLOG(err(TH_ID,
                       LS_TXT"[tx response receive failed - new class fail:%d, nclass_id:%d]",
-                      cdrs_res,
+                      rcode,
                       trans->tx_res_class_id()))
             aborted = true;
         }
         trans->set_result_obj_on_response(nobj);
-        if((cdrs_res = nobj->restore(&peer_.bem_, trans->tx_res_class_encode(),
-                                     pkt_body))) {
+        if((rcode = nobj->restore(&peer_.bem_, trans->tx_res_class_encode(),
+                                  pkt_body))) {
             IFLOG(err(TH_ID,
                       LS_TXT"[tx response receive failed - class restore fail:%d, nclass_id:%d]",
-                      cdrs_res,
+                      rcode,
                       trans->tx_res_class_id()))
             aborted = true;
         }
     }
-    if((cdrs_res = cli_flytx_repo_.remove(trans->tx_id_ptr(), NULL))) {
+    if((rcode = cli_flytx_repo_.remove(trans->tx_id_ptr(), NULL))) {
         IFLOG(cri(TH_ID, LS_TXT"[error removing tx from flying map - res:%d]",
-                  cdrs_res))
+                  rcode))
     } else {
         IFLOG(trc(TH_ID, LS_TXT"[tx removed from flying map]"))
     }
@@ -1523,8 +1523,8 @@ vlg::RetCode connection_impl::recv_tx_res(const vlg_hdr_rec *pkt_hdr,
     vlg::collector &c = trans->get_collector();
     c.release(trans);
 
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 // SUBSCRIPTION
@@ -1567,7 +1567,7 @@ vlg::RetCode connection_impl::detach_subscription(subscription_impl
                                                   *subscription)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(subscription:%p)", __func__, subscription))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     if(&subscription->conn_ != this) {
         IFLOG(err(TH_ID, LS_CLO "%s(connid:%d) [subscription:%d is not mine]", __func__,
                   connid_,
@@ -1600,15 +1600,15 @@ vlg::RetCode connection_impl::detach_subscription(subscription_impl
         vlg::collector &c = subscription->get_collector();
         c.release(subscription);
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode connection_impl::release_subscription(subscription_impl
                                                    *subscription)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(subscription:%p)", __func__, subscription))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     if(&subscription->conn_ != this) {
         IFLOG(err(TH_ID, LS_CLO "%s(connid:%d) [subscription:%d is not mine]", __func__,
                   connid_,
@@ -1629,13 +1629,13 @@ vlg::RetCode connection_impl::release_subscription(subscription_impl
     if(con_type_ == ConnectionType_INGOING) {
         subscription->release_initial_query();
         peer_.remove_subscriber(subscription);
-        if((cdrs_res = srv_sbsid_sbs_repo_.remove(&subscription->sbsid_, NULL))) {
+        if((rcode = srv_sbsid_sbs_repo_.remove(&subscription->sbsid_, NULL))) {
             IFLOG(cri(TH_ID,
                       LS_SBT"%s(connid:%d) [error releasing sbs:%d from srv sbsid map]",__func__,
                       connid_,
                       subscription->sbsid()))
         }
-        if((cdrs_res = srv_classid_sbs_repo_.remove(&subscription->nclassid_, NULL))) {
+        if((rcode = srv_classid_sbs_repo_.remove(&subscription->nclassid_, NULL))) {
             IFLOG(cri(TH_ID,
                       LS_SBT"%s(connid:%d) [error releasing sbs:%d from srv nclass_id map]", __func__,
                       connid_,
@@ -1659,8 +1659,8 @@ vlg::RetCode connection_impl::release_subscription(subscription_impl
         vlg::collector &c = subscription->get_collector();
         c.release(subscription);
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 /*server only*/
@@ -1668,7 +1668,7 @@ vlg::RetCode connection_impl::recv_sbs_start_req(const vlg_hdr_rec *pkt_hdr)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sockid:%d, connid:%d, pkt_hdr:%p)", __func__,
               get_socket(), connid(), pkt_hdr))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     unsigned int sbsid = next_sbsid();
     subscription_impl *inc_sbs = NULL;
     new_subscription(&inc_sbs, sbs_factory_, sbs_factory_ud_);
@@ -1704,49 +1704,49 @@ vlg::RetCode connection_impl::recv_sbs_start_req(const vlg_hdr_rec *pkt_hdr)
               inc_sbs->open_tmstp1_
              ))
     entity_desc const *edesc = NULL;
-    if((cdrs_res = peer_.get_em().get_entity_descriptor(inc_sbs->nclassid_,
-                                                        &edesc))) {
+    if((rcode = peer_.get_em().get_entity_descriptor(inc_sbs->nclassid_,
+                                                     &edesc))) {
         inc_sbs->sbresl_ = SubscriptionResponse_KO;
-        inc_sbs->last_blzcod_ = ProtocolCode_UNSUPPORTED_REQUEST;
+        inc_sbs->last_vlgcod_ = ProtocolCode_UNSUPPORTED_REQUEST;
         IFLOG(err(TH_ID, LS_SBT"[unk. nclass_id requested in subscription: %u]",
                   inc_sbs->nclassid_))
     } else {
-        if(!(cdrs_res = srv_classid_sbs_repo_.contains_key(&inc_sbs->nclassid_))) {
+        if(!(rcode = srv_classid_sbs_repo_.contains_key(&inc_sbs->nclassid_))) {
             inc_sbs->sbresl_ = SubscriptionResponse_KO;
-            inc_sbs->last_blzcod_ = ProtocolCode_SUBSCRIPTION_ALREADY_STARTED;
+            inc_sbs->last_vlgcod_ = ProtocolCode_SUBSCRIPTION_ALREADY_STARTED;
             IFLOG(err(TH_ID,
                       LS_SBT"[sbs on this connection:%d already started for class:%d]", connid_,
                       inc_sbs->nclassid_))
         } else {
-            if((cdrs_res = srv_sbsid_sbs_repo_.put(&sbsid, &inc_sbs))) {
+            if((rcode = srv_sbsid_sbs_repo_.put(&sbsid, &inc_sbs))) {
                 inc_sbs->sbresl_ = SubscriptionResponse_KO;
-                inc_sbs->last_blzcod_ = ProtocolCode_SERVER_ERROR;
-                IFLOG(cri(TH_ID, LS_SBT"[error putting sbs into sbsid map - res:%d]", cdrs_res))
+                inc_sbs->last_vlgcod_ = ProtocolCode_SERVER_ERROR;
+                IFLOG(cri(TH_ID, LS_SBT"[error putting sbs into sbsid map - res:%d]", rcode))
             }
-            if((cdrs_res = srv_classid_sbs_repo_.put(&inc_sbs->nclassid_, &inc_sbs))) {
+            if((rcode = srv_classid_sbs_repo_.put(&inc_sbs->nclassid_, &inc_sbs))) {
                 inc_sbs->sbresl_ = SubscriptionResponse_KO;
-                inc_sbs->last_blzcod_ = ProtocolCode_SERVER_ERROR;
+                inc_sbs->last_vlgcod_ = ProtocolCode_SERVER_ERROR;
                 IFLOG(cri(TH_ID, LS_SBT"[error putting sbs into nclass_id map - res:%d]",
-                          cdrs_res))
+                          rcode))
             }
             inc_sbs->sbsid_ = sbsid;
             inc_sbs->sbresl_ = SubscriptionResponse_OK;
-            inc_sbs->last_blzcod_ = ProtocolCode_SUCCESS;
+            inc_sbs->last_vlgcod_ = ProtocolCode_SUCCESS;
         }
     }
-    if((cdrs_res = inc_sbs->send_start_response())) {
-        IFLOG(err(TH_ID, LS_SBT"[sbs response sending failed res:%d]", cdrs_res))
+    if((rcode = inc_sbs->send_start_response())) {
+        IFLOG(err(TH_ID, LS_SBT"[sbs response sending failed res:%d]", rcode))
     }
     if(inc_sbs->sbresl_ == SubscriptionResponse_OK ||
             inc_sbs->sbresl_ == SubscriptionResponse_PARTIAL) {
-        if((cdrs_res = peer_.add_subscriber(inc_sbs))) {
-            IFLOG(cri(TH_ID, LS_SBT"[error adding sbs into peer res:%d]", cdrs_res))
+        if((rcode = peer_.add_subscriber(inc_sbs))) {
+            IFLOG(cri(TH_ID, LS_SBT"[error adding sbs into peer res:%d]", rcode))
             inc_sbs->set_error();
         } else {
             if(inc_sbs->get_sbsmod() == SubscriptionMode_ALL ||
                     inc_sbs->get_sbsmod() == SubscriptionMode_DOWNLOAD) {
                 //do initial query.
-                if(!(cdrs_res = inc_sbs->execute_initial_query())) {
+                if(!(rcode = inc_sbs->execute_initial_query())) {
                     inc_sbs->set_initial_query_ended(false);
                 } else {
                     inc_sbs->set_initial_query_ended(true);
@@ -1759,7 +1759,7 @@ vlg::RetCode connection_impl::recv_sbs_start_req(const vlg_hdr_rec *pkt_hdr)
         }
     }
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return cdrs_res;
+    return rcode;
 }
 
 /*client only*/
@@ -1767,32 +1767,32 @@ vlg::RetCode connection_impl::recv_sbs_start_res(const vlg_hdr_rec *pkt_hdr)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sockid:%d, connid:%d, pkt_hdr:%p)", __func__,
               get_socket(), connid(), pkt_hdr))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     unsigned int sbsid = ((pkt_hdr->row_1.sbresw.sbresl ==
                            SubscriptionResponse_OK) ||
                           (pkt_hdr->row_1.sbresw.sbresl == SubscriptionResponse_PARTIAL)) ?
                          pkt_hdr->row_3.sbsrid.sbsrid :
                          0;
     IFLOG(inf(TH_ID,
-              LS_SBI"[CONNID:%010u-REQID:%010u][SBSRES:%d, BLZCOD:%d, SBSID:%u]",
+              LS_SBI"[CONNID:%010u-REQID:%010u][SBSRES:%d, VLGCOD:%d, SBSID:%u]",
               connid_,
               pkt_hdr->row_2.rqstid.rqstid,
               pkt_hdr->row_1.sbresw.sbresl,
-              pkt_hdr->row_1.sbresw.blzcod,
+              pkt_hdr->row_1.sbresw.vlgcod,
               sbsid))
     subscription_impl *sbs = NULL;
-    if((cdrs_res = cli_reqid_sbs_repo_.remove(&pkt_hdr->row_2.rqstid.rqstid,
-                                              &sbs))) {
+    if((rcode = cli_reqid_sbs_repo_.remove(&pkt_hdr->row_2.rqstid.rqstid,
+                                           &sbs))) {
         IFLOG(err(TH_ID, LS_SBT"[sbs not found, aborting.]"))
         return vlg::RetCode_KO;
     }
     sbs->sbsid_ = sbsid;
     sbs->sbresl_ = pkt_hdr->row_1.sbresw.sbresl;
-    sbs->last_blzcod_ = pkt_hdr->row_1.sbresw.blzcod;
-    if((cdrs_res = cli_sbsid_sbs_repo_.put(&sbsid, &sbs))) {
-        IFLOG(cri(TH_ID, LS_SBT"[error putting sbs into sbsid map - res:%d]", cdrs_res))
+    sbs->last_vlgcod_ = pkt_hdr->row_1.sbresw.vlgcod;
+    if((rcode = cli_sbsid_sbs_repo_.put(&sbsid, &sbs))) {
+        IFLOG(cri(TH_ID, LS_SBT"[error putting sbs into sbsid map - res:%d]", rcode))
         sbs->set_status(SubscriptionStatus_ERROR);
-        return cdrs_res;
+        return rcode;
     }
     if(!sbsid) {
         sbs->set_stopped();
@@ -1801,7 +1801,7 @@ vlg::RetCode connection_impl::recv_sbs_start_res(const vlg_hdr_rec *pkt_hdr)
     }
     sbs->notify_for_start_stop_result();
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode connection_impl::recv_sbs_evt(const vlg_hdr_rec *pkt_hdr,
@@ -1813,7 +1813,7 @@ vlg::RetCode connection_impl::recv_sbs_evt(const vlg_hdr_rec *pkt_hdr,
               connid(),
               pkt_hdr,
               pkt_body))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     bool mng = true;
     subscription_event_impl *new_sbs_event = NULL;
     if((subscription_event_impl::new_instance(&new_sbs_event))) {
@@ -1831,7 +1831,7 @@ vlg::RetCode connection_impl::recv_sbs_evt(const vlg_hdr_rec *pkt_hdr,
     (new_sbs_event)->set_sbsid(pkt_hdr->row_1.sbsrid.sbsrid);
     (new_sbs_event)->set_evtid(pkt_hdr->row_3.sevtid.sevtid);
     (new_sbs_event)->set_evttype(pkt_hdr->row_2.sevttp.sevttp);
-    (new_sbs_event)->set_protocode(pkt_hdr->row_2.sevttp.blzcod);
+    (new_sbs_event)->set_protocode(pkt_hdr->row_2.sevttp.vlgcod);
     (new_sbs_event)->set_tmstp0(pkt_hdr->row_4.tmstmp.tmstmp);
     (new_sbs_event)->set_tmstp1(pkt_hdr->row_5.tmstmp.tmstmp);
     (new_sbs_event)->set_act(pkt_hdr->row_2.sevttp.sbeact);
@@ -1841,22 +1841,22 @@ vlg::RetCode connection_impl::recv_sbs_evt(const vlg_hdr_rec *pkt_hdr,
               pkt_hdr->row_1.sbsrid.sbsrid,
               pkt_hdr->row_3.sevtid.sevtid,
               pkt_hdr->row_2.sevttp.sevttp,
-              pkt_hdr->row_2.sevttp.blzcod,
+              pkt_hdr->row_2.sevttp.vlgcod,
               pkt_hdr->row_4.tmstmp.tmstmp,
               pkt_hdr->row_5.tmstmp.tmstmp,
               pkt_hdr->row_2.sevttp.sbeact))
     subscription_impl *sbs = NULL;
-    if((cdrs_res = cli_sbsid_sbs_repo_.get(&(new_sbs_event)->sbs_sbsid_, &sbs))) {
-        IFLOG(cri(TH_ID, LS_SBT"[error getting sbs from sbsid map - res:%d]", cdrs_res))
+    if((rcode = cli_sbsid_sbs_repo_.get(&(new_sbs_event)->sbs_sbsid_, &sbs))) {
+        IFLOG(cri(TH_ID, LS_SBT"[error getting sbs from sbsid map - res:%d]", rcode))
         mng = false;
         /************************
         RELEASE_ID: SBE_CLI_01
         ************************/
         c.release(new_sbs_event);
     } else {
-        if(mng && (cdrs_res = sbs->receive_event(pkt_hdr, pkt_body, new_sbs_event))) {
+        if(mng && (rcode = sbs->receive_event(pkt_hdr, pkt_body, new_sbs_event))) {
             IFLOG(wrn(TH_ID, LS_SBT"[sbs event:%d management failed res:%d]",
-                      (new_sbs_event)->sbs_evtid_, cdrs_res))
+                      (new_sbs_event)->sbs_evtid_, rcode))
             /************************
             RELEASE_ID: SBE_CLI_01
             ************************/
@@ -1864,32 +1864,32 @@ vlg::RetCode connection_impl::recv_sbs_evt(const vlg_hdr_rec *pkt_hdr,
         }
     }
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode connection_impl::recv_sbs_evt_ack(const vlg_hdr_rec *pkt_hdr)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sockid:%d, connid:%d, pkt_hdr:%p)", __func__,
               get_socket(), connid(), pkt_hdr))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     subscription_impl *sbs = NULL;
-    if((cdrs_res = srv_sbsid_sbs_repo_.get(&pkt_hdr->row_1.sbsrid.sbsrid, &sbs))) {
+    if((rcode = srv_sbsid_sbs_repo_.get(&pkt_hdr->row_1.sbsrid.sbsrid, &sbs))) {
         IFLOG(cri(TH_ID,
-                  LS_SBT"[sbs event ack - error getting sbs from sbsid map - res:%d]", cdrs_res))
+                  LS_SBT"[sbs event ack - error getting sbs from sbsid map - res:%d]", rcode))
     } else {
-        if((cdrs_res = sbs->receive_event_ack(pkt_hdr))) {
-            IFLOG(wrn(TH_ID, LS_SBT"[sbs event ack - management failed res:%d]", cdrs_res))
+        if((rcode = sbs->receive_event_ack(pkt_hdr))) {
+            IFLOG(wrn(TH_ID, LS_SBT"[sbs event ack - management failed res:%d]", rcode))
         }
     }
     IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode connection_impl::recv_sbs_stop_req(const vlg_hdr_rec *pkt_hdr)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sockid:%d, connid:%d, pkt_hdr:%p)", __func__,
               get_socket(), connid(), pkt_hdr))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     unsigned int sbsid = pkt_hdr->row_1.sbsrid.sbsrid;
     IFLOG(inf(TH_ID, LS_SBS"[CONNID:%010u-SBSID:%010u][STOP REQUEST]",
               connid_,
@@ -1897,9 +1897,9 @@ vlg::RetCode connection_impl::recv_sbs_stop_req(const vlg_hdr_rec *pkt_hdr)
     SubscriptionResponse sbresl = SubscriptionResponse_OK;
     ProtocolCode protocode = ProtocolCode_SUCCESS;
     subscription_impl *sbs = NULL;
-    if((cdrs_res = srv_sbsid_sbs_repo_.get(&sbsid, &sbs))) {
+    if((rcode = srv_sbsid_sbs_repo_.get(&sbsid, &sbs))) {
         IFLOG(err(TH_ID, LS_SBT"[sbs stop - error getting sbs from sbsid map - res:%d]",
-                  cdrs_res))
+                  rcode))
         sbresl = SubscriptionResponse_KO;
         protocode = ProtocolCode_SUBSCRIPTION_NOT_FOUND;
     } else {
@@ -1915,25 +1915,25 @@ vlg::RetCode connection_impl::recv_sbs_stop_req(const vlg_hdr_rec *pkt_hdr)
     RETURN_IF_NOT_OK(pkt_snd_q().put(&gbb))
     selector_event *evt = new selector_event(
         VLG_SELECTOR_Evt_SendPacket, this);
-    cdrs_res = peer_.get_selector().evt_enqueue_and_notify(evt);
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    rcode = peer_.get_selector().evt_enqueue_and_notify(evt);
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode connection_impl::recv_sbs_stop_res(const vlg_hdr_rec *pkt_hdr)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sockid:%d, connid:%d, pkt_hdr:%p)", __func__,
               get_socket(), connid(), pkt_hdr))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     IFLOG(inf(TH_ID, LS_INC
-              LS_SBS"[CONNID:%010u-SBSID:%010u][SBSRES:%d, BLZCOD:%d]",
+              LS_SBS"[CONNID:%010u-SBSID:%010u][SBSRES:%d, VLGCOD:%d]",
               connid_,
               pkt_hdr->row_2.sbsrid.sbsrid,
               pkt_hdr->row_1.sbresw.sbresl,
-              pkt_hdr->row_1.sbresw.blzcod))
+              pkt_hdr->row_1.sbresw.vlgcod))
     subscription_impl *sbs = NULL;
-    if((cdrs_res = cli_sbsid_sbs_repo_.get(&pkt_hdr->row_2.sbsrid.sbsrid, &sbs))) {
-        IFLOG(cri(TH_ID, LS_SBT"[error getting sbs from sbsid map - res:%d]", cdrs_res))
+    if((rcode = cli_sbsid_sbs_repo_.get(&pkt_hdr->row_2.sbsrid.sbsrid, &sbs))) {
+        IFLOG(cri(TH_ID, LS_SBT"[error getting sbs from sbsid map - res:%d]", rcode))
     } else {
         sbs->notify_for_start_stop_result();
         if(pkt_hdr->row_1.sbresw.sbresl == SubscriptionResponse_OK) {
@@ -1941,8 +1941,8 @@ vlg::RetCode connection_impl::recv_sbs_stop_res(const vlg_hdr_rec *pkt_hdr)
             detach_subscription(sbs);
         }
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 void connection_impl::on_connect(ConnectivityEventResult con_evt_res,

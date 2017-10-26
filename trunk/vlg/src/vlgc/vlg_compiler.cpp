@@ -105,7 +105,7 @@ void print_comp_ver()
 
 void print_usage()
 {
-    printf("Usage: blzc <parameter> <argument> | <parameter argument list>\n");
+    printf("Usage: vlgc <parameter> <argument> | <parameter argument list>\n");
     printf("where possible parameters include:\n");
     printf("  %-20s%s\n", "-file",
            "Read <parameter> <argument> | <parameter argument list> from a file named \"params\".");

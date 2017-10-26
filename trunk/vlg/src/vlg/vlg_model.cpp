@@ -929,11 +929,11 @@ class entity_manager_impl {
                           model_name))
                 return vlg::RetCode_KO;
             }
-            vlg::RetCode cdrs_res = vlg::RetCode_OK;
-            if((cdrs_res = extend(bem_f()->impl_))) {
+            vlg::RetCode rcode = vlg::RetCode_OK;
+            if((rcode = extend(bem_f()->impl_))) {
                 IFLOG(err(TH_ID, LS_CLO "%s() - failed to extend bem for model:%s, res:%d",
-                          __func__, model_name, cdrs_res))
-                return cdrs_res;
+                          __func__, model_name, rcode))
+                return rcode;
             } else {
                 char mdlv_f_n[VLG_MDL_NAME_LEN] = {0};
                 sprintf(mdlv_f_n, "get_mdl_ver_%s", model_name);
@@ -1753,14 +1753,5 @@ vlg::RetCode nclass::primary_key_string_value(vlg::ascii_string *out)
 /*************************************************************
 -Class Persistence meths END
 **************************************************************/
-
-//-----------------------------
-// #VER#
-//-----------------------------
-const char *model_lib_ver(void)
-{
-    static char str[] = "lib.blzmodel.ver.0.0.0.date:" __DATE__;
-    return str;
-}
 
 }

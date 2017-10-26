@@ -524,7 +524,7 @@ vlg::RetCode transaction_impl::prepare(TransactionRequestType txtype,
 vlg::RetCode transaction_impl::send()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     if(status_ != TransactionStatus_PREPARED) {
         IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
         return vlg::RetCode_BADSTTS;
@@ -538,10 +538,10 @@ vlg::RetCode transaction_impl::send()
     vlg::rt_mark_time(&start_mark_tim_);
     set_flying();
     transaction_impl *self = this;
-    if((cdrs_res = conn_.client_fly_tx_map().put(&txid_, &self))) {
+    if((rcode = conn_.client_fly_tx_map().put(&txid_, &self))) {
         set_status(TransactionStatus_ERROR);
-        IFLOG(err(TH_ID, LS_TRL"[error putting tx into flying map - res:%d]", cdrs_res))
-        return cdrs_res;
+        IFLOG(err(TH_ID, LS_TRL"[error putting tx into flying map - res:%d]", rcode))
+        return rcode;
     }
     IFLOG(inf(TH_ID,
               LS_OUT"[%08x%08x%08x%08x][TXTYPE:%d, TXACT:%d, CLSENC:%d, RSCLREQ:%d]",
@@ -572,17 +572,17 @@ vlg::RetCode transaction_impl::send()
     RETURN_IF_NOT_OK(conn_.pkt_snd_q().put(&gbb))
     selector_event *evt = new selector_event(
         VLG_SELECTOR_Evt_SendPacket, &conn_);
-    if((cdrs_res = peer_.get_selector().evt_enqueue_and_notify(evt))) {
+    if((rcode = peer_.get_selector().evt_enqueue_and_notify(evt))) {
         set_status(TransactionStatus_ERROR);
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, rcode))
+    return rcode;
 }
 
 vlg::RetCode transaction_impl::send_response()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     if(status_ != TransactionStatus_FLYING) {
         IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
         return vlg::RetCode_BADSTTS;
@@ -604,12 +604,12 @@ vlg::RetCode transaction_impl::send_response()
     RETURN_IF_NOT_OK(conn_.pkt_snd_q().put(&gbb))
     selector_event *evt = new selector_event(
         VLG_SELECTOR_Evt_SendPacket, &conn_);
-    cdrs_res = peer_.get_selector().evt_enqueue_and_notify(evt);
-    if(cdrs_res) {
+    rcode = peer_.get_selector().evt_enqueue_and_notify(evt);
+    if(rcode) {
         set_status(TransactionStatus_ERROR);
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p, res:%d)", __func__, this, rcode))
+    return rcode;
 }
 
 //-----------------------------
@@ -801,23 +801,23 @@ vlg::RetCode transaction_impl::await_for_status_reached_or_outdated(
         IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
         return vlg::RetCode_BADSTTS;
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     while(status_ < test) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res = vlg::RetCode_TIMEOUT;
+                rcode = vlg::RetCode_TIMEOUT;
                 break;
             }
         }
     }
     current = status_;
-    IFLOG(log(cdrs_res ? vlg::TL_WRN : vlg::TL_DBG, TH_ID,
+    IFLOG(log(rcode ? vlg::TL_WRN : vlg::TL_DBG, TH_ID,
               LS_CLO "%s(ptr:%p, res:%d) - test:%d [reached or outdated] current:%d",
-              __func__, this, cdrs_res,
+              __func__, this, rcode,
               test, status_))
     CHK_MON_ERR_0(unlock)
-    return cdrs_res;
+    return rcode;
 }
 
 vlg::RetCode transaction_impl::await_for_closure(time_t sec, long nsec)
@@ -829,21 +829,21 @@ vlg::RetCode transaction_impl::await_for_closure(time_t sec, long nsec)
         IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
         return vlg::RetCode_BADSTTS;
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     while(status_ < TransactionStatus_CLOSED) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
-                cdrs_res = vlg::RetCode_TIMEOUT;
+                rcode = vlg::RetCode_TIMEOUT;
                 break;
             }
         }
     }
-    IFLOG(log(cdrs_res ? vlg::TL_WRN : vlg::TL_DBG, TH_ID,
-              LS_CLO "%s(ptr:%p, res:%d) - [closed %s]", __func__, this, cdrs_res,
-              cdrs_res ? "not reached" : "reached"))
+    IFLOG(log(rcode ? vlg::TL_WRN : vlg::TL_DBG, TH_ID,
+              LS_CLO "%s(ptr:%p, res:%d) - [closed %s]", __func__, this, rcode,
+              rcode ? "not reached" : "reached"))
     CHK_MON_ERR_0(unlock)
-    return cdrs_res;
+    return rcode;
 }
 
 //-----------------------------

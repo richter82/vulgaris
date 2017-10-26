@@ -100,40 +100,40 @@ vlg::RetCode peer_impl::class_pers_schema_create(PersistenceAlteringMode
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
         return vlg::RetCode_KO;
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     const entity_desc *class_desc = NULL;
-    if(!(cdrs_res = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
+    if(!(rcode = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
             persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
                 persistence_connection_impl *conn = NULL;
                 if((conn = driv->available_connection(nclass_id))) {
-                    if((cdrs_res = conn->create_entity_schema(mode, bem_, *class_desc))) {
+                    if((rcode = conn->create_entity_schema(mode, bem_, *class_desc))) {
                         IFLOG(err(TH_ID, LS_TRL "%s() - create-schema failed for nclass_id:%d [res:%d]",
-                                  __func__, nclass_id, cdrs_res))
+                                  __func__, nclass_id, rcode))
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
                               __func__, nclass_id))
-                    cdrs_res = vlg::RetCode_KO;
+                    rcode = vlg::RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-driver for nclass_id:%d",
                           __func__, nclass_id))
-                cdrs_res = vlg::RetCode_KO;
+                rcode = vlg::RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "%s() - class is not persistable. [nclass_id:%u]",
                       __func__, nclass_id))
-            cdrs_res = vlg::RetCode_KO;
+            rcode = vlg::RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "%s() - class descriptor not found. [nclass_id:%u]",
                   __func__, nclass_id))
-        cdrs_res = vlg::RetCode_KO;
+        rcode = vlg::RetCode_KO;
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode peer_impl::class_pers_load(unsigned short key,
@@ -146,38 +146,38 @@ vlg::RetCode peer_impl::class_pers_load(unsigned short key,
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
         return vlg::RetCode_KO;
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     unsigned int nclass_id = in_out_obj.get_nclass_id();
     const entity_desc *class_desc = NULL;
-    if(!(cdrs_res = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
+    if(!(rcode = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
             persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
                 persistence_connection_impl *conn = NULL;
                 if((conn = driv->available_connection(nclass_id))) {
-                    cdrs_res = conn->load_entity(key, bem_, ts0_out, ts1_out, in_out_obj);
+                    rcode = conn->load_entity(key, bem_, ts0_out, ts1_out, in_out_obj);
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
                               __func__, nclass_id))
-                    cdrs_res = vlg::RetCode_KO;
+                    rcode = vlg::RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-driver for nclass_id:%d",
                           __func__, nclass_id))
-                cdrs_res = vlg::RetCode_KO;
+                rcode = vlg::RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "%s() - class is not persistable. [nclass_id:%u]",
                       __func__, nclass_id))
-            cdrs_res = vlg::RetCode_KO;
+            rcode = vlg::RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "%s() - class descriptor not found. [nclass_id:%u]",
                   __func__, nclass_id))
-        cdrs_res = vlg::RetCode_KO;
+        rcode = vlg::RetCode_KO;
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode peer_impl::class_pers_save(const nclass &in_obj)
@@ -187,46 +187,46 @@ vlg::RetCode peer_impl::class_pers_save(const nclass &in_obj)
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
         return vlg::RetCode_KO;
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in_obj.get_nclass_id();
     const entity_desc *class_desc = NULL;
-    if(!(cdrs_res = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
+    if(!(rcode = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
             persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
                 persistence_connection_impl *conn = NULL;
                 if((conn = driv->available_connection(nclass_id))) {
-                    if((cdrs_res = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
+                    if((rcode = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_CLO "%s() - failed get per-nclass_id helper class [res:%d]",
-                                  __func__, cdrs_res))
+                                  __func__, rcode))
                     } else {
                         sdr->next_time_stamp(ts0, ts1);
-                        cdrs_res = conn->save_entity(bem_, ts0, ts1, in_obj);
+                        rcode = conn->save_entity(bem_, ts0, ts1, in_obj);
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
                               __func__, nclass_id))
-                    cdrs_res = vlg::RetCode_KO;
+                    rcode = vlg::RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-driver for nclass_id:%d",
                           __func__, nclass_id))
-                cdrs_res = vlg::RetCode_KO;
+                rcode = vlg::RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "%s() - class is not persistable. [nclass_id:%u]",
                       __func__, nclass_id))
-            cdrs_res = vlg::RetCode_KO;
+            rcode = vlg::RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "%s() - class descriptor not found. [nclass_id:%u]",
                   __func__, nclass_id))
-        cdrs_res = vlg::RetCode_KO;
+        rcode = vlg::RetCode_KO;
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode peer_impl::class_pers_update(unsigned short key,
@@ -237,47 +237,47 @@ vlg::RetCode peer_impl::class_pers_update(unsigned short key,
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
         return vlg::RetCode_KO;
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in_obj.get_nclass_id();
     const entity_desc *class_desc = NULL;
-    if(!(cdrs_res = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
+    if(!(rcode = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
             persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
                 persistence_connection_impl *conn = NULL;
                 if((conn = driv->available_connection(nclass_id))) {
-                    if((cdrs_res = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
+                    if((rcode = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_CLO
                                   "%s() - failed get per-nclass_id helper class [res:%d]",
-                                  __func__, cdrs_res))
+                                  __func__, rcode))
                     } else {
                         sdr->next_time_stamp(ts0, ts1);
-                        cdrs_res = conn->update_entity(key, bem_, ts0, ts1, in_obj);
+                        rcode = conn->update_entity(key, bem_, ts0, ts1, in_obj);
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
                               __func__, nclass_id))
-                    cdrs_res = vlg::RetCode_KO;
+                    rcode = vlg::RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-driver for nclass_id:%d",
                           __func__, nclass_id))
-                cdrs_res = vlg::RetCode_KO;
+                rcode = vlg::RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "%s() - class is not persistable. [nclass_id:%u]",
                       __func__, nclass_id))
-            cdrs_res = vlg::RetCode_KO;
+            rcode = vlg::RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "%s() - class descriptor not found. [nclass_id:%u]",
                   __func__, nclass_id))
-        cdrs_res = vlg::RetCode_KO;
+        rcode = vlg::RetCode_KO;
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode peer_impl::class_pers_update_or_save(unsigned short key,
@@ -288,46 +288,46 @@ vlg::RetCode peer_impl::class_pers_update_or_save(unsigned short key,
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
         return vlg::RetCode_KO;
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     unsigned int ts0 = 0, ts1 = 0;
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int nclass_id = in_obj.get_nclass_id();
     const entity_desc *class_desc = NULL;
-    if(!(cdrs_res = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
+    if(!(rcode = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
             persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
                 persistence_connection_impl *conn = NULL;
                 if((conn = driv->available_connection(nclass_id))) {
-                    if((cdrs_res = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
+                    if((rcode = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_TRL "%s() - failed get per-nclass_id helper class [res:%d]",
-                                  __func__, cdrs_res))
+                                  __func__, rcode))
                     } else {
                         sdr->next_time_stamp(ts0, ts1);
-                        cdrs_res = conn->save_or_update_entity(key, bem_, ts0, ts1, in_obj);
+                        rcode = conn->save_or_update_entity(key, bem_, ts0, ts1, in_obj);
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
                               __func__, nclass_id))
-                    cdrs_res = vlg::RetCode_KO;
+                    rcode = vlg::RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-driver for nclass_id:%d",
                           __func__, nclass_id))
-                cdrs_res = vlg::RetCode_KO;
+                rcode = vlg::RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "%s() - class is not persistable. [nclass_id:%u]",
                       __func__, nclass_id))
-            cdrs_res = vlg::RetCode_KO;
+            rcode = vlg::RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "%s() - class descriptor not found. [nclass_id:%u]",
                   __func__, nclass_id))
-        cdrs_res = vlg::RetCode_KO;
+        rcode = vlg::RetCode_KO;
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode peer_impl::class_pers_remove(unsigned short key,
@@ -339,46 +339,46 @@ vlg::RetCode peer_impl::class_pers_remove(unsigned short key,
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
         return vlg::RetCode_KO;
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in_obj.get_nclass_id();
     const entity_desc *class_desc = NULL;
-    if(!(cdrs_res = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
+    if(!(rcode = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
             persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
                 persistence_connection_impl *conn = NULL;
                 if((conn = driv->available_connection(nclass_id))) {
-                    if((cdrs_res = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
+                    if((rcode = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_TRL "%s() - failed get per-nclass_id helper class [res:%d]",
-                                  __func__, cdrs_res))
+                                  __func__, rcode))
                     } else {
                         sdr->next_time_stamp(ts0, ts1);
-                        cdrs_res = conn->remove_entity(key, bem_, ts0, ts1, mode, in_obj);
+                        rcode = conn->remove_entity(key, bem_, ts0, ts1, mode, in_obj);
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
                               __func__, nclass_id))
-                    cdrs_res = vlg::RetCode_KO;
+                    rcode = vlg::RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-driver for nclass_id:%d",
                           __func__, nclass_id))
-                cdrs_res = vlg::RetCode_KO;
+                rcode = vlg::RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "%s() - class is not persistable. [nclass_id:%u]",
                       __func__, nclass_id))
-            cdrs_res = vlg::RetCode_KO;
+            rcode = vlg::RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "%s() - class descriptor not found. [nclass_id:%u]",
                   __func__, nclass_id))
-        cdrs_res = vlg::RetCode_KO;
+        rcode = vlg::RetCode_KO;
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 //-----------------------------
@@ -391,37 +391,37 @@ vlg::RetCode peer_impl::class_distribute(SubscriptionEventType evt_type,
                                          const nclass &obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int ts0 = 0, ts1 = 0;
-    if((cdrs_res = get_per_classid_helper_class(obj.get_nclass_id(), &sdr))) {
+    if((rcode = get_per_classid_helper_class(obj.get_nclass_id(), &sdr))) {
         IFLOG(cri(TH_ID, LS_TRL "%s() - failed get per-nclass_id helper class [res:%d]",
-                  __func__, cdrs_res))
+                  __func__, rcode))
     } else {
         sdr->next_time_stamp(ts0, ts1);
         if(sdr->get_srv_connid_condesc_set().size()) {
             subscription_event_impl *new_sbs_event = NULL;
-            if(!(cdrs_res = build_sbs_event(sdr->next_sbs_evt_id(),
-                                            evt_type,
-                                            proto_code,
-                                            ts0,
-                                            ts1,
-                                            act,
-                                            &obj,
-                                            &new_sbs_event))) {
-                if((cdrs_res = submit_sbs_evt_task(*new_sbs_event,
-                                                   sdr->get_srv_connid_condesc_set()))) {
+            if(!(rcode = build_sbs_event(sdr->next_sbs_evt_id(),
+                                         evt_type,
+                                         proto_code,
+                                         ts0,
+                                         ts1,
+                                         act,
+                                         &obj,
+                                         &new_sbs_event))) {
+                if((rcode = submit_sbs_evt_task(*new_sbs_event,
+                                                sdr->get_srv_connid_condesc_set()))) {
                     IFLOG(err(TH_ID, LS_TRL "%s() - SubmitSbsEvtTask failed with res:%d", __func__,
-                              cdrs_res))
+                              rcode))
                 }
             } else {
                 IFLOG(cri(TH_ID, LS_TRL "%s() - BuildSbsEvent failed with res:%d", __func__,
-                          cdrs_res))
+                          rcode))
             }
         }
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 //-----------------------------
@@ -436,46 +436,46 @@ vlg::RetCode peer_impl::class_pers_save_and_distribute(
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
         return vlg::RetCode_KO;
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in_obj.get_nclass_id();
     const entity_desc *class_desc = NULL;
-    if(!(cdrs_res = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
+    if(!(rcode = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
             persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
                 persistence_connection_impl *conn = NULL;
                 if((conn = driv->available_connection(nclass_id))) {
-                    if((cdrs_res = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
+                    if((rcode = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_CLO "%s() - failed get per-nclass_id helper class [res:%d]",
-                                  __func__, cdrs_res))
+                                  __func__, rcode))
                     } else {
                         sdr->next_time_stamp(ts0, ts1);
-                        cdrs_res = conn->save_entity(bem_, ts0, ts1, in_obj);
+                        rcode = conn->save_entity(bem_, ts0, ts1, in_obj);
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
                               __func__, nclass_id))
-                    cdrs_res = vlg::RetCode_KO;
+                    rcode = vlg::RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-driver for nclass_id:%d",
                           __func__, nclass_id))
-                cdrs_res = vlg::RetCode_KO;
+                rcode = vlg::RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "%s() - class is not persistable. [nclass_id:%u]",
                       __func__, nclass_id))
-            cdrs_res = vlg::RetCode_KO;
+            rcode = vlg::RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "%s() - class descriptor not found. [nclass_id:%u]",
                   __func__, nclass_id))
-        cdrs_res = vlg::RetCode_KO;
+        rcode = vlg::RetCode_KO;
     }
     //**** SBS MNG BG
-    if(!cdrs_res) {
+    if(!rcode) {
         if(sdr->get_srv_connid_condesc_set().size()) {
             unsigned int ts1 = 0;
             subscription_event_impl *new_sbs_event = NULL;
@@ -492,8 +492,8 @@ vlg::RetCode peer_impl::class_pers_save_and_distribute(
         }
     }
     //**** SBS MNG END
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode peer_impl::class_pers_update_and_distribute(unsigned short key,
@@ -504,46 +504,46 @@ vlg::RetCode peer_impl::class_pers_update_and_distribute(unsigned short key,
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
         return vlg::RetCode_KO;
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in_obj.get_nclass_id();
     const entity_desc *class_desc = NULL;
-    if(!(cdrs_res = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
+    if(!(rcode = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
             persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
                 persistence_connection_impl *conn = NULL;
                 if((conn = driv->available_connection(nclass_id))) {
-                    if((cdrs_res = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
+                    if((rcode = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_CLO "%s() - failed get per-nclass_id helper class [res:%d]",
-                                  __func__, cdrs_res))
+                                  __func__, rcode))
                     } else {
                         sdr->next_time_stamp(ts0, ts1);
-                        cdrs_res = conn->update_entity(key, bem_, ts0, ts1, in_obj);
+                        rcode = conn->update_entity(key, bem_, ts0, ts1, in_obj);
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
                               __func__, nclass_id))
-                    cdrs_res = vlg::RetCode_KO;
+                    rcode = vlg::RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-driver for nclass_id:%d",
                           __func__, nclass_id))
-                cdrs_res = vlg::RetCode_KO;
+                rcode = vlg::RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "%s() - class is not persistable. [nclass_id:%u]",
                       __func__, nclass_id))
-            cdrs_res = vlg::RetCode_KO;
+            rcode = vlg::RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "%s() - class descriptor not found. [nclass_id:%u]",
                   __func__, nclass_id))
-        cdrs_res = vlg::RetCode_KO;
+        rcode = vlg::RetCode_KO;
     }
     //**** SBS MNG BG
-    if(!cdrs_res) {
+    if(!rcode) {
         if(sdr->get_srv_connid_condesc_set().size()) {
             subscription_event_impl *new_sbs_event = NULL;
             RETURN_IF_NOT_OK(build_sbs_event(sdr->next_sbs_evt_id(),
@@ -559,8 +559,8 @@ vlg::RetCode peer_impl::class_pers_update_and_distribute(unsigned short key,
         }
     }
     //**** SBS MNG END
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode peer_impl::class_pers_update_or_save_and_distribute(
@@ -572,46 +572,46 @@ vlg::RetCode peer_impl::class_pers_update_or_save_and_distribute(
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
         return vlg::RetCode_KO;
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     unsigned int ts0 = 0, ts1 = 0;
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int nclass_id = in_obj.get_nclass_id();
     const entity_desc *class_desc = NULL;
-    if(!(cdrs_res = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
+    if(!(rcode = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
             persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
                 persistence_connection_impl *conn = NULL;
                 if((conn = driv->available_connection(nclass_id))) {
-                    if((cdrs_res = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
+                    if((rcode = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_TRL "%s() - failed get per-nclass_id helper class [res:%d]",
-                                  __func__, cdrs_res))
+                                  __func__, rcode))
                     } else {
                         sdr->next_time_stamp(ts0, ts1);
-                        cdrs_res = conn->save_or_update_entity(key, bem_, ts0, ts1, in_obj);
+                        rcode = conn->save_or_update_entity(key, bem_, ts0, ts1, in_obj);
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
                               __func__, nclass_id))
-                    cdrs_res = vlg::RetCode_KO;
+                    rcode = vlg::RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-driver for nclass_id:%d",
                           __func__, nclass_id))
-                cdrs_res = vlg::RetCode_KO;
+                rcode = vlg::RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "%s() - class is not persistable. [nclass_id:%u]",
                       __func__, nclass_id))
-            cdrs_res = vlg::RetCode_KO;
+            rcode = vlg::RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "%s() - class descriptor not found. [nclass_id:%u]",
                   __func__, nclass_id))
-        cdrs_res = vlg::RetCode_KO;
+        rcode = vlg::RetCode_KO;
     }
     //**** SBS MNG BG
-    if(!cdrs_res) {
+    if(!rcode) {
         if(sdr->get_srv_connid_condesc_set().size()) {
             subscription_event_impl *new_sbs_event = NULL;
             RETURN_IF_NOT_OK(build_sbs_event(sdr->next_sbs_evt_id(),
@@ -627,8 +627,8 @@ vlg::RetCode peer_impl::class_pers_update_or_save_and_distribute(
         }
     }
     //**** SBS MNG END
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 vlg::RetCode peer_impl::class_pers_remove_and_distribute(unsigned short key,
@@ -640,46 +640,46 @@ vlg::RetCode peer_impl::class_pers_remove_and_distribute(unsigned short key,
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
         return vlg::RetCode_KO;
     }
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in_obj.get_nclass_id();
     const entity_desc *class_desc = NULL;
-    if(!(cdrs_res = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
+    if(!(rcode = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
             persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
                 persistence_connection_impl *conn = NULL;
                 if((conn = driv->available_connection(nclass_id))) {
-                    if((cdrs_res = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
+                    if((rcode = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_TRL "%s() - failed get per-nclass_id helper class [res:%d]",
-                                  __func__, cdrs_res))
+                                  __func__, rcode))
                     } else {
                         sdr->next_time_stamp(ts0, ts1);
-                        cdrs_res = conn->remove_entity(key, bem_, ts0, ts1, mode, in_obj);
+                        rcode = conn->remove_entity(key, bem_, ts0, ts1, mode, in_obj);
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
                               __func__, nclass_id))
-                    cdrs_res = vlg::RetCode_KO;
+                    rcode = vlg::RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-driver for nclass_id:%d",
                           __func__, nclass_id))
-                cdrs_res = vlg::RetCode_KO;
+                rcode = vlg::RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "%s() - class is not persistable. [nclass_id:%u]",
                       __func__, nclass_id))
-            cdrs_res = vlg::RetCode_KO;
+            rcode = vlg::RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "%s() - class descriptor not found. [nclass_id:%u]",
                   __func__, nclass_id))
-        cdrs_res = vlg::RetCode_KO;
+        rcode = vlg::RetCode_KO;
     }
     //**** SBS MNG BG
-    if(!cdrs_res) {
+    if(!rcode) {
         if(sdr->get_srv_connid_condesc_set().size()) {
             subscription_event_impl *new_sbs_event = NULL;
             RETURN_IF_NOT_OK(build_sbs_event(sdr->next_sbs_evt_id(),
@@ -696,8 +696,8 @@ vlg::RetCode peer_impl::class_pers_remove_and_distribute(unsigned short key,
         }
     }
     //**** SBS MNG END
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, cdrs_res))
-    return cdrs_res;
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
+    return rcode;
 }
 
 }

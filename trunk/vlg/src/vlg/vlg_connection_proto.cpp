@@ -98,7 +98,7 @@ int dump_vlg_hdr_rec(const vlg_hdr_ptr hdr, char *out)
         case VLG_PKT_TXRESP_ID:
             /*TRANSACTION RESPONSE*/
             offst += sprintf(&out[offst], "TXRESW[%x|%x|%04x]", hdr->row_1.txresw.txresl,
-                             hdr->row_1.txresw.blzcod,
+                             hdr->row_1.txresw.vlgcod,
                              hdr->row_1.txresw.rescls);
             offst += sprintf(&out[offst], "TXPLID[%u]", hdr->row_2.txplid.txplid);
             offst += sprintf(&out[offst], "TXSVID[%u]", hdr->row_3.txsvid.txsvid);
@@ -129,7 +129,7 @@ int dump_vlg_hdr_rec(const vlg_hdr_ptr hdr, char *out)
         case VLG_PKT_SBSRES_ID:
             /*SUBSCRIPTION RESPONSE*/
             offst += sprintf(&out[offst], "SBRESW[%x|%x]", hdr->row_1.sbresw.sbresl,
-                             hdr->row_1.sbresw.blzcod);
+                             hdr->row_1.sbresw.vlgcod);
             offst += sprintf(&out[offst], "RQSTID[%010u]", hdr->row_2.rqstid.rqstid);
             if(hdr->phdr.hdrlen == 4) {
                 offst += sprintf(&out[offst], "SBSRID[%010u]", hdr->row_3.sbsrid.sbsrid);
@@ -140,7 +140,7 @@ int dump_vlg_hdr_rec(const vlg_hdr_ptr hdr, char *out)
             offst += sprintf(&out[offst], "SBSRID[%010u]", hdr->row_1.sbsrid.sbsrid);
             offst += sprintf(&out[offst], "SEVTTP[%02x|%x|%04x|]", hdr->row_2.sevttp.sevttp,
                              hdr->row_2.sevttp.sbeact,
-                             hdr->row_2.sevttp.blzcod);
+                             hdr->row_2.sevttp.vlgcod);
             offst += sprintf(&out[offst], "SEVTID[%010u]", hdr->row_3.sevtid.sevtid);
             offst += sprintf(&out[offst], "TMSTMP[0][%010u]", hdr->row_4.tmstmp.tmstmp);
             offst += sprintf(&out[offst], "TMSTMP[1][%010u]", hdr->row_5.tmstmp.tmstmp);
@@ -160,7 +160,7 @@ int dump_vlg_hdr_rec(const vlg_hdr_ptr hdr, char *out)
         case VLG_PKT_SBSSPR_ID:
             /*SUBSCRIPTION STOP RESPONSE*/
             offst += sprintf(&out[offst], "SBRESW[%x|%x]", hdr->row_1.sbresw.sbresl,
-                             hdr->row_1.sbresw.blzcod);
+                             hdr->row_1.sbresw.vlgcod);
             if(hdr->phdr.hdrlen == 3) {
                 offst += sprintf(&out[offst], "SBSRID[%010u]", hdr->row_2.sbsrid.sbsrid);
             }
@@ -345,7 +345,7 @@ inline void Encode_WRD_TXRESW(const VLG_WRD_TXRESW_REC *rec,
     HGFE DCBA RQPO NMLI | 0000 0000 0000 0000 -->
     0000 0000 0000 0000 | RQPO NMLI HGFE DCBA
     ******************************************/
-    int tui = rec->blzcod;
+    int tui = rec->vlgcod;
     data_out |= (htonl(tui) & 0xFFFF0000);
     obb->append_uint(data_out);
 }
@@ -418,7 +418,7 @@ inline void Encode_WRD_SBRESW(const VLG_WRD_SBRESW_REC *rec,
     HGFE DCBA RQPO NMLI | 0000 0000 0000 0000 -->
     0000 0000 0000 0000 | RQPO NMLI HGFE DCBA
     ******************************************/
-    unsigned int tui = rec->blzcod;
+    unsigned int tui = rec->vlgcod;
     data_out |= (htonl(tui) & 0xFFFF0000);
     obb->append_uint(data_out);
 }
@@ -449,7 +449,7 @@ inline void Encode_WRD_SEVTTP(const VLG_WRD_SEVTTP_REC *rec,
     HGFE DCBA RQPO NMLI | 0000 0000 0000 0000 -->
     0000 0000 0000 0000 | RQPO NMLI HGFE DCBA
     ******************************************/
-    unsigned int tui = rec->blzcod;
+    unsigned int tui = rec->vlgcod;
     data_out |= (htonl(tui) & 0xFFFF0000);
     obb->append_uint(data_out);
 }
@@ -541,12 +541,12 @@ inline void Decode_WRD_TXRESW(const unsigned int *data_in,
     rec->txresl = static_cast<TransactionResult>((*data_in >> 5) & 0x7);
     //RESCLS |000b0000000000000000000000000000|
     rec->rescls = static_cast<bool>((*data_in >> 4) & 0x1);
-    //BLZCOD |0000000000000000RRRRRRRRRRRRRRRR|
+    //VLGCOD |0000000000000000RRRRRRRRRRRRRRRR|
     /******************************************
     HGFE DCBA RQPO NMLI | 0000 0000 0000 0000 -->
     0000 0000 0000 0000 | RQPO NMLI HGFE DCBA
     ******************************************/
-    rec->blzcod = static_cast<ProtocolCode>(ntohl(*data_in) & 0xFFFF);
+    rec->vlgcod = static_cast<ProtocolCode>(ntohl(*data_in) & 0xFFFF);
 }
 
 inline void Decode_WRD_TXPLID(const unsigned int *data_in,
@@ -609,12 +609,12 @@ inline void Decode_WRD_SBRESW(const unsigned int *data_in,
 {
     //SBRESL |XXX00000000000000000000000000000|
     rec->sbresl = static_cast<SubscriptionResponse>((*data_in >> 5) & 0x7);
-    //BLZCOD |0000000000000000RRRRRRRRRRRRRRRR|
+    //VLGCOD |0000000000000000RRRRRRRRRRRRRRRR|
     /******************************************
     HGFE DCBA RQPO NMLI | 0000 0000 0000 0000 -->
     0000 0000 0000 0000 | RQPO NMLI HGFE DCBA
     ******************************************/
-    rec->blzcod = static_cast<ProtocolCode>(ntohl(*data_in) & 0xFFFF);
+    rec->vlgcod = static_cast<ProtocolCode>(ntohl(*data_in) & 0xFFFF);
 }
 
 inline void Decode_WRD_SBSRID(const unsigned int *data_in,
@@ -638,12 +638,12 @@ inline void Decode_WRD_SEVTTP(const unsigned int *data_in,
     rec->sevttp = static_cast<SubscriptionEventType>((*data_in >> 4) & 0xF);
     //SBEACT |0000AAA0000000000000000000000000|
     rec->sbeact = static_cast<Action>((*data_in >> 1) & 0x7);
-    //BLZCOD |0000000000000000RRRRRRRRRRRRRRRR|
+    //VLGCOD |0000000000000000RRRRRRRRRRRRRRRR|
     /******************************************
     HGFE DCBA RQPO NMLI | 0000 0000 0000 0000 -->
     0000 0000 0000 0000 | RQPO NMLI HGFE DCBA
     ******************************************/
-    rec->blzcod = static_cast<ProtocolCode>(ntohl(*data_in) & 0xFFFF);
+    rec->vlgcod = static_cast<ProtocolCode>(ntohl(*data_in) & 0xFFFF);
 }
 
 /*****************************************
@@ -779,7 +779,7 @@ void build_PKT_TXRQST(TransactionRequestType txtype,
 
 //TRANSACTION RESPONSE
 void build_PKT_TXRESP(TransactionResult txresl,
-                      ProtocolCode blzcod,
+                      ProtocolCode vlgcod,
                       tx_id *txid,
                       bool rescls,
                       Encode enctyp,
@@ -791,7 +791,7 @@ void build_PKT_TXRESP(TransactionResult txresl,
     pkthdr.prover = VLG_PROTO_VER;
     pkthdr.pkttyp = VLG_PKT_TXRESP_ID;
     txresw.txresl = txresl;
-    txresw.blzcod = blzcod;
+    txresw.vlgcod = vlgcod;
     txresw.rescls = rescls;
     if(rescls) {
         pkthdr.hdrlen = 8;
@@ -862,7 +862,7 @@ void build_PKT_SBSREQ(SubscriptionType sbstyp,
 
 //SUBSCRIPTION RESPONSE
 void build_PKT_SBSRES(SubscriptionResponse sbresl,
-                      ProtocolCode blzcod,
+                      ProtocolCode vlgcod,
                       unsigned int rqstid,
                       unsigned int sbsrid,
                       vlg::grow_byte_buffer *obb)
@@ -872,7 +872,7 @@ void build_PKT_SBSRES(SubscriptionResponse sbresl,
     pkthdr.prover = VLG_PROTO_VER;
     pkthdr.pkttyp = VLG_PKT_SBSRES_ID;
     sbresw.sbresl = sbresl;
-    sbresw.blzcod = blzcod;
+    sbresw.vlgcod = vlgcod;
     if(sbsrid) {
         pkthdr.hdrlen = 4;
         Encode_WRD_PKTHDR(&pkthdr, obb);
@@ -891,7 +891,7 @@ void build_PKT_SBSRES(SubscriptionResponse sbresl,
 void build_PKT_SBSEVT(unsigned int sbsrid,
                       SubscriptionEventType sevttp,
                       Action sbeact,
-                      ProtocolCode blzcod,
+                      ProtocolCode vlgcod,
                       unsigned int sevtid,
                       unsigned int tmstp0,
                       unsigned int tmstp1,
@@ -903,7 +903,7 @@ void build_PKT_SBSEVT(unsigned int sbsrid,
     pkthdr.pkttyp = VLG_PKT_SBSEVT_ID;
     sevttpw.sevttp = sevttp;
     sevttpw.sbeact = sbeact;
-    sevttpw.blzcod = blzcod;
+    sevttpw.vlgcod = vlgcod;
     if(sevttp != SubscriptionEventType_DOWNLOAD_END) {
         pkthdr.hdrlen = 7;
         Encode_WRD_PKTHDR(&pkthdr, obb);
@@ -952,7 +952,7 @@ void build_PKT_SBSTOP(unsigned int sbsrid,
 
 //SUBSCRIPTION STOP RESPONSE
 void build_PKT_SBSSPR(SubscriptionResponse sbresl,
-                      ProtocolCode blzcod,
+                      ProtocolCode vlgcod,
                       unsigned int sbsrid,
                       vlg::grow_byte_buffer *obb)
 {
@@ -961,7 +961,7 @@ void build_PKT_SBSSPR(SubscriptionResponse sbresl,
     pkthdr.prover = VLG_PROTO_VER;
     pkthdr.pkttyp = VLG_PKT_SBSSPR_ID;
     sbresw.sbresl = sbresl;
-    sbresw.blzcod = blzcod;
+    sbresw.vlgcod = vlgcod;
     if(sbsrid) {
         pkthdr.hdrlen = 3;
         Encode_WRD_PKTHDR(&pkthdr, obb);
@@ -980,7 +980,7 @@ void build_PKT_SBSSPR(SubscriptionResponse sbresl,
 
 inline vlg::RetCode connection_impl::recv_single_hdr_row(unsigned int *hdr_row)
 {
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     bool stay = true;
     long brecv = 0, tot_brecv = 0, recv_buf_sz = VLG_WRD_BYTE_SIZE;
     char buff[VLG_WRD_BYTE_SIZE] = {0};
@@ -993,24 +993,24 @@ inline vlg::RetCode connection_impl::recv_single_hdr_row(unsigned int *hdr_row)
                       __func__, brecv, tot_brecv, recv_buf_sz))
         }
         if(tot_brecv != VLG_WRD_BYTE_SIZE) {
-            if((cdrs_res = socket_excptn_hndl(brecv)) != vlg::RetCode_SCKEAGN) {
+            if((rcode = socket_excptn_hndl(brecv)) != vlg::RetCode_SCKEAGN) {
                 stay = false;
             } else {
-                cdrs_res = vlg::RetCode_OK;
+                rcode = vlg::RetCode_OK;
             }
         } else {
             break;
         }
     }
     memcpy(hdr_row, buff, VLG_WRD_BYTE_SIZE);
-    return cdrs_res;
+    return rcode;
 }
 
-#define RCVSNGLROW if((cdrs_res = recv_single_hdr_row(&hdr_row))) return cdrs_res;
+#define RCVSNGLROW if((rcode = recv_single_hdr_row(&hdr_row))) return rcode;
 
 vlg::RetCode connection_impl::recv_and_decode_hdr(vlg_hdr_rec *pkt_hdr)
 {
-    vlg::RetCode cdrs_res = vlg::RetCode_OK;
+    vlg::RetCode rcode = vlg::RetCode_OK;
     unsigned int hdr_row = 0;
     RCVSNGLROW
     Decode_WRD_PKTHDR(&hdr_row, &pkt_hdr->phdr);
@@ -1167,7 +1167,7 @@ vlg::RetCode connection_impl::recv_and_decode_hdr(vlg_hdr_rec *pkt_hdr)
         default:
             return vlg::RetCode_DRPPKT;
     }
-    return cdrs_res;
+    return rcode;
 }
 
 }

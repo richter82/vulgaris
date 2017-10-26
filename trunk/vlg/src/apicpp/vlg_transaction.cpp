@@ -148,13 +148,13 @@ class transaction_impl_pub {
         }
 
         vlg::RetCode bind_implernal(connection &conn) {
-            vlg::RetCode cdrs_res = vlg::RetCode_OK;
+            vlg::RetCode rcode = vlg::RetCode_OK;
             if(conn.get_connection_type() == ConnectionType_OUTGOING) {
                 transaction_impl *t_impl = NULL;
-                if((cdrs_res = conn.get_implernal()->new_transaction(&t_impl,
-                                                                     vlg_client_tx_factory_timpl,
-                                                                     true,
-                                                                     &publ_)) == vlg::RetCode_OK) {
+                if((rcode = conn.get_implernal()->new_transaction(&t_impl,
+                                                                  vlg_client_tx_factory_timpl,
+                                                                  true,
+                                                                  &publ_)) == vlg::RetCode_OK) {
                     int_ = t_impl;
                     vlg::collector &c = int_->get_collector();
                     c.retain(int_);
@@ -162,7 +162,7 @@ class transaction_impl_pub {
             }
             int_->set_transaction_status_change_handler(
                 transaction_status_change_hndlr_timpl, this);
-            return cdrs_res;
+            return rcode;
         }
 
     private:
