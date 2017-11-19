@@ -1,0 +1,25 @@
+SRC = ../test/src/vlg_test_peer_both.cpp
+OBJ = $(SRC:.cpp=.o)
+OUTDIR = ../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/bin
+INCLUDES = 	-I../public\
+			-I../public/cpp\
+			-I../src\
+			-I../src/cr\
+			-I../test/sample_vlg_model
+			
+CCFLAGS = -std=c++11 -Wall -fPIC -DSTA_L $(CC_DBG_REL_OPT)
+CCC = g++
+LDLIBS= -L../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/lib -L../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/contrib/lib -lsmplmdl -ldrvsqlite -lsqlite -lapicpp -lvlg -lcr -lpthread $(LD_ARCH_LIB)
+
+default: peer
+
+all: clean peer
+
+.cpp.o:
+	$(CCC) $(INCLUDES) $(CCFLAGS) -c $< -o $@
+
+peer: $(OBJ)
+	$(CCC) $(LD_DBG_REL_OPT) -o $(OUTDIR)/peer $(OBJ) $(LDLIBS)
+
+clean:
+	rm -f $(OBJ) $(OUTDIR)/peer
