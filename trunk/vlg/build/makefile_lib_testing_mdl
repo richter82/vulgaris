@@ -1,9 +1,10 @@
-SRC = ../test/sample_blz_model/blz_model_sample.cpp
+SRC = ../test/sample_vlg_model/vlg_model_sample.cpp
 OBJ = $(SRC:.cpp=.o)
 OUTDIR = ../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/lib
-INCLUDES = 	-I../public/cpp\
+INCLUDES = 	-I../public\
+			-I../public/cpp\
 			-I../src\
-			-I../src/crlib
+			-I../src/cr
 			
 CCFLAGS = -std=c++11 -Wall -fPIC $(CC_DBG_REL_OPT)
 CCC = g++
@@ -11,12 +12,12 @@ CCC = g++
 .cpp.o:
 	$(CCC) $(INCLUDES) $(CCFLAGS) -c $< -o $@
 
-default: libblz_model_sample
+default: libsmplmdl
 	
-all: clean libblz_model_sample
+all: clean libsmplmdl
 	
-libblz_model_sample:	$(OBJ)
-	ar rcs $(OUTDIR)/libblz_model_sample.a $(OBJ)
+libsmplmdl:	$(OBJ)
+	ar rcs $(OUTDIR)/libsmplmdl.a $(OBJ)
 
 clean:
-	rm -f $(OBJ) $(OUTDIR)/libblz_model_sample.a
+	rm -f $(OBJ) $(OUTDIR)/libsmplmdl.a

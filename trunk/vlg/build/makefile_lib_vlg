@@ -1,0 +1,38 @@
+SRC =	../src/vlg/vlg_peer_impl.cpp\
+		../src/vlg/vlg_acceptor.cpp\
+		../src/vlg/vlg_selector.cpp\
+		../src/vlg/vlg_connection_proto.cpp\
+		../src/vlg/vlg_connection_impl.cpp\
+		../src/vlg/vlg_peer_automa.cpp\
+		../src/vlg/vlg_transaction_impl.cpp\
+		../src/vlg/vlg_subscription_impl.cpp\
+		../src/vlg/vlg_peer_pers_sbs.cpp\
+		../src/vlg/vlg_restore.cpp\
+		../src/vlg/vlg_model.cpp\
+		../src/vlg/vlg_model_utl.cpp\
+		../src/vlg/vlg_pers_impl.cpp\
+		../src/vlg/vlg_pers_mng.cpp
+		
+OBJ = $(SRC:.cpp=.o)
+OUTDIR = ../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/lib
+INCLUDES = 	-I../public\
+			-I../public/cpp\
+			-I../src\
+			-I../src/cr
+			
+CCFLAGS = -std=c++11 -Wall -fPIC $(CC_DBG_REL_OPT)
+CCC = g++
+
+.cpp.o:
+	$(CCC) $(INCLUDES) $(CCFLAGS) -c $< -o $@
+
+default: libvlg
+	
+all: clean libvlg
+
+libvlg:	$(OBJ)
+	ar rcs $(OUTDIR)/libvlg.a $(OBJ)
+
+clean:
+	rm -f $(OBJ) $(OUTDIR)/libvlg.a
+	

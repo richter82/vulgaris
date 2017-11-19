@@ -1,9 +1,10 @@
-SRC =	../src/blzdrisqlitelib/blz_drv_sqlite.cpp
+SRC =	../src/drisqlite/vlg_drv_sqlite.cpp
 OBJ = $(SRC:.cpp=.o)
 OUTDIR = ../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/lib
-INCLUDES = 	-I../public/cpp\
+INCLUDES = 	-I../public\
+			-I../public/cpp\
 			-I../src\
-			-I../src/crlib\
+			-I../src/cr\
 			-I../contrib/sqlite
 			
 CCFLAGS = -std=c++11 -Wall -fPIC $(CC_DBG_REL_OPT)
@@ -12,12 +13,12 @@ CCC = g++
 .cpp.o:
 	$(CCC) $(INCLUDES) $(CCFLAGS) -c $< -o $@
 
-default: libblzdrisqlite
+default: libdrvsqlite
 	
-all: clean libblzdrisqlite
+all: clean libdrvsqlite
 	
-libblzdrisqlite:	$(OBJ)
-	ar rcs $(OUTDIR)/libblzdrisqlite.a $(OBJ)
+libdrvsqlite:	$(OBJ)
+	ar rcs $(OUTDIR)/libdrvsqlite.a $(OBJ)
 
 clean:
-	rm -f $(OBJ) $(OUTDIR)/libblzdrisqlite.a
+	rm -f $(OBJ) $(OUTDIR)/libdrvsqlite.a
