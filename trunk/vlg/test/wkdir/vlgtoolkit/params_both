@@ -8,7 +8,7 @@
 -cli_exectrs		2
 -Xsel_tmout_sec		3600
 -Xsel_tmout_usec	0
--load_model			blz_model_sample
+-load_model			smplmdl
 -load_pers_driv		sqlite
 -pers_enabled
 -pers_schema_create

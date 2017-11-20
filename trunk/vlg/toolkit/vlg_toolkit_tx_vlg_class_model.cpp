@@ -155,7 +155,7 @@ void enum_generate_tx_model_rep(const vlg::hash_map &map, const void *key,
 vlg_toolkit_tx_vlg_class_model::vlg_toolkit_tx_vlg_class_model(
     const vlg::entity_desc &edesc,
     const vlg::entity_manager &bem,
-    vlg::transaction_int &tx,
+    vlg::transaction_impl &tx,
     QObject *parent) :
     edesc_(edesc),
     bem_(bem),

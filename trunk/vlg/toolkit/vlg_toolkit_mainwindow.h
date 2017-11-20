@@ -92,7 +92,7 @@ class vlg_toolkit_MainWindow : public QMainWindow {
 
     private:
         void AddNewModelTab();
-        void AddNewConnectionTab(vlg::connection_int &new_conn,
+        void AddNewConnectionTab(vlg::connection_impl &new_conn,
                                  const QString &host,
                                  const QString &port,
                                  const QString &usr,

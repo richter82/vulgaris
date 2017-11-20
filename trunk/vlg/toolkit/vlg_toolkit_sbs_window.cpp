@@ -57,7 +57,7 @@ vlg_toolkit_sbs_vlg_class_model &vlg_toolkit_sbs_model::wrapped_mdl()
 // vlg_toolkit_sbs_window
 //------------------------------------------------------------------------------
 
-void sbs_status_change_hndlr(vlg::subscription_int &sbs,
+void sbs_status_change_hndlr(vlg::subscription_impl &sbs,
                              vlg::SubscriptionStatus status, void *ud)
 {
     vlg_toolkit_sbs_window *sbw = (vlg_toolkit_sbs_window *)ud;
@@ -65,8 +65,8 @@ void sbs_status_change_hndlr(vlg::subscription_int &sbs,
     sbw->EmitSbsStatus(status);
 }
 
-void sbs_evt_notify_hndlr(vlg::subscription_int &sbs,
-                          vlg::subscription_event_int &sbs_evt,
+void sbs_evt_notify_hndlr(vlg::subscription_impl &sbs,
+                          vlg::subscription_event_impl &sbs_evt,
                           void *ud)
 {
     vlg_toolkit_sbs_window *sbw = (vlg_toolkit_sbs_window *)ud;
@@ -76,7 +76,7 @@ void sbs_evt_notify_hndlr(vlg::subscription_int &sbs,
 
 vlg_toolkit_sbs_window::vlg_toolkit_sbs_window(const vlg::entity_desc &edesc,
                                                const vlg::entity_manager &bem,
-                                               vlg::subscription_int &sbs,
+                                               vlg::subscription_impl &sbs,
                                                vlg_toolkit_sbs_vlg_class_model &mdl,
                                                QWidget *parent) :
     sbs_(sbs),
@@ -96,8 +96,8 @@ vlg_toolkit_sbs_window::vlg_toolkit_sbs_window(const vlg::entity_desc &edesc,
     connect(this, SIGNAL(SignalSbsStatusChange(vlg::SubscriptionStatus)),
             this,
             SLOT(OnSbsStatusChange(vlg::SubscriptionStatus)));
-    connect(this, SIGNAL(SignalSbsEvent(vlg::subscription_event_int *)), this,
-            SLOT(OnSbsEvent(vlg::subscription_event_int *)));
+    connect(this, SIGNAL(SignalSbsEvent(vlg::subscription_event_impl *)), this,
+            SLOT(OnSbsEvent(vlg::subscription_event_impl *)));
     connect(ui->vlg_class_sbs_table_view,
             SIGNAL(customContextMenuRequested(const QPoint &)), this,
             SLOT(OnCustomMenuRequested(const QPoint &)));
@@ -252,7 +252,7 @@ void vlg_toolkit_sbs_window::OnSbsStatusChange(vlg::SubscriptionStatus
     }
 }
 
-void vlg_toolkit_sbs_window::OnSbsEvent(vlg::subscription_event_int *sbs_evt)
+void vlg_toolkit_sbs_window::OnSbsEvent(vlg::subscription_event_impl *sbs_evt)
 {
     //qDebug() << "OnSbsEvent slot called";
     if(sbs_evt->get_evttype() !=
@@ -307,7 +307,7 @@ void vlg_toolkit_sbs_window::OnNewTxRequested()
         return;
     }
 
-    vlg::transaction_int *new_tx = NULL;
+    vlg::transaction_impl *new_tx = NULL;
     sbs_.get_connection().new_transaction(&new_tx);
     new_tx->set_request_obj(item);
 
@@ -340,7 +340,7 @@ void vlg_toolkit_sbs_window::EmitSbsStatus(vlg::SubscriptionStatus
     emit SignalSbsStatusChange(status);
 }
 
-void vlg_toolkit_sbs_window::EmitSbsEvent(vlg::subscription_event_int
+void vlg_toolkit_sbs_window::EmitSbsEvent(vlg::subscription_event_impl
                                           *sbs_evt)
 {
     vlg::collector &c = sbs_evt->get_collector();
@@ -364,7 +364,7 @@ void vlg_toolkit_sbs_window::SbsStoppedActions()
     ui->sbsid_label_disp->setText(QString("%1").arg(sbs_.sbsid()));
 }
 
-vlg::subscription_int &vlg_toolkit_sbs_window::sbs() const
+vlg::subscription_impl &vlg_toolkit_sbs_window::sbs() const
 {
     return sbs_;
 }

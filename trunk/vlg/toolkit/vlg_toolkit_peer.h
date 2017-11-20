@@ -29,7 +29,7 @@ namespace vlg_tlkt {
 //------------------------------------------------------------------------------
 // ****VLG_TOOLKIT_PEER****
 //------------------------------------------------------------------------------
-class toolkit_peer : public vlg::peer_int {
+class toolkit_peer : public vlg::peer_impl {
     public:
         //---ctors
         toolkit_peer(unsigned int id);

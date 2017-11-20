@@ -62,7 +62,7 @@ class vlg_toolkit_tx_vlg_class_model : public QAbstractTableModel {
     public:
         vlg_toolkit_tx_vlg_class_model(const vlg::entity_desc &edesc,
                                        const vlg::entity_manager &bem,
-                                       vlg::transaction_int &tx,
+                                       vlg::transaction_impl &tx,
                                        QObject *parent = 0);
         ~vlg_toolkit_tx_vlg_class_model();
 
@@ -94,7 +94,7 @@ class vlg_toolkit_tx_vlg_class_model : public QAbstractTableModel {
     private:
         const vlg::entity_desc       &edesc_;
         const vlg::entity_manager    &bem_;
-        vlg::transaction_int         &tx_;
+        vlg::transaction_impl         &tx_;
         vlg::nclass             *local_obj_;
 
         //METADATA REP

@@ -54,7 +54,7 @@ vlg_toolkit_vlg_model &vlg_toolkit_Conn_mdl::wrapped_mdl()
 
 int vlg_toolkit_Connection::count_ = 0;
 
-void vlg_toolkit_connection_status_change_hndl(vlg::connection_int &conn,
+void vlg_toolkit_connection_status_change_hndl(vlg::connection_impl &conn,
                                                vlg::ConnectionStatus status,
                                                void *ud)
 {
@@ -63,7 +63,7 @@ void vlg_toolkit_connection_status_change_hndl(vlg::connection_int &conn,
     ct->EmitConnStatus(status);
 }
 
-vlg_toolkit_Connection::vlg_toolkit_Connection(vlg::connection_int &conn,
+vlg_toolkit_Connection::vlg_toolkit_Connection(vlg::connection_impl &conn,
                                                const QString &host,
                                                const QString &port,
                                                const QString &usr,
@@ -357,7 +357,7 @@ void vlg_toolkit_Connection::on_new_tx_button_clicked()
     if(!edesc) {
         return;
     }
-    vlg::transaction_int *new_tx = NULL;
+    vlg::transaction_impl *new_tx = NULL;
     conn_.new_transaction(&new_tx);
     new_tx->set_tx_req_class_id(item->edesc()->get_nclass_id());
 
@@ -398,7 +398,7 @@ void vlg_toolkit_Connection::on_new_sbs_button_clicked()
     if(!edesc) {
         return;
     }
-    vlg::subscription_int *new_sbs = NULL;
+    vlg::subscription_impl *new_sbs = NULL;
     conn_.new_subscription(&new_sbs);
     new_sbs->set_nclassid(item->edesc()->get_nclass_id());
 
