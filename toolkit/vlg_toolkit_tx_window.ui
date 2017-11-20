@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>blz_toolkit_tx_window</class>
- <widget class="QMainWindow" name="blz_toolkit_tx_window">
+ <class>vlg_toolkit_tx_window</class>
+ <widget class="QMainWindow" name="vlg_toolkit_tx_window">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -17,7 +17,7 @@
    <string>MainWindow</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="blz_toolkit_prj_res.qrc">
+   <iconset resource="vlg_toolkit_prj_res.qrc">
     <normaloff>:/icon/icons/forward.png</normaloff>:/icon/icons/forward.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -393,7 +393,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QTableView" name="blz_class_tx_table_view">
+     <widget class="QTableView" name="vlg_class_tx_table_view">
       <property name="alternatingRowColors">
        <bool>true</bool>
       </property>
@@ -438,7 +438,7 @@
   </widget>
   <action name="actionSend_TX">
    <property name="icon">
-    <iconset resource="blz_toolkit_prj_res.qrc">
+    <iconset resource="vlg_toolkit_prj_res.qrc">
      <normaloff>:/icon/icons/forward.png</normaloff>:/icon/icons/forward.png</iconset>
    </property>
    <property name="text">
@@ -447,7 +447,7 @@
   </action>
   <action name="actionReNew_TX">
    <property name="icon">
-    <iconset resource="blz_toolkit_prj_res.qrc">
+    <iconset resource="vlg_toolkit_prj_res.qrc">
      <normaloff>:/icon/icons/loop.png</normaloff>:/icon/icons/loop.png</iconset>
    </property>
    <property name="text">
@@ -456,7 +456,7 @@
   </action>
  </widget>
  <resources>
-  <include location="blz_toolkit_prj_res.qrc"/>
+  <include location="vlg_toolkit_prj_res.qrc"/>
  </resources>
  <connections/>
 </ui>

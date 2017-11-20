@@ -94,7 +94,7 @@ void vlg_toolkit_MainWindow::InitGuiConfig()
     qRegisterMetaType<vlg::ConnectionStatus>("vlg::ConnectionStatus");
     qRegisterMetaType<vlg::TransactionStatus>("vlg::TransactionStatus");
     qRegisterMetaType<vlg::SubscriptionStatus>("vlg::SubscriptionStatus");
-    qRegisterMetaType<vlg::subscription_event_int *>("vlg::subscription_event_int");
+    qRegisterMetaType<vlg::subscription_event_impl *>("vlg::subscription_event_impl");
     qRegisterMetaType<VLG_SBS_COL_DATA_ENTRY *>("VLG_SBS_COL_DATA_ENTRY");
 
     ui->action_Start_Peer->setDisabled(true);
@@ -562,7 +562,7 @@ void vlg_toolkit_MainWindow::AddNewModelTab()
     connect(this, SIGNAL(VLG_MODEL_Update_event()), &mt_mod, SLOT(invalidate()));
 }
 
-void vlg_toolkit_MainWindow::AddNewConnectionTab(vlg::connection_int
+void vlg_toolkit_MainWindow::AddNewConnectionTab(vlg::connection_impl
                                                  &new_conn,
                                                  const QString &host,
                                                  const QString &port,
@@ -628,7 +628,7 @@ void vlg_toolkit_MainWindow::on_actionConnect_triggered()
                                           conn_dlg.ui->ln_edt_host->text().toLatin1().data());
         conn_params.sin_port = htons(atoi(
                                          conn_dlg.ui->ln_edt_port->text().toLatin1().data()));
-        vlg::connection_int *new_conn = NULL;
+        vlg::connection_impl *new_conn = NULL;
         peer_.new_connection(&new_conn);
         new_conn->client_connect(conn_params);
         AddNewConnectionTab(*new_conn,

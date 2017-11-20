@@ -49,7 +49,7 @@ vlg_toolkit_tx_vlg_class_model &vlg_toolkit_tx_model::wrapped_mdl()
 // vlg_toolkit_tx_window
 //------------------------------------------------------------------------------
 
-void tx_status_change_hndlr(vlg::transaction_int &trans,
+void tx_status_change_hndlr(vlg::transaction_impl &trans,
                             vlg::TransactionStatus status,
                             void *ud)
 {
@@ -58,7 +58,7 @@ void tx_status_change_hndlr(vlg::transaction_int &trans,
     txw->EmitTxStatus(status);
 }
 
-void tx_closure_hndlr(vlg::transaction_int &trans, void *ud)
+void tx_closure_hndlr(vlg::transaction_impl &trans, void *ud)
 {
     vlg_toolkit_tx_window *txw = (vlg_toolkit_tx_window *)ud;
     txw->EmitTxClosure();
@@ -67,7 +67,7 @@ void tx_closure_hndlr(vlg::transaction_int &trans, void *ud)
 
 vlg_toolkit_tx_window::vlg_toolkit_tx_window(const vlg::entity_desc &edesc,
                                              const vlg::entity_manager &bem,
-                                             vlg::transaction_int &tx,
+                                             vlg::transaction_impl &tx,
                                              vlg_toolkit_tx_vlg_class_model &mdl,
                                              QWidget *parent) :
     bem_(bem),

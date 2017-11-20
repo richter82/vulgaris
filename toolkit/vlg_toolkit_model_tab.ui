@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>blz_toolkit_model_tab</class>
- <widget class="QWidget" name="blz_toolkit_model_tab">
+ <class>vlg_toolkit_model_tab</class>
+ <widget class="QWidget" name="vlg_toolkit_model_tab">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -14,7 +14,7 @@
    <string>Form</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="blz_toolkit_prj_res.qrc">
+   <iconset resource="vlg_toolkit_prj_res.qrc">
     <normaloff>:/icon/icons/forward.png</normaloff>:/icon/icons/forward.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -186,7 +186,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="blz_toolkit_prj_res.qrc"/>
+  <include location="vlg_toolkit_prj_res.qrc"/>
  </resources>
  <connections/>
 </ui>

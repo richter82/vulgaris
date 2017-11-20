@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>blz_toolkit_Connection</class>
- <widget class="QWidget" name="blz_toolkit_Connection">
+ <class>vlg_toolkit_Connection</class>
+ <widget class="QWidget" name="vlg_toolkit_Connection">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -444,7 +444,7 @@
             <string>Connect</string>
            </property>
            <property name="icon">
-            <iconset resource="blz_toolkit_prj_res.qrc">
+            <iconset resource="vlg_toolkit_prj_res.qrc">
              <normaloff>:/icon/icons/flash.png</normaloff>:/icon/icons/flash.png</iconset>
            </property>
           </widget>
@@ -455,7 +455,7 @@
             <string>Disconnect</string>
            </property>
            <property name="icon">
-            <iconset resource="blz_toolkit_prj_res.qrc">
+            <iconset resource="vlg_toolkit_prj_res.qrc">
              <normaloff>:/icon/icons/flash-off.png</normaloff>:/icon/icons/flash-off.png</iconset>
            </property>
            <property name="flat">
@@ -509,7 +509,7 @@
               <string>Extend Model</string>
              </property>
              <property name="icon">
-              <iconset resource="blz_toolkit_prj_res.qrc">
+              <iconset resource="vlg_toolkit_prj_res.qrc">
                <normaloff>:/icon/icons/social-buffer.png</normaloff>:/icon/icons/social-buffer.png</iconset>
              </property>
             </widget>
@@ -520,7 +520,7 @@
               <string>New TX</string>
              </property>
              <property name="icon">
-              <iconset resource="blz_toolkit_prj_res.qrc">
+              <iconset resource="vlg_toolkit_prj_res.qrc">
                <normaloff>:/icon/icons/forward.png</normaloff>:/icon/icons/forward.png</iconset>
              </property>
             </widget>
@@ -531,7 +531,7 @@
               <string>New SBS</string>
              </property>
              <property name="icon">
-              <iconset resource="blz_toolkit_prj_res.qrc">
+              <iconset resource="vlg_toolkit_prj_res.qrc">
                <normaloff>:/icon/icons/social-rss.png</normaloff>:/icon/icons/social-rss.png</iconset>
              </property>
             </widget>
@@ -573,7 +573,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="blz_toolkit_prj_res.qrc"/>
+  <include location="vlg_toolkit_prj_res.qrc"/>
  </resources>
  <connections/>
 </ui>
