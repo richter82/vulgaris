@@ -50,7 +50,7 @@ vlg::collector &conn_inst_collector()
         return *conn_inst_coll_;
     }
     if(!(conn_inst_coll_ = new connection_impl_inst_collector())) {
-        EXIT_ACTION("failed creating connection_impl::conn_inst_coll_\n")
+        EXIT_ACTION
     }
     return *conn_inst_coll_;
 }

@@ -29,10 +29,10 @@ void *grow_buff_or_die(void *buf, size_t cur_size, size_t amnt)
     void *nout = NULL;
     if(buf) {
         COMMAND_IF_NULL(nout = realloc(buf, cur_size+amnt),
-                        EXIT_ACTION("realloc error in grow_buff_or_die"))
+                        EXIT_ACTION)
     } else {
         COMMAND_IF_NULL(nout = malloc(amnt),
-                        EXIT_ACTION("malloc error in grow_buff_or_die"))
+                        EXIT_ACTION)
     }
     return nout;
 }
@@ -59,7 +59,7 @@ class grow_byte_buffer_rep {
                 return RetCode_BADARG;
             }
             COMMAND_IF_NULL(buf_ = (unsigned char *)malloc(capcty),
-                            EXIT_ACTION("malloc error in grow_byte_buffer_impl"))
+                            EXIT_ACTION)
             return RetCode_OK;
         }
 
@@ -69,7 +69,7 @@ class grow_byte_buffer_rep {
             }
             capcty_ += amnt;
             COMMAND_IF_NULL(buf_ = (unsigned char *)realloc(buf_, capcty_),
-                            EXIT_ACTION("realloc error in grow_byte_buffer_impl"))
+                            EXIT_ACTION)
             return RetCode_OK;
         }
 

@@ -26,50 +26,32 @@
 
 namespace vlg {
 
-extern vlg::synch_hash_map &int_publ_peer_map();
-extern vlg::synch_hash_map &int_publ_srv_conn_map();
-
-vlg::synch_hash_map *int_publ_srv_sbs_map_ = NULL;  //int --> publ
-vlg::synch_hash_map &int_publ_srv_sbs_map()
-{
-    if(int_publ_srv_sbs_map_) {
-        return *int_publ_srv_sbs_map_;
-    }
-    if(!(int_publ_srv_sbs_map_ = new vlg::synch_hash_map(
-        vlg::sngl_ptr_obj_mng(),
-        vlg::sngl_ptr_obj_mng()))) {
-        EXIT_ACTION("failed creating int_publ_srv_sbs_map_\n")
-    }
-    int_publ_srv_sbs_map_->init(HM_SIZE_MICRO);
-    return *int_publ_srv_sbs_map_;
-}
-
 //-----------------------------
 // CLASS subscription_event_impl_pub
 //-----------------------------
 class subscription_event_impl_pub {
     public:
-        subscription_event_impl_pub() : sbs_(NULL), int_(NULL) {}
+        subscription_event_impl_pub() : sbs_(NULL), impl_(NULL) {}
         ~subscription_event_impl_pub() {
-            if(int_) {
-                vlg::collector &c = int_->get_collector();
-                c.release(int_);
+            if(impl_) {
+                vlg::collector &c = impl_->get_collector();
+                c.release(impl_);
             }
         }
 
         subscription_event_impl *get_sbs_evt() {
-            return int_;
+            return impl_;
         }
 
         void set_sbs_evt(subscription_event_impl *val) {
-            if(int_) {
-                vlg::collector &c = int_->get_collector();
-                c.release(int_);
-                int_ = NULL;
+            if(impl_) {
+                vlg::collector &c = impl_->get_collector();
+                c.release(impl_);
+                impl_ = NULL;
             }
-            if((int_ = val)) {
-                vlg::collector &c = int_->get_collector();
-                c.retain(int_);
+            if((impl_ = val)) {
+                vlg::collector &c = impl_->get_collector();
+                c.retain(impl_);
             }
         }
 
@@ -83,7 +65,7 @@ class subscription_event_impl_pub {
 
     private:
         subscription *sbs_;
-        subscription_event_impl *int_;
+        subscription_event_impl *impl_;
 };
 
 class subscription_event_collector : public vlg::collector {
@@ -99,7 +81,7 @@ vlg::collector &get_inst_subscription_event_collector()
     }
     if(!(inst_subscription_event_collector = new
     subscription_event_collector())) {
-        EXIT_ACTION("failed creating inst_subscription_event_collector\n")
+        EXIT_ACTION
     }
     return *inst_subscription_event_collector;
 }
@@ -233,31 +215,31 @@ class subscription_impl_pub {
         subscription_impl_pub(subscription &publ)
             : publ_(publ),
               conn_(NULL),
-              int_(NULL),
+              impl_(NULL),
               ssh_(NULL),
               ssh_ud_(NULL),
               senh_(NULL),
               senh_ud_(NULL)  {}
 
         ~subscription_impl_pub() {
-            if(int_ && int_->get_connection().conn_type() == ConnectionType_OUTGOING) {
-                if(int_->status() == SubscriptionStatus_REQUEST_SENT ||
-                        int_->status() == SubscriptionStatus_STARTED) {
+            if(impl_ && impl_->get_connection().conn_type() == ConnectionType_OUTGOING) {
+                if(impl_->status() == SubscriptionStatus_REQUEST_SENT ||
+                        impl_->status() == SubscriptionStatus_STARTED) {
                     ProtocolCode pcode = ProtocolCode_SUCCESS;
                     SubscriptionResponse resp = SubscriptionResponse_UNDEFINED;
-                    int_->stop();
-                    int_->await_for_stop_result(resp, pcode);
+                    impl_->stop();
+                    impl_->await_for_stop_result(resp, pcode);
                 }
-                vlg::collector &c = int_->get_collector();
-                c.release(int_);
+                vlg::collector &c = impl_->get_collector();
+                c.release(impl_);
             }
         }
 
         subscription_impl *get_sbs() const {
-            return int_;
+            return impl_;
         }
         void set_sbs(subscription_impl *val) {
-            int_ = val;
+            impl_ = val;
         }
 
         connection *get_conn() const {
@@ -299,24 +281,25 @@ class subscription_impl_pub {
             vlg::RetCode rcode = vlg::RetCode_OK;
             if(conn.get_connection_type() == ConnectionType_OUTGOING) {
                 subscription_impl *s_impl = NULL;
-                if((rcode = conn.get_implernal()->new_subscription(&s_impl,
-                                                                   vlg_sbs_factory_simpl, &publ_)) == vlg::RetCode_OK) {
-                    int_ = s_impl;
-                    vlg::collector &c = int_->get_collector();
-                    c.retain(int_);
+                if((rcode = conn.get_opaque()->new_subscription(&s_impl,
+                                                                vlg_sbs_factory_simpl, &publ_)) == vlg::RetCode_OK) {
+                    impl_ = s_impl;
+                    vlg::collector &c = impl_->get_collector();
+                    c.retain(impl_);
                 }
             }
-            int_->set_subscription_status_change_handler(
+            impl_->set_subscription_status_change_handler(
                 subscription_status_change_hndlr_simpl, this);
-            int_->set_subscription_event_notify_handler(subscription_evt_notify_hndlr_simpl,
-                                                        this);
+            impl_->set_subscription_event_notify_handler(
+                subscription_evt_notify_hndlr_simpl,
+                this);
             return rcode;
         }
 
     private:
         subscription &publ_;
         connection *conn_;
-        subscription_impl *int_;
+        subscription_impl *impl_;
         subscription::subscription_status_change ssh_;
         void *ssh_ud_;
         subscription::subscription_event_notify senh_;
@@ -338,9 +321,8 @@ vlg::collector &get_inst_subscription_collector()
     if(inst_subscription_collector) {
         return *inst_subscription_collector;
     }
-    if(!(inst_subscription_collector = new
-    subscription_collector())) {
-        EXIT_ACTION("failed creating inst_subscription_collector\n")
+    if(!(inst_subscription_collector = new subscription_collector())) {
+        EXIT_ACTION
     }
     return *inst_subscription_collector;
 }
@@ -569,14 +551,35 @@ vlg::RetCode subscription::on_event_accept(const subscription_event &sbs_evt)
     return vlg::RetCode_OK;
 }
 
-subscription_impl *subscription::get_implernal()
+subscription_impl *subscription::get_opaque()
 {
     return impl_->get_sbs();
 }
 
-void subscription::set_implernal(subscription_impl *sbs)
+void subscription::set_opaque(subscription_impl *sbs)
 {
     impl_->set_sbs(sbs);
+}
+
+//-----------------------------
+// srv sbs repo.
+//-----------------------------
+extern vlg::synch_hash_map &impl_publ_peer_map();
+extern vlg::synch_hash_map &impl_publ_srv_conn_map();
+
+vlg::synch_hash_map *impl_publ_srv_sbs_map_ = NULL;  //impl --> publ
+vlg::synch_hash_map &impl_publ_srv_sbs_map()
+{
+    if(impl_publ_srv_sbs_map_) {
+        return *impl_publ_srv_sbs_map_;
+    }
+    if(!(impl_publ_srv_sbs_map_ = new vlg::synch_hash_map(
+        vlg::sngl_ptr_obj_mng(),
+        vlg::sngl_ptr_obj_mng()))) {
+        EXIT_ACTION
+    }
+    impl_publ_srv_sbs_map_->init(HM_SIZE_MICRO);
+    return *impl_publ_srv_sbs_map_;
 }
 
 //-----------------------------
@@ -590,7 +593,7 @@ class timpl_subscription_impl_server : public subscription_impl {
     public:
         virtual ~timpl_subscription_impl_server() {
             void *self = this;
-            int_publ_srv_sbs_map().remove(&self, NULL);
+            impl_publ_srv_sbs_map().remove(&self, NULL);
             /************************
             RELEASE_ID: SPB_SRV_01
             ************************/
@@ -628,7 +631,7 @@ subscription_factory *subscription_factory::default_subscription_factory()
     if(default_sbs_factory  == NULL) {
         default_sbs_factory  = new subscription_factory();
         if(!default_sbs_factory) {
-            EXIT_ACTION("failed creating default_sbs_factory\n")
+            EXIT_ACTION
         }
     }
     return default_sbs_factory;
@@ -641,8 +644,8 @@ subscription_impl *subscription_factory::sbs_factory_impl_f(
     subscription_factory *ssf = static_cast<subscription_factory *>(ud);
     connection_impl *connection_impl_ptr = &conn;
     connection *c_publ = NULL;
-    if(int_publ_srv_conn_map().get(&connection_impl_ptr, &c_publ)) {
-        EXIT_ACTION("failed get instance from int_publ_srv_conn_map\n")
+    if(impl_publ_srv_conn_map().get(&connection_impl_ptr, &c_publ)) {
+        EXIT_ACTION
     }
     subscription *publ = ssf->new_subscription(*c_publ);
     vlg::collector &c = publ->get_collector();
@@ -651,13 +654,12 @@ subscription_impl *subscription_factory::sbs_factory_impl_f(
     ************************/
     c.retain(publ);
 
-    subscription_impl *int_sbs =
-        new timpl_subscription_impl_server(conn, *publ);
+    subscription_impl *impl_sbs = new timpl_subscription_impl_server(conn, *publ);
 
-    publ->set_implernal(int_sbs);
+    publ->set_opaque(impl_sbs);
     publ->bind(*c_publ);
-    int_publ_srv_sbs_map().put(&int_sbs, &publ);
-    return int_sbs;
+    impl_publ_srv_sbs_map().put(&impl_sbs, &publ);
+    return impl_sbs;
 }
 
 subscription_factory::subscription_factory()

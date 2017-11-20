@@ -175,8 +175,8 @@ class subscription : public vlg::collectable {
         on_event_accept(const subscription_event &sbs_evt);
 
     public:
-        subscription_impl *get_implernal();
-        void              set_implernal(subscription_impl *sbs);
+        subscription_impl *get_opaque();
+        void              set_opaque(subscription_impl *sbs);
 
     private:
         subscription_impl_pub *impl_;

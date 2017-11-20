@@ -1467,7 +1467,7 @@ vlg::RetCode compile_Java(compile_unit &cunit)
         RETURN_IF_NOT_OK(efile_n.assign(edsc->get_entity_name()))
         RETURN_IF_NOT_OK(efile_n.append(".java"))
         COMMAND_IF_NOT_OK(open_output_file(efile_n.internal_buff(), &efile),
-                          EXIT_ACTION("opening output file"))
+                          EXIT_ACTION)
         RETURN_IF_NOT_OK(render_hdr(cunit, efile_n, efile))
         RETURN_IF_NOT_OK(put_newline(efile))
         RETURN_IF_NOT_OK(VLG_COMP_JAVA_package_decl(efile,
@@ -1494,7 +1494,7 @@ vlg::RetCode compile_Java(compile_unit &cunit)
     RETURN_IF_NOT_OK(dfile_nm.append(".java"));
     FILE *dfile = NULL;
     COMMAND_IF_NOT_OK(open_output_file(dfile_nm.internal_buff(), &dfile),
-                      EXIT_ACTION("opening output file"))
+                      EXIT_ACTION)
     RETURN_IF_NOT_OK(render_hdr(cunit, dfile_nm, dfile))
     RETURN_IF_NOT_OK(put_newline(dfile))
     RETURN_IF_NOT_OK(VLG_COMP_JAVA_package_decl(dfile,

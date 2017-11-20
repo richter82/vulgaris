@@ -153,11 +153,10 @@ bbuf->init(bsz);
 }
 
 #define NO_ACTION ;
-
-#define EXIT_ACTION(msg)\
+#define EXIT_ACTION \
 {\
     FILE *ferr = fopen("log.err", "w+");\
-    fprintf(ferr ? ferr : stderr, "EXIT_ACTION: %s\n", msg);\
+    fprintf(ferr ? ferr : stderr, "EXIT TRIGGERED AT: %s-%d\n", __func__, __LINE__);\
     if(ferr) fclose(ferr);\
     exit(1);\
 }

@@ -144,8 +144,8 @@ class connection : public vlg::collectable {
         unsigned short      get_host_port() const;
 
     public:
-        connection_impl *get_implernal();
-        void            set_implernal(connection_impl *conn);
+        connection_impl *get_opaque();
+        void            set_opaque(connection_impl *conn);
 
     private:
         connection_impl_pub *impl_;

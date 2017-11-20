@@ -149,8 +149,7 @@ PersistenceConnectionStatus persistence_connection::get_status() const
 }
 
 vlg::RetCode persistence_connection::create_entity_schema(
-    PersistenceAlteringMode
-    mode,
+    PersistenceAlteringMode mode,
     const entity_manager &em,
     unsigned int nclass_id)
 {
@@ -158,8 +157,7 @@ vlg::RetCode persistence_connection::create_entity_schema(
 }
 
 vlg::RetCode persistence_connection::create_entity_schema(
-    PersistenceAlteringMode
-    mode,
+    PersistenceAlteringMode mode,
     const entity_manager &em,
     const entity_desc &desc)
 {
@@ -223,21 +221,21 @@ vlg::RetCode persistence_connection::execute_statement(const char *stmt)
 class persistence_query_impl_pub {
     public:
         persistence_query_impl_pub(const entity_manager &em) : em_(em),
-            int_(NULL) {}
+            impl_(NULL) {}
         ~persistence_query_impl_pub() {
-            if(int_) {
-                persistence_connection_impl &conn_impl_ref = int_->get_connection();
+            if(impl_) {
+                persistence_connection_impl &conn_impl_ref = impl_->get_connection();
                 persistence_connection_impl *conn_impl_ptr = &conn_impl_ref;
-                conn_impl_ptr->destroy_query(int_, true);
+                conn_impl_ptr->destroy_query(impl_, true);
             }
         }
 
         persistence_query_impl *get_query_impl() const {
-            return int_;
+            return impl_;
         }
 
         void set_query_impl(persistence_query_impl *val) {
-            int_ = val;
+            impl_ = val;
         }
 
         vlg::RetCode request_new_query_impl(unsigned int nclass_id, const char *sql) {
@@ -246,7 +244,7 @@ class persistence_query_impl_pub {
             if(driv) {
                 persistence_connection_impl *pcon = driv->available_connection(nclass_id);
                 if(pcon) {
-                    return pcon->execute_query(sql, em_, &int_);
+                    return pcon->execute_query(sql, em_, &impl_);
                 } else {
                     return vlg::RetCode_UNVRSC;
                 }
@@ -257,7 +255,7 @@ class persistence_query_impl_pub {
 
     private:
         const entity_manager &em_;
-        persistence_query_impl *int_;
+        persistence_query_impl *impl_;
 };
 
 //-----------------------------

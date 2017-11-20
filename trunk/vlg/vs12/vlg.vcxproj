@@ -28,6 +28,7 @@
     <ClInclude Include="..\src\vlg\vlg_selector.h" />
     <ClInclude Include="..\src\vlg\vlg_subscription_impl.h" />
     <ClInclude Include="..\src\vlg\vlg_transaction_impl.h" />
+    <ClInclude Include="..\src\vlg_globint.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\vlg\vlg_acceptor.cpp" />

@@ -25,19 +25,19 @@
 
 namespace vlg {
 
-vlg::synch_hash_map *int_publ_peer_map_ = NULL;  //peer_impl --> peer
-vlg::synch_hash_map &int_publ_peer_map()
+vlg::synch_hash_map *impl_publ_peer_map_ = NULL;  //peer_impl --> peer
+vlg::synch_hash_map &impl_publ_peer_map()
 {
-    if(int_publ_peer_map_) {
-        return *int_publ_peer_map_;
+    if(impl_publ_peer_map_) {
+        return *impl_publ_peer_map_;
     }
-    if(!(int_publ_peer_map_ = new vlg::synch_hash_map(
+    if(!(impl_publ_peer_map_ = new vlg::synch_hash_map(
         vlg::sngl_ptr_obj_mng(),
         vlg::sngl_ptr_obj_mng()))) {
-        EXIT_ACTION("failed creating int_publ_peer_map_\n")
+        EXIT_ACTION
     }
-    int_publ_peer_map_->init(HM_SIZE_TINY);
-    return *int_publ_peer_map_;
+    impl_publ_peer_map_->init(HM_SIZE_TINY);
+    return *impl_publ_peer_map_;
 }
 
 //-----------------------------
@@ -120,7 +120,7 @@ class peer_impl_pub {
                     connection *conn_publ = new connection();
                     vlg::collector &c = conn_publ->get_collector();
                     c.retain(conn_publ);
-                    conn_publ->set_implernal(&incoming_connection);
+                    conn_publ->set_opaque(&incoming_connection);
                     vlg::RetCode accept_res = publ_.on_new_incoming_connection(*conn_publ);
                     c.release(conn_publ);
                     return accept_res;
@@ -140,32 +140,32 @@ class peer_impl_pub {
         }
 
     public:
-        peer_impl_pub(peer &publ) : publ_(publ), int_(NULL), psh_(NULL), psh_ud_(NULL),
+        peer_impl_pub(peer &publ) : publ_(publ), impl_(NULL), psh_(NULL), psh_ud_(NULL),
             conn_factory_(connection_factory::default_connection_factory()) {
-            int_ = new pimpl_peer_impl(publ_, 0);
+            impl_ = new pimpl_peer_impl(publ_, 0);
             peer *publ_ptr = &publ;
-            int_publ_peer_map().put(&int_, &publ_ptr);
-            int_->set_peer_status_change_hndlr(peer_lfcyc_status_change_hndlr_pimpl, this);
+            impl_publ_peer_map().put(&impl_, &publ_ptr);
+            impl_->set_peer_status_change_hndlr(peer_lfcyc_status_change_hndlr_pimpl, this);
         }
 
         ~peer_impl_pub() {
-            if(int_) {
-                if(int_->peer_status() > PeerStatus_INITIALIZED) {
-                    int_->stop_peer(true);
+            if(impl_) {
+                if(impl_->peer_status() > PeerStatus_INITIALIZED) {
+                    impl_->stop_peer(true);
                     PeerStatus current = PeerStatus_ZERO;
-                    int_->await_for_peer_status_reached_or_outdated(PeerStatus_STOPPED,
-                                                                    current);
+                    impl_->await_for_peer_status_reached_or_outdated(PeerStatus_STOPPED,
+                                                                     current);
                 }
-                int_publ_peer_map().remove(&int_, NULL);
-                delete int_;
+                impl_publ_peer_map().remove(&impl_, NULL);
+                delete impl_;
             }
         }
 
         peer_impl *get_peer_impl() const {
-            return int_;
+            return impl_;
         }
         void set_peer_impl(peer_impl *val) {
-            int_ = val;
+            impl_ = val;
         }
 
         peer::peer_status_change get_psh() const {
@@ -187,13 +187,13 @@ class peer_impl_pub {
         }
         void set_conn_factory(connection_factory *val) {
             conn_factory_ = val;
-            int_->set_conn_factory(connection_factory::conn_factory_impl_f);
-            int_->set_conn_factory_ud(conn_factory_);
+            impl_->set_conn_factory(connection_factory::conn_factory_impl_f);
+            impl_->set_conn_factory_ud(conn_factory_);
         }
 
     private:
         peer     &publ_;
-        peer_impl *int_;
+        peer_impl *impl_;
         peer::peer_status_change psh_;
         void *psh_ud_;
         connection_factory *conn_factory_;
@@ -563,7 +563,7 @@ vlg::RetCode peer::on_new_incoming_connection(connection &incoming_connection)
     return vlg::RetCode_OK;
 }
 
-peer_impl *peer::get_implernal()
+peer_impl *peer::get_opaque()
 {
     return impl_->get_peer_impl();
 }

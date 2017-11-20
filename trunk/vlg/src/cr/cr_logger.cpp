@@ -153,7 +153,7 @@ appender_obj_mng &sngl_apnd_obj_mng()
     if(appender_obj_mng::instance_  == NULL) {
         appender_obj_mng::instance_  = new appender_obj_mng();
         if(!appender_obj_mng::instance_) {
-            EXIT_ACTION("failed creating sngl_apnd_obj_mng instance\n")
+            EXIT_ACTION
         }
     }
     return *appender_obj_mng::instance_ ;
@@ -184,7 +184,7 @@ logger_obj_mng &sngl_logger_obj_mng()
     if(logger_obj_mng::instance_  == NULL) {
         logger_obj_mng::instance_  = new logger_obj_mng();
         if(!logger_obj_mng::instance_) {
-            EXIT_ACTION("sngl_logger_obj_mng() - failed create logger_obj_mng instance\n")
+            EXIT_ACTION
         }
     }
     return *logger_obj_mng::instance_ ;
@@ -197,12 +197,11 @@ hash_map &get_logger_map()
     if(lgname_lg) {
         return *lgname_lg;
     }
-    if(!(lgname_lg = new hash_map(sngl_logger_obj_mng(),
-                                  sngl_cstr_obj_mng()))) {
-        EXIT_ACTION("get_logger_map() - failed create logger map\n")
+    if(!(lgname_lg = new hash_map(sngl_logger_obj_mng(), sngl_cstr_obj_mng()))) {
+        EXIT_ACTION
     }
     if(lgname_lg->init(HM_SIZE_NANO)) {
-        EXIT_ACTION("get_logger_map() - failed init logger map\n")
+        EXIT_ACTION
     }
     return *lgname_lg;
 }
@@ -313,10 +312,10 @@ hash_map &get_appender_map()
     }
     if(!(apnds = new hash_map(sngl_apnd_obj_mng(),
                               sngl_cstr_obj_mng()))) {
-        EXIT_ACTION("get_appender_map() - failed creating apnds map\n")
+        EXIT_ACTION
     }
     if(apnds->init(HM_SIZE_NANO)) {
-        EXIT_ACTION("get_appender_map() - failed to init apnds map\n")
+        EXIT_ACTION
     }
     return *apnds;
 }

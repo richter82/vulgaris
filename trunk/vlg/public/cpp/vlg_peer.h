@@ -209,7 +209,7 @@ class peer {
         on_new_incoming_connection(connection &incoming_connection);
 
     public:
-        peer_impl *get_implernal();
+        peer_impl *get_opaque();
 
     private:
         peer_impl_pub *impl_;

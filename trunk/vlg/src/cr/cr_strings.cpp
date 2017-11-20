@@ -53,7 +53,7 @@ class ascii_string_impl {
             buf_(NULL),
             len_(0),
             capacity_(0) {
-            EXIT_ACTION(CPY_CONSTR_ERR" ascii_str_impl()")
+            EXIT_ACTION
         }
 
         ~ascii_string_impl() {
@@ -416,14 +416,14 @@ class ascii_string_impl {
 //-----------------------------
 ascii_string::ascii_string() : impl_(NULL)
 {
-    if (!(impl_ = new ascii_string_impl())) {
-        EXIT_ACTION("ascii_str() failed")
+    if(!(impl_ = new ascii_string_impl())) {
+        EXIT_ACTION
     }
 }
 
 ascii_string::ascii_string(ascii_string &oth) : impl_(NULL)
 {
-    EXIT_ACTION(CPY_CONSTR_ERR" ascii_str()")
+    EXIT_ACTION
 }
 
 ascii_string::~ascii_string()
@@ -553,7 +553,8 @@ RetCode ascii_string::replace(size_t start, size_t end, const char *str)
     return impl_->replace(start, end, str);
 }
 
-RetCode ascii_string::substring(size_t start, size_t end, ascii_string &out) const
+RetCode ascii_string::substring(size_t start, size_t end,
+                                ascii_string &out) const
 {
     return impl_->substring(start, end, *out.impl_);
 }
@@ -658,14 +659,14 @@ class ascii_string_tok_impl {
             delimiters_(),
             ret_delims_(false),
             delims_changed_(false) {
-            EXIT_ACTION(CPY_CONSTR_ERR" ascii_str_tk_impl()")
+            EXIT_ACTION
         }
 
         ~ascii_string_tok_impl() {}
 
         RetCode next_token(ascii_string &out,
-                    const char *delimiters,
-                    bool return_delimiters) {
+                           const char *delimiters,
+                           bool return_delimiters) {
             if(delimiters) {
                 RETURN_IF_NOT_OK(delimiters_.assign(delimiters))
                 delims_changed_ = true;
@@ -686,8 +687,8 @@ class ascii_string_tok_impl {
         }
 
         RetCode next_token(char *out,
-                    const char *delimiters,
-                    bool return_delimiters) {
+                           const char *delimiters,
+                           bool return_delimiters) {
             if(delimiters) {
                 RETURN_IF_NOT_OK(delimiters_.assign(delimiters))
                 delims_changed_ = true;
@@ -781,7 +782,7 @@ ascii_string_tok::ascii_string_tok() : impl_(NULL)
 
 ascii_string_tok::ascii_string_tok(ascii_string_tok &oth) : impl_(NULL)
 {
-    EXIT_ACTION(CPY_CONSTR_ERR" ascii_str_tk()")
+    EXIT_ACTION
 }
 
 ascii_string_tok::~ascii_string_tok()
@@ -792,15 +793,15 @@ ascii_string_tok::~ascii_string_tok()
 }
 
 RetCode ascii_string_tok::next_token(ascii_string &out,
-                              const char *delimiters,
-                              bool return_delimiters)
+                                     const char *delimiters,
+                                     bool return_delimiters)
 {
     return impl_->next_token(out, delimiters, return_delimiters);
 }
 
 RetCode ascii_string_tok::next_token(char *out,
-                              const char *delimiters,
-                              bool return_delimiters)
+                                     const char *delimiters,
+                                     bool return_delimiters)
 {
     return impl_->next_token(out, delimiters, return_delimiters);
 }
@@ -818,7 +819,7 @@ void ascii_string_tok::reset()
 RetCode ascii_string_tok::init(const ascii_string &str)
 {
     if(!impl_) {
-        if (!(impl_ = new ascii_string_tok_impl())) {
+        if(!(impl_ = new ascii_string_tok_impl())) {
             return RetCode_MEMERR;
         }
     }
@@ -828,7 +829,7 @@ RetCode ascii_string_tok::init(const ascii_string &str)
 RetCode ascii_string_tok::init(const char *str)
 {
     if(!impl_) {
-        if (!(impl_ = new ascii_string_tok_impl())) {
+        if(!(impl_ = new ascii_string_tok_impl())) {
             return RetCode_MEMERR;
         }
     }
