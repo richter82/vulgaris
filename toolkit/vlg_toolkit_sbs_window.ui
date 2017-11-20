@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>804</width>
+    <width>1116</width>
     <height>555</height>
    </rect>
   </property>
@@ -57,7 +57,7 @@
             <item>
              <widget class="QLabel" name="sbs_status_label">
               <property name="text">
-               <string>SBS Status</string>
+               <string>Status</string>
               </property>
              </widget>
             </item>
@@ -176,34 +176,31 @@
        </sizepolicy>
       </property>
       <property name="title">
-       <string>SBS Params</string>
+       <string>Subscription Params</string>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_6">
        <item>
-        <widget class="QFrame" name="conn_status_frame_10">
+        <widget class="QGroupBox" name="conn_status_groupBox_10">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="frameShape">
-          <enum>QFrame::Box</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Sunken</enum>
+         <property name="title">
+          <string>Subscr. Type</string>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
            <widget class="QComboBox" name="cfg_sbs_type_cb">
             <item>
              <property name="text">
-              <string>BLZ_SUBSCRIPTION_TYPE_SNAPSHOT</string>
+              <string>SNAPSHOT</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>BLZ_SUBSCRIPTION_TYPE_INCREMENTAL</string>
+              <string>INCREMENTAL</string>
              </property>
             </item>
            </widget>
@@ -212,35 +209,32 @@
         </widget>
        </item>
        <item>
-        <widget class="QFrame" name="conn_status_frame_11">
+        <widget class="QGroupBox" name="conn_status_groupBox_11">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="frameShape">
-          <enum>QFrame::Box</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Sunken</enum>
+         <property name="title">
+          <string>Subscr. Mode</string>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
            <widget class="QComboBox" name="cfg_sbs_mode_cb">
             <item>
              <property name="text">
-              <string>BLZ_SUBSCRIPTION_MODE_ALL</string>
+              <string>ALL</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>BLZ_SUBSCRIPTION_MODE_DOWNLOAD</string>
+              <string>DOWNLOAD</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>BLZ_SUBSCRIPTION_MODE_LIVE</string>
+              <string>LIVE</string>
              </property>
             </item>
            </widget>
@@ -249,30 +243,27 @@
         </widget>
        </item>
        <item>
-        <widget class="QFrame" name="conn_status_frame_12">
+        <widget class="QGroupBox" name="conn_status_groupBox_12">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="frameShape">
-          <enum>QFrame::Box</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Sunken</enum>
+         <property name="title">
+          <string>Subscr. Flow Type</string>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
            <widget class="QComboBox" name="cfg_sbs_flow_type_cb">
             <item>
              <property name="text">
-              <string>BLZ_SUBSCRIPTION_FLOW_TYPE_ALL</string>
+              <string>ALL</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>BLZ_SUBSCRIPTION_FLOW_TYPE_LAST</string>
+              <string>LAST</string>
              </property>
             </item>
            </widget>
@@ -281,30 +272,27 @@
         </widget>
        </item>
        <item>
-        <widget class="QFrame" name="conn_status_frame_13">
+        <widget class="QGroupBox" name="conn_status_groupBox_13">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="frameShape">
-          <enum>QFrame::Box</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Sunken</enum>
+         <property name="title">
+          <string>Subscr. Downl. Type</string>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
            <widget class="QComboBox" name="cfg_sbs_dwnld_type_cb">
             <item>
              <property name="text">
-              <string>BLZ_SUBSCRIPTION_DOWNLOAD_TYPE_ALL</string>
+              <string>ALL</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>BLZ_SUBSCRIPTION_DOWNLOAD_TYPE_PARTIAL</string>
+              <string>PARTIAL</string>
              </property>
             </item>
            </widget>
@@ -313,18 +301,15 @@
         </widget>
        </item>
        <item>
-        <widget class="QFrame" name="conn_status_frame_14">
+        <widget class="QGroupBox" name="conn_status_groupBox_14">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="frameShape">
-          <enum>QFrame::Box</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Sunken</enum>
+         <property name="title">
+          <string>Encoding</string>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_5">
           <item>
@@ -334,12 +319,12 @@
             </property>
             <item>
              <property name="text">
-              <string>BLZ_ENCODE_INDEXED_NOT_ZERO</string>
+              <string>INDEXED_NOT_ZERO</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>BLZ_ENCODE_INDEXED_DELTA</string>
+              <string>INDEXED_DELTA</string>
              </property>
             </item>
            </widget>
@@ -438,6 +423,9 @@
       <property name="contextMenuPolicy">
        <enum>Qt::CustomContextMenu</enum>
       </property>
+      <property name="accessibleName">
+       <string>test</string>
+      </property>
       <property name="frameShadow">
        <enum>QFrame::Plain</enum>
       </property>
@@ -465,7 +453,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>804</width>
+     <width>1116</width>
      <height>21</height>
     </rect>
    </property>

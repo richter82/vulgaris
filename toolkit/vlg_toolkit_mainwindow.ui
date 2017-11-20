@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>BLZ_TOOLKIT</string>
+   <string>vlg_TOOLKIT</string>
   </property>
   <property name="windowIcon">
    <iconset resource="vlg_toolkit_prj_res.qrc">
@@ -753,7 +753,7 @@
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_7">
                  <item>
-                  <widget class="QListView" name="peer_cfg_view_list_blzmodel">
+                  <widget class="QListView" name="peer_cfg_view_list_vlgmodel">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                      <horstretch>0</horstretch>
@@ -824,7 +824,7 @@
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_8">
                  <item>
-                  <widget class="QListView" name="peer_cfg_view_list_blzpersdriv">
+                  <widget class="QListView" name="peer_cfg_view_list_vlgpersdriv">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                      <horstretch>0</horstretch>
