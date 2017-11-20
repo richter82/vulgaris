@@ -41,7 +41,7 @@ vlg::collector &tx_inst_collector()
         return *inst_coll_;
     }
     if(!(inst_coll_ = new transaction_inst_collector())) {
-        EXIT_ACTION("failed creating transaction_impl::inst_coll_\n")
+        EXIT_ACTION
     }
     return *inst_coll_;
 }

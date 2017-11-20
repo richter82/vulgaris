@@ -71,7 +71,7 @@ class collector_impl {
             log_ = logger::get_logger("collector_impl");
             strncpy(class_name_, class_name, COLL_CLASS_NAME_LEN);
             if(inst_collector_.init(HM_SIZE_NORM)) {
-                EXIT_ACTION("inst_collector_.init()")
+                EXIT_ACTION
             }
             IFLOG(trc(TH_ID, LS_CTR "%s", __func__))
         }
@@ -299,7 +299,7 @@ collector_stat &coll_stat_instance()
     if(coll_stat_instance_  == NULL) {
         coll_stat_instance_ = new collector_stat();
         if(!coll_stat_instance_) {
-            EXIT_ACTION("failed creating coll_stat_instance_\n")
+            EXIT_ACTION
         }
     }
     return *coll_stat_instance_;

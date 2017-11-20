@@ -650,7 +650,7 @@ class p_executor_service_impl {
         } else {
             executor_num_ = executor_num;
             RETURN_IF_NOT_OK(task_queue_.init(queue_task_capacity))
-            COMMAND_IF_NULL(exec_pool_ = new p_executor[executor_num_], EXIT_ACTION("thread pool executor new"))
+            COMMAND_IF_NULL(exec_pool_ = new p_executor[executor_num_], EXIT_ACTION)
             for(unsigned int i = 0; i<executor_num_; i++) {
                 RETURN_IF_NOT_OK(exec_pool_[i].init(&publ_))
             }

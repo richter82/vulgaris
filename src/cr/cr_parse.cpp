@@ -73,13 +73,13 @@ RetCode load_file(FILE *fdesc, ascii_string &data)
         if(fgets(line_buf, CR_MAX_SRC_LINE_LEN+2, fdesc)) {
             linenum++;
             if(is_blank_line(line_buf)) {
-                COMMAND_IF_NOT_OK(data.append("\n"), EXIT_ACTION("loading file"))
+                COMMAND_IF_NOT_OK(data.append("\n"), EXIT_ACTION)
             } else {
-                COMMAND_IF_NOT_OK(data.append(line_buf), EXIT_ACTION("loading file"))
+                COMMAND_IF_NOT_OK(data.append(line_buf), EXIT_ACTION)
             }
         }
     }
-    COMMAND_IF_NOT_OK(fclose(fdesc), EXIT_ACTION("closing input file"))
+    COMMAND_IF_NOT_OK(fclose(fdesc), EXIT_ACTION)
     return RetCode_OK;
 }
 

@@ -38,6 +38,9 @@
     <ClInclude Include="..\src\vlg\vlg_subscription_impl.h">
       <Filter>h</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\vlg_globint.h">
+      <Filter>h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\vlg\vlg_transaction_impl.cpp">

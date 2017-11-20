@@ -37,7 +37,7 @@ vlg::collector &sbs_event_impl_inst_collector()
         return *sbs_event_impl_inst_coll_;
     }
     if(!(sbs_event_impl_inst_coll_ = new sbs_event_inst_collector())) {
-        EXIT_ACTION("failed creating subscription_event_impl::sbs_event_impl_inst_coll_\n")
+        EXIT_ACTION
     }
     return *sbs_event_impl_inst_coll_;
 }
@@ -273,7 +273,7 @@ vlg::collector &sbs_inst_collector()
         return *sbs_inst_coll_;
     }
     if(!(sbs_inst_coll_ = new subscription_inst_collector())) {
-        EXIT_ACTION("failed creating subscription_impl::sbs_inst_coll_\n")
+        EXIT_ACTION
     }
     return *sbs_inst_coll_;
 }

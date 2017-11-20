@@ -39,10 +39,10 @@ vlg::hash_map &get_vlg_logger_map()
     }
     if(!(vlg_lgname_lg = new vlg::hash_map(vlg::sngl_ptr_obj_mng(),
                                            vlg::sngl_cstr_obj_mng()))) {
-        EXIT_ACTION("get_vlg_logger_map() - failed create vlg_lgname_lg map\n")
+        EXIT_ACTION
     }
     if(vlg_lgname_lg->init(HM_SIZE_NANO)) {
-        EXIT_ACTION("get_vlg_logger_map() - failed init vlg_lgname_lg map\n")
+        EXIT_ACTION
     }
     return *vlg_lgname_lg;
 }

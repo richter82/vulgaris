@@ -58,12 +58,12 @@ vlg::hash_map &GetTCompPackingMap()
         tcomp_packing_map = new vlg::hash_map(sizeof(size_t),
                                               sizeof(unsigned int));
         if(!tcomp_packing_map) {
-            EXIT_ACTION("failed creating tcomp_packing_map")
+            EXIT_ACTION
         }
         COMMAND_IF_NOT_OK(tcomp_packing_map->init(HM_SIZE_MINI),
-                          EXIT_ACTION("init tcomp_packing_map"))
+                          EXIT_ACTION)
         COMMAND_IF_NOT_OK(LoadTCompPackingMap(*tcomp_packing_map),
-                          EXIT_ACTION("populating tcomp_packing_map"))
+                          EXIT_ACTION)
     }
     return *tcomp_packing_map;
 }
@@ -100,8 +100,9 @@ vlg::hash_map &GetResWordsMap()
         if(!rword_map) {
             EXIT_ACTION_STDOUT("failed creating rword_map")
         }
-        COMMAND_IF_NOT_OK(rword_map->init(HM_SIZE_MINI), EXIT_ACTION("init rword_map"))
-        COMMAND_IF_NOT_OK(LoadResWordsMap(*rword_map), EXIT_ACTION("loading rword_map"))
+        COMMAND_IF_NOT_OK(rword_map->init(HM_SIZE_MINI), EXIT_ACTION(__func__,
+                                                                     __LINE__))
+        COMMAND_IF_NOT_OK(LoadResWordsMap(*rword_map), EXIT_ACTION)
     }
     return *rword_map;
 }
@@ -135,8 +136,9 @@ vlg::hash_map &GetTypesMap()
         if(!types_map) {
             EXIT_ACTION_STDOUT("failed creating types_map")
         }
-        COMMAND_IF_NOT_OK(types_map->init(HM_SIZE_MINI), EXIT_ACTION("init types_map"))
-        COMMAND_IF_NOT_OK(LoadTypesMap(*types_map), EXIT_ACTION("loading types_map"))
+        COMMAND_IF_NOT_OK(types_map->init(HM_SIZE_MINI), EXIT_ACTION(__func__,
+                                                                     __LINE__))
+        COMMAND_IF_NOT_OK(LoadTypesMap(*types_map), EXIT_ACTION)
     }
     return *types_map;
 }
@@ -631,7 +633,8 @@ vlg::RetCode VLG_COMP_CalcFieldOffset(size_t max_align,
     sprintf(outmsg,
             "TCompPackingMap get failed. (arch:%d, os:%d, lang:%d, tcomp:%d)", arch, os,
             lang, tcomp);
-    COMMAND_IF_NOT_OK(GetTCompPackingMap().get(&key, &packing), EXIT_ACTION(outmsg))
+    COMMAND_IF_NOT_OK(GetTCompPackingMap().get(&key, &packing),
+                      EXIT_ACTION)
     mmbrmap.start_iteration();
     member_desc_comp *mdesc = NULL;
     //enumerate all members

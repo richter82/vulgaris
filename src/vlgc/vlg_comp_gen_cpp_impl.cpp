@@ -1627,7 +1627,7 @@ vlg::RetCode VLG_COMP_Render__CPP_(compile_unit &cunit)
     RETURN_IF_NOT_OK(fname.append("cpp"))
     FILE *file = NULL;
     COMMAND_IF_NOT_OK(open_output_file(fname.internal_buff(), &file),
-                      EXIT_ACTION("opening output file"))
+                      EXIT_ACTION)
     //header
     RETURN_IF_NOT_OK(render_hdr(cunit, fname, file))
     RETURN_IF_NOT_OK(put_newline(file))

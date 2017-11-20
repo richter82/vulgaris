@@ -171,11 +171,11 @@ persistence_manager_impl &persistence_manager_impl::get_instance()
     if(!(p_mng_snglt = new persistence_manager_impl())) {
         IFLOG(fat(TH_ID, LS_PRS "%s%s", __func__,
                   "() - failed creating VLG_PERS_MANAGER"))
-        EXIT_ACTION("failed creating p_mng_snglt\n")
+        EXIT_ACTION
     }
     if(p_mng_snglt->init()) {
         IFLOG(fat(TH_ID, LS_PRS "%s%s", __func__, "() - failed init VLG_PERS_MANAGER"))
-        EXIT_ACTION("failed init p_mng_snglt\n")
+        EXIT_ACTION
     }
     return *p_mng_snglt;
 }

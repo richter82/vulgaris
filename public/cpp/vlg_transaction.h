@@ -148,8 +148,8 @@ class transaction : public vlg::collectable {
         virtual void    on_close();
 
     public:
-        transaction_impl *get_implernal();
-        void             set_implernal(transaction_impl *tx);
+        transaction_impl *get_opaque();
+        void             set_opaque(transaction_impl *tx);
 
     private:
         transaction_impl_pub *impl_;

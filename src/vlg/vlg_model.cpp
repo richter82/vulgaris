@@ -1088,7 +1088,7 @@ vlg::collector &net_class_get_instance_collector()
         return *net_class_inst_coll_;
     }
     if(!(net_class_inst_coll_ = new net_class_inst_collector())) {
-        EXIT_ACTION("net_class_get_instance_collector() - MEMORY FAILURE")
+        EXIT_ACTION
     }
     return *net_class_inst_coll_;
 }
