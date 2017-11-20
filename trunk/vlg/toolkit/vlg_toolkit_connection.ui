@@ -43,7 +43,7 @@
            <item>
             <widget class="QLabel" name="conn_status_label">
              <property name="text">
-              <string>Connection Status</string>
+              <string>Status</string>
              </property>
             </widget>
            </item>

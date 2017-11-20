@@ -37,7 +37,7 @@ vlg_toolkit_MainWindow::vlg_toolkit_MainWindow(QWidget *parent) :
     ui(new Ui::vlg_toolkit_MainWindow),
     peer_(77),
     view_model_loaded_(false),
-    blzmodel_load_list_model_(this),
+    vlgmodel_load_list_model_(this),
     pers_dri_file_load_list_model_(this),
     vlg_model_loaded_model_(peer_.get_em_m(), this),
     pte_apnd_(this),
@@ -51,8 +51,8 @@ vlg_toolkit_MainWindow::vlg_toolkit_MainWindow(QWidget *parent) :
     //peer_ logger cfg end
 
     //cfg peer models-view connection
-    ui->peer_cfg_view_list_blzmodel->setModel(&blzmodel_load_list_model_);
-    ui->peer_cfg_view_list_blzpersdriv->setModel(&pers_dri_file_load_list_model_);
+    ui->peer_cfg_view_list_vlgmodel->setModel(&vlgmodel_load_list_model_);
+    ui->peer_cfg_view_list_vlgpersdriv->setModel(&pers_dri_file_load_list_model_);
 
     //settings bgn
     QSettings settings;
@@ -187,14 +187,14 @@ vlg::RetCode vlg_toolkit_MainWindow::PeerLoadCfgHndl(int pnum,
 
     if(!strcmp(param, "load_model")) {
         if(value) {
-            if(blzmodel_load_list_model_.stringList().contains(tr(value))) {
+            if(vlgmodel_load_list_model_.stringList().contains(tr(value))) {
                 qDebug() << "[load_model] model already specified:" << value;
                 return vlg::RetCode_BADCFG;
             } else {
-                int rowc = blzmodel_load_list_model_.rowCount();
-                blzmodel_load_list_model_.insertRow(rowc);
-                QModelIndex index = blzmodel_load_list_model_.index(rowc, 0);
-                blzmodel_load_list_model_.setData(index, tr(value));
+                int rowc = vlgmodel_load_list_model_.rowCount();
+                vlgmodel_load_list_model_.insertRow(rowc);
+                QModelIndex index = vlgmodel_load_list_model_.index(rowc, 0);
+                vlgmodel_load_list_model_.setData(index, tr(value));
             }
         } else {
             qDebug() << "[load_model] requires argument.";
@@ -376,10 +376,10 @@ void vlg_toolkit_MainWindow::on_set_peer_params_button_clicked()
 
 void vlg_toolkit_MainWindow::on_update_peer_model_button_clicked()
 {
-    int numRows = blzmodel_load_list_model_.rowCount();
+    int numRows = vlgmodel_load_list_model_.rowCount();
     for(int row = 0; row < numRows; ++row) {
-        QModelIndex index = blzmodel_load_list_model_.index(row, 0);
-        peer_.set_cfg_load_model(blzmodel_load_list_model_.data(index,
+        QModelIndex index = vlgmodel_load_list_model_.index(row, 0);
+        peer_.set_cfg_load_model(vlgmodel_load_list_model_.data(index,
                                                                 Qt::DisplayRole).toString().toLocal8Bit().data());
     }
     ui->peer_model_label_status->setText(tr("Set"));

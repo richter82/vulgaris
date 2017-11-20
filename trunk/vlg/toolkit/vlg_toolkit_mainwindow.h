@@ -122,7 +122,7 @@ class vlg_toolkit_MainWindow : public QMainWindow {
         //MODEL: VLG_MODEL(s) TO LOAD by FILE
     private:
         bool view_model_loaded_;
-        QStringListModel blzmodel_load_list_model_;
+        QStringListModel vlgmodel_load_list_model_;
 
         //MODEL: PERS-DRIV(s) TO LOAD by FILE
     private:
