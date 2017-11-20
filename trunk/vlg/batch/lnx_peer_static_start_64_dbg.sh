@@ -1,7 +1,7 @@
 #!/bin/bash
-cd ../test/wkdir/blzpeer_bth_static
+cd ../test/wkdir/peer_sta
 cat /dev/null > _bsns.log
 cat /dev/null > _uncollc.log
 LD_LIBRARY_PATH="../../../bin/LNX_64/DBG/libso"
 export LD_LIBRARY_PATH
-../../../bin/LNX_64/DBG/test/blzpeer_sta/blzstatpeer -file;
+../../../bin/LNX_64/DBG/bin/peer -file;

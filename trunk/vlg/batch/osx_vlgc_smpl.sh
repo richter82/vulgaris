@@ -1,3 +1,3 @@
 #!/bin/bash
-cd ../test/wkdir/blzc
-../../../bin/OSX_64/DBG/blzc/blzc -file
+cd ../test/wkdir/vlgc
+../../../bin/OSX_64/DBG/vlgc -file
