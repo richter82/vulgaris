@@ -30,14 +30,14 @@
 enum VLG_MODEL_ITEM_TYPE {
     VLG_MODEL_ITEM_TYPE_Undef,
     VLG_MODEL_ITEM_TYPE_ROOT,     //ROOT
-    VLG_MODEL_ITEM_TYPE_EDESC,     //entity_desc
+    VLG_MODEL_ITEM_TYPE_EDESC,     //nentity_desc
     VLG_MODEL_ITEM_TYPE_MDESC,     //member_desc
 };
 
 class model_item {
     public:
         model_item(VLG_MODEL_ITEM_TYPE    item_type,
-                   const vlg::entity_desc      *edesc,
+                   const vlg::nentity_desc      *edesc,
                    const vlg::member_desc      *mdesc,
                    model_item             *parent = NULL);
 
@@ -54,7 +54,7 @@ class model_item {
 
         VLG_MODEL_ITEM_TYPE item_type() const;
 
-        const vlg::entity_desc *edesc() const;
+        const vlg::nentity_desc *edesc() const;
         const vlg::member_desc *mdesc() const;
 
     private:
@@ -66,7 +66,7 @@ class model_item {
 
     private:
         VLG_MODEL_ITEM_TYPE       item_type_;
-        const vlg::entity_desc     *edesc_;
+        const vlg::nentity_desc     *edesc_;
         const vlg::member_desc     *mdesc_;
 };
 
@@ -82,7 +82,7 @@ class vlg_toolkit_vlg_model : public QAbstractItemModel {
         void OnModelUpdate_event();
 
     public:
-        vlg_toolkit_vlg_model(vlg::entity_manager &bem, QObject *parent = 0);
+        vlg_toolkit_vlg_model(vlg::nentity_manager &bem, QObject *parent = 0);
         ~vlg_toolkit_vlg_model();
 
         //overriden methods
@@ -98,7 +98,7 @@ class vlg_toolkit_vlg_model : public QAbstractItemModel {
         QVariant data(const QModelIndex &index, int role) const;
 
         model_item *rootItem() const;
-        vlg::entity_manager &bem() const;
+        vlg::nentity_manager &bem() const;
 
         QList<model_item *> parents() const;
 
@@ -107,7 +107,7 @@ class vlg_toolkit_vlg_model : public QAbstractItemModel {
 
         //bem source for this model.
     private:
-        vlg::entity_manager      &bem_;
+        vlg::nentity_manager      &bem_;
         model_item          *rootItem_;
 };
 

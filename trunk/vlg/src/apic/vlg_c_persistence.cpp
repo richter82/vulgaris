@@ -28,7 +28,7 @@ extern "C" {
     RetCode persistence_manager_load_persistence_driver_dynamic(const char *drivers[],
     int drivers_num)
     {
-        return persistence_manager::load_persistence_driver_dynamic(drivers,
+        return persistence_manager::load_driver_dynamic(drivers,
         drivers_num);
     }
 
@@ -36,28 +36,28 @@ extern "C" {
     drivers[],
     int drivers_num)
     {
-        return persistence_manager::load_persistence_driver((persistence_driver_impl **)
+        return persistence_manager::load_driver((persistence_driver_impl **)
         drivers, drivers_num);
     }
 
     RetCode persistence_manager_set_cfg_file_dir(const char *dir)
     {
-        return persistence_manager::set_persistence_config_file_dir(dir);
+        return persistence_manager::set_config_file_dir(dir);
     }
 
     RetCode persistence_manager_set_cfg_file_path_name(const char *file_path)
     {
-        return persistence_manager::set_persistence_config_file_path_name(file_path);
+        return persistence_manager::set_config_file_path_name(file_path);
     }
 
     RetCode persistence_manager_load_config(const char *file_name)
     {
-        return persistence_manager::load_persistence_config(file_name);
+        return persistence_manager::load_config(file_name);
     }
 
     RetCode persistence_manager_start_all_drivers()
     {
-        return persistence_manager::start_all_persistence_drivers();
+        return persistence_manager::start_all_drivers();
     }
 
     persistence_driver_impl_wr persistence_manager_available_driver(
@@ -89,32 +89,32 @@ extern "C" {
     RetCode persistence_connection_create_entity_schema_by_class_id(
         persistence_connection_wr pconn,
         PersistenceAlteringMode mode,
-        const entity_manager_wr em,
+        const entity_manager_wr nem,
         unsigned int nclass_id)
     {
         return static_cast<persistence_connection *>(pconn)->create_entity_schema(mode,
-        *(const entity_manager *)em, nclass_id);
+        *(const nentity_manager *)nem, nclass_id);
     }
 
     RetCode persistence_connection_create_entity_schema_by_edesc(
         persistence_connection_wr pconn,
         PersistenceAlteringMode mode,
-        const entity_manager_wr em,
+        const entity_manager_wr nem,
         const entity_desc_wr desc)
     {
         return static_cast<persistence_connection *>(pconn)->create_entity_schema(mode,
-        *(const entity_manager *)em,
-        *(const entity_desc *)desc);
+        *(const nentity_manager *)nem,
+        *(const nentity_desc *)desc);
     }
 
     RetCode persistence_connection_save_entity(persistence_connection_wr pconn,
-    const entity_manager_wr em,
+    const entity_manager_wr nem,
     unsigned int ts0,
     unsigned int ts1,
     const net_class_wr in_obj)
     {
-        return static_cast<persistence_connection *>(pconn)->save_entity(*
-        (const entity_manager *)em,
+        return static_cast<persistence_connection *>(pconn)->save_obj(*
+        (const nentity_manager *)nem,
         ts0,
         ts1,
         *(const nclass *)in_obj);
@@ -122,13 +122,13 @@ extern "C" {
 
     RetCode persistence_connection_update_entity(persistence_connection_wr pconn,
     unsigned short key,
-    const entity_manager_wr em,
+    const entity_manager_wr nem,
     unsigned int ts0,
     unsigned int ts1,
     const net_class_wr in_obj)
     {
-        return static_cast<persistence_connection *>(pconn)->update_entity(key,
-        *(const entity_manager *)em,
+        return static_cast<persistence_connection *>(pconn)->update_obj(key,
+        *(const nentity_manager *)nem,
         ts0,
         ts1,
         *(const nclass *)in_obj);
@@ -137,26 +137,26 @@ extern "C" {
     RetCode persistence_connection_save_or_update_entity(persistence_connection_wr
     pconn,
     unsigned short key,
-    const entity_manager_wr em,
+    const entity_manager_wr nem,
     unsigned int ts0,
     unsigned int ts1,
     const net_class_wr in_obj)
     {
-        return static_cast<persistence_connection *>(pconn)->save_or_update_entity(key,
-        *(const entity_manager *)em, ts0, ts1,
+        return static_cast<persistence_connection *>(pconn)->save_or_update_obj(key,
+        *(const nentity_manager *)nem, ts0, ts1,
         *(const nclass *)in_obj);
     }
 
     RetCode persistence_connection_remove_entity(persistence_connection_wr pconn,
     unsigned short key,
-    const entity_manager_wr em,
+    const entity_manager_wr nem,
     unsigned int ts0,
     unsigned int ts1,
     PersistenceDeletionMode mode,
     const net_class_wr in_obj)
     {
-        return static_cast<persistence_connection *>(pconn)->remove_entity(key,
-        *(const entity_manager *)em,
+        return static_cast<persistence_connection *>(pconn)->remove_obj(key,
+        *(const nentity_manager *)nem,
         ts0,
         ts1,
         mode,
@@ -165,13 +165,13 @@ extern "C" {
 
     RetCode persistence_connection_load_entity(persistence_connection_wr pconn,
     unsigned short key,
-    const entity_manager_wr em,
+    const entity_manager_wr nem,
     unsigned int *ts0_out,
     unsigned int *ts1_out,
     net_class_wr in_out_obj)
     {
-        return static_cast<persistence_connection *>(pconn)->load_entity(key,
-        *(const entity_manager *)em,
+        return static_cast<persistence_connection *>(pconn)->load_obj(key,
+        *(const nentity_manager *)nem,
         *ts0_out,
         *ts1_out,
         *(nclass *)in_out_obj);
@@ -204,9 +204,9 @@ extern "C" {
     const entity_manager_wr persistence_query_get_entity_manager(
         persistence_query_wr pqry)
     {
-        const entity_manager &em = static_cast<persistence_query *>
+        const nentity_manager &nem = static_cast<persistence_query *>
         (pqry)->get_entity_manager();
-        return (const entity_manager_wr)&em;
+        return (const entity_manager_wr)&nem;
     }
 
     RetCode persistence_query_next_entity(persistence_query_wr pqry,
@@ -214,7 +214,7 @@ extern "C" {
     unsigned int *ts1_out,
     net_class_wr out_obj)
     {
-        return static_cast<persistence_query *>(pqry)->next_entity(*ts0_out,
+        return static_cast<persistence_query *>(pqry)->next_obj(*ts0_out,
         *ts1_out,
         *(nclass *)out_obj);
     }

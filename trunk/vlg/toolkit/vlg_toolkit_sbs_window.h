@@ -58,14 +58,14 @@ class vlg_toolkit_sbs_window : public QMainWindow {
         Q_OBJECT
 
     public:
-        explicit vlg_toolkit_sbs_window(const vlg::entity_desc &edesc,
-                                        const vlg::entity_manager &bem,
-                                        vlg::subscription_impl &sbs,
+        explicit vlg_toolkit_sbs_window(const vlg::nentity_desc &edesc,
+                                        const vlg::nentity_manager &bem,
+                                        vlg::subscription &sbs,
                                         vlg_toolkit_sbs_vlg_class_model &mdl,
                                         QWidget *parent = 0);
         ~vlg_toolkit_sbs_window();
 
-        vlg::subscription_impl &sbs() const;
+        vlg::subscription &sbs() const;
 
     protected:
         void closeEvent(QCloseEvent *event);
@@ -77,25 +77,25 @@ class vlg_toolkit_sbs_window : public QMainWindow {
 
     public slots:
         void OnSbsStatusChange(vlg::SubscriptionStatus status);
-        void OnSbsEvent(vlg::subscription_event_impl *sbs_evt);
+        void OnSbsEvent(vlg::subscription_event *sbs_evt);
         void OnCustomMenuRequested(const QPoint &pos);
         void OnNewTxRequested();
 
     signals:
         void SignalSbsStatusChange(vlg::SubscriptionStatus status);
-        void SignalSbsEvent(vlg::subscription_event_impl *sbs_evt);
+        void SignalSbsEvent(vlg::subscription_event *sbs_evt);
 
     public:
         void EmitSbsStatus(vlg::SubscriptionStatus status);
-        void EmitSbsEvent(vlg::subscription_event_impl *sbs_evt);
+        void EmitSbsEvent(vlg::subscription_event *sbs_evt);
 
     public:
-        friend void sbs_status_change_hndlr(vlg::subscription_impl &sbs,
+        friend void sbs_status_change_hndlr(vlg::subscription &sbs,
                                             vlg::SubscriptionStatus status,
                                             void *ud);
 
-        friend void sbs_evt_notify_hndlr(vlg::subscription_impl &sbs,
-                                         vlg::subscription_event_impl &sbs_evt,
+        friend void sbs_evt_notify_hndlr(vlg::subscription &sbs,
+                                         vlg::subscription_event &sbs_evt,
                                          void *ud);
 
     private:
@@ -108,7 +108,7 @@ class vlg_toolkit_sbs_window : public QMainWindow {
          ****/
 
     private:
-        vlg::subscription_impl &sbs_;
+        vlg::subscription &sbs_;
         vlg_toolkit_sbs_model sbs_mdl_;
 
 

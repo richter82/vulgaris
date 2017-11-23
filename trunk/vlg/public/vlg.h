@@ -483,17 +483,17 @@ MODEL RELATED
 ******************************************/
 
 typedef enum  {
-    EntityType_UNDEFINED,
-    EntityType_ENUM,
-    EntityType_NCLASS,
-} EntityType;
+    NEntityType_UNDEFINED,
+    NEntityType_NENUM,
+    NEntityType_NCLASS,
+} NEntityType;
 
-const char *string_from_EntityType(EntityType bet);
+const char *string_from_NEntityType(NEntityType bet);
 
 typedef enum  {
     MemberType_UNDEFINED,
     MemberType_FIELD,
-    MemberType_ENUM_VALUE,
+    MemberType_NENUM_VALUE,
 } MemberType;
 
 const char *string_from_MemberType(MemberType bmt);
@@ -527,8 +527,8 @@ typedef tx_id tx_id_wr;
 #if defined(__cplusplus)
 class nclass_logger;
 class nclass;
-class entity_desc;
-class entity_manager;
+class nentity_desc;
+class nentity_manager;
 class peer;
 class peer_impl;
 class connection;

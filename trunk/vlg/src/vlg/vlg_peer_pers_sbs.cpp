@@ -37,35 +37,35 @@ struct SPC_REC {
     vlg::RetCode res;
 };
 
-void peer_enum_em_classes_create_schema(const entity_desc &entity_desc,
+void peer_enum_em_classes_create_schema(const nentity_desc &nentity_desc,
                                         void *ud, bool &stop)
 {
     SPC_REC *pud = static_cast<SPC_REC *>(ud);
-    if(entity_desc.is_persistent()) {
+    if(nentity_desc.is_persistent()) {
         persistence_driver_impl *driv = NULL;
         if((driv = pud->peer->get_pers_mng().available_driver(
-                       entity_desc.get_nclass_id()))) {
+                       nentity_desc.get_nclass_id()))) {
             persistence_connection_impl *conn = NULL;
-            if((conn = driv->available_connection(entity_desc.get_nclass_id()))) {
+            if((conn = driv->available_connection(nentity_desc.get_nclass_id()))) {
                 pud->res = conn->create_entity_schema(pud->mode, pud->peer->get_em(),
-                                                      entity_desc);
+                                                      nentity_desc);
             } else {
                 IFLOG2(pud->peer->logger(), wrn(TH_ID,
                                                 LS_TRL "%s() - no available persistence connection for nclass_id:%d", __func__,
-                                                entity_desc.get_nclass_id()))
+                                                nentity_desc.get_nclass_id()))
                 pud->res = vlg::RetCode_KO;
             }
         } else {
             IFLOG2(pud->peer->logger(), wrn(TH_ID,
                                             LS_TRL "%s() - no available persistence driver for nclass_id:%d", __func__,
-                                            entity_desc.get_nclass_id()))
+                                            nentity_desc.get_nclass_id()))
             pud->res = vlg::RetCode_KO;
         }
         if(pud->res) {
             IFLOG2(pud->peer->logger(), wrn(TH_ID,
                                             LS_TRL "%s() failed to create persistence schema for nclass_id:%d, res:%d",
                                             __func__,
-                                            entity_desc.get_nclass_id(),
+                                            nentity_desc.get_nclass_id(),
                                             pud->res))
             if(pud->res != vlg::RetCode_DBOPFAIL) {
                 //if it is worst than RetCode_DBOPFAIL we break;
@@ -86,7 +86,7 @@ vlg::RetCode peer_impl::pers_schema_create(PersistenceAlteringMode mode)
     ud.peer = this;
     ud.mode = mode;
     ud.res = vlg::RetCode_OK;
-    bem_.enum_nclass_descriptors(peer_enum_em_classes_create_schema, &ud);
+    nem_.enum_nclass_descriptors(peer_enum_em_classes_create_schema, &ud);
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, ud.res))
     return ud.res;
 }
@@ -101,14 +101,14 @@ vlg::RetCode peer_impl::class_pers_schema_create(PersistenceAlteringMode
         return vlg::RetCode_KO;
     }
     vlg::RetCode rcode = vlg::RetCode_OK;
-    const entity_desc *class_desc = NULL;
-    if(!(rcode = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
+    const nentity_desc *class_desc = NULL;
+    if(!(rcode = nem_.get_nentity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
             persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
                 persistence_connection_impl *conn = NULL;
                 if((conn = driv->available_connection(nclass_id))) {
-                    if((rcode = conn->create_entity_schema(mode, bem_, *class_desc))) {
+                    if((rcode = conn->create_entity_schema(mode, nem_, *class_desc))) {
                         IFLOG(err(TH_ID, LS_TRL "%s() - create-schema failed for nclass_id:%d [res:%d]",
                                   __func__, nclass_id, rcode))
                     }
@@ -148,14 +148,14 @@ vlg::RetCode peer_impl::class_pers_load(unsigned short key,
     }
     vlg::RetCode rcode = vlg::RetCode_OK;
     unsigned int nclass_id = in_out_obj.get_nclass_id();
-    const entity_desc *class_desc = NULL;
-    if(!(rcode = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
+    const nentity_desc *class_desc = NULL;
+    if(!(rcode = nem_.get_nentity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
             persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
                 persistence_connection_impl *conn = NULL;
                 if((conn = driv->available_connection(nclass_id))) {
-                    rcode = conn->load_entity(key, bem_, ts0_out, ts1_out, in_out_obj);
+                    rcode = conn->load_entity(key, nem_, ts0_out, ts1_out, in_out_obj);
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
                               __func__, nclass_id))
@@ -191,8 +191,8 @@ vlg::RetCode peer_impl::class_pers_save(const nclass &in_obj)
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in_obj.get_nclass_id();
-    const entity_desc *class_desc = NULL;
-    if(!(rcode = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
+    const nentity_desc *class_desc = NULL;
+    if(!(rcode = nem_.get_nentity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
             persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
@@ -203,7 +203,7 @@ vlg::RetCode peer_impl::class_pers_save(const nclass &in_obj)
                                   __func__, rcode))
                     } else {
                         sdr->next_time_stamp(ts0, ts1);
-                        rcode = conn->save_entity(bem_, ts0, ts1, in_obj);
+                        rcode = conn->save_entity(nem_, ts0, ts1, in_obj);
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
@@ -241,8 +241,8 @@ vlg::RetCode peer_impl::class_pers_update(unsigned short key,
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in_obj.get_nclass_id();
-    const entity_desc *class_desc = NULL;
-    if(!(rcode = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
+    const nentity_desc *class_desc = NULL;
+    if(!(rcode = nem_.get_nentity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
             persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
@@ -254,7 +254,7 @@ vlg::RetCode peer_impl::class_pers_update(unsigned short key,
                                   __func__, rcode))
                     } else {
                         sdr->next_time_stamp(ts0, ts1);
-                        rcode = conn->update_entity(key, bem_, ts0, ts1, in_obj);
+                        rcode = conn->update_entity(key, nem_, ts0, ts1, in_obj);
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
@@ -292,8 +292,8 @@ vlg::RetCode peer_impl::class_pers_update_or_save(unsigned short key,
     unsigned int ts0 = 0, ts1 = 0;
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int nclass_id = in_obj.get_nclass_id();
-    const entity_desc *class_desc = NULL;
-    if(!(rcode = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
+    const nentity_desc *class_desc = NULL;
+    if(!(rcode = nem_.get_nentity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
             persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
@@ -304,7 +304,7 @@ vlg::RetCode peer_impl::class_pers_update_or_save(unsigned short key,
                                   __func__, rcode))
                     } else {
                         sdr->next_time_stamp(ts0, ts1);
-                        rcode = conn->save_or_update_entity(key, bem_, ts0, ts1, in_obj);
+                        rcode = conn->save_or_update_entity(key, nem_, ts0, ts1, in_obj);
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
@@ -343,8 +343,8 @@ vlg::RetCode peer_impl::class_pers_remove(unsigned short key,
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in_obj.get_nclass_id();
-    const entity_desc *class_desc = NULL;
-    if(!(rcode = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
+    const nentity_desc *class_desc = NULL;
+    if(!(rcode = nem_.get_nentity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
             persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
@@ -355,7 +355,7 @@ vlg::RetCode peer_impl::class_pers_remove(unsigned short key,
                                   __func__, rcode))
                     } else {
                         sdr->next_time_stamp(ts0, ts1);
-                        rcode = conn->remove_entity(key, bem_, ts0, ts1, mode, in_obj);
+                        rcode = conn->remove_entity(key, nem_, ts0, ts1, mode, in_obj);
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
@@ -440,8 +440,8 @@ vlg::RetCode peer_impl::class_pers_save_and_distribute(
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in_obj.get_nclass_id();
-    const entity_desc *class_desc = NULL;
-    if(!(rcode = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
+    const nentity_desc *class_desc = NULL;
+    if(!(rcode = nem_.get_nentity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
             persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
@@ -452,7 +452,7 @@ vlg::RetCode peer_impl::class_pers_save_and_distribute(
                                   __func__, rcode))
                     } else {
                         sdr->next_time_stamp(ts0, ts1);
-                        rcode = conn->save_entity(bem_, ts0, ts1, in_obj);
+                        rcode = conn->save_entity(nem_, ts0, ts1, in_obj);
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
@@ -508,8 +508,8 @@ vlg::RetCode peer_impl::class_pers_update_and_distribute(unsigned short key,
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in_obj.get_nclass_id();
-    const entity_desc *class_desc = NULL;
-    if(!(rcode = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
+    const nentity_desc *class_desc = NULL;
+    if(!(rcode = nem_.get_nentity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
             persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
@@ -520,7 +520,7 @@ vlg::RetCode peer_impl::class_pers_update_and_distribute(unsigned short key,
                                   __func__, rcode))
                     } else {
                         sdr->next_time_stamp(ts0, ts1);
-                        rcode = conn->update_entity(key, bem_, ts0, ts1, in_obj);
+                        rcode = conn->update_entity(key, nem_, ts0, ts1, in_obj);
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
@@ -576,8 +576,8 @@ vlg::RetCode peer_impl::class_pers_update_or_save_and_distribute(
     unsigned int ts0 = 0, ts1 = 0;
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int nclass_id = in_obj.get_nclass_id();
-    const entity_desc *class_desc = NULL;
-    if(!(rcode = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
+    const nentity_desc *class_desc = NULL;
+    if(!(rcode = nem_.get_nentity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
             persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
@@ -588,7 +588,7 @@ vlg::RetCode peer_impl::class_pers_update_or_save_and_distribute(
                                   __func__, rcode))
                     } else {
                         sdr->next_time_stamp(ts0, ts1);
-                        rcode = conn->save_or_update_entity(key, bem_, ts0, ts1, in_obj);
+                        rcode = conn->save_or_update_entity(key, nem_, ts0, ts1, in_obj);
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",
@@ -644,8 +644,8 @@ vlg::RetCode peer_impl::class_pers_remove_and_distribute(unsigned short key,
     per_nclassid_helper_rec *sdr = NULL;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in_obj.get_nclass_id();
-    const entity_desc *class_desc = NULL;
-    if(!(rcode = bem_.get_entity_descriptor(nclass_id, &class_desc))) {
+    const nentity_desc *class_desc = NULL;
+    if(!(rcode = nem_.get_nentity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
             persistence_driver_impl *driv = NULL;
             if((driv = pers_mng_.available_driver(nclass_id))) {
@@ -656,7 +656,7 @@ vlg::RetCode peer_impl::class_pers_remove_and_distribute(unsigned short key,
                                   __func__, rcode))
                     } else {
                         sdr->next_time_stamp(ts0, ts1);
-                        rcode = conn->remove_entity(key, bem_, ts0, ts1, mode, in_obj);
+                        rcode = conn->remove_entity(key, nem_, ts0, ts1, mode, in_obj);
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%d",

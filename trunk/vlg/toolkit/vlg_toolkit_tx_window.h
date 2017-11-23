@@ -56,9 +56,9 @@ class vlg_toolkit_tx_window : public QMainWindow {
         Q_OBJECT
 
     public:
-        explicit vlg_toolkit_tx_window(const vlg::entity_desc &edesc,
-                                       const vlg::entity_manager &bem,
-                                       vlg::transaction_impl &tx,
+        explicit vlg_toolkit_tx_window(const vlg::nentity_desc &edesc,
+                                       const vlg::nentity_manager &bem,
+                                       vlg::transaction &tx,
                                        vlg_toolkit_tx_vlg_class_model &mdl,
                                        QWidget *parent = 0);
         ~vlg_toolkit_tx_window();
@@ -93,8 +93,8 @@ class vlg_toolkit_tx_window : public QMainWindow {
          ****/
 
     private:
-        const vlg::entity_manager &bem_;
-        vlg::transaction_impl &tx_;
+        const vlg::nentity_manager &bem_;
+        vlg::transaction &tx_;
         vlg_toolkit_tx_model tx_mdl_wrp_;
 
 

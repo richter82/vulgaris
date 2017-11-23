@@ -49,7 +49,7 @@ vlg_toolkit_tx_vlg_class_model &vlg_toolkit_tx_model::wrapped_mdl()
 // vlg_toolkit_tx_window
 //------------------------------------------------------------------------------
 
-void tx_status_change_hndlr(vlg::transaction_impl &trans,
+void tx_status_change_hndlr(vlg::transaction &trans,
                             vlg::TransactionStatus status,
                             void *ud)
 {
@@ -58,16 +58,15 @@ void tx_status_change_hndlr(vlg::transaction_impl &trans,
     txw->EmitTxStatus(status);
 }
 
-void tx_closure_hndlr(vlg::transaction_impl &trans, void *ud)
+void tx_closure_hndlr(vlg::transaction &trans, void *ud)
 {
     vlg_toolkit_tx_window *txw = (vlg_toolkit_tx_window *)ud;
     txw->EmitTxClosure();
 }
 
-
-vlg_toolkit_tx_window::vlg_toolkit_tx_window(const vlg::entity_desc &edesc,
-                                             const vlg::entity_manager &bem,
-                                             vlg::transaction_impl &tx,
+vlg_toolkit_tx_window::vlg_toolkit_tx_window(const vlg::nentity_desc &edesc,
+                                             const vlg::nentity_manager &bem,
+                                             vlg::transaction &tx,
                                              vlg_toolkit_tx_vlg_class_model &mdl,
                                              QWidget *parent) :
     bem_(bem),
@@ -79,10 +78,8 @@ vlg_toolkit_tx_window::vlg_toolkit_tx_window(const vlg::entity_desc &edesc,
     ui->setupUi(this);
     ui->vlg_class_tx_table_view->setModel(&tx_mdl_wrp_);
     ui->connid_label_disp->setText(QString("%1").arg(
-                                       tx_.get_connection().connid()));
+                                       tx_.get_connection()->get_connection_id()));
     TxClosedActions();
-
-    tx_.get_collector().retain(&tx_);
 
     connect(this,
             SIGNAL(SignalTxStatusChange(vlg::TransactionStatus)),
@@ -94,22 +91,18 @@ vlg_toolkit_tx_window::vlg_toolkit_tx_window(const vlg::entity_desc &edesc,
             this,
             SLOT(OnTxClosure()));
 
-    EmitTxStatus(tx_.status());
-    tx_.set_transaction_status_change_handler(tx_status_change_hndlr, this);
-    tx_.set_transaction_closure_handler(tx_closure_hndlr, this);
+    EmitTxStatus(tx_.get_status());
+    tx_.set_status_change_handler(tx_status_change_hndlr, this);
+    tx_.set_close_handler(tx_closure_hndlr, this);
 }
 
 vlg_toolkit_tx_window::~vlg_toolkit_tx_window()
 {
     qDebug() << "~vlg_toolkit_tx_window()";
     vlg::TransactionStatus current = vlg::TransactionStatus_UNDEFINED;
-    tx_.set_transaction_status_change_handler(NULL, NULL);
-    tx_.set_transaction_closure_handler(NULL, NULL);
-    tx_.get_connection().release_transaction(&tx_);
-
-    vlg::collector &c = tx_.get_collector();
-    c.release(&tx_);
-
+    tx_.set_status_change_handler(NULL, NULL);
+    tx_.set_close_handler(NULL, NULL);
+    delete &tx_;
     delete ui;
 }
 
@@ -140,9 +133,11 @@ void vlg_toolkit_tx_window::OnTxStatusChange(vlg::TransactionStatus
             ui->tx_status_label_disp->setText(QObject::tr("PREPARED"));
             ui->tx_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : RosyBrown; color : black;"));
-            ui->txid_label_disp->setText(tr("[%1][%2][%3][%4]").arg(tx_.tx_id_PLID()).arg(
-                                             tx_.tx_id_SVID()).arg(
-                                             tx_.tx_id_CNID()).arg(tx_.tx_id_PRID()));
+            ui->txid_label_disp->setText(tr("[%1][%2][%3][%4]").arg(
+                                             tx_.get_tx_id_PLID()).arg(
+                                             tx_.get_tx_id_SVID()).arg(
+                                             tx_.get_tx_id_CNID()).arg(
+                                             tx_.get_tx_id_PRID()));
             break;
         case vlg::TransactionStatus_FLYING:
             ui->tx_status_label_disp->setText(QObject::tr("FLYING"));
@@ -166,7 +161,7 @@ void vlg_toolkit_tx_window::OnTxStatusChange(vlg::TransactionStatus
 
 void vlg_toolkit_tx_window::OnTxClosure()
 {
-    switch(tx_.tx_res()) {
+    switch(tx_.get_close_result()) {
         case vlg::TransactionResult_COMMITTED:
             ui->connid_tx_res_disp->setText(QObject::tr("COMMITTED"));
             ui->connid_tx_res_disp->setStyleSheet(
@@ -189,22 +184,22 @@ void vlg_toolkit_tx_window::OnTxClosure()
 
 void vlg_toolkit_tx_window::on_actionSend_TX_triggered()
 {
-    if(tx_.status() != vlg::TransactionStatus_INITIALIZED) {
-        tx_.re_new();
+    if(tx_.get_status() != vlg::TransactionStatus_INITIALIZED) {
+        tx_.renew();
     }
 
     switch(ui->cfg_tx_reqtype_cb->currentIndex()) {
         case 0:
-            tx_.set_tx_req_type(vlg::TransactionRequestType_RESERVED);
+            tx_.set_request_type(vlg::TransactionRequestType_RESERVED);
             break;
         case 1:
-            tx_.set_tx_req_type(vlg::TransactionRequestType_SYSTEM);
+            tx_.set_request_type(vlg::TransactionRequestType_SYSTEM);
             break;
         case 2:
-            tx_.set_tx_req_type(vlg::TransactionRequestType_SPECIAL);
+            tx_.set_request_type(vlg::TransactionRequestType_SPECIAL);
             break;
         case 3:
-            tx_.set_tx_req_type(vlg::TransactionRequestType_OBJECT);
+            tx_.set_request_type(vlg::TransactionRequestType_OBJECT);
             break;
         default:
             break;
@@ -212,22 +207,22 @@ void vlg_toolkit_tx_window::on_actionSend_TX_triggered()
 
     switch(ui->cfg_act_cb->currentIndex()) {
         case 0:
-            tx_.set_tx_act(vlg::Action_INSERT);
+            tx_.set_request_action(vlg::Action_INSERT);
             break;
         case 1:
-            tx_.set_tx_act(vlg::Action_UPDATE);
+            tx_.set_request_action(vlg::Action_UPDATE);
             break;
         case 2:
-            tx_.set_tx_act(vlg::Action_DELTA);
+            tx_.set_request_action(vlg::Action_DELTA);
             break;
         case 3:
-            tx_.set_tx_act(vlg::Action_DELETE);
+            tx_.set_request_action(vlg::Action_DELETE);
             break;
         case 4:
-            tx_.set_tx_act(vlg::Action_REMOVE);
+            tx_.set_request_action(vlg::Action_REMOVE);
             break;
         case 5:
-            tx_.set_tx_act(vlg::Action_RESET);
+            tx_.set_request_action(vlg::Action_RESET);
             break;
         default:
             break;
@@ -235,17 +230,17 @@ void vlg_toolkit_tx_window::on_actionSend_TX_triggered()
 
     switch(ui->cfg_class_encode_cb->currentIndex()) {
         case 0:
-            tx_.set_tx_req_class_encode(vlg::Encode_INDEXED_NOT_ZERO);
+            tx_.set_request_nclass_encode(vlg::Encode_INDEXED_NOT_ZERO);
             break;
         case 1:
-            tx_.set_tx_req_class_encode(vlg::Encode_INDEXED_DELTA);
+            tx_.set_request_nclass_encode(vlg::Encode_INDEXED_DELTA);
             break;
         default:
             break;
     }
 
     tx_.set_request_obj(tx_mdl_wrp_.wrapped_mdl().local_obj());
-    tx_.set_result_class_req(ui->cfg_res_class_req_cb->isChecked());
+    tx_.set_result_obj_required(ui->cfg_res_class_req_cb->isChecked());
 
     tx_.prepare();
     tx_.send();
@@ -253,8 +248,8 @@ void vlg_toolkit_tx_window::on_actionSend_TX_triggered()
 
 void vlg_toolkit_tx_window::on_actionReNew_TX_triggered()
 {
-    if(tx_.status() != vlg::TransactionStatus_INITIALIZED) {
-        tx_.re_new();
+    if(tx_.get_status() != vlg::TransactionStatus_INITIALIZED) {
+        tx_.renew();
     }
 }
 
@@ -269,11 +264,7 @@ void vlg_toolkit_tx_window::EmitTxClosure()
 }
 
 void vlg_toolkit_tx_window::TxFlyingActions()
-{
-
-}
+{}
 
 void vlg_toolkit_tx_window::TxClosedActions()
-{
-
-}
+{}

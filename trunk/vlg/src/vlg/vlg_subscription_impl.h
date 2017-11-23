@@ -346,7 +346,7 @@ class subscription_impl : public vlg::collectable {
 
         peer_impl                &peer_; // associated peer.
         connection_impl          &conn_; // underlying connection.
-        const entity_manager    &bem_;
+        const nentity_manager    &nem_;
         unsigned int            sbsid_;
         unsigned int            reqid_; //set by client
         SubscriptionStatus      status_;

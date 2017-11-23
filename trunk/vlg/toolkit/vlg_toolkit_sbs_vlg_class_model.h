@@ -88,7 +88,7 @@ struct VLG_CLASS_ROW_IDX_PAIR {
 
 struct ENM_GEN_SBS_REP_REC_UD {
     ENM_GEN_SBS_REP_REC_UD(vlg_toolkit_sbs_vlg_class_model &mdl,
-                           const vlg::entity_manager &bem,
+                           const vlg::nentity_manager &bem,
                            vlg::ascii_string *prfx,
                            bool array_fld,
                            unsigned int fld_idx);
@@ -96,7 +96,7 @@ struct ENM_GEN_SBS_REP_REC_UD {
     ~ENM_GEN_SBS_REP_REC_UD();
 
     vlg_toolkit_sbs_vlg_class_model &mdl_;
-    const vlg::entity_manager &bem_;
+    const vlg::nentity_manager &bem_;
     vlg::ascii_string *prfx_;
 
     bool array_fld_;
@@ -113,7 +113,7 @@ struct ENM_GEN_SBS_REP_REC_UD {
 
 struct ENM_UPD_CLS_ROW_REC_UD {
     ENM_UPD_CLS_ROW_REC_UD(vlg_toolkit_sbs_vlg_class_model &mdl,
-                           const vlg::entity_manager &bem,
+                           const vlg::nentity_manager &bem,
                            const char *obj_ptr,
                            const char *obj_ptr_prev,
                            int rowidx,
@@ -123,7 +123,7 @@ struct ENM_UPD_CLS_ROW_REC_UD {
     ~ENM_UPD_CLS_ROW_REC_UD();
 
     vlg_toolkit_sbs_vlg_class_model &mdl_;
-    const vlg::entity_manager &bem_;
+    const vlg::nentity_manager &bem_;
     const char *obj_ptr_;
     const char *obj_ptr_prev_;
     int rowidx_; //this is const during enumeration.
@@ -139,8 +139,8 @@ class vlg_toolkit_sbs_vlg_class_model : public QAbstractTableModel {
         Q_OBJECT
 
     public:
-        vlg_toolkit_sbs_vlg_class_model(const vlg::entity_desc &edesc,
-                                        const vlg::entity_manager &bem,
+        vlg_toolkit_sbs_vlg_class_model(const vlg::nentity_desc &edesc,
+                                        const vlg::nentity_manager &bem,
                                         QObject *parent = 0);
         ~vlg_toolkit_sbs_vlg_class_model();
 
@@ -185,8 +185,8 @@ class vlg_toolkit_sbs_vlg_class_model : public QAbstractTableModel {
          REP
          ****/
     private:
-        const vlg::entity_desc       &edesc_;
-        const vlg::entity_manager    &bem_;
+        const vlg::nentity_desc       &edesc_;
+        const vlg::nentity_manager    &bem_;
 
         //METADATA REP
         int colnum_;

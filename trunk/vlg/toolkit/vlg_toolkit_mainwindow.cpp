@@ -22,24 +22,22 @@
 #include "vlg_toolkit_mainwindow.h"
 #include "ui_vlg_toolkit_mainwindow.h"
 
-void vlg_toolkit_peer_lfcyc_status_change_hndlr(vlg::peer_automa &peer,
-                                                vlg::PeerStatus status,
-                                                void *ud)
+void vlg_toolkit_peer_status_change_hndlr(vlg::peer &p,
+                                          vlg::PeerStatus status,
+                                          void *ud)
 {
     vlg_toolkit_MainWindow *btmw = (vlg_toolkit_MainWindow *)ud;
     qDebug() << "peer status:" << status;
     btmw->EmitPeerStatus(status);
 }
 
-
 vlg_toolkit_MainWindow::vlg_toolkit_MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::vlg_toolkit_MainWindow),
-    peer_(77),
     view_model_loaded_(false),
     vlgmodel_load_list_model_(this),
     pers_dri_file_load_list_model_(this),
-    vlg_model_loaded_model_(peer_.get_em_m(), this),
+    vlg_model_loaded_model_(peer_.get_entity_manager_m(), this),
     pte_apnd_(this),
     flash_info_msg_val_(0)
 {
@@ -67,14 +65,7 @@ vlg_toolkit_MainWindow::vlg_toolkit_MainWindow(QWidget *parent) :
     //settings end
 
     //peer_ e_init bgn
-    vlg::RetCode res = vlg::RetCode_OK;
-    peer_.set_peer_status_change_hndlr(vlg_toolkit_peer_lfcyc_status_change_hndlr,
-                                       this);
-    if(res = peer_.early_init()) {
-        qDebug() << "peer EarlyInit FAILED res:" << res;
-    } else {
-        qDebug() << "peer EarlyInit OK res:" << res;
-    }
+    peer_.set_status_change_handler(vlg_toolkit_peer_status_change_hndlr, this);
     //peer_ e_init end
 
     LoadDefPeerCfgFile();
@@ -94,7 +85,7 @@ void vlg_toolkit_MainWindow::InitGuiConfig()
     qRegisterMetaType<vlg::ConnectionStatus>("vlg::ConnectionStatus");
     qRegisterMetaType<vlg::TransactionStatus>("vlg::TransactionStatus");
     qRegisterMetaType<vlg::SubscriptionStatus>("vlg::SubscriptionStatus");
-    qRegisterMetaType<vlg::subscription_event_impl *>("vlg::subscription_event_impl");
+    qRegisterMetaType<vlg::subscription_event *>("vlg::subscription_event");
     qRegisterMetaType<VLG_SBS_COL_DATA_ENTRY *>("VLG_SBS_COL_DATA_ENTRY");
 
     ui->action_Start_Peer->setDisabled(true);
@@ -145,10 +136,9 @@ void vlg_toolkit_MainWindow::closeEvent(QCloseEvent *event)
         event->ignore();
         return;
     }
-    peer_.stop_peer(true);
+    peer_.stop(true);
     vlg::PeerStatus current = vlg::PeerStatus_ZERO;
-    peer_.await_for_peer_status_reached_or_outdated(vlg::PeerStatus_STOPPED,
-                                                    current);
+    peer_.await_for_status_reached_or_outdated(vlg::PeerStatus_STOPPED, current);
     QSettings settings;
     settings.beginGroup(KEY_WINDOW);
     settings.setValue(KEY_SIZE, size());
@@ -220,15 +210,6 @@ vlg::RetCode vlg_toolkit_MainWindow::PeerLoadCfgHndl(int pnum,
         }
     }
 
-    if(!strcmp(param, "srv_pkt_q_len")) {
-        if(value) {
-            ui->pp_cfg_srv_pkt_q_len->setText(tr(value));
-        } else {
-            qDebug() << "[srv_pkt_q_len] requires argument.";
-            return vlg::RetCode_BADCFG;
-        }
-    }
-
     if(!strcmp(param, "srv_exectrs")) {
         if(value) {
             ui->pp_cfg_srv_exectrs->setText(tr(value));
@@ -238,29 +219,11 @@ vlg::RetCode vlg_toolkit_MainWindow::PeerLoadCfgHndl(int pnum,
         }
     }
 
-    if(!strcmp(param, "cli_pkt_q_len")) {
-        if(value) {
-            ui->pp_cfg_cli_pkt_q_len->setText(tr(value));
-        } else {
-            qDebug() << "[cli_pkt_q_len] requires argument.";
-            return vlg::RetCode_BADCFG;
-        }
-    }
-
     if(!strcmp(param, "cli_exectrs")) {
         if(value) {
             ui->pp_cfg_cli_exectrs->setText(tr(value));
         } else {
             qDebug() << "[cli_exectrs] requires argument.";
-            return vlg::RetCode_BADCFG;
-        }
-    }
-
-    if(!strcmp(param, "srv_sbs_evt_q_len")) {
-        if(value) {
-            ui->pp_cfg_srv_sbs_evt_q_len->setText(tr(value));
-        } else {
-            qDebug() << "[srv_sbs_evt_q_len] requires argument.";
             return vlg::RetCode_BADCFG;
         }
     }
@@ -333,44 +296,34 @@ void vlg_toolkit_MainWindow::on_set_peer_params_button_clicked()
 {
     switch(ui->pp_cfg_peer_personality->currentIndex()) {
         case 0:
-            peer_.set_cfg_personality(vlg::PeerPersonality_PURE_CLIENT);
+            peer_.set_personality(vlg::PeerPersonality_PURE_CLIENT);
             break;
         case 1:
-            peer_.set_cfg_personality(vlg::PeerPersonality_PURE_SERVER);
+            peer_.set_personality(vlg::PeerPersonality_PURE_SERVER);
             break;
         case 2:
-            peer_.set_cfg_personality(vlg::PeerPersonality_BOTH);
+            peer_.set_personality(vlg::PeerPersonality_BOTH);
             break;
         default:
             break;
     }
 
     if(ui->pp_cfg_srv_sin_addr->text() != "") {
-        peer_.set_cfg_srv_sin_addr(
-            ui->pp_cfg_srv_sin_addr->text().toLocal8Bit().data());
+        peer_.set_server_address(ui->pp_cfg_srv_sin_addr->text().toLocal8Bit().data());
     }
-    peer_.set_cfg_srv_sin_port(atoi(
-                                   ui->pp_cfg_srv_sin_port->text().toLocal8Bit().data()));
-    peer_.set_cfg_srv_pkt_q_len(atoi(
-                                    ui->pp_cfg_srv_pkt_q_len->text().toLocal8Bit().data()));
-    peer_.set_cfg_srv_exectrs(atoi(
-                                  ui->pp_cfg_srv_exectrs->text().toLocal8Bit().data()));
-    peer_.set_cfg_cli_pkt_q_len(atoi(
-                                    ui->pp_cfg_cli_pkt_q_len->text().toLocal8Bit().data()));
-    peer_.set_cfg_cli_exectrs(atoi(
-                                  ui->pp_cfg_cli_exectrs->text().toLocal8Bit().data()));
-    peer_.set_cfg_srv_sbs_evt_q_len(atoi(
-                                        ui->pp_cfg_srv_sbs_evt_q_len->text().toLocal8Bit().data()));
-    peer_.set_cfg_srv_sbs_exectrs(atoi(
-                                      ui->pp_cfg_srv_sbs_exectrs->text().toLocal8Bit().data()));
-    peer_.set_cfg_pers_enabled(ui->pp_cfg_pers_enabled->isChecked());
-    peer_.set_cfg_pers_schema_create(ui->pp_cfg_pers_schema_create->isChecked());
-    peer_.set_cfg_drop_existing_schema(
-        ui->pp_cfg_drop_existing_schema->isChecked());
+    peer_.set_server_port(atoi(ui->pp_cfg_srv_sin_port->text().toLocal8Bit().data()));
+    peer_.set_server_transaction_service_executor_size(atoi(
+                                                           ui->pp_cfg_srv_exectrs->text().toLocal8Bit().data()));
+    peer_.set_client_transaction_service_executor_size(atoi(
+                                                           ui->pp_cfg_cli_exectrs->text().toLocal8Bit().data()));
+    peer_.set_server_subscription_service_executor_size(atoi(
+                                                            ui->pp_cfg_srv_sbs_exectrs->text().toLocal8Bit().data()));
+    peer_.set_persistent(ui->pp_cfg_pers_enabled->isChecked());
+    peer_.set_create_persistent_schema(ui->pp_cfg_pers_schema_create->isChecked());
+    peer_.set_drop_existing_persistent_schema(ui->pp_cfg_drop_existing_schema->isChecked());
     peer_.set_configured(true);
     ui->peer_cfg_status_label->setText(tr("Set"));
-    ui->peer_cfg_status_label->setStyleSheet(
-        tr("background-color : LightGreen; color : black;"));
+    ui->peer_cfg_status_label->setStyleSheet(tr("background-color : LightGreen; color : black;"));
     ui->action_Start_Peer->setEnabled(true);
 }
 
@@ -379,8 +332,8 @@ void vlg_toolkit_MainWindow::on_update_peer_model_button_clicked()
     int numRows = vlgmodel_load_list_model_.rowCount();
     for(int row = 0; row < numRows; ++row) {
         QModelIndex index = vlgmodel_load_list_model_.index(row, 0);
-        peer_.set_cfg_load_model(vlgmodel_load_list_model_.data(index,
-                                                                Qt::DisplayRole).toString().toLocal8Bit().data());
+        peer_.add_load_model(vlgmodel_load_list_model_.data(index,
+                                                            Qt::DisplayRole).toString().toLocal8Bit().data());
     }
     ui->peer_model_label_status->setText(tr("Set"));
     ui->peer_model_label_status->setStyleSheet(
@@ -392,8 +345,8 @@ void vlg_toolkit_MainWindow::on_set_pers_driver_button_clicked()
     int numRows = pers_dri_file_load_list_model_.rowCount();
     for(int row = 0; row < numRows; ++row) {
         QModelIndex index = pers_dri_file_load_list_model_.index(row, 0);
-        peer_.set_cfg_load_pers_driv(pers_dri_file_load_list_model_.data(index,
-                                                                         Qt::DisplayRole).toString().toLocal8Bit().data());
+        peer_.add_load_persistent_driver(pers_dri_file_load_list_model_.data(index,
+                                                                             Qt::DisplayRole).toString().toLocal8Bit().data());
     }
     ui->peer_pers_driv_status_label->setText(tr("Set"));
     ui->peer_pers_driv_status_label->setStyleSheet(
@@ -403,7 +356,7 @@ void vlg_toolkit_MainWindow::on_set_pers_driver_button_clicked()
 void vlg_toolkit_MainWindow::on_action_Start_Peer_triggered()
 {
     ui->peer_Tab->widget(0)->setEnabled(false);
-    peer_.start_peer(0, 0, true);
+    peer_.start(0, 0, true);
 }
 
 void vlg_toolkit_MainWindow::OnPeer_status_change(vlg::PeerStatus status)
@@ -476,9 +429,7 @@ void vlg_toolkit_MainWindow::OnPeer_status_change(vlg::PeerStatus status)
 }
 
 void vlg_toolkit_MainWindow::On_VLG_MODEL_Update()
-{
-
-}
+{}
 
 void vlg_toolkit_MainWindow::OnSetInfoMsg(const QString &msg)
 {
@@ -520,7 +471,7 @@ void vlg_toolkit_MainWindow::EmitPeerStatus(vlg::PeerStatus status)
 
 void vlg_toolkit_MainWindow::on_action_Stop_Peer_triggered()
 {
-    peer_.stop_peer(true);
+    peer_.stop(true);
     //ui->peer_Tab->widget(0)->setEnabled(true);
 }
 
@@ -528,7 +479,7 @@ void vlg_toolkit_MainWindow::Status_RUNNING_Actions()
 {
     ui->peer_status_label_display->setText(QObject::tr("RUNNING"));
     ui->peer_status_label_display->setStyleSheet(
-        QObject::tr("background-color : LawnGreen; color : black;"));
+        QObject::tr("background-color : DarkSeaGreen; color : black;"));
     ui->action_Start_Peer->setEnabled(false);
     ui->action_Stop_Peer->setEnabled(true);
     ui->actionConnect->setEnabled(true);
@@ -562,8 +513,7 @@ void vlg_toolkit_MainWindow::AddNewModelTab()
     connect(this, SIGNAL(VLG_MODEL_Update_event()), &mt_mod, SLOT(invalidate()));
 }
 
-void vlg_toolkit_MainWindow::AddNewConnectionTab(vlg::connection_impl
-                                                 &new_conn,
+void vlg_toolkit_MainWindow::AddNewConnectionTab(vlg::connection &new_conn,
                                                  const QString &host,
                                                  const QString &port,
                                                  const QString &usr,
@@ -582,7 +532,8 @@ void vlg_toolkit_MainWindow::AddNewConnectionTab(vlg::connection_impl
         vlg::ConnectivityEventResult_UNDEFINED;
     vlg::ConnectivityEventType connectivity_evt_type =
         vlg::ConnectivityEventType_UNDEFINED;
-    if(new_conn.await_for_connection_result(con_evt_res, connectivity_evt_type,
+    if(new_conn.await_for_connection_result(con_evt_res,
+                                            connectivity_evt_type,
                                             VLG_TKT_INT_AWT_TIMEOUT,
                                             0) == vlg::RetCode_TIMEOUT) {
         emit SignalNewConnectionTimeout(QString("establishing new connection"));
@@ -628,10 +579,11 @@ void vlg_toolkit_MainWindow::on_actionConnect_triggered()
                                           conn_dlg.ui->ln_edt_host->text().toLatin1().data());
         conn_params.sin_port = htons(atoi(
                                          conn_dlg.ui->ln_edt_port->text().toLatin1().data()));
-        vlg::connection_impl *new_conn = NULL;
-        peer_.new_connection(&new_conn);
-        new_conn->client_connect(conn_params);
-        AddNewConnectionTab(*new_conn,
+
+        vlg::connection &new_conn = *new vlg::connection();
+        new_conn.bind(peer_);
+        new_conn.connect(conn_params);
+        AddNewConnectionTab(new_conn,
                             conn_dlg.ui->ln_edt_host->text(),
                             conn_dlg.ui->ln_edt_port->text(),
                             conn_dlg.ui->ln_edt_usr->text(),
@@ -659,7 +611,7 @@ void vlg_toolkit_MainWindow::OnLogEvent(vlg::TraceLVL tlvl,
             beginHtml = "<p style=\"color: Khaki; background-color: Black\">";
             break;
         case vlg::TL_INF:
-            beginHtml = "<p style=\"color: Lime; background-color: Black\">";
+            beginHtml = "<p style=\"color: DarkSeaGreen; background-color: Black\">";
             break;
         case vlg::TL_WRN:
             beginHtml = "<p style=\"color: Orange; background-color: Black\">";

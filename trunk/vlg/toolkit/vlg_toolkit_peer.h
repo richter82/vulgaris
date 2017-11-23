@@ -29,23 +29,17 @@ namespace vlg_tlkt {
 //------------------------------------------------------------------------------
 // ****VLG_TOOLKIT_PEER****
 //------------------------------------------------------------------------------
-class toolkit_peer : public vlg::peer_impl {
+class toolkit_peer : public vlg::peer {
     public:
         //---ctors
-        toolkit_peer(unsigned int id);
+        toolkit_peer();
 
         //------------------------------------------------------------------------------
         // VLG_PEER_LFCYC ABS METHS
         //------------------------------------------------------------------------------
     private:
-        virtual vlg::RetCode peer_load_cfg_usr(int pnum, const char *param,
-                                               const char *value);
-        virtual vlg::RetCode peer_init_usr();
-        virtual vlg::RetCode peer_start_usr();
-        virtual vlg::RetCode peer_dying_breath_handler();
-        virtual const char *peer_name_usr();
-        virtual const unsigned int *peer_ver_usr();
-
+        virtual const char *name_handler() ;
+        virtual const unsigned int *version_handler();
 };
 
 }

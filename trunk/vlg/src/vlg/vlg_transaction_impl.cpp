@@ -56,7 +56,7 @@ nclass_logger *transaction_impl::log_ = NULL;
 transaction_impl::transaction_impl(connection_impl &conn) :
     peer_(conn.peer()),
     conn_(conn),
-    bem_(conn.peer().get_em()),
+    nem_(conn.peer().get_em()),
     status_(TransactionStatus_EARLY),
     tx_res_(TransactionResult_UNDEFINED),
     result_code_(ProtocolCode_SUCCESS),

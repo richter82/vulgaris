@@ -130,7 +130,7 @@ void peer_add_load_persistent_driver(peer_wr p,
                                      const char *driver);
 
 RetCode peer_extend_model_with_em(peer_wr p,
-                                  entity_manager_wr em);
+                                  entity_manager_wr nem);
 
 RetCode peer_extend_model_with_model_name(peer_wr p,
                                           const char *model_name);

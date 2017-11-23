@@ -93,10 +93,10 @@ vlg::RetCode VLG_COMP_Render_EntryPoint_decl__H_(compile_unit &cunit,
     RETURN_IF_NOT_OK(tknz.init(cunit.get_file_name()))
     RETURN_IF_NOT_OK(tknz.next_token(name, VLG_COMP_DOT))
     fprintf(file, OPN_CMMNT_LN
-            "BEM entry point\n"
+            "NEM entry point\n"
             CLS_CMMNT_LN);
     fprintf(file, "extern \"C\"{\n");
-    fprintf(file, EXPORT_SYMBOL"vlg::entity_manager* get_em_%s();\n",
+    fprintf(file, EXPORT_SYMBOL"vlg::nentity_manager* get_em_%s();\n",
             cunit.model_name());
     fprintf(file, "}\n\n");
     return vlg::RetCode_OK;
@@ -114,7 +114,7 @@ vlg::RetCode VLG_COMP_Render_EntryPoint_C_decl__H_(compile_unit &cunit,
     RETURN_IF_NOT_OK(tknz.next_token(name, VLG_COMP_DOT))
     fprintf(file, "#else\n");
     fprintf(file, OPN_CMMNT_LN
-            "BEM entry point C\n"
+            "NEM entry point C\n"
             CLS_CMMNT_LN);
     fprintf(file, "entity_manager_wr get_c_em_%s();\n", cunit.model_name());
     fprintf(file, "#endif\n");
@@ -162,16 +162,16 @@ vlg::RetCode VLG_COMP_Render_ClassVirtualMeths__H_(vlg::hash_map &entitymap,
     fprintf(file,
             EXPORT_SYMBOL"virtual unsigned int get_compiler_version() const;");
     RETURN_IF_NOT_OK(put_newline(file))
-    fprintf(file, EXPORT_SYMBOL"virtual size_t get_entity_size() const;");
+    fprintf(file, EXPORT_SYMBOL"virtual size_t get_size() const;");
     RETURN_IF_NOT_OK(put_newline(file))
     fprintf(file, EXPORT_SYMBOL"virtual const %s* get_zero_object() const;",
-            class_desc.get_entity_name());
+            class_desc.get_nentity_name());
     RETURN_IF_NOT_OK(put_newline(file))
     fprintf(file,
             EXPORT_SYMBOL"virtual void copy_to(vlg::nclass *obj) const;");
     RETURN_IF_NOT_OK(put_newline(file))
     fprintf(file, EXPORT_SYMBOL"virtual %s* clone() const;",
-            class_desc.get_entity_name());
+            class_desc.get_nentity_name());
     RETURN_IF_NOT_OK(put_newline(file))
     fprintf(file, EXPORT_SYMBOL"virtual bool is_zero() const;");
     RETURN_IF_NOT_OK(put_newline(file))
@@ -181,7 +181,7 @@ vlg::RetCode VLG_COMP_Render_ClassVirtualMeths__H_(vlg::hash_map &entitymap,
             EXPORT_SYMBOL"virtual void set_from(const vlg::nclass *obj);");
     RETURN_IF_NOT_OK(put_newline(file))
     fprintf(file,
-            EXPORT_SYMBOL"virtual const vlg::entity_desc* get_entity_descriptor() const;");
+            EXPORT_SYMBOL"virtual const vlg::nentity_desc* get_nentity_descriptor() const;");
     RETURN_IF_NOT_OK(put_newline(file))
     fprintf(file,
             EXPORT_SYMBOL"virtual size_t pretty_dump_to_buffer(char *buff, bool print_cname = true) const;");
@@ -227,7 +227,7 @@ vlg::RetCode VLG_COMP_Render_GenMeths__H_(compile_unit &cunit,
         if(mdsc->get_field_type() == Type_ENTITY) {
             entity_desc_comp *inner_edsc = NULL;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &inner_edsc)) {
-                if(inner_edsc->get_entity_type() == EntityType_ENUM) {
+                if(inner_edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
                         //enum  nmemb == 1
                         fprintf(file, EXPORT_SYMBOL"%s ", type_str.internal_buff());
@@ -261,7 +261,7 @@ vlg::RetCode VLG_COMP_Render_GenMeths__H_(compile_unit &cunit,
             if(mdsc->get_field_type() == Type_ENTITY) {
                 entity_desc_comp *edsc = NULL;
                 if(!entitymap.get(mdsc->get_field_usr_str_type(), &edsc)) {
-                    if(edsc->get_entity_type() == EntityType_ENUM) {
+                    if(edsc->get_nentity_type() == NEntityType_NENUM) {
                         //enum
                         fprintf(file, EXPORT_SYMBOL"%s ", type_str.internal_buff());
                     } else {
@@ -283,7 +283,7 @@ vlg::RetCode VLG_COMP_Render_GenMeths__H_(compile_unit &cunit,
         if(mdsc->get_field_type() == Type_ENTITY) {
             entity_desc_comp *edsc = NULL;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &edsc)) {
-                if(edsc->get_entity_type() == EntityType_ENUM) {
+                if(edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
                         //enum  nmemb == 1
                         fprintf(file, EXPORT_SYMBOL"void %s(%s val);\n",  meth_name.internal_buff(),
@@ -322,7 +322,7 @@ vlg::RetCode VLG_COMP_Render_GenMeths__H_(compile_unit &cunit,
             if(mdsc->get_field_type() == Type_ENTITY) {
                 entity_desc_comp *edsc = NULL;
                 if(!entitymap.get(mdsc->get_field_usr_str_type(), &edsc)) {
-                    if(edsc->get_entity_type() == EntityType_ENUM) {
+                    if(edsc->get_nentity_type() == NEntityType_NENUM) {
                         //enum
                         fprintf(file, EXPORT_SYMBOL"void %s(size_t idx, %s val);\n",
                                 meth_name.internal_buff(), type_str.internal_buff());
@@ -364,11 +364,11 @@ vlg::RetCode VLG_COMP_Render_Enum__H_(compile_unit &cunit, FILE *file)
     entitymap.start_iteration();
     entity_desc_comp *edsc = NULL;
     while(!entitymap.next(NULL, &edsc)) {
-        if(edsc->get_entity_type() == EntityType_ENUM) {
+        if(edsc->get_nentity_type() == NEntityType_NENUM) {
             fprintf(file,   OPN_CMMNT_LN
                     "vlg_enum: %s\n"
-                    CLS_CMMNT_LN, edsc->get_entity_name());
-            fprintf(file, "enum %s{", edsc->get_entity_name());
+                    CLS_CMMNT_LN, edsc->get_nentity_name());
+            fprintf(file, "enum %s{", edsc->get_nentity_name());
             RETURN_IF_NOT_OK(put_newline(file))
             vlg::hash_map &mmbr_map = edsc->get_map_id_MMBRDSC();
             mmbr_map.start_iteration();
@@ -403,27 +403,27 @@ vlg::RetCode VLG_COMP_Render_Class__H_(compile_unit &cunit, FILE *file)
     entitymap.start_iteration();
     entity_desc_comp *edsc = NULL;
     while(!entitymap.next(NULL, &edsc)) {
-        if(edsc->get_entity_type() == EntityType_NCLASS) {
+        if(edsc->get_nentity_type() == NEntityType_NCLASS) {
             fprintf(file,   OPN_CMMNT_LN
                     "nclass: %s - ID: %u\n"
-                    CLS_CMMNT_LN, edsc->get_entity_name(),
+                    CLS_CMMNT_LN, edsc->get_nentity_name(),
                     edsc->get_entityid());
             vlg::ascii_string nmsp;
             RETURN_IF_NOT_OK(VLG_COMP_CPP_Calc_NMspc(*edsc, nmsp))
             fprintf(file, "namespace %s{\n", nmsp.internal_buff());
             RETURN_IF_NOT_OK(put_newline(file))
-            fprintf(file, "#define %s_ENTITY_ID %u\n", edsc->get_entity_name(),
+            fprintf(file, "#define %s_ENTITY_ID %u\n", edsc->get_nentity_name(),
                     edsc->get_entityid());
             RETURN_IF_NOT_OK(put_newline(file))
             fprintf(file,
-                    "class %s : public vlg::nclass{\nfriend class vlg::entity_manager;\n",
-                    edsc->get_entity_name());
+                    "class %s : public vlg::nclass{\nfriend class vlg::nentity_manager;\n",
+                    edsc->get_nentity_name());
             fprintf(file,
                     "friend void* %s_alloc_func(size_t type_size, const void *copy);\n",
-                    edsc->get_entity_name());
+                    edsc->get_nentity_name());
             fprintf(file, "public:\n");
-            fprintf(file, EXPORT_SYMBOL"%s();\n", edsc->get_entity_name());
-            fprintf(file, EXPORT_SYMBOL"virtual ~%s();\n", edsc->get_entity_name());
+            fprintf(file, EXPORT_SYMBOL"%s();\n", edsc->get_nentity_name());
+            fprintf(file, EXPORT_SYMBOL"virtual ~%s();\n", edsc->get_nentity_name());
             RETURN_IF_NOT_OK(put_newline(file))
             fprintf(file, "public:\n");
             RETURN_IF_NOT_OK(VLG_COMP_Render_ClassVirtualMeths__H_(entitymap, *edsc, file))
@@ -433,7 +433,7 @@ vlg::RetCode VLG_COMP_Render_Class__H_(compile_unit &cunit, FILE *file)
             RETURN_IF_NOT_OK(VLG_COMP_Render_Rep__H_(entitymap, *edsc, file))
             //zero obj
             fprintf(file, "\npublic:\n");
-            fprintf(file, "static const %s ZERO_OBJ;\n", edsc->get_entity_name());
+            fprintf(file, "static const %s ZERO_OBJ;\n", edsc->get_nentity_name());
             fprintf(file, "};\n");
             fprintf(file, "}");
             RETURN_IF_NOT_OK(put_newline(file))

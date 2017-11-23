@@ -21,7 +21,6 @@
 
 #ifndef CR_CFG_H_
 #define CR_CFG_H_
-#include "vlg_ascii_string.h"
 
 namespace vlg {
 
@@ -60,8 +59,10 @@ class config_loader {
 
         RetCode set_params_file_dir(const char *dir);
         RetCode init();
+
         RetCode init(int argc,
                      char *argv[]);
+
         RetCode init(const char *file_name);
         RetCode destroy();
 
@@ -69,6 +70,7 @@ class config_loader {
         void dump_config();
         void dump_config(FILE *fd);
         void enum_params(param_callback usr_clbk);
+
         void enum_params(param_callback_ud usr_clbk_ud,
                          void *ud);
 

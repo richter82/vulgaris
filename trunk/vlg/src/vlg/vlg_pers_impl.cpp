@@ -33,7 +33,7 @@ namespace vlg {
 persistence_task::persistence_task(VLG_PERS_TASK_OP op_code) :
     op_code_(op_code),
     op_res_(vlg::RetCode_OK),
-    in_bem_(NULL),
+    in_nem_(NULL),
     in_mode_(PersistenceDeletionMode_UNDEFINED),
     in_out_obj_(NULL),
     in_sql_(NULL),
@@ -67,9 +67,9 @@ void persistence_task::op_res(vlg::RetCode val)
     op_res_ = val;
 }
 
-void persistence_task::in_bem(const entity_manager &val)
+void persistence_task::in_nem(const nentity_manager &val)
 {
-    in_bem_ = &val;
+    in_nem_ = &val;
 }
 
 PersistenceDeletionMode persistence_task::in_mode() const
@@ -107,7 +107,7 @@ void persistence_task::in_key(unsigned short val)
     in_key_ = val;
 }
 
-void persistence_task::in_edesc(const entity_desc &val)
+void persistence_task::in_edesc(const nentity_desc &val)
 {
     in_edesc_ = &val;
 }
@@ -430,13 +430,13 @@ vlg::RetCode persistence_connection_impl::connect()
 }
 
 vlg::RetCode persistence_connection_impl::create_entity_schema(
-    PersistenceAlteringMode mode, const entity_manager &bem,
+    PersistenceAlteringMode mode, const nentity_manager &nem,
     unsigned int nclass_id)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(mode:%d, nclass_id:%d)", __func__, mode, nclass_id))
     vlg::RetCode rcode = vlg::RetCode_OK;
-    const entity_desc *edesc = NULL;
-    if(bem.get_entity_descriptor(nclass_id, &edesc)) {
+    const nentity_desc *edesc = NULL;
+    if(nem.get_nentity_descriptor(nclass_id, &edesc)) {
         IFLOG(err(TH_ID, LS_CLO "%s() - cannot find entity(nclass_id:%d)", __func__,
                   nclass_id))
         return vlg::RetCode_BADARG;
@@ -448,10 +448,10 @@ vlg::RetCode persistence_connection_impl::create_entity_schema(
     }
     switch(mode) {
         case PersistenceAlteringMode_CREATE_ONLY:
-            rcode = do_create_table(bem, *edesc, false);
+            rcode = do_create_table(nem, *edesc, false);
             break;
         case PersistenceAlteringMode_DROP_IF_EXIST:
-            rcode = do_create_table(bem, *edesc, true);
+            rcode = do_create_table(nem, *edesc, true);
             break;
         case PersistenceAlteringMode_CREATE_OR_UPDATE:
             rcode = vlg::RetCode_UNSP;
@@ -464,8 +464,8 @@ vlg::RetCode persistence_connection_impl::create_entity_schema(
 }
 
 vlg::RetCode persistence_connection_impl::create_entity_schema(
-    PersistenceAlteringMode mode, const entity_manager &bem,
-    const entity_desc &edesc)
+    PersistenceAlteringMode mode, const nentity_manager &nem,
+    const nentity_desc &edesc)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(mode:%d)", __func__, mode))
     vlg::RetCode rcode = vlg::RetCode_OK;
@@ -476,10 +476,10 @@ vlg::RetCode persistence_connection_impl::create_entity_schema(
     }
     switch(mode) {
         case PersistenceAlteringMode_CREATE_ONLY:
-            rcode = do_create_table(bem, edesc, false);
+            rcode = do_create_table(nem, edesc, false);
             break;
         case PersistenceAlteringMode_DROP_IF_EXIST:
-            rcode = do_create_table(bem, edesc, true);
+            rcode = do_create_table(nem, edesc, true);
             break;
         case PersistenceAlteringMode_CREATE_OR_UPDATE:
             rcode = vlg::RetCode_UNSP;
@@ -492,87 +492,87 @@ vlg::RetCode persistence_connection_impl::create_entity_schema(
 }
 
 vlg::RetCode persistence_connection_impl::load_entity(unsigned short key,
-                                                      const entity_manager &bem,
+                                                      const nentity_manager &nem,
                                                       unsigned int &ts0_out,
                                                       unsigned int &ts1_out,
                                                       nclass &in_out_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%d)", __func__, key))
     vlg::RetCode rcode = vlg::RetCode_OK;
-    const entity_desc *edesc = in_out_obj.get_entity_descriptor();
+    const nentity_desc *edesc = in_out_obj.get_nentity_descriptor();
     if(!edesc->is_persistent()) {
         IFLOG(err(TH_ID, LS_CLO "(nclass_id:%d) - not persistent", __func__,
                   edesc->get_nclass_id()))
         return vlg::RetCode_BADARG;
     }
-    rcode = do_select(key, bem, ts0_out, ts1_out, in_out_obj);
+    rcode = do_select(key, nem, ts0_out, ts1_out, in_out_obj);
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
     return rcode;
 }
 
-vlg::RetCode persistence_connection_impl::save_entity(const entity_manager
-                                                      &bem,
+vlg::RetCode persistence_connection_impl::save_entity(const nentity_manager
+                                                      &nem,
                                                       unsigned int ts0,
                                                       unsigned int ts1,
                                                       const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     vlg::RetCode rcode = vlg::RetCode_OK;
-    const entity_desc *edesc = in_obj.get_entity_descriptor();
+    const nentity_desc *edesc = in_obj.get_nentity_descriptor();
     if(!edesc->is_persistent()) {
         IFLOG(err(TH_ID, LS_CLO "%s(nclass_id:%d) - not persistent", __func__,
                   edesc->get_nclass_id()))
         return vlg::RetCode_BADARG;
     }
-    rcode = do_insert(bem, ts0, ts1, in_obj);
+    rcode = do_insert(nem, ts0, ts1, in_obj);
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
     return rcode;
 }
 
 vlg::RetCode persistence_connection_impl::update_entity(unsigned short key,
-                                                        const entity_manager &bem,
+                                                        const nentity_manager &nem,
                                                         unsigned int ts0,
                                                         unsigned int ts1,
                                                         const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     vlg::RetCode rcode = vlg::RetCode_OK;
-    const entity_desc *edesc = in_obj.get_entity_descriptor();
+    const nentity_desc *edesc = in_obj.get_nentity_descriptor();
     if(!edesc->is_persistent()) {
         IFLOG(err(TH_ID, LS_CLO "%s(nclass_id:%d) - not persistent", __func__,
                   edesc->get_nclass_id()))
         return vlg::RetCode_BADARG;
     }
-    rcode = do_update(key, bem, ts0, ts1, in_obj);
+    rcode = do_update(key, nem, ts0, ts1, in_obj);
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
     return rcode;
 }
 
 vlg::RetCode persistence_connection_impl::save_or_update_entity(
     unsigned short key,
-    const entity_manager &bem,
+    const nentity_manager &nem,
     unsigned int ts0,
     unsigned int ts1,
     const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     vlg::RetCode rcode = vlg::RetCode_OK;
-    const entity_desc *edesc = in_obj.get_entity_descriptor();
+    const nentity_desc *edesc = in_obj.get_nentity_descriptor();
     if(!edesc->is_persistent()) {
         IFLOG(err(TH_ID, LS_CLO "%s(nclass_id:%d) - not persistent", __func__,
                   edesc->get_nclass_id()))
         return vlg::RetCode_BADARG;
     }
-    rcode = do_insert(bem, ts0, ts1, in_obj, false);
+    rcode = do_insert(nem, ts0, ts1, in_obj, false);
     if(rcode) {
-        rcode = do_update(key, bem, ts0, ts1, in_obj);
+        rcode = do_update(key, nem, ts0, ts1, in_obj);
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
     return rcode;
 }
 
 vlg::RetCode persistence_connection_impl::remove_entity(unsigned short key,
-                                                        const entity_manager &bem,
+                                                        const nentity_manager &nem,
                                                         unsigned int ts0,
                                                         unsigned int ts1,
                                                         PersistenceDeletionMode mode,
@@ -580,23 +580,23 @@ vlg::RetCode persistence_connection_impl::remove_entity(unsigned short key,
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     vlg::RetCode rcode = vlg::RetCode_OK;
-    const entity_desc *edesc = in_obj.get_entity_descriptor();
+    const nentity_desc *edesc = in_obj.get_nentity_descriptor();
     if(!edesc->is_persistent()) {
         IFLOG(err(TH_ID, LS_CLO "%s(nclass_id:%d) - not persistent", __func__,
                   edesc->get_nclass_id()))
         return vlg::RetCode_BADARG;
     }
-    rcode = do_delete(key, bem, ts0, ts1, mode, in_obj);
+    rcode = do_delete(key, nem, ts0, ts1, mode, in_obj);
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
     return rcode;
 }
 
 vlg::RetCode persistence_connection_impl::execute_query(const char *sql,
-                                                        const entity_manager &bem,
+                                                        const nentity_manager &nem,
                                                         persistence_query_impl **query_out)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode rcode = do_execute_query(bem, sql, query_out);
+    vlg::RetCode rcode = do_execute_query(nem, sql, query_out);
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
     return rcode;
 }
@@ -645,11 +645,11 @@ nclass_logger *persistence_query_impl::log_ = NULL;
 
 persistence_query_impl::persistence_query_impl(unsigned int id,
                                                persistence_connection_impl &conn,
-                                               const entity_manager &bem) :
+                                               const nentity_manager &nem) :
     id_(id),
     status_(PersistenceQueryStatus_PREPARED),
     conn_(conn),
-    bem_(bem)
+    nem_(nem)
 {
     log_ = get_nclass_logger("persistence_query_impl");
     IFLOG(trc(TH_ID, LS_CTR "%s(id:%d)", __func__, id))
@@ -664,9 +664,9 @@ PersistenceQueryStatus persistence_query_impl::status() const
     return status_;
 }
 
-const entity_manager &persistence_query_impl::get_em() const
+const nentity_manager &persistence_query_impl::get_em() const
 {
-    return bem_;
+    return nem_;
 }
 
 unsigned int persistence_query_impl::get_id() const
@@ -685,7 +685,7 @@ vlg::RetCode persistence_query_impl::load_next_entity(unsigned int &ts0_out,
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     vlg::RetCode rcode = vlg::RetCode_OK;
-    const entity_desc *edesc = out_obj.get_entity_descriptor();
+    const nentity_desc *edesc = out_obj.get_nentity_descriptor();
     if(!edesc->is_persistent()) {
         IFLOG(err(TH_ID, LS_CLO "%s(nclass_id:%d) - not persistent", __func__,
                   edesc->get_nclass_id()))

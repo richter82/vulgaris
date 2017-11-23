@@ -82,17 +82,16 @@ class vlg_toolkit_MainWindow : public QMainWindow {
     public:
         void EmitPeerStatus(vlg::PeerStatus status);
 
-        friend void vlg_toolkit_peer_lfcyc_status_change_hndlr(vlg::peer_automa
-                                                               &peer,
-                                                               vlg::PeerStatus status,
-                                                               void *ud);
+        friend void vlg_toolkit_peer_status_change_hndlr(vlg::peer &p,
+                                                         vlg::PeerStatus status,
+                                                         void *ud);
     private:
         void Status_RUNNING_Actions();
         void Status_STOPPED_Actions();
 
     private:
         void AddNewModelTab();
-        void AddNewConnectionTab(vlg::connection_impl &new_conn,
+        void AddNewConnectionTab(vlg::connection &new_conn,
                                  const QString &host,
                                  const QString &port,
                                  const QString &usr,

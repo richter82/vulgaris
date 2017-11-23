@@ -177,7 +177,7 @@ GLOB DEFS
 ***********************************/
 namespace vlg {
 
-vlg::RetCode str_from_EntityType(EntityType etype,
+vlg::RetCode str_from_EntityType(NEntityType etype,
                                  vlg::ascii_string &out);
 
 enum VLG_COMP_ARCH {
@@ -271,7 +271,7 @@ struct member_desc_comp {
                      size_t nmemb,
                      unsigned int fild_entityid,
                      const char *fild_usr_str_type,
-                     EntityType fild_entitytype,
+                     NEntityType fild_entitytype,
                      long enum_value);
 
     //---meths
@@ -302,7 +302,7 @@ struct member_desc_comp {
     size_t          get_nmemb()                 const;
     unsigned int    get_field_nclassid()         const;
     const char      *get_field_usr_str_type()   const;
-    EntityType      get_field_entity_type()     const;
+    NEntityType      get_field_entity_type()     const;
 
 
     void                set_field_offset(size_t val,
@@ -348,7 +348,7 @@ struct member_desc_comp {
     // is set to VLG_TYPE_Entity
     // valid only if fild_type
     // is set to VLG_TYPE_Entity
-    EntityType      fild_entitytype_;
+    NEntityType      fild_entitytype_;
 
     //enum specific
     //value assumed by this enum
@@ -392,7 +392,7 @@ typedef void (*enum_member_desc_comp_func)(const member_desc_comp  &desc);
 struct entity_desc_comp {
         //---ctors
         entity_desc_comp(unsigned int entityid,
-                         EntityType entitytype,
+                         NEntityType entitytype,
                          const char *nmspace,
                          const char *entityname,
                          vlg::alloc_func afun,
@@ -406,19 +406,19 @@ struct entity_desc_comp {
 
         unsigned int    get_entityid()  const;
 
-        size_t          get_entity_size(VLG_COMP_ARCH arch,
-                                        VLG_COMP_OS os,
-                                        VLG_COMP_LANG lang,
-                                        VLG_COMP_TCOMP tcomp)  const;
+        size_t          get_size(VLG_COMP_ARCH arch,
+                                 VLG_COMP_OS os,
+                                 VLG_COMP_LANG lang,
+                                 VLG_COMP_TCOMP tcomp)  const;
 
         size_t          get_entity_max_align(VLG_COMP_ARCH arch,
                                              VLG_COMP_OS os,
                                              VLG_COMP_LANG lang,
                                              VLG_COMP_TCOMP tcomp)  const;
 
-        EntityType          get_entity_type()       const;
+        NEntityType          get_nentity_type()       const;
         const char          *get_entity_namespace() const;
-        const char          *get_entity_name()      const;
+        const char          *get_nentity_name()      const;
         vlg::alloc_func   get_entity_alloc_f()    const;
         unsigned int        get_field_num()         const;
         bool                is_persistent()         const;
@@ -454,7 +454,7 @@ struct entity_desc_comp {
         vlg::hash_map     entity_size_map_;
         vlg::hash_map     entity_max_align_map_;
 
-        EntityType          entitytype_;
+        NEntityType          entitytype_;
         const char          *nmspace_;
         const char          *entityname_;
         vlg::alloc_func   afun_;

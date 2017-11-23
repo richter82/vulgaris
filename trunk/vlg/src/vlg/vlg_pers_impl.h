@@ -73,9 +73,9 @@ class persistence_task : public vlg::p_task {
     public:
         VLG_PERS_TASK_OP                op_code() const;
         void                            op_code(VLG_PERS_TASK_OP val);
-        vlg::RetCode                  op_res() const;
+        vlg::RetCode                    op_res() const;
         void                            op_res(vlg::RetCode val);
-        void                            in_bem(const entity_manager &val);
+        void                            in_nem(const nentity_manager &val);
         PersistenceDeletionMode         in_mode() const;
         void                            in_mode(PersistenceDeletionMode val);
         void                            in_obj(const nclass &val);
@@ -83,17 +83,17 @@ class persistence_task : public vlg::p_task {
         void                            in_sql(const char *val);
         unsigned short                  in_key() const;
         void                            in_key(unsigned short val);
-        void                            in_edesc(const entity_desc &val);
+        void                            in_edesc(const nentity_desc &val);
         bool                            in_drop_if_exist() const;
         void                            in_drop_if_exist(bool val);
         void                            in_out_ts0(unsigned int &val);
         void                            in_out_ts1(unsigned int &val);
-        persistence_query_impl           *in_out_query() const;
+        persistence_query_impl          *in_out_query() const;
         void                            in_out_query(persistence_query_impl *val);
         bool                            in_fail_is_error() const;
         void                            in_fail_is_error(bool val);
         void                            stmt_bf(vlg::ascii_string &stmt_bf);
-        vlg::ascii_string             &stmt_bf();
+        vlg::ascii_string               &stmt_bf();
 
     protected:
         virtual vlg::RetCode do_connect() = 0;
@@ -111,20 +111,20 @@ class persistence_task : public vlg::p_task {
     protected:
         //--rep
         VLG_PERS_TASK_OP        op_code_;
-        vlg::RetCode          op_res_;
-        const entity_manager    *in_bem_;
+        vlg::RetCode            op_res_;
+        const nentity_manager   *in_nem_;
         PersistenceDeletionMode in_mode_;
-        const nclass         *in_obj_;
-        nclass               *in_out_obj_;
+        const nclass            *in_obj_;
+        nclass                  *in_out_obj_;
         const char              *in_sql_;
         unsigned short          in_key_;
-        const entity_desc       *in_edesc_;
+        const nentity_desc      *in_edesc_;
         bool                    in_drop_if_exist_;
         unsigned int            *in_out_ts0_;
         unsigned int            *in_out_ts1_;
-        persistence_query_impl   *in_out_query_;
+        persistence_query_impl  *in_out_query_;
         bool                    in_fail_is_error_;
-        vlg::ascii_string     *stmt_bf_;
+        vlg::ascii_string       *stmt_bf_;
 };
 
 //-----------------------------
@@ -216,10 +216,10 @@ class persistence_connection_impl {
 
         //getters
     public:
-        PersistenceConnectionStatus status() const;
-        unsigned int                      get_id() const;
-        persistence_driver_impl           &get_driver();
-        persistence_connection_pool      &get_connection_pool();
+        PersistenceConnectionStatus     status() const;
+        unsigned int                    get_id() const;
+        persistence_driver_impl         &get_driver();
+        persistence_connection_pool     &get_connection_pool();
 
         //business meths
     public:
@@ -227,45 +227,45 @@ class persistence_connection_impl {
         vlg::RetCode    connect();
 
         vlg::RetCode    create_entity_schema(PersistenceAlteringMode mode,
-                                             const entity_manager &bem,
+                                             const nentity_manager &nem,
                                              unsigned int nclass_id);
 
         vlg::RetCode    create_entity_schema(PersistenceAlteringMode mode,
-                                             const entity_manager &bem,
-                                             const entity_desc &edesc);
+                                             const nentity_manager &nem,
+                                             const nentity_desc &edesc);
 
-        vlg::RetCode    save_entity(const entity_manager &bem,
+        vlg::RetCode    save_entity(const nentity_manager &nem,
                                     unsigned int ts0,
                                     unsigned int ts1,
                                     const nclass &in_obj);
 
         vlg::RetCode    update_entity(unsigned short key,
-                                      const entity_manager &bem,
+                                      const nentity_manager &nem,
                                       unsigned int ts0,
                                       unsigned int ts1,
                                       const nclass &in_obj);
 
         vlg::RetCode    save_or_update_entity(unsigned short key,
-                                              const entity_manager &bem,
+                                              const nentity_manager &nem,
                                               unsigned int ts0,
                                               unsigned int ts1,
                                               const nclass &in_obj);
 
         vlg::RetCode    remove_entity(unsigned short key,
-                                      const entity_manager &bem,
+                                      const nentity_manager &nem,
                                       unsigned int ts0,
                                       unsigned int ts1,
                                       PersistenceDeletionMode mode,
                                       const nclass &in_obj);
 
         vlg::RetCode    load_entity(unsigned short key,
-                                    const entity_manager &bem,
+                                    const nentity_manager &nem,
                                     unsigned int &ts0_out,
                                     unsigned int &ts1_out,
                                     nclass &in_out_obj);
 
         vlg::RetCode    execute_query(const char *sql,
-                                      const entity_manager &bem,
+                                      const nentity_manager &nem,
                                       persistence_query_impl **query_out);
 
         vlg::RetCode    destroy_query(persistence_query_impl *query,
@@ -278,36 +278,36 @@ class persistence_connection_impl {
 
         virtual vlg::RetCode do_connect() = 0;
 
-        virtual vlg::RetCode do_create_table(const entity_manager &bem,
-                                             const entity_desc &edesc,
+        virtual vlg::RetCode do_create_table(const nentity_manager &nem,
+                                             const nentity_desc &edesc,
                                              bool drop_if_exist) = 0;
 
         virtual vlg::RetCode do_select(unsigned int key,
-                                       const entity_manager &bem,
+                                       const nentity_manager &nem,
                                        unsigned int &ts0_out,
                                        unsigned int &ts1_out,
                                        nclass &in_out_obj) = 0;
 
         virtual vlg::RetCode do_update(unsigned int key,
-                                       const entity_manager &bem,
+                                       const nentity_manager &nem,
                                        unsigned int ts0,
                                        unsigned int ts1,
                                        const nclass &in_obj) = 0;
 
         virtual vlg::RetCode do_delete(unsigned int key,
-                                       const entity_manager &bem,
+                                       const nentity_manager &nem,
                                        unsigned int ts0,
                                        unsigned int ts1,
                                        PersistenceDeletionMode mode,
                                        const nclass &in_obj) = 0;
 
-        virtual vlg::RetCode do_insert(const entity_manager &bem,
+        virtual vlg::RetCode do_insert(const nentity_manager &nem,
                                        unsigned int ts0,
                                        unsigned int ts1,
                                        const nclass &in_obj,
                                        bool fail_is_error = true) = 0;
 
-        virtual vlg::RetCode do_execute_query(const entity_manager &bem,
+        virtual vlg::RetCode do_execute_query(const nentity_manager &nem,
                                               const char *sql,
                                               persistence_query_impl **qry_out) = 0;
 
@@ -406,14 +406,14 @@ class persistence_query_impl {
         //---ctors
         persistence_query_impl(unsigned int id,
                                persistence_connection_impl &conn,
-                               const entity_manager &bem);
+                               const nentity_manager &nem);
 
         virtual ~persistence_query_impl();
 
     public:
         unsigned int get_id() const;
         PersistenceQueryStatus status() const;
-        const entity_manager &get_em() const;
+        const nentity_manager &get_em() const;
         persistence_connection_impl &get_connection();
 
         vlg::RetCode    load_next_entity(unsigned int &ts0_out,
@@ -426,7 +426,7 @@ class persistence_query_impl {
         unsigned int id_;
         PersistenceQueryStatus status_;
         persistence_connection_impl &conn_;
-        const entity_manager &bem_;
+        const nentity_manager &nem_;
 
     protected:
         static nclass_logger *log_;

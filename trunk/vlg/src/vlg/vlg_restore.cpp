@@ -63,7 +63,7 @@ namespace vlg {
 // FldSeqA_Restore
 //-----------------------------
 inline vlg::RetCode FldSeqA_Restore(void *entity_ptr,
-                                    const entity_manager *em,
+                                    const nentity_manager *nem,
                                     Encode enctyp,
                                     const member_desc *mmbrd,
                                     vlg::grow_byte_buffer *ibb)
@@ -78,7 +78,7 @@ inline vlg::RetCode FldSeqA_Restore(void *entity_ptr,
     }
     //we set starting point in the buffer.
     start_pos = ibb->position();
-    if(mmbrd->get_field_entity_type() == EntityType_NCLASS) {
+    if(mmbrd->get_field_nentity_type() == NEntityType_NCLASS) {
         //class
         while((ibb->position() - start_pos) < array_sz /*&& ibb->AvlRead()*/) {
             //read elem idx.
@@ -88,10 +88,9 @@ inline vlg::RetCode FldSeqA_Restore(void *entity_ptr,
             }
             //compute array fld offset
             elem_cptr = reinterpret_cast<char *>(entity_ptr);
-            elem_cptr += (mmbrd->get_field_offset() + mmbrd->get_field_type_size()
-                          *array_idx);
+            elem_cptr += (mmbrd->get_field_offset() + mmbrd->get_field_type_size()*array_idx);
             nclass *sub_ent = reinterpret_cast<nclass *>(elem_cptr);
-            RETURN_IF_NOT_OK(sub_ent->restore(em, enctyp, ibb))
+            RETURN_IF_NOT_OK(sub_ent->restore(nem, enctyp, ibb))
         }
     } else {
         //primitive type or enum
@@ -103,10 +102,8 @@ inline vlg::RetCode FldSeqA_Restore(void *entity_ptr,
             }
             //compute array fld offset
             elem_cptr = reinterpret_cast<char *>(entity_ptr);
-            elem_cptr += (mmbrd->get_field_offset() + mmbrd->get_field_type_size()
-                          *array_idx);
-            SF_GBB_READ_H(ibb, read(mmbrd->get_field_type_size(), elem_cptr),
-                          return gbb_read_res)
+            elem_cptr += (mmbrd->get_field_offset() + mmbrd->get_field_type_size()*array_idx);
+            SF_GBB_READ_H(ibb, read(mmbrd->get_field_type_size(), elem_cptr), return gbb_read_res)
         }
     }
     return vlg::RetCode_OK;
@@ -115,7 +112,7 @@ inline vlg::RetCode FldSeqA_Restore(void *entity_ptr,
 //-----------------------------
 // nclass
 //-----------------------------
-vlg::RetCode nclass::restore(const entity_manager *em,
+vlg::RetCode nclass::restore(const nentity_manager *nem,
                              Encode enctyp,
                              vlg::grow_byte_buffer *ibb)
 {
@@ -136,8 +133,7 @@ vlg::RetCode nclass::restore(const entity_manager *em,
                 //read fld idx.
                 SF_GBB_READ_H(ibb, read_ushort(&fld_idx), return gbb_read_res)
                 //get member descriptor.
-                const member_desc *mmbrd = get_entity_descriptor()->get_member_desc_by_id(
-                                               fld_idx);
+                const member_desc *mmbrd = get_nentity_descriptor()->get_member_desc_by_id(fld_idx);
                 if(!mmbrd) {
                     return vlg::RetCode_MALFORM;
                 }
@@ -146,8 +142,7 @@ vlg::RetCode nclass::restore(const entity_manager *em,
                 fld_cptr += mmbrd->get_field_offset();
                 if(mmbrd->get_field_vlg_type() != Type_ENTITY) {
                     //primitive type.
-                    if(mmbrd->get_field_vlg_type() == Type_ASCII &&
-                            mmbrd->get_field_nmemb() > 1) {
+                    if(mmbrd->get_field_vlg_type() == Type_ASCII && mmbrd->get_field_nmemb() > 1) {
                         //strings
                         //read string len.
                         SF_GBB_READ_H(ibb, read_uint_to_sizet(&fld_sz), return gbb_read_res)
@@ -157,7 +152,7 @@ vlg::RetCode nclass::restore(const entity_manager *em,
                         SF_GBB_READ_H(ibb, read(fld_sz, fld_cptr), return gbb_read_res)
                     } else {
                         if(mmbrd->get_field_nmemb() > 1) {
-                            RETURN_IF_NOT_OK(FldSeqA_Restore(this, em, enctyp, mmbrd, ibb))
+                            RETURN_IF_NOT_OK(FldSeqA_Restore(this, nem, enctyp, mmbrd, ibb))
                         } else {
                             fld_sz = mmbrd->get_field_type_size();
                             SF_GBB_READ_H(ibb, read(fld_sz, fld_cptr), return gbb_read_res)
@@ -165,23 +160,23 @@ vlg::RetCode nclass::restore(const entity_manager *em,
                     }
                 } else {
                     //entity.
-                    switch(mmbrd->get_field_entity_type()) {
-                        case EntityType_ENUM:
+                    switch(mmbrd->get_field_nentity_type()) {
+                        case NEntityType_NENUM:
                             //treat enum as a primitive type.
                             if(mmbrd->get_field_nmemb() > 1) {
-                                RETURN_IF_NOT_OK(FldSeqA_Restore(this, em, enctyp, mmbrd, ibb))
+                                RETURN_IF_NOT_OK(FldSeqA_Restore(this, nem, enctyp, mmbrd, ibb))
                             } else {
                                 fld_sz = mmbrd->get_field_type_size();
                                 SF_GBB_READ_H(ibb, read(fld_sz, fld_cptr), return gbb_read_res)
                             }
                             break;
-                        case EntityType_NCLASS:
+                        case NEntityType_NCLASS:
                             //class.
                             if(mmbrd->get_field_nmemb() > 1) {
-                                RETURN_IF_NOT_OK(FldSeqA_Restore(this, em, enctyp, mmbrd, ibb))
+                                RETURN_IF_NOT_OK(FldSeqA_Restore(this, nem, enctyp, mmbrd, ibb))
                             } else {
                                 nclass *sub_ent = reinterpret_cast<nclass *>(fld_cptr);
-                                RETURN_IF_NOT_OK(sub_ent->restore(em, enctyp, ibb))
+                                RETURN_IF_NOT_OK(sub_ent->restore(nem, enctyp, ibb))
                             }
                             break;
                         default:

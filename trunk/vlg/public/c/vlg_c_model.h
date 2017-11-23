@@ -45,7 +45,7 @@ size_t          member_desc_get_field_type_size(member_desc_wr mdesc);
 size_t          member_desc_get_field_nmemb(member_desc_wr mdesc);
 unsigned int    member_desc_get_field_class_id(member_desc_wr mdesc);
 const char      *member_desc_get_field_user_type(member_desc_wr mdesc);
-EntityType      member_desc_get_field_entity_type(member_desc_wr mdesc);
+NEntityType      member_desc_get_field_entity_type(member_desc_wr mdesc);
 
 /*
 Enum specific
@@ -63,12 +63,11 @@ typedef void(*enum_member_desc_wr)(const member_desc_wr member_descriptor,
 unsigned int    entity_desc_get_class_id(entity_desc_wr edesc);
 size_t          entity_desc_get_entity_size(entity_desc_wr edesc);
 size_t          entity_desc_get_entity_max_align(entity_desc_wr edesc);
-EntityType      entity_desc_get_entity_type(entity_desc_wr edesc);
+NEntityType      entity_desc_get_entity_type(entity_desc_wr edesc);
 const char      *entity_desc_get_entity_namespace(entity_desc_wr edesc);
 const char      *entity_desc_get_entity_name(entity_desc_wr edesc);
 
-alloc_func
-entity_desc_get_entity_allocation_function(entity_desc_wr edesc);
+alloc_func entity_desc_get_entity_allocation_function(entity_desc_wr edesc);
 
 unsigned int    entity_desc_get_entity_member_num(entity_desc_wr edesc);
 int             entity_desc_is_persistent(entity_desc_wr edesc);
@@ -184,11 +183,10 @@ RetCode    net_class_set_field_zero_by_name_index(net_class_wr obj,
                                                   unsigned int index,
                                                   unsigned int nmenb);
 
-char
-*net_class_get_term_field_ref_by_plain_idx(net_class_wr obj,
-                                           unsigned int plain_idx,
-                                           const entity_manager_wr em,
-                                           const member_desc_wr *member_descriptor);
+char *net_class_get_term_field_ref_by_plain_idx(net_class_wr obj,
+                                                unsigned int plain_idx,
+                                                const entity_manager_wr nem,
+                                                const member_desc_wr *member_descriptor);
 
 const entity_desc_wr net_class_get_entity_descriptor(net_class_wr obj);
 
@@ -207,10 +205,9 @@ typedef void(*enum_entity_desc_wr)(const entity_desc_wr edesc,
                                    void *ud,
                                    int *stop);
 
-RetCode    entity_manager_get_entity_descriptor_by_classid(
-    entity_manager_wr emng,
-    unsigned int nclass_id,
-    entity_desc_wr const *edesc);
+RetCode    entity_manager_get_entity_descriptor_by_classid(entity_manager_wr emng,
+                                                           unsigned int nclass_id,
+                                                           entity_desc_wr const *edesc);
 
 RetCode    entity_manager_get_entity_descriptor_by_name(entity_manager_wr emng,
                                                         const char *entity_name,
@@ -248,7 +245,7 @@ RetCode    entity_manager_extend_with_entity_desc(entity_manager_wr emng,
                                                   const entity_desc_wr edesc);
 
 RetCode    entity_manager_extend_with_entity_manager(entity_manager_wr emng,
-                                                     entity_manager_wr em);
+                                                     entity_manager_wr nem);
 
 RetCode    entity_manager_extend_with_model_name(entity_manager_wr emng,
                                                  const char *model_name);

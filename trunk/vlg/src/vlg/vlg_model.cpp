@@ -56,15 +56,15 @@ const char *string_from_Type(Type bt)
     return "";
 }
 
-const char *string_from_EntityType(EntityType bet)
+const char *string_from_NEntityType(NEntityType bet)
 {
     switch(bet) {
-        case EntityType_UNDEFINED:
-            return "vlg::EntityType_UNDEFINED";
-        case EntityType_ENUM:
-            return "vlg::EntityType_ENUM";
-        case EntityType_NCLASS:
-            return "vlg::EntityType_NCLASS";
+        case NEntityType_UNDEFINED:
+            return "vlg::NEntityType_UNDEFINED";
+        case NEntityType_NENUM:
+            return "vlg::NEntityType_NENUM";
+        case NEntityType_NCLASS:
+            return "vlg::NEntityType_NCLASS";
         default:
             return "";
     }
@@ -77,8 +77,8 @@ const char *string_from_MemberType(MemberType bmt)
             return "vlg::MemberType_UNDEFINED";
         case MemberType_FIELD:
             return "vlg::MemberType_FIELD";
-        case MemberType_ENUM_VALUE:
-            return "vlg::MemberType_ENUM_VALUE";
+        case MemberType_NENUM_VALUE:
+            return "vlg::MemberType_NENUM_VALUE";
         default:
             return "";
     }
@@ -92,51 +92,51 @@ class key_desc_impl {
         key_desc_impl(unsigned short keyid, bool primary) :
             keyid_(keyid),
             primary_(primary),
-            fildset_(vlg::sngl_ptr_obj_mng()) {
+            fieldset_(vlg::sngl_ptr_obj_mng()) {
         }
 
-        vlg::RetCode Init() {
-            RETURN_IF_NOT_OK(fildset_.init())
+        vlg::RetCode init() {
+            RETURN_IF_NOT_OK(fieldset_.init())
             return vlg::RetCode_OK;
         }
 
-        vlg::RetCode Init(vlg::linked_list *fldset) {
-            RETURN_IF_NOT_OK(fildset_.init())
+        vlg::RetCode init(vlg::linked_list *fldset) {
+            RETURN_IF_NOT_OK(fieldset_.init())
             member_desc *mmbrdesc = NULL;
             fldset->start_iteration();
             while(!fldset->next(&mmbrdesc)) {
-                RETURN_IF_NOT_OK(fildset_.push_back(&mmbrdesc))
+                RETURN_IF_NOT_OK(fieldset_.push_back(&mmbrdesc))
             }
             return vlg::RetCode_OK;
         }
 
-        vlg::RetCode AddMemberDesc(const member_desc  *mmbrdesc) {
-            RETURN_IF_NOT_OK(fildset_.push_back(&mmbrdesc))
+        vlg::RetCode add_member_desc(const member_desc  *mmbrdesc) {
+            RETURN_IF_NOT_OK(fieldset_.push_back(&mmbrdesc))
             return vlg::RetCode_OK;
         }
 
-        unsigned short GetKeyID() const {
+        unsigned short get_key_id() const {
             return keyid_;
         }
 
-        bool IsPrimary() const {
+        bool is_primary() const {
             return primary_;
         }
 
-        const vlg::linked_list &NOINLINE GetKeyFieldSet() const {
-            return fildset_;
+        const vlg::linked_list &NOINLINE get_key_field_set() const {
+            return fieldset_;
         }
 
-        vlg::linked_list &GetKeyFieldSet_M() {
-            return fildset_;
+        vlg::linked_list &get_key_field_set_m() {
+            return fieldset_;
         }
-
 
     private:
         unsigned short  keyid_;
         bool            primary_;
+
         //members being part of this key.
-        vlg::linked_list  fildset_;
+        vlg::linked_list  fieldset_;
 };
 
 //-----------------------------
@@ -145,6 +145,7 @@ class key_desc_impl {
 key_desc::key_desc(unsigned short keyid, bool primary) : impl_(NULL)
 {
     impl_ = new key_desc_impl(keyid, primary);
+    impl_->init();
 }
 
 key_desc::~key_desc()
@@ -154,24 +155,19 @@ key_desc::~key_desc()
     }
 }
 
-vlg::RetCode key_desc::init()
-{
-    return impl_->Init();
-}
-
 vlg::RetCode key_desc::add_member_desc(const member_desc  *mmbrdesc)
 {
-    return impl_->AddMemberDesc(mmbrdesc);
+    return impl_->add_member_desc(mmbrdesc);
 }
 
 unsigned short key_desc::get_key_id() const
 {
-    return impl_->GetKeyID();
+    return impl_->get_key_id();
 }
 
 bool key_desc::is_primary() const
 {
-    return impl_->IsPrimary();
+    return impl_->is_primary();
 }
 
 const key_desc_impl *key_desc::get_opaque() const
@@ -194,7 +190,7 @@ class member_desc_impl {
                          size_t         nmemb,
                          unsigned int   fild_entityid,
                          const char     *fild_usr_str_type,
-                         EntityType     fild_entitytype,
+                         NEntityType    fild_entitytype,
                          long           enum_value) :
             mmbrid_(mmbrid),
             mmbr_type_(mmbr_type),
@@ -210,43 +206,17 @@ class member_desc_impl {
             enum_value_(enum_value) {
         }
 
-
         unsigned short  mmbrid_;
         MemberType      mmbr_type_;
         const char      *mmbr_name_;
         const char      *mmbr_desc_;
-
-        //VLG_MEMBTYPE_Field
-        //field type when applicable
         Type            fild_type_;
-
-        //starting offset in bytes
-        //from VLG_ENTITY base class
         size_t          fild_offset_;
-
-        //In Arch type size
         size_t          fild_type_size_;
-
-        //1 for single element
-        //N for arrays, as calloc()
         size_t          nmemb_;
-
-        // valid only if fild_type
-        // is set to VLG_TYPE_Entity &&
-        // fild_entitytype_ == VLG_ENTITY_TYPE_Class
         unsigned int    fild_nclassid_;
-
-        // equals to entityname when
-        // fild_type_ == VLG_TYPE_Entity
-        // is set to VLG_TYPE_Entity
         const char      *fild_usr_str_type_;
-
-        // valid only if fild_type
-        // is set to VLG_TYPE_Entity
-        EntityType     fild_entitytype_;
-
-        //enum specific
-        //value assumed by this enum
+        NEntityType     fild_entitytype_;
         long            enum_value_;
 };
 
@@ -263,7 +233,7 @@ member_desc::member_desc(unsigned short mmbrid,
                          size_t         nmemb,
                          unsigned int   fild_entityid,
                          const char     *fild_usr_str_type,
-                         EntityType     fild_entitytype,
+                         NEntityType    fild_entitytype,
                          long           enum_value) : impl_(NULL)
 {
     impl_ = new member_desc_impl(mmbrid,
@@ -307,9 +277,6 @@ const char *member_desc::get_member_description() const
     return impl_->mmbr_desc_;
 }
 
-/*
-Field section
-*/
 Type member_desc::get_field_vlg_type() const
 {
     return impl_->fild_type_;
@@ -330,7 +297,7 @@ size_t member_desc::get_field_nmemb() const
     return impl_->nmemb_;
 }
 
-unsigned int member_desc::get_field_class_id() const
+unsigned int member_desc::get_field_nclass_id() const
 {
     return impl_->fild_nclassid_;
 }
@@ -340,12 +307,12 @@ const char *member_desc::get_field_user_type() const
     return impl_->fild_usr_str_type_;
 }
 
-EntityType member_desc::get_field_entity_type() const
+NEntityType member_desc::get_field_nentity_type() const
 {
     return impl_->fild_entitytype_;
 }
 
-long member_desc::get_enum_value() const
+long member_desc::get_nenum_value() const
 {
     return impl_->enum_value_;
 }
@@ -363,7 +330,7 @@ void member_desc::set_field_type_size(size_t val)
 //-----------------------------
 // entity_desc_impl
 //-----------------------------
-struct ent_enum_MembDesc_rec {
+struct ent_enum_mdesc_rec {
     enum_member_desc cllbk;
     void *ud;
 };
@@ -374,25 +341,25 @@ void ent_enum_MembDesc(const vlg::hash_map &map,
                        void *ud,
                        bool &brk)
 {
-    ent_enum_MembDesc_rec *pud = static_cast<ent_enum_MembDesc_rec *>(ud);
+    ent_enum_mdesc_rec *pud = static_cast<ent_enum_mdesc_rec *>(ud);
     pud->cllbk(*(*(member_desc **)ptr), pud->ud, brk);
 }
 
-class entity_desc_impl {
+class nentity_desc_impl {
     public:
-        entity_desc_impl(unsigned int entityid,
-                         size_t entity_size,
-                         size_t entity_max_align,
-                         EntityType entitytype,
-                         const char *nmspace,
-                         const char *entityname,
-                         vlg::alloc_func afun,
-                         unsigned int fild_num,
-                         bool persistent) :
-            entityid_(entityid),
-            entity_size_(entity_size),
-            entity_max_align_(entity_max_align),
-            entitytype_(entitytype),
+        nentity_desc_impl(unsigned int entityid,
+                          size_t entity_size,
+                          size_t entity_max_align,
+                          NEntityType entitytype,
+                          const char *nmspace,
+                          const char *entityname,
+                          vlg::alloc_func afun,
+                          unsigned int fild_num,
+                          bool persistent) :
+            nentity_id_(entityid),
+            nclass_size_(entity_size),
+            nclass_max_align_(entity_max_align),
+            entity_type_(entitytype),
             nmspace_(nmspace),
             entityname_(entityname),
             afun_(afun),
@@ -404,7 +371,7 @@ class entity_desc_impl {
             keyid_kdesc_(vlg::sngl_ptr_obj_mng(), sizeof(unsigned short)) {
         }
 
-        vlg::RetCode Init() {
+        vlg::RetCode init() {
             RETURN_IF_NOT_OK(mmbrid_mdesc_.init(HM_SIZE_MINI))
             RETURN_IF_NOT_OK(mmbrnm_mdesc_.init(HM_SIZE_MINI))
             RETURN_IF_NOT_OK(mmbrof_mdesc_.init(HM_SIZE_MINI))
@@ -414,11 +381,11 @@ class entity_desc_impl {
             return vlg::RetCode_OK;
         }
 
-        vlg::RetCode Init(vlg::hash_map *mmbrmap, vlg::hash_map *keymap) {
-            RETURN_IF_NOT_OK(Init())
+        vlg::RetCode init(vlg::hash_map *mmbrmap, vlg::hash_map *keymap) {
+            RETURN_IF_NOT_OK(init())
             member_desc *mdesc = NULL;
-            unsigned long   mmbrid = 0;
-            unsigned long   fldofst = 0;
+            unsigned long mmbrid = 0;
+            unsigned long fldofst = 0;
             mmbrmap->start_iteration();
             while(!mmbrmap->next(NULL, &mdesc)) {
                 mmbrid = mdesc->get_member_id();
@@ -441,55 +408,55 @@ class entity_desc_impl {
             return vlg::RetCode_OK;
         }
 
-        vlg::RetCode AddMemberDesc(const member_desc *mmbrdesc) {
-            unsigned long   mmbrid = mmbrdesc->get_member_id();
-            const char      *mmbrnm = mmbrdesc->get_member_name();
-            unsigned long   fldofst = (unsigned long)mmbrdesc->get_field_offset();
+        vlg::RetCode add_member_desc(const member_desc *mmbrdesc) {
+            unsigned long mmbrid = mmbrdesc->get_member_id();
+            const char *mmbrnm = mmbrdesc->get_member_name();
+            unsigned long fldofst = (unsigned long)mmbrdesc->get_field_offset();
             RETURN_IF_NOT_OK(mmbrid_mdesc_.put(&mmbrid, &mmbrdesc))
             RETURN_IF_NOT_OK(mmbrnm_mdesc_.put(mmbrnm, &mmbrdesc))
             RETURN_IF_NOT_OK(mmbrof_mdesc_.put(&fldofst, &mmbrdesc))
             return vlg::RetCode_OK;
         }
 
-        vlg::RetCode AddKeyDesc(const key_desc *keydesc) {
+        vlg::RetCode add_key_desc(const key_desc *keydesc) {
             unsigned short keyid = keydesc->get_key_id();
             RETURN_IF_NOT_OK(keyid_kdesc_.put(&keyid, &keydesc))
             return vlg::RetCode_OK;
         }
 
-        unsigned int GetEntityID()  const {
-            return entityid_;
+        unsigned int get_nentity_id()  const {
+            return nentity_id_;
         }
 
-        size_t GetEntitySize()  const {
-            return entity_size_;
+        size_t get_nclass_size()  const {
+            return nclass_size_;
         }
 
-        size_t GetEntityMaxAlign() const {
-            return entity_max_align_;
+        size_t get_nclass_max_align() const {
+            return nclass_max_align_;
         }
 
-        EntityType GetEntityType()  const {
-            return entitytype_;
+        NEntityType get_nentity_type()  const {
+            return entity_type_;
         }
 
-        const char *GetEntityNameSpace() const {
+        const char *get_nentity_namespace() const {
             return nmspace_;
         }
 
-        const char *GetEntityName()  const {
+        const char *get_nentity_name()  const {
             return entityname_;
         }
 
-        vlg::alloc_func GetEntityAllocF() const {
+        vlg::alloc_func get_nentity_alloc_f() const {
             return afun_;
         }
 
-        unsigned int GetFieldNum()  const {
+        unsigned int get_field_num()  const {
             return fild_num_;
         }
 
-        bool IsPersistent()  const {
+        bool is_persistent()  const {
             return persistent_;
         }
 
@@ -502,10 +469,6 @@ class entity_desc_impl {
         }
 
         const vlg::hash_map &NOINLINE GetMap_KEYID_KDESC() const {
-            return keyid_kdesc_;
-        }
-
-        vlg::hash_map &GetMap_KEYID_KDESC_M() {
             return keyid_kdesc_;
         }
 
@@ -525,7 +488,7 @@ class entity_desc_impl {
         }
 
         void EnumMemberDesc(enum_member_desc emdf, void *ud) const {
-            ent_enum_MembDesc_rec e_ud;
+            ent_enum_mdesc_rec e_ud;
             e_ud.cllbk = emdf;
             e_ud.ud = ud;
             mmbrid_mdesc_.enum_elements_breakable(ent_enum_MembDesc, &e_ud);
@@ -533,135 +496,131 @@ class entity_desc_impl {
 
 
     private:
-        unsigned int    entityid_;
-        const size_t    entity_size_;
-        const size_t    entity_max_align_;
-        EntityType      entitytype_;
+        unsigned int    nentity_id_;
+        const size_t    nclass_size_;
+        const size_t    nclass_max_align_;
+        NEntityType     entity_type_;
         const char      *nmspace_;
         const char      *entityname_;
-        vlg::alloc_func   afun_;
+        vlg::alloc_func afun_;
         unsigned int    fild_num_;
-        vlg::hash_map mmbrid_mdesc_;  //mmbrid --> mmbrdesc
-        vlg::hash_map mmbrnm_mdesc_;  //mmbrname --> mmbrdesc
-        vlg::hash_map mmbrof_mdesc_;  //mmbroffset --> mmbrdesc
+        vlg::hash_map   mmbrid_mdesc_;
+        vlg::hash_map   mmbrnm_mdesc_;
+        vlg::hash_map   mmbrof_mdesc_;
         bool            persistent_;
-        vlg::hash_map keyid_kdesc_;   //keyid --> keydesc
+        vlg::hash_map   keyid_kdesc_;
 };
 
 //-----------------------------
-// entity_desc
+// nentity_desc
 //-----------------------------
-entity_desc::entity_desc(unsigned int entityid,
-                         size_t entity_size,
-                         size_t entity_max_align,
-                         EntityType entitytype,
-                         const char *nmspace,
-                         const char *entityname,
-                         vlg::alloc_func afun,
-                         unsigned int fild_num,
-                         bool persistent) : impl_(NULL)
+nentity_desc::nentity_desc(unsigned int nentity_id,
+                           size_t nclass_size,
+                           size_t nclass_max_align,
+                           NEntityType nentity_type,
+                           const char *nmspace,
+                           const char *nentity_name,
+                           vlg::alloc_func afun,
+                           unsigned int field_num,
+                           bool persistent) : impl_(NULL)
 {
-    impl_ = new entity_desc_impl(entityid,
-                                 entity_size,
-                                 entity_max_align,
-                                 entitytype,
-                                 nmspace,
-                                 entityname,
-                                 afun,
-                                 fild_num,
-                                 persistent);
+    impl_ = new nentity_desc_impl(nentity_id,
+                                  nclass_size,
+                                  nclass_max_align,
+                                  nentity_type,
+                                  nmspace,
+                                  nentity_name,
+                                  afun,
+                                  field_num,
+                                  persistent);
+    impl_->init();
 }
 
-entity_desc::~entity_desc()
+nentity_desc::~nentity_desc()
 {
     if(impl_) {
         delete impl_;
     }
 }
 
-vlg::RetCode entity_desc::init()
+vlg::RetCode nentity_desc::add_member_desc(const member_desc *mmbrdesc)
 {
-    return impl_->Init();
+    return impl_->add_member_desc(mmbrdesc);
 }
 
-vlg::RetCode entity_desc::add_member_desc(const member_desc *mmbrdesc)
+vlg::RetCode nentity_desc::add_key_desc(const key_desc *keydesc)
 {
-    return impl_->AddMemberDesc(mmbrdesc);
+    return impl_->add_key_desc(keydesc);
 }
 
-vlg::RetCode entity_desc::add_key_desc(const key_desc *keydesc)
+unsigned int nentity_desc::get_nclass_id()  const
 {
-    return impl_->AddKeyDesc(keydesc);
+    return impl_->get_nentity_id();
 }
 
-unsigned int entity_desc::get_nclass_id()  const
+size_t nentity_desc::get_nclass_size()  const
 {
-    return impl_->GetEntityID();
+    return impl_->get_nclass_size();
 }
 
-size_t entity_desc::get_entity_size()  const
+size_t nentity_desc::get_nclass_max_align() const
 {
-    return impl_->GetEntitySize();
+    return impl_->get_nclass_max_align();
 }
 
-size_t entity_desc::get_entity_max_align() const
+NEntityType nentity_desc::get_nentity_type()  const
 {
-    return impl_->GetEntityMaxAlign();
+    return impl_->get_nentity_type();
 }
 
-EntityType entity_desc::get_entity_type()  const
+const char *nentity_desc::get_nentity_namespace() const
 {
-    return impl_->GetEntityType();
+    return impl_->get_nentity_namespace();
 }
 
-const char *entity_desc::get_entity_namespace() const
+const char *nentity_desc::get_nentity_name()  const
 {
-    return impl_->GetEntityNameSpace();
+    return impl_->get_nentity_name();
 }
 
-const char *entity_desc::get_entity_name()  const
+vlg::alloc_func nentity_desc::get_nclass_allocation_function() const
 {
-    return impl_->GetEntityName();
+    return impl_->get_nentity_alloc_f();
 }
 
-vlg::alloc_func entity_desc::get_entity_allocation_function() const
+unsigned int nentity_desc::get_nentity_member_num()  const
 {
-    return impl_->GetEntityAllocF();
+    return impl_->get_field_num();
 }
 
-unsigned int entity_desc::get_entity_member_num()  const
+bool nentity_desc::is_persistent()  const
 {
-    return impl_->GetFieldNum();
+    return impl_->is_persistent();
 }
 
-bool entity_desc::is_persistent()  const
-{
-    return impl_->IsPersistent();
-}
-
-const entity_desc_impl *entity_desc::get_opaque() const
+const nentity_desc_impl *nentity_desc::get_opaque() const
 {
     return impl_;
 }
 
-const member_desc  *entity_desc::get_member_desc_by_id(unsigned int mmbrid)
+const member_desc  *nentity_desc::get_member_desc_by_id(unsigned int mmbrid)
 const
 {
     return impl_->GetMemberDescById(mmbrid);
 }
 
-const member_desc  *entity_desc::get_member_desc_by_name(const char *name) const
+const member_desc  *nentity_desc::get_member_desc_by_name(const char *name) const
 {
     return impl_->GetMemberDescByName(name);
 }
 
-const member_desc  *entity_desc::get_member_desc_by_offset(
+const member_desc  *nentity_desc::get_member_desc_by_offset(
     size_t fldoffst) const
 {
     return impl_->GetMemberDescByOffset(fldoffst);
 }
 
-void entity_desc::enum_member_descriptors(enum_member_desc emdf, void *ud) const
+void nentity_desc::enum_member_descriptors(enum_member_desc emdf, void *ud) const
 {
     impl_->EnumMemberDesc(emdf, ud);
 }
@@ -669,56 +628,56 @@ void entity_desc::enum_member_descriptors(enum_member_desc emdf, void *ud) const
 //-----------------------------
 // entity_manager_impl
 //-----------------------------
-struct bem_enum_EntDesc_rec {
-    enum_entity_desc cllbk;
+struct nem_enum_nedesc_rec {
+    enum_nentity_desc cllbk;
     void *ud;
 };
 
 //for all entities
-void bem_enum_EntDesc(const vlg::hash_map &map,
-                      const void *key,
-                      const void *ptr,
-                      void *ud,
-                      bool &brk)
+void nem_enum_nedesc(const vlg::hash_map &map,
+                     const void *key,
+                     const void *ptr,
+                     void *ud,
+                     bool &brk)
 {
-    bem_enum_EntDesc_rec *pud = static_cast<bem_enum_EntDesc_rec *>(ud);
-    pud->cllbk(*(*(entity_desc **)ptr), pud->ud, brk);
+    nem_enum_nedesc_rec *pud = static_cast<nem_enum_nedesc_rec *>(ud);
+    pud->cllbk(*(*(nentity_desc **)ptr), pud->ud, brk);
 }
 
 //for enums
-void bem_enum_EntDesc_Enum(const vlg::hash_map &map,
+void nem_enum_nedesc_nenum(const vlg::hash_map &map,
                            const void *key,
                            const void *ptr,
                            void *ud,
                            bool &brk)
 {
-    bem_enum_EntDesc_rec *pud = static_cast<bem_enum_EntDesc_rec *>(ud);
-    const entity_desc *edsc = *(const entity_desc **)ptr;
-    if(edsc->get_entity_type() == EntityType_ENUM) {
-        pud->cllbk(*(*(entity_desc **)ptr), pud->ud, brk);
+    nem_enum_nedesc_rec *pud = static_cast<nem_enum_nedesc_rec *>(ud);
+    const nentity_desc *edsc = *(const nentity_desc **)ptr;
+    if(edsc->get_nentity_type() == NEntityType_NENUM) {
+        pud->cllbk(*(*(nentity_desc **)ptr), pud->ud, brk);
     }
 }
 
 //for classes
-void bem_enum_EntDesc_Class(const vlg::hash_map &map,
+void nem_enum_nedesc_nclass(const vlg::hash_map &map,
                             const void *key,
                             const void *ptr,
                             void *ud,
                             bool &brk)
 {
-    bem_enum_EntDesc_rec *pud = static_cast<bem_enum_EntDesc_rec *>(ud);
-    const entity_desc *edsc = *(const entity_desc **)ptr;
-    if(edsc->get_entity_type() == EntityType_NCLASS) {
-        pud->cllbk(*(*(entity_desc **)ptr), pud->ud, brk);
+    nem_enum_nedesc_rec *pud = static_cast<nem_enum_nedesc_rec *>(ud);
+    const nentity_desc *edsc = *(const nentity_desc **)ptr;
+    if(edsc->get_nentity_type() == NEntityType_NCLASS) {
+        pud->cllbk(*(*(nentity_desc **)ptr), pud->ud, brk);
     }
 }
 
-class entity_manager_impl {
+class nentity_manager_impl {
     public:
-        entity_manager_impl() :
+        nentity_manager_impl() :
             id_(sid_++),
-            num_entity_(0),
-            num_enum_(0),
+            num_nentity_(0),
+            num_nenum_(0),
             num_nclass_(0),
             fakeid_edesc_(vlg::sngl_ptr_obj_mng(), sizeof(int)),
             entnm_edesc_(vlg::sngl_ptr_obj_mng(), vlg::sngl_cstr_obj_mng()),
@@ -728,7 +687,7 @@ class entity_manager_impl {
             IFLOG(trc(TH_ID, LS_CTR "%s", __func__))
         }
 
-        ~entity_manager_impl() {
+        ~nentity_manager_impl() {
             IFLOG(trc(TH_ID, LS_DTR "%s", __func__))
         }
 
@@ -758,62 +717,62 @@ class entity_manager_impl {
         }
 
         vlg::RetCode get_entity_desc(unsigned int nclass_id,
-                                     entity_desc const **edesc) const {
-            const entity_desc **ptr = (const entity_desc **)entid_edesc_.get(&nclass_id);
+                                     nentity_desc const **edesc) const {
+            const nentity_desc **ptr = (const nentity_desc **)entid_edesc_.get(&nclass_id);
             if(ptr) {
                 *edesc = *ptr;
                 return vlg::RetCode_OK;
             }
-            IFLOG(wrn(TH_ID, LS_CLO "%s(nclass_id:%d) - not found in bem.", __func__,
+            IFLOG(wrn(TH_ID, LS_CLO "%s(nclass_id:%d) - not found in nem.", __func__,
                       nclass_id))
             return vlg::RetCode_KO;
         }
 
         vlg::RetCode get_entity_desc(const char *entityname,
-                                     entity_desc const **edesc) const {
-            const entity_desc **ptr = (const entity_desc **)entnm_edesc_.get(entityname);
+                                     nentity_desc const **edesc) const {
+            const nentity_desc **ptr = (const nentity_desc **)entnm_edesc_.get(entityname);
             if(ptr) {
                 *edesc = *ptr;
                 return vlg::RetCode_OK;
             }
-            IFLOG(wrn(TH_ID, LS_CLO "%s(classname:%s) - not found in bem.", __func__,
+            IFLOG(wrn(TH_ID, LS_CLO "%s(classname:%s) - not found in nem.", __func__,
                       entityname))
             return vlg::RetCode_KO;
         }
 
-        void enum_entity_descs(enum_entity_desc eedf, void *ud) const {
+        void enum_entity_descs(enum_nentity_desc eedf, void *ud) const {
             IFLOG(trc(TH_ID, LS_OPN "%s(cllbk:%p)", __func__, eedf))
-            bem_enum_EntDesc_rec e_ud;
+            nem_enum_nedesc_rec e_ud;
             e_ud.cllbk = eedf;
             e_ud.ud = ud;
-            fakeid_edesc_.enum_elements_breakable(bem_enum_EntDesc, &e_ud);
+            fakeid_edesc_.enum_elements_breakable(nem_enum_nedesc, &e_ud);
             IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
         }
 
-        void enum_enum_descs(enum_entity_desc eedf, void *ud) const {
+        void enum_enum_descs(enum_nentity_desc eedf, void *ud) const {
             IFLOG(trc(TH_ID, LS_OPN "%s(cllbk:%p)", __func__, eedf))
-            bem_enum_EntDesc_rec e_ud;
+            nem_enum_nedesc_rec e_ud;
             e_ud.cllbk = eedf;
             e_ud.ud = ud;
-            fakeid_edesc_.enum_elements_breakable(bem_enum_EntDesc_Enum, &e_ud);
+            fakeid_edesc_.enum_elements_breakable(nem_enum_nedesc_nenum, &e_ud);
             IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
         }
 
-        void enum_class_descs(enum_entity_desc eedf, void *ud) const {
+        void enum_class_descs(enum_nentity_desc eedf, void *ud) const {
             IFLOG(trc(TH_ID, LS_OPN "%s(cllbk:%p)", __func__, eedf))
-            bem_enum_EntDesc_rec e_ud;
+            nem_enum_nedesc_rec e_ud;
             e_ud.cllbk = eedf;
             e_ud.ud = ud;
-            fakeid_edesc_.enum_elements_breakable(bem_enum_EntDesc_Class, &e_ud);
+            fakeid_edesc_.enum_elements_breakable(nem_enum_nedesc_nclass, &e_ud);
             IFLOG(trc(TH_ID, LS_CLO "%s", __func__))
         }
 
         unsigned int entity_count() const {
-            return num_entity_;
+            return num_nentity_;
         }
 
         unsigned int enum_count() const {
-            return num_enum_;
+            return num_nenum_;
         }
 
         unsigned int class_count() const {
@@ -821,21 +780,21 @@ class entity_manager_impl {
         }
 
         const char *get_class_name(unsigned int nclass_id) const {
-            const entity_desc **ptr = (const entity_desc **)entid_edesc_.get(&nclass_id);
-            return ptr ? (*ptr)->get_entity_name() : NULL;
+            const nentity_desc **ptr = (const nentity_desc **)entid_edesc_.get(&nclass_id);
+            return ptr ? (*ptr)->get_nentity_name() : NULL;
         }
 
-        vlg::RetCode extend(const entity_desc *entity_desc) {
-            IFLOG(trc(TH_ID, LS_OPN "%s(edsc:%p)", __func__, entity_desc))
+        vlg::RetCode extend(const nentity_desc *nentity_desc) {
+            IFLOG(trc(TH_ID, LS_OPN "%s(edsc:%p)", __func__, nentity_desc))
             unsigned int eid = 0;
-            switch(entity_desc->get_entity_type()) {
-                case EntityType_ENUM:
-                    num_enum_++;
+            switch(nentity_desc->get_nentity_type()) {
+                case NEntityType_NENUM:
+                    num_nenum_++;
                     break;
-                case EntityType_NCLASS:
+                case NEntityType_NCLASS:
                     num_nclass_++;
-                    eid = entity_desc->get_nclass_id();
-                    if(entid_edesc_.put(&eid, &entity_desc)) {
+                    eid = nentity_desc->get_nclass_id();
+                    if(entid_edesc_.put(&eid, &nentity_desc)) {
                         IFLOG(cri(TH_ID, LS_CLO, "%s", __func__))
                         return vlg::RetCode_GENERR;
                     }
@@ -845,51 +804,51 @@ class entity_manager_impl {
                     return vlg::RetCode_KO;
             }
             int fake_id = next_fake_id();
-            const char *enm = entity_desc->get_entity_name();
-            if(fakeid_edesc_.put(&fake_id, &entity_desc)) {
+            const char *enm = nentity_desc->get_nentity_name();
+            if(fakeid_edesc_.put(&fake_id, &nentity_desc)) {
                 IFLOG(cri(TH_ID, LS_CLO, "%s", __func__))
                 return vlg::RetCode_GENERR;
             }
-            if(entnm_edesc_.put(enm, &entity_desc)) {
+            if(entnm_edesc_.put(enm, &nentity_desc)) {
                 IFLOG(cri(TH_ID, LS_CLO, "%s", __func__))
                 return vlg::RetCode_GENERR;
             }
-            num_entity_++;
+            num_nentity_++;
             IFLOG(trc(TH_ID, LS_CLO
                       "%s(num_enum:%d, num_nclass:%d, num_entity:%d)", __func__,
-                      num_enum_, num_nclass_, num_entity_))
+                      num_nenum_, num_nclass_, num_nentity_))
             return vlg::RetCode_OK;
         }
 
-        vlg::RetCode extend(entity_manager_impl *emng) {
+        vlg::RetCode extend(nentity_manager_impl *emng) {
             IFLOG(trc(TH_ID, LS_OPN "%s(emng:%p)", __func__, emng))
             emng->entnm_edesc_.start_iteration();
-            entity_desc *entity_desc = NULL;
-            while(!emng->entnm_edesc_.next(NULL, &entity_desc)) {
+            nentity_desc *nentity_desc = NULL;
+            while(!emng->entnm_edesc_.next(NULL, &nentity_desc)) {
                 int fake_id = next_fake_id();
-                const char *enm = entity_desc->get_entity_name();
-                if(fakeid_edesc_.put(&fake_id, &entity_desc)) {
+                const char *enm = nentity_desc->get_nentity_name();
+                if(fakeid_edesc_.put(&fake_id, &nentity_desc)) {
                     IFLOG(cri(TH_ID, LS_CLO, "%s", __func__))
                     return vlg::RetCode_GENERR;
                 }
-                if(entnm_edesc_.put(enm, &entity_desc)) {
+                if(entnm_edesc_.put(enm, &nentity_desc)) {
                     IFLOG(cri(TH_ID, LS_CLO, "%s", __func__))
                     return vlg::RetCode_GENERR;
                 }
-                if(entity_desc->get_entity_type() == EntityType_NCLASS) {
-                    unsigned int eid = entity_desc->get_nclass_id();
-                    if(entid_edesc_.put(&eid, &entity_desc)) {
+                if(nentity_desc->get_nentity_type() == NEntityType_NCLASS) {
+                    unsigned int eid = nentity_desc->get_nclass_id();
+                    if(entid_edesc_.put(&eid, &nentity_desc)) {
                         IFLOG(cri(TH_ID, LS_CLO, "%s", __func__))
                         return vlg::RetCode_GENERR;
                     }
                 }
             }
-            num_entity_ += emng->num_entity_;
-            num_enum_   += emng->num_enum_;
+            num_nentity_ += emng->num_nentity_;
+            num_nenum_   += emng->num_nenum_;
             num_nclass_  += emng->num_nclass_;
             IFLOG(trc(TH_ID, LS_CLO
-                      "%s(num_enum:%d, num_struct:%d, num_nclass:%d, num_entity:%d)", __func__,
-                      num_enum_, num_nclass_, num_entity_))
+                      "%s(num_nenum:%d, num_nclass:%d, num_nentity:%d)", __func__,
+                      num_nenum_, num_nclass_, num_nentity_))
             return vlg::RetCode_OK;
         }
 
@@ -919,19 +878,19 @@ class entity_manager_impl {
                           __func__, model_name))
                 return vlg::RetCode_KO;
             }
-            char bem_ep_f[VLG_MDL_NAME_LEN] = {0};
-            sprintf(bem_ep_f, "get_em_%s", model_name);
-            entity_manager_func bem_f =
-                (entity_manager_func)vlg::dynamic_lib_load_symbol(dynalib, bem_ep_f);
-            if(!bem_f) {
+            char nem_ep_f[VLG_MDL_NAME_LEN] = {0};
+            sprintf(nem_ep_f, "get_em_%s", model_name);
+            nentity_manager_func nem_f =
+                (nentity_manager_func)vlg::dynamic_lib_load_symbol(dynalib, nem_ep_f);
+            if(!nem_f) {
                 IFLOG(err(TH_ID, LS_CLO
-                          "%s() - failed to locate bem entrypoint in dynamic-lib for model:%s", __func__,
+                          "%s() - failed to locate nem entrypoint in dynamic-lib for model:%s", __func__,
                           model_name))
                 return vlg::RetCode_KO;
             }
             vlg::RetCode rcode = vlg::RetCode_OK;
-            if((rcode = extend(bem_f()->impl_))) {
-                IFLOG(err(TH_ID, LS_CLO "%s() - failed to extend bem for model:%s, res:%d",
+            if((rcode = extend(nem_f()->impl_))) {
+                IFLOG(err(TH_ID, LS_CLO "%s() - failed to extend nem for model:%s, res:%d",
                           __func__, model_name, rcode))
                 return rcode;
             } else {
@@ -944,21 +903,20 @@ class entity_manager_impl {
             }
         }
 
-        vlg::RetCode new_class_instance(unsigned int nclass_id,
-                                        nclass **ptr) const {
+        vlg::RetCode new_nclass_instance(unsigned int nclass_id, nclass **ptr) const {
             IFLOG(trc(TH_ID, LS_OPN "%s(nclass_id:%u, ptr:%p)", __func__, nclass_id, ptr))
-            const entity_desc **edptr = (const entity_desc **)entid_edesc_.get(&nclass_id);
+            const nentity_desc **edptr = (const nentity_desc **)entid_edesc_.get(&nclass_id);
             if(edptr) {
-                const entity_desc *edesc = *edptr;
-                if(!(*ptr = (nclass *)edesc->get_entity_allocation_function()(0,0))) {
+                const nentity_desc *edesc = *edptr;
+                if(!(*ptr = (nclass *)edesc->get_nclass_allocation_function()(0,0))) {
                     IFLOG(cri(TH_ID, LS_CLO
                               "%s(nclass_id:%u, classname:%s, new_inst:%p) - new failed - ", __func__,
                               nclass_id,
-                              edesc->get_entity_name(), *ptr))
+                              edesc->get_nentity_name(), *ptr))
                     return vlg::RetCode_MEMERR;
                 }
                 IFLOG(trc(TH_ID, LS_CLO "%s(nclass_id:%u, classname:%s, new_inst:%p)", __func__,
-                          nclass_id, edesc->get_entity_name(), *ptr))
+                          nclass_id, edesc->get_nentity_name(), *ptr))
                 return vlg::RetCode_OK;
             }
             IFLOG(wrn(TH_ID, LS_CLO "%s(nclass_id:%u) - KO -", __func__, nclass_id))
@@ -968,110 +926,107 @@ class entity_manager_impl {
 
     private:
         unsigned int    id_;
-        unsigned int    num_entity_;
-        unsigned int    num_enum_;
+        unsigned int    num_nentity_;
+        unsigned int    num_nenum_;
         unsigned int    num_nclass_;
-        vlg::hash_map fakeid_edesc_; //key: a progressive fake id
-        vlg::hash_map entnm_edesc_;  //entity name --> entity desc
-        vlg::hash_map entid_edesc_;  //entity id --> entity desc
+        vlg::hash_map   fakeid_edesc_;
+        vlg::hash_map   entnm_edesc_;
+        vlg::hash_map   entid_edesc_;
         int             fake_id_;
+
     protected:
         static unsigned int sid_;
         static nclass_logger *log_;
 };
 
-nclass_logger *entity_manager_impl::log_ = NULL;
-unsigned int entity_manager_impl::sid_ = 0;
+nclass_logger *nentity_manager_impl::log_ = NULL;
+unsigned int nentity_manager_impl::sid_ = 0;
 
 //-----------------------------
-// entity_manager
+// nentity_manager
 //-----------------------------
-entity_manager::entity_manager() : impl_(NULL)
+nentity_manager::nentity_manager() : impl_(NULL)
 {
-    impl_ = new entity_manager_impl();
+    impl_ = new nentity_manager_impl();
+    impl_->init();
 }
 
-entity_manager::~entity_manager()
+nentity_manager::~nentity_manager()
 {
     if(impl_) {
         delete impl_;
     }
 }
 
-vlg::RetCode entity_manager::init()
-{
-    return impl_->init();
-}
-
-vlg::RetCode entity_manager::get_entity_descriptor(unsigned int nclass_id,
-                                                   entity_desc const **edesc) const
+vlg::RetCode nentity_manager::get_nentity_descriptor(unsigned int nclass_id,
+                                                     nentity_desc const **edesc) const
 {
     return impl_->get_entity_desc(nclass_id, edesc);
 }
 
-vlg::RetCode entity_manager::get_entity_descriptor(const char *entityname,
-                                                   entity_desc const **edesc) const
+vlg::RetCode nentity_manager::get_nentity_descriptor(const char *entityname,
+                                                     nentity_desc const **edesc) const
 {
     return impl_->get_entity_desc(entityname, edesc);
 }
 
-void entity_manager::enum_entity_descriptors(enum_entity_desc eedf,
-                                             void *ud) const
+void nentity_manager::enum_nentity_descriptors(enum_nentity_desc eedf,
+                                               void *ud) const
 {
     impl_->enum_entity_descs(eedf, ud);
 }
 
-void entity_manager::enum_enum_descriptors(enum_entity_desc eedf,
-                                           void *ud) const
+void nentity_manager::enum_nenum_descriptors(enum_nentity_desc eedf,
+                                             void *ud) const
 {
     impl_->enum_enum_descs(eedf, ud);
 }
 
-void entity_manager::enum_nclass_descriptors(enum_entity_desc eedf,
-                                             void *ud) const
+void nentity_manager::enum_nclass_descriptors(enum_nentity_desc eedf,
+                                              void *ud) const
 {
     impl_->enum_class_descs(eedf, ud);
 }
 
-unsigned int entity_manager::entity_count() const
+unsigned int nentity_manager::nentity_count() const
 {
     return impl_->entity_count();
 }
 
-unsigned int entity_manager::enum_count() const
+unsigned int nentity_manager::nenum_count() const
 {
     return impl_->enum_count();
 }
 
-unsigned int entity_manager::nclass_count() const
+unsigned int nentity_manager::nclass_count() const
 {
     return impl_->class_count();
 }
 
-const char *entity_manager::get_class_name(unsigned int nclass_id) const
+const char *nentity_manager::get_nclass_name(unsigned int nclass_id) const
 {
     return impl_->get_class_name(nclass_id);
 }
 
-vlg::RetCode entity_manager::extend(const entity_desc *entity_desc)
+vlg::RetCode nentity_manager::extend(const nentity_desc *nentity_desc)
 {
-    return impl_->extend(entity_desc);
+    return impl_->extend(nentity_desc);
 }
 
-vlg::RetCode entity_manager::extend(entity_manager *emng)
+vlg::RetCode nentity_manager::extend(nentity_manager *emng)
 {
     return impl_->extend(emng->impl_);
 }
 
-vlg::RetCode entity_manager::extend(const char *model_name)
+vlg::RetCode nentity_manager::extend(const char *model_name)
 {
     return impl_->extend(model_name);
 }
 
-vlg::RetCode entity_manager::new_class_instance(unsigned int entityid,
-                                                nclass **ptr) const
+vlg::RetCode nentity_manager::new_nclass_instance(unsigned int entityid,
+                                                  nclass **ptr) const
 {
-    return impl_->new_class_instance(entityid, ptr);
+    return impl_->new_nclass_instance(entityid, ptr);
 }
 
 //nclass MEMORY
@@ -1120,7 +1075,7 @@ nclass::~nclass()
 
 size_t nclass::get_field_size_by_id(unsigned int fldid) const
 {
-    const entity_desc *ed = get_entity_descriptor();
+    const nentity_desc *ed = get_nentity_descriptor();
     const member_desc *md = ed->get_member_desc_by_id(fldid);
     if(md) {
         return md->get_field_type_size();
@@ -1130,7 +1085,7 @@ size_t nclass::get_field_size_by_id(unsigned int fldid) const
 
 size_t nclass::get_field_size_by_name(const char *fldname) const
 {
-    const entity_desc *ed = get_entity_descriptor();
+    const nentity_desc *ed = get_nentity_descriptor();
     const member_desc *md = ed->get_member_desc_by_name(fldname);
     if(md) {
         return md->get_field_type_size();
@@ -1140,7 +1095,7 @@ size_t nclass::get_field_size_by_name(const char *fldname) const
 
 void *nclass::get_field_by_id(unsigned int fldid)
 {
-    const member_desc *md = get_entity_descriptor()->get_member_desc_by_id(fldid);
+    const member_desc *md = get_nentity_descriptor()->get_member_desc_by_id(fldid);
     if(md) {
         char *cptr = reinterpret_cast<char *>(this);
         return cptr + md->get_field_offset();
@@ -1150,7 +1105,7 @@ void *nclass::get_field_by_id(unsigned int fldid)
 
 void *nclass::get_field_by_name(const char *fldname)
 {
-    const member_desc *md = get_entity_descriptor()->get_member_desc_by_name(
+    const member_desc *md = get_nentity_descriptor()->get_member_desc_by_name(
                                 fldname);
     if(md) {
         char *cptr = reinterpret_cast<char *>(this);
@@ -1162,7 +1117,7 @@ void *nclass::get_field_by_name(const char *fldname)
 void *nclass::get_field_by_id_index(unsigned int fldid,
                                     unsigned int index)
 {
-    const member_desc *md = get_entity_descriptor()->get_member_desc_by_id(fldid);
+    const member_desc *md = get_nentity_descriptor()->get_member_desc_by_id(fldid);
     if(md) {
         char *cptr = reinterpret_cast<char *>(this) + md->get_field_offset() +
                      md->get_field_type_size()*index;
@@ -1174,7 +1129,7 @@ void *nclass::get_field_by_id_index(unsigned int fldid,
 void *nclass::get_field_by_name_index(const char *fldname,
                                       unsigned int index)
 {
-    const member_desc *md = get_entity_descriptor()->get_member_desc_by_name(
+    const member_desc *md = get_nentity_descriptor()->get_member_desc_by_name(
                                 fldname);
     if(md) {
         char *cptr = reinterpret_cast<char *>(this) + md->get_field_offset() +
@@ -1188,7 +1143,7 @@ vlg::RetCode nclass::set_field_by_id(unsigned int fldid,
                                      const void *ptr,
                                      size_t maxlen)
 {
-    const entity_desc *ed = get_entity_descriptor();
+    const nentity_desc *ed = get_nentity_descriptor();
     const member_desc *md = ed->get_member_desc_by_id(fldid);
     if(md) {
         char *cptr = reinterpret_cast<char *>(this);
@@ -1205,7 +1160,7 @@ vlg::RetCode nclass::set_field_by_name(const char *fldname,
                                        const void *ptr,
                                        size_t maxlen)
 {
-    const entity_desc *ed = get_entity_descriptor();
+    const nentity_desc *ed = get_nentity_descriptor();
     const member_desc *md = ed->get_member_desc_by_name(fldname);
     if(md) {
         char *cptr = reinterpret_cast<char *>(this);
@@ -1223,7 +1178,7 @@ vlg::RetCode nclass::set_field_by_id_index(unsigned int fldid,
                                            unsigned int index,
                                            size_t maxlen)
 {
-    const entity_desc *ed = get_entity_descriptor();
+    const nentity_desc *ed = get_nentity_descriptor();
     const member_desc *md = ed->get_member_desc_by_id(fldid);
     if(md) {
         char *cptr = reinterpret_cast<char *>(this);
@@ -1241,7 +1196,7 @@ vlg::RetCode nclass::set_field_by_name_index(const char *fldname,
                                              unsigned int index,
                                              size_t maxlen)
 {
-    const entity_desc *ed = get_entity_descriptor();
+    const nentity_desc *ed = get_nentity_descriptor();
     const member_desc *md = ed->get_member_desc_by_name(fldname);
     if(md) {
         char *cptr = reinterpret_cast<char *>(this);
@@ -1257,7 +1212,7 @@ vlg::RetCode nclass::set_field_by_name_index(const char *fldname,
 vlg::RetCode nclass::is_field_zero_by_id(unsigned int fldid,
                                          bool &res) const
 {
-    const entity_desc *ed = get_entity_descriptor();
+    const nentity_desc *ed = get_nentity_descriptor();
     const member_desc *md = ed->get_member_desc_by_id(fldid);
     if(md) {
         const char *cptr = reinterpret_cast<const char *>(this);
@@ -1274,7 +1229,7 @@ vlg::RetCode nclass::is_field_zero_by_id(unsigned int fldid,
 vlg::RetCode nclass::is_field_zero_by_name(const char *fldname,
                                            bool &res) const
 {
-    const entity_desc *ed = get_entity_descriptor();
+    const nentity_desc *ed = get_nentity_descriptor();
     const member_desc *md = ed->get_member_desc_by_name(fldname);
     if(md) {
         const char *cptr = reinterpret_cast<const char *>(this);
@@ -1293,7 +1248,7 @@ vlg::RetCode nclass::is_field_zero_by_id_index(unsigned int fldid,
                                                unsigned int nmenb,
                                                bool &res) const
 {
-    const entity_desc *ed = get_entity_descriptor();
+    const nentity_desc *ed = get_nentity_descriptor();
     const member_desc *md = ed->get_member_desc_by_id(fldid);
     if(md) {
         const char *cptr = reinterpret_cast<const char *>(this);
@@ -1311,7 +1266,7 @@ vlg::RetCode nclass::is_field_zero_by_name_index(const char *fldname,
                                                  unsigned int nmenb,
                                                  bool &res) const
 {
-    const entity_desc *ed = get_entity_descriptor();
+    const nentity_desc *ed = get_nentity_descriptor();
     const member_desc *md = ed->get_member_desc_by_name(fldname);
     if(md) {
         const char *cptr = reinterpret_cast<const char *>(this);
@@ -1326,7 +1281,7 @@ vlg::RetCode nclass::is_field_zero_by_name_index(const char *fldname,
 
 vlg::RetCode nclass::set_field_zero_by_id(unsigned int fldid)
 {
-    const entity_desc *ed = get_entity_descriptor();
+    const nentity_desc *ed = get_nentity_descriptor();
     const member_desc *md = ed->get_member_desc_by_id(fldid);
     if(md) {
         char *cptr = reinterpret_cast<char *>(this);
@@ -1341,7 +1296,7 @@ vlg::RetCode nclass::set_field_zero_by_id(unsigned int fldid)
 
 vlg::RetCode nclass::set_field_zero_by_name(const char *fldname)
 {
-    const entity_desc *ed = get_entity_descriptor();
+    const nentity_desc *ed = get_nentity_descriptor();
     const member_desc *md = ed->get_member_desc_by_name(fldname);
     if(md) {
         char *cptr = reinterpret_cast<char *>(this);
@@ -1358,7 +1313,7 @@ vlg::RetCode nclass::set_field_zero_by_name_index(const char *fldname,
                                                   unsigned int index,
                                                   unsigned int nmenb)
 {
-    const entity_desc *ed = get_entity_descriptor();
+    const nentity_desc *ed = get_nentity_descriptor();
     const member_desc *md = ed->get_member_desc_by_name(fldname);
     if(md) {
         char *cptr = reinterpret_cast<char *>(this);
@@ -1375,7 +1330,7 @@ vlg::RetCode nclass::set_field_zero_by_id_index(unsigned int fldid,
                                                 unsigned int index,
                                                 unsigned int nmenb)
 {
-    const entity_desc *ed = get_entity_descriptor();
+    const nentity_desc *ed = get_nentity_descriptor();
     const member_desc *md = ed->get_member_desc_by_id(fldid);
     if(md) {
         char *cptr = reinterpret_cast<char *>(this);
@@ -1394,12 +1349,12 @@ vlg::RetCode nclass::set_field_zero_by_id_index(unsigned int fldid,
 
 struct ENM_FND_IDX_REC_UD {
     ENM_FND_IDX_REC_UD(char *obj_ptr,
-                       const entity_manager &bem,
+                       const nentity_manager &nem,
                        unsigned int plain_idx,
                        unsigned int *current_plain_idx,
                        char **obj_fld_ptr,
                        bool *res_valid) :
-        bem_(bem),
+        nem_(nem),
         obj_ptr_(obj_ptr),
         fld_mmbrd_(NULL),
         plain_idx_(plain_idx),
@@ -1411,7 +1366,7 @@ struct ENM_FND_IDX_REC_UD {
     ~ENM_FND_IDX_REC_UD() {
     }
 
-    const entity_manager    &bem_;
+    const nentity_manager    &nem_;
     char                    *obj_ptr_;
     const member_desc       *fld_mmbrd_;
     unsigned int            plain_idx_;
@@ -1429,7 +1384,7 @@ void enum_edesc_fnd_idx(const vlg::hash_map &map,
     ENM_FND_IDX_REC_UD *rud = static_cast<ENM_FND_IDX_REC_UD *>(ud);
     const member_desc *mmbrd = *(const member_desc **)ptr;
     if(mmbrd->get_field_vlg_type() == Type_ENTITY) {
-        if(mmbrd->get_field_entity_type() == EntityType_ENUM) {
+        if(mmbrd->get_field_nentity_type() == NEntityType_NENUM) {
             //treat enum as number
             if(mmbrd->get_field_nmemb() > 1) {
                 for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
@@ -1456,8 +1411,8 @@ void enum_edesc_fnd_idx(const vlg::hash_map &map,
         } else {
             //class, struct is a recursive step.
             ENM_FND_IDX_REC_UD rrud = *rud;
-            const entity_desc *edsc = NULL;
-            if(!rud->bem_.get_entity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
+            const nentity_desc *edsc = NULL;
+            if(!rud->nem_.get_nentity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
                 const vlg::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
                 if(mmbrd->get_field_nmemb() > 1) {
                     for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
@@ -1519,19 +1474,19 @@ void enum_edesc_fnd_idx(const vlg::hash_map &map,
 }
 
 char *nclass::get_term_field_ref_by_plain_idx(unsigned int plainidx,
-                                              const entity_manager &bem,
+                                              const nentity_manager &nem,
                                               const member_desc **mdesc)
 {
     if(!mdesc) {
         return NULL;
     }
     const vlg::hash_map &nm_mmdesc =
-        get_entity_descriptor()->get_opaque()->GetMap_NM_MMBRDSC();
+        get_nentity_descriptor()->get_opaque()->GetMap_NM_MMBRDSC();
     bool res_valid = false;
     unsigned int current_plain_idx = 0;
     char *obj_fld_ptr = NULL;
     ENM_FND_IDX_REC_UD fnd_idx_rud((char *)this,
-                                   bem,
+                                   nem,
                                    plainidx,
                                    &current_plain_idx,
                                    &obj_fld_ptr,
@@ -1636,7 +1591,7 @@ void enum_prim_key_buff_value(const vlg::hash_map &map,
 {
     prim_key_buff_value_rec_ud *rud = static_cast<prim_key_buff_value_rec_ud *>(ud);
     const key_desc *kdsc = *(const key_desc **)ptr;
-    const vlg::linked_list &kset = kdsc->get_opaque()->GetKeyFieldSet();
+    const vlg::linked_list &kset = kdsc->get_opaque()->get_key_field_set();
     if(kdsc->is_primary()) {
         kset.enum_elements(enum_keyset_prim_key_buff_value, rud);
     } else {
@@ -1733,7 +1688,7 @@ void enum_prim_key_str_value(const vlg::hash_map &map,
 {
     prim_key_str_value_rec_ud *rud = static_cast<prim_key_str_value_rec_ud *>(ud);
     const key_desc *kdsc = *(const key_desc **)ptr;
-    const vlg::linked_list &kset = kdsc->get_opaque()->GetKeyFieldSet();
+    const vlg::linked_list &kset = kdsc->get_opaque()->get_key_field_set();
     if(kdsc->is_primary()) {
         kset.enum_elements(enum_keyset_prim_key_str_value, rud);
     } else {
@@ -1744,14 +1699,10 @@ void enum_prim_key_str_value(const vlg::hash_map &map,
 vlg::RetCode nclass::primary_key_string_value(vlg::ascii_string *out)
 {
     const vlg::hash_map &idk_desc =
-        get_entity_descriptor()->get_opaque()->GetMap_KEYID_KDESC();
+        get_nentity_descriptor()->get_opaque()->GetMap_KEYID_KDESC();
     prim_key_str_value_rec_ud rud((const char *)this, out);
     idk_desc.enum_elements(enum_prim_key_str_value, &rud);
     return rud.res;
 }
-
-/*************************************************************
--Class Persistence meths END
-**************************************************************/
 
 }

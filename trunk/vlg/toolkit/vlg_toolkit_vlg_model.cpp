@@ -26,7 +26,7 @@
 //------------------------------------------------------------------------------
 
 model_item::model_item(VLG_MODEL_ITEM_TYPE item_type,
-                       const vlg::entity_desc *edesc,
+                       const vlg::nentity_desc *edesc,
                        const vlg::member_desc *mdesc,
                        model_item *parent) :
     item_type_(item_type),
@@ -46,17 +46,17 @@ model_item::~model_item()
 
 void model_item::cfgHeader()
 {
-    header_ << "Name";
+    header_ << "Entity Name";
     header_ << "Namespace";
     header_ << "Entity Type";
-    header_ << "Entity CLASSID";
+    header_ << "NCLASSID";
     header_ << "Field No.";
     header_ << "Persistent";
-    header_ << "vlg Type";
+    header_ << "VLG Type";
     header_ << "TypeSize (1)";
     header_ << "NMEMB";
-    header_ << "Field CLASSID";
-    header_ << "Field usr. Type";
+    header_ << "Field NCLASSID";
+    header_ << "Field USER Type";
     header_ << "Field Entity Type";
 }
 
@@ -90,21 +90,21 @@ QVariant model_item::data(int column) const
         if(edesc_) {
             switch(column) {
                 case 0:
-                    return QString(edesc_->get_entity_name());
+                    return QString(edesc_->get_nentity_name());
                 case 1:
-                    return QString(edesc_->get_entity_namespace());
+                    return QString(edesc_->get_nentity_namespace());
                 case 2:
-                    if(edesc_->get_entity_type() != vlg::EntityType_UNDEFINED) {
-                        return QString(string_from_EntityType(edesc_->get_entity_type()));
+                    if(edesc_->get_nentity_type() != vlg::NEntityType_UNDEFINED) {
+                        return QString(string_from_NEntityType(edesc_->get_nentity_type()));
                     }
                     break;
                 case 3:
-                    if(edesc_->get_entity_type() == vlg::EntityType_NCLASS) {
+                    if(edesc_->get_nentity_type() == vlg::NEntityType_NCLASS) {
                         return QString("%1").arg(edesc_->get_nclass_id());
                     }
                     break;
                 case 4:
-                    return QString("%1").arg(edesc_->get_entity_member_num());
+                    return QString("%1").arg(edesc_->get_nentity_member_num());
                 case 5:
                     return QString(edesc_->is_persistent() ? "Yes" : "No");
                 default:
@@ -123,15 +123,15 @@ QVariant model_item::data(int column) const
                 case 8:
                     return QString("%1").arg(mdesc_->get_field_nmemb());
                 case 9:
-                    if(mdesc_->get_field_entity_type() == vlg::EntityType_NCLASS) {
-                        return QString("%1").arg(mdesc_->get_field_class_id());
+                    if(mdesc_->get_field_nentity_type() == vlg::NEntityType_NCLASS) {
+                        return QString("%1").arg(mdesc_->get_field_nclass_id());
                     }
                     break;
                 case 10:
                     return QString(mdesc_->get_field_user_type());
                 case 11:
-                    if(mdesc_->get_field_entity_type() != vlg::EntityType_UNDEFINED) {
-                        return QString(string_from_EntityType(mdesc_->get_field_entity_type()));
+                    if(mdesc_->get_field_nentity_type() != vlg::NEntityType_UNDEFINED) {
+                        return QString(string_from_NEntityType(mdesc_->get_field_nentity_type()));
                     }
                     break;
                 default:
@@ -151,7 +151,7 @@ VLG_MODEL_ITEM_TYPE model_item::item_type() const
     return item_type_;
 }
 
-const vlg::entity_desc *model_item::edesc() const
+const vlg::nentity_desc *model_item::edesc() const
 {
     return edesc_;
 }
@@ -179,7 +179,7 @@ void vlg_toolkit_vlg_model::OnModelUpdate_event()
     updateModelData(rootItem_);
 }
 
-vlg_toolkit_vlg_model::vlg_toolkit_vlg_model(vlg::entity_manager &bem,
+vlg_toolkit_vlg_model::vlg_toolkit_vlg_model(vlg::nentity_manager &bem,
                                              QObject *parent) :
     QAbstractItemModel(parent),
     bem_(bem),
@@ -293,23 +293,23 @@ void EnumMdscEDescFunc(const vlg::member_desc &desc, void *ud, bool &stop)
 }
 
 
-void EnumBemEdescF(const vlg::entity_desc &entity_desc, void *ud, bool &stop)
+void EnumBemEdescF(const vlg::nentity_desc &nentity_desc, void *ud, bool &stop)
 {
     vlg_toolkit_vlg_model *btbm = (vlg_toolkit_vlg_model *)ud;
     model_item *edsc_item = new model_item(VLG_MODEL_ITEM_TYPE_EDESC,
-                                           &entity_desc,
+                                           &nentity_desc,
                                            NULL,
                                            btbm->rootItem());
     btbm->rootItem()->appendChild(edsc_item);
-    entity_desc.enum_member_descriptors(EnumMdscEDescFunc, edsc_item);
+    nentity_desc.enum_member_descriptors(EnumMdscEDescFunc, edsc_item);
 }
 
 void vlg_toolkit_vlg_model::updateModelData(model_item *parent)
 {
-    bem_.enum_entity_descriptors(EnumBemEdescF, this);
+    bem_.enum_nentity_descriptors(EnumBemEdescF, this);
 }
 
-vlg::entity_manager &vlg_toolkit_vlg_model::bem() const
+vlg::nentity_manager &vlg_toolkit_vlg_model::bem() const
 {
     return bem_;
 }

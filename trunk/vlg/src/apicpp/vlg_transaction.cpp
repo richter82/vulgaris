@@ -37,7 +37,9 @@ class transaction_impl_pub {
         class timpl_transaction_impl_client : public transaction_impl {
             public:
                 timpl_transaction_impl_client(connection_impl &conn,
-                                              transaction &publ) : transaction_impl(conn), publ_(publ) {}
+                                              transaction &publ) :
+                    transaction_impl(conn),
+                    publ_(publ) {}
             public:
                 virtual void on_request() {
                     publ_.on_request();
@@ -60,10 +62,19 @@ class transaction_impl_pub {
         }
 
         static void transaction_status_change_hndlr_timpl(transaction_impl &trans,
-                                                          TransactionStatus status, void *ud) {
+                                                          TransactionStatus status,
+                                                          void *ud) {
             transaction_impl_pub *timpl = static_cast<transaction_impl_pub *>(ud);
             if(timpl->tsh_) {
                 timpl->tsh_(timpl->publ_, status, timpl->tsh_ud_);
+            }
+        }
+
+        static void transaction_closure_hndlr_timpl(transaction_impl &trans,
+                                                    void *ud) {
+            transaction_impl_pub *timpl = static_cast<transaction_impl_pub *>(ud);
+            if(timpl->clh_) {
+                timpl->clh_(timpl->publ_, timpl->clh_ud_);
             }
         }
 
@@ -100,10 +111,10 @@ class transaction_impl_pub {
             conn_ = &val;
         }
 
-        transaction::transaction_status_change get_tsh() const {
+        transaction::status_change get_tsh() const {
             return tsh_;
         }
-        void set_tsh(transaction::transaction_status_change val) {
+        void set_tsh(transaction::status_change val) {
             tsh_ = val;
         }
 
@@ -114,10 +125,10 @@ class transaction_impl_pub {
             tsh_ud_ = val;
         }
 
-        transaction::transaction_closure get_clh() const {
+        transaction::close get_clh() const {
             return clh_;
         }
-        void set_clh(transaction::transaction_closure val) {
+        void set_clh(transaction::close val) {
             clh_ = val;
         }
 
@@ -128,7 +139,7 @@ class transaction_impl_pub {
             clh_ud_ = val;
         }
 
-        vlg::RetCode bind_implernal(connection &conn) {
+        vlg::RetCode bind_internal(connection &conn) {
             vlg::RetCode rcode = vlg::RetCode_OK;
             if(conn.get_connection_type() == ConnectionType_OUTGOING) {
                 transaction_impl *t_impl = NULL;
@@ -141,8 +152,13 @@ class transaction_impl_pub {
                     c.retain(impl_);
                 }
             }
+
             impl_->set_transaction_status_change_handler(
                 transaction_status_change_hndlr_timpl, this);
+
+            impl_->set_transaction_closure_handler(
+                transaction_closure_hndlr_timpl, this);
+
             return rcode;
         }
 
@@ -150,9 +166,9 @@ class transaction_impl_pub {
         transaction &publ_;
         connection *conn_;
         transaction_impl *impl_;
-        transaction::transaction_status_change tsh_;
+        transaction::status_change tsh_;
         void *tsh_ud_;
-        transaction::transaction_closure clh_;
+        transaction::close clh_;
         void *clh_ud_;
 };
 
@@ -210,7 +226,7 @@ transaction::~transaction()
 vlg::RetCode transaction::bind(connection &conn)
 {
     impl_->set_conn(conn);
-    return impl_->bind_implernal(conn);
+    return impl_->bind_internal(conn);
 }
 
 connection *transaction::get_connection()
@@ -218,52 +234,52 @@ connection *transaction::get_connection()
     return impl_->get_conn();
 }
 
-TransactionResult transaction::get_transaction_result()
+TransactionResult transaction::get_close_result()
 {
     return impl_->get_tx()->tx_res();
 }
 
-ProtocolCode transaction::get_transaction_result_code()
+ProtocolCode transaction::get_close_result_code()
 {
     return impl_->get_tx()->tx_result_code();
 }
 
-TransactionRequestType transaction::get_transaction_request_type()
+TransactionRequestType transaction::get_request_type()
 {
     return impl_->get_tx()->tx_req_type();
 }
 
-Action transaction::get_transaction_action()
+Action transaction::get_request_action()
 {
     return impl_->get_tx()->tx_act();
 }
 
-unsigned int transaction::get_transaction_request_class_id()
+unsigned int transaction::get_request_nclass_id()
 {
     return impl_->get_tx()->tx_req_class_id();
 }
 
-Encode transaction::get_transaction_request_class_encode()
+Encode transaction::get_request_nclass_encode()
 {
     return impl_->get_tx()->tx_req_class_encode();
 }
 
-unsigned int transaction::get_transaction_result_class_id()
+unsigned int transaction::get_result_nclass_id()
 {
     return impl_->get_tx()->tx_res_class_id();
 }
 
-Encode transaction::get_transaction_result_class_encode()
+Encode transaction::get_result_nclass_encode()
 {
     return impl_->get_tx()->tx_res_class_encode();
 }
 
-bool transaction::is_transaction_result_class_required()
+bool transaction::is_result_obj_required()
 {
     return (impl_->get_tx()->is_result_class_req());
 }
 
-bool transaction::is_transaction_result_class_set()
+bool transaction::is_result_obj_set()
 {
     return (impl_->get_tx()->is_result_class_set());
 }
@@ -283,48 +299,48 @@ const nclass *transaction::get_result_obj()
     return impl_->get_tx()->result_obj();
 }
 
-void transaction::set_transaction_result(TransactionResult tx_res)
+void transaction::set_result(TransactionResult tx_res)
 {
     impl_->get_tx()->set_tx_res(tx_res);
 }
 
-void transaction::set_transaction_result_code(ProtocolCode tx_res_code)
+void transaction::set_result_code(ProtocolCode tx_res_code)
 {
     impl_->get_tx()->set_tx_result_code(tx_res_code);
 }
 
-void transaction::set_transaction_request_type(TransactionRequestType
-                                               tx_req_type)
+void transaction::set_request_type(TransactionRequestType
+                                   tx_req_type)
 {
     impl_->get_tx()->set_tx_req_type(tx_req_type);
 }
 
-void transaction::set_transaction_action(Action tx_act)
+void transaction::set_request_action(Action tx_act)
 {
     impl_->get_tx()->set_tx_act(tx_act);
 }
 
-void transaction::set_transaction_request_class_id(unsigned int nclass_id)
+void transaction::set_request_nclass_id(unsigned int nclass_id)
 {
     impl_->get_tx()->set_tx_req_class_id(nclass_id);
 }
 
-void transaction::set_transaction_request_class_encode(Encode class_encode)
+void transaction::set_request_nclass_encode(Encode class_encode)
 {
     impl_->get_tx()->set_tx_req_class_encode(class_encode);
 }
 
-void transaction::set_transaction_result_class_id(unsigned int nclass_id)
+void transaction::set_result_nclass_id(unsigned int nclass_id)
 {
     impl_->get_tx()->set_tx_res_class_id(nclass_id);
 }
 
-void transaction::set_transaction_result_class_encode(Encode class_encode)
+void transaction::set_result_nclass_encode(Encode class_encode)
 {
     impl_->get_tx()->set_tx_res_class_encode(class_encode);
 }
 
-void transaction::set_transaction_result_class_required(bool res_class_req)
+void transaction::set_result_obj_required(bool res_class_req)
 {
     impl_->get_tx()->set_result_class_req(res_class_req);
 }
@@ -360,71 +376,71 @@ vlg::RetCode transaction::await_for_status_reached_or_outdated(
                                                                  nsec);
 }
 
-vlg::RetCode transaction::await_for_closure(time_t sec, long nsec)
+vlg::RetCode transaction::await_for_close(time_t sec, long nsec)
 {
     return  impl_->get_tx()->await_for_closure(sec, nsec);
 }
 
-void transaction::set_transaction_status_change_handler(
-    transaction_status_change handler, void *ud)
+void transaction::set_status_change_handler(
+    status_change handler, void *ud)
 {
     impl_->set_tsh(handler);
     impl_->set_tsh_ud(ud);
 }
 
-void transaction::set_transaction_closure_handler(transaction_closure handler,
-                                                  void *ud)
+void transaction::set_close_handler(close handler,
+                                    void *ud)
 {
     impl_->set_clh(handler);
     impl_->set_clh_ud(ud);
 }
 
-tx_id &transaction::get_transaction_id()
+tx_id &transaction::get_tx_id()
 {
     return  impl_->get_tx()->txid();
 }
 
-void transaction::set_transaction_id(tx_id &txid)
+void transaction::set_tx_id(tx_id &txid)
 {
     impl_->get_tx()->set_tx_id(txid);
 }
 
-unsigned int transaction::get_transaction_id_PLID()
+unsigned int transaction::get_tx_id_PLID()
 {
     return  impl_->get_tx()->tx_id_PLID();
 }
 
-unsigned int transaction::get_transaction_id_SVID()
+unsigned int transaction::get_tx_id_SVID()
 {
     return  impl_->get_tx()->tx_id_SVID();
 }
 
-unsigned int transaction::get_transaction_id_CNID()
+unsigned int transaction::get_tx_id_CNID()
 {
     return  impl_->get_tx()->tx_id_CNID();
 }
 
-unsigned int transaction::get_transaction_id_PRID()
+unsigned int transaction::get_tx_id_PRID()
 {
     return  impl_->get_tx()->tx_id_PRID();
 }
 
-void transaction::set_transaction_id_PLID(unsigned int plid)
+void transaction::set_tx_id_PLID(unsigned int plid)
 {
     impl_->get_tx()->set_tx_id_PLID(plid);
 }
 
-void transaction::set_transaction_id_SVID(unsigned int svid)
+void transaction::set_tx_id_SVID(unsigned int svid)
 {
     impl_->get_tx()->set_tx_id_SVID(svid);
 }
 
-void transaction::set_transaction_id_CNID(unsigned int cnid)
+void transaction::set_tx_id_CNID(unsigned int cnid)
 {
     impl_->get_tx()->set_tx_id_CNID(cnid);
 }
 
-void transaction::set_transaction_id_PRID(unsigned int prid)
+void transaction::set_tx_id_PRID(unsigned int prid)
 {
     impl_->get_tx()->set_tx_id_PRID(prid);
 }
@@ -530,7 +546,7 @@ class timpl_transaction_impl_server : public transaction_impl {
 // CLASS transaction_factory
 //-----------------------------
 transaction_factory *default_tx_factory = NULL;
-transaction_factory *transaction_factory::default_transaction_factory()
+transaction_factory *transaction_factory::default_factory()
 {
     if(default_tx_factory  == NULL) {
         default_tx_factory  = new transaction_factory();

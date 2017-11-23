@@ -40,7 +40,7 @@ bool vlg_toolkit_Conn_mdl::filterAcceptsRow(int sourceRow,
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
     model_item *item = static_cast<model_item *>(index.internalPointer());
     return item->item_type() == VLG_MODEL_ITEM_TYPE_EDESC &&
-           item->edesc()->get_entity_type() == vlg::EntityType_NCLASS;
+           item->edesc()->get_nentity_type() == vlg::NEntityType_NCLASS;
 }
 
 vlg_toolkit_vlg_model &vlg_toolkit_Conn_mdl::wrapped_mdl()
@@ -54,7 +54,7 @@ vlg_toolkit_vlg_model &vlg_toolkit_Conn_mdl::wrapped_mdl()
 
 int vlg_toolkit_Connection::count_ = 0;
 
-void vlg_toolkit_connection_status_change_hndl(vlg::connection_impl &conn,
+void vlg_toolkit_connection_status_change_hndl(vlg::connection &conn,
                                                vlg::ConnectionStatus status,
                                                void *ud)
 {
@@ -63,7 +63,7 @@ void vlg_toolkit_connection_status_change_hndl(vlg::connection_impl &conn,
     ct->EmitConnStatus(status);
 }
 
-vlg_toolkit_Connection::vlg_toolkit_Connection(vlg::connection_impl &conn,
+vlg_toolkit_Connection::vlg_toolkit_Connection(vlg::connection &conn,
                                                const QString &host,
                                                const QString &port,
                                                const QString &usr,
@@ -87,13 +87,10 @@ vlg_toolkit_Connection::vlg_toolkit_Connection(vlg::connection_impl &conn,
     ui->cp_user->setText(usr);
     ui->cp_psswd->setText(psswd);
 
-    vlg::collector &c = conn_.get_collector();
-    c.retain(&conn_);
-
     connect(this, SIGNAL(SignalConnStatusChange(vlg::ConnectionStatus)),
             this,
             SLOT(OnConnStatusChange(vlg::ConnectionStatus)));
-    EmitConnStatus(conn_.status());
+    EmitConnStatus(conn_.get_status());
     conn_.set_connection_status_change_handler(
         vlg_toolkit_connection_status_change_hndl, this);
 
@@ -111,8 +108,7 @@ vlg_toolkit_Connection::vlg_toolkit_Connection(vlg::connection_impl &conn,
 
 vlg_toolkit_Connection::~vlg_toolkit_Connection()
 {
-    vlg::collector &c = conn_.get_collector();
-    c.release(&conn_);
+    delete &conn_;
     delete ui;
 }
 
@@ -122,7 +118,7 @@ void vlg_toolkit_Connection::UpdateTabHeader()
         return;
     }
     QIcon icon_flash;
-    switch(conn_.status()) {
+    switch(conn_.get_status()) {
         case vlg::ConnectionStatus_UNDEFINED:
         case vlg::ConnectionStatus_INITIALIZED:
         case vlg::ConnectionStatus_DISCONNECTED:
@@ -259,7 +255,7 @@ void vlg_toolkit_Connection::OnConnStatusChange(vlg::ConnectionStatus
     /*******************
      set connection indicators
      ******************/
-    ui->last_sock_err_disp->setText(QString("%1").arg(conn_.get_last_socket_err()));
+    //ui->last_sock_err_disp->setText(QString("%1").arg(conn_.get_last_socket_err()));
     if(conn_.get_socket() == INVALID_SOCKET) {
         ui->sock_label_disp->setText(QString("inv. socket"));
     } else {
@@ -267,7 +263,7 @@ void vlg_toolkit_Connection::OnConnStatusChange(vlg::ConnectionStatus
     }
     ui->host_label_disp->setText(QString(conn_.get_host_ip()));
     ui->port_label_disp->setText(QString("%1").arg(conn_.get_host_port()));
-    ui->connid_label_disp->setText(QString("%1").arg(conn_.connid()));
+    ui->connid_label_disp->setText(QString("%1").arg(conn_.get_connection_id()));
 
     UpdateTabHeader();
 }
@@ -286,7 +282,7 @@ void vlg_toolkit_Connection::OnCustomMenuRequested(const QPoint &pos)
         return;
     }
     if(item->item_type() != VLG_MODEL_ITEM_TYPE_EDESC ||
-            item->edesc()->get_entity_size() != vlg::EntityType_NCLASS) {
+            item->edesc()->get_nentity_type() != vlg::NEntityType_NCLASS) {
         return;
     }
     QMenu *custom_menu = new QMenu(QString("%1").arg(
@@ -318,7 +314,7 @@ void vlg_toolkit_Connection::on_connect_button_clicked()
     conn_params.sin_addr.s_addr = inet_addr(
                                       ui->cp_host_addr->text().toLatin1().data());
     conn_params.sin_port = htons(atoi(ui->cp_host_port->text().toLatin1().data()));
-    conn_.client_connect(conn_params);
+    conn_.connect(conn_params);
 }
 
 void vlg_toolkit_Connection::on_disconnect_button_clicked()
@@ -328,10 +324,12 @@ void vlg_toolkit_Connection::on_disconnect_button_clicked()
     vlg::ConnectivityEventType cevttyp =
         vlg::ConnectivityEventType_UNDEFINED;
     conn_.disconnect(vlg::DisconnectionResultReason_APPLICATIVE);
-    if(conn_.await_for_disconnection_result(cres, cevttyp, VLG_TKT_INT_AWT_TIMEOUT,
+    if(conn_.await_for_disconnection_result(cres,
+                                            cevttyp,
+                                            VLG_TKT_INT_AWT_TIMEOUT,
                                             0) == vlg::RetCode_TIMEOUT) {
         emit SignalDisconnectionTimeout(QString("on disconnection [connid:%1]").arg(
-                                            conn_.connid()));
+                                            conn_.get_connection_id()));
     }
 }
 
@@ -353,28 +351,36 @@ void vlg_toolkit_Connection::on_new_tx_button_clicked()
     if(!item) {
         return;
     }
-    const vlg::entity_desc *edesc = item->edesc();
+    const vlg::nentity_desc *edesc = item->edesc();
     if(!edesc) {
         return;
     }
-    vlg::transaction_impl *new_tx = NULL;
-    conn_.new_transaction(&new_tx);
-    new_tx->set_tx_req_class_id(item->edesc()->get_nclass_id());
+
+    vlg::transaction &new_tx = *new vlg::transaction();
+    new_tx.bind(conn_);
+
+    new_tx.set_request_nclass_id(item->edesc()->get_nclass_id());
 
     vlg::nclass *sending_obj = NULL;
-    conn_.peer().get_em().new_class_instance(edesc->get_nclass_id(), &sending_obj);
-    new_tx->set_request_obj(sending_obj);
+    conn_.get_peer()->get_entity_manager_m().new_nclass_instance(
+        edesc->get_nclass_id(), &sending_obj);
+    new_tx.set_request_obj(sending_obj);
 
     vlg_toolkit_tx_vlg_class_model *tx_mdl = new vlg_toolkit_tx_vlg_class_model(
-        *edesc, conn_.peer().get_em(), *new_tx,
+        *edesc,
+        conn_.get_peer()->get_entity_manager(),
+        new_tx,
         this);
 
     /*if last param set to 'this' child will be always on TOP*/
     vlg_toolkit_tx_window *new_tx_window = new vlg_toolkit_tx_window(*edesc,
-                                                                     conn_.peer().get_em(), *new_tx, *tx_mdl, NULL);
+                                                                     conn_.get_peer()->get_entity_manager(),
+                                                                     new_tx,
+                                                                     *tx_mdl,
+                                                                     NULL);
     new_tx_window->setAttribute(Qt::WA_DeleteOnClose, true);
     new_tx_window->setWindowTitle(QString("[TX][CONNID:%1][NCLASS:%2]").arg(
-                                      conn_.connid()).arg(
+                                      conn_.get_connection_id()).arg(
                                       item->edesc()->get_nclass_id()));
     new_tx_window->show();
     //new_tx_window->raise();
@@ -394,25 +400,29 @@ void vlg_toolkit_Connection::on_new_sbs_button_clicked()
     if(!item) {
         return;
     }
-    const vlg::entity_desc *edesc = item->edesc();
+    const vlg::nentity_desc *edesc = item->edesc();
     if(!edesc) {
         return;
     }
-    vlg::subscription_impl *new_sbs = NULL;
-    conn_.new_subscription(&new_sbs);
-    new_sbs->set_nclassid(item->edesc()->get_nclass_id());
 
-    vlg_toolkit_sbs_vlg_class_model *sbs_mdl = new vlg_toolkit_sbs_vlg_class_model(
-        *edesc, conn_.peer().get_em(), this);
+    vlg::subscription &new_sbs = *new vlg::subscription();
+    new_sbs.bind(conn_);
+    new_sbs.set_nclass_id(item->edesc()->get_nclass_id());
+
+    vlg_toolkit_sbs_vlg_class_model *sbs_mdl =
+        new vlg_toolkit_sbs_vlg_class_model(*edesc,
+                                            conn_.get_peer()->get_entity_manager(),
+                                            this);
 
     /*if last param set to 'this' child will be always on TOP*/
     vlg_toolkit_sbs_window *new_sbs_window = new vlg_toolkit_sbs_window(*edesc,
-                                                                        conn_.peer().get_em(),
-                                                                        *new_sbs, *sbs_mdl,
+                                                                        conn_.get_peer()->get_entity_manager(),
+                                                                        new_sbs,
+                                                                        *sbs_mdl,
                                                                         NULL);
     new_sbs_window->setAttribute(Qt::WA_DeleteOnClose, true);
     new_sbs_window->setWindowTitle(QString("[SBS][CONNID:%1][NCLASS:%2]").arg(
-                                       conn_.connid()).arg(
+                                       conn_.get_connection_id()).arg(
                                        item->edesc()->get_nclass_id()));
     new_sbs_window->show();
     //new_sbs_window->raise();

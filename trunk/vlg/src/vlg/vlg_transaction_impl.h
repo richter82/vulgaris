@@ -196,7 +196,7 @@ class transaction_impl : public vlg::collectable {
 
         peer_impl                &peer_; // associated peer.
         connection_impl          &conn_; // underlying connection.
-        const entity_manager    &bem_;
+        const nentity_manager    &nem_;
 
         tx_id                   txid_;  //(set by client)
         TransactionStatus       status_;

@@ -40,98 +40,77 @@ using namespace vlg;
 extern "C" {
 #endif
 
-typedef void(*connection_status_change_wr)(connection_wr        conn,
-                                           ConnectionStatus     status,
-                                           void                 *ud);
+typedef void(*connection_status_change_wr)(connection_wr conn,
+                                           ConnectionStatus status,
+                                           void *ud);
 
-typedef void(*on_connect_handler_wr)(connection_wr              conn,
-                                     ConnectivityEventResult    con_evt_res,
-                                     ConnectivityEventType      c_evt_type,
-                                     void                       *ud);
+typedef void(*on_connect_handler_wr)(connection_wr conn,
+                                     ConnectivityEventResult con_evt_res,
+                                     ConnectivityEventType c_evt_type,
+                                     void *ud);
 
-typedef void(*on_disconnect_handler_wr)(connection_wr           conn,
+typedef void(*on_disconnect_handler_wr)(connection_wr conn,
                                         ConnectivityEventResult con_evt_res,
-                                        ConnectivityEventType   c_evt_type,
-                                        void                    *ud);
+                                        ConnectivityEventType c_evt_type,
+                                        void *ud);
 
-connection_wr           connection_create(void);
-void                    connection_destroy(connection_wr conn);
+connection_wr connection_create(void);
+void connection_destroy(connection_wr conn);
+RetCode connection_bind(connection_wr conn, peer_wr p);
+peer_wr connection_get_peer(connection_wr conn);
+ConnectionType connection_get_connection_type(connection_wr conn);
+unsigned int connection_get_connection_id(connection_wr conn);
+ConnectionResult connection_get_connection_response(connection_wr conn);
+ConnectionResultReason connection_get_connection_result_code(connection_wr conn);
+unsigned short connection_get_client_heartbeat(connection_wr conn);
+unsigned short connection_get_server_agreed_heartbeat(connection_wr conn);
+DisconnectionResultReason connection_get_disconnection_reason_code(connection_wr conn);
+ConnectionStatus connection_get_status(connection_wr conn);
 
-RetCode                 connection_bind(connection_wr conn,
-                                        peer_wr p);
+RetCode connection_await_for_status_reached_or_outdated(connection_wr conn,
+                                                        ConnectionStatus test,
+                                                        ConnectionStatus *current,
+                                                        time_t sec,
+                                                        long nsec);
 
-peer_wr                 connection_get_peer(connection_wr conn);
+RetCode connection_await_for_status_change(connection_wr conn,
+                                           ConnectionStatus *status,
+                                           time_t sec,
+                                           long nsec);
 
-ConnectionType          connection_get_connection_type(connection_wr conn);
+void connection_set_status_change_handler(connection_wr conn,
+                                          connection_status_change_wr handler,
+                                          void *ud);
 
-unsigned int            connection_get_connection_id(connection_wr conn);
+RetCode connection_connect(connection_wr conn,
+                           struct sockaddr_in *conn_params);
 
-ConnectionResult        connection_get_connection_response(connection_wr conn);
-
-ConnectionResultReason
-connection_get_connection_result_code(connection_wr conn);
-
-unsigned short          connection_get_client_heartbeat(connection_wr conn);
-
-unsigned short
-connection_get_server_agreed_heartbeat(connection_wr conn);
-
-DisconnectionResultReason
-connection_get_disconnection_reason_code(connection_wr conn);
-
-ConnectionStatus        connection_get_status(connection_wr conn);
-
-RetCode
-connection_await_for_status_reached_or_outdated(connection_wr       conn,
-                                                ConnectionStatus    test,
-                                                ConnectionStatus    *current,
-                                                time_t              sec,
-                                                long                nsec);
-
-RetCode
-connection_await_for_status_change(connection_wr    conn,
-                                   ConnectionStatus *status,
-                                   time_t           sec,
-                                   long             nsec);
-
-void
-connection_set_status_change_handler(connection_wr                  conn,
-                                     connection_status_change_wr    handler,
-                                     void                           *ud);
-
-RetCode                 connection_connect(connection_wr        conn,
-                                           struct sockaddr_in   *conn_params);
-
-/* this function must be called from same thread that called Connect()*/
-RetCode
-connection_await_for_connection_result(connection_wr            conn,
-                                       ConnectivityEventResult  *con_evt_res,
-                                       ConnectivityEventType    *c_evt_type,
-                                       time_t                   sec,
-                                       long                     nsec);
+RetCode connection_await_for_connection_result(connection_wr conn,
+                                               ConnectivityEventResult *con_evt_res,
+                                               ConnectivityEventType *c_evt_type,
+                                               time_t sec,
+                                               long nsec);
 
 RetCode connection_disconnect(connection_wr conn,
                               DisconnectionResultReason reason_code);
 
-/* this function must be called from same thread that called Disconnect()*/
-RetCode
-connection_await_for_disconnection_result(connection_wr             conn,
-                                          ConnectivityEventResult   *con_evt_res,
-                                          ConnectivityEventType     *c_evt_type,
-                                          time_t                    sec,
-                                          long                      nsec);
+RetCode connection_await_for_disconnection_result(connection_wr conn,
+                                                  ConnectivityEventResult *con_evt_res,
+                                                  ConnectivityEventType *c_evt_type,
+                                                  time_t sec,
+                                                  long nsec);
 
-void connection_set_on_connect_handler(connection_wr            conn,
-                                       on_connect_handler_wr    hndl,
-                                       void                     *ud);
+void connection_set_on_connect_handler(connection_wr conn,
+                                       on_connect_handler_wr hndl,
+                                       void *ud);
 
-void connection_set_on_disconnect_handler(connection_wr             conn,
-                                          on_disconnect_handler_wr  hndl,
-                                          void                      *ud);
+void connection_set_on_disconnect_handler(connection_wr conn,
+                                          on_disconnect_handler_wr hndl,
+                                          void *ud);
 
-SOCKET              connection_get_socket(connection_wr conn);
-const char          *connection_get_host_ip(connection_wr conn);
-unsigned short      connection_get_host_port(connection_wr conn);
+SOCKET connection_get_socket(connection_wr conn);
+const char *connection_get_host_ip(connection_wr conn);
+unsigned short connection_get_host_port(connection_wr conn);
 
 #if defined(__cplusplus)
 }

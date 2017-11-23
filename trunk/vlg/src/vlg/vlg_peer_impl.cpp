@@ -220,14 +220,14 @@ selector &peer_impl::get_selector()
     return selector_;
 }
 
-const entity_manager &peer_impl::get_em() const
+const nentity_manager &peer_impl::get_em() const
 {
-    return bem_;
+    return nem_;
 }
 
-entity_manager &peer_impl::get_em_m()
+nentity_manager &peer_impl::get_em_m()
 {
-    return bem_;
+    return nem_;
 }
 
 persistence_manager_impl &peer_impl::get_pers_mng()
@@ -422,12 +422,12 @@ vlg::RetCode peer_impl::next_connid(unsigned int &connid)
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode peer_impl::extend_model(entity_manager *emng)
+vlg::RetCode peer_impl::extend_model(nentity_manager *emng)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(emng:%p)", __func__, emng))
     vlg::RetCode rcode = vlg::RetCode_OK;
-    if((rcode = bem_.extend(emng))) {
-        IFLOG(cri(TH_ID, LS_MDL "%s(res:%d) - [failed to extend bem]", __func__,
+    if((rcode = nem_.extend(emng))) {
+        IFLOG(cri(TH_ID, LS_MDL "%s(res:%d) - [failed to extend nem]", __func__,
                   rcode))
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(emng:%p)", __func__, emng))
@@ -438,8 +438,8 @@ vlg::RetCode peer_impl::extend_model(const char *model_name)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(model:%s)", __func__, model_name))
     vlg::RetCode rcode = vlg::RetCode_OK;
-    if((rcode = bem_.extend(model_name))) {
-        IFLOG(cri(TH_ID, LS_MDL "%s(model:%s, res:%d) - [failed to extend bem]",
+    if((rcode = nem_.extend(model_name))) {
+        IFLOG(cri(TH_ID, LS_MDL "%s(model:%s, res:%d) - [failed to extend nem]",
                   __func__, model_name, rcode))
     }
     IFLOG(trc(TH_ID, LS_CLO "%s(model:%s)", __func__, model_name))
@@ -679,7 +679,6 @@ vlg::RetCode peer_impl::peer_early_init_usr()
 #ifdef WIN32
     RETURN_IF_NOT_OK(WSA_init(peer_log_))
 #endif
-    RETURN_IF_NOT_OK(bem_.init())
     RETURN_IF_NOT_OK(model_map_.init(HM_SIZE_NANO))
     RETURN_IF_NOT_OK(pers_dri_load_.init(HM_SIZE_NANO))
     RETURN_IF_NOT_OK(srv_sbs_nclassid_condesc_set_.init(HM_SIZE_MIDI))

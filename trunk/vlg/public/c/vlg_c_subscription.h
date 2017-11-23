@@ -29,22 +29,13 @@ extern "C" {
 #endif
 
 subscription_wr subscription_event_get_subscription(subscription_event_wr sev);
-
 unsigned int subscription_event_get_id(subscription_event_wr sev);
-
-SubscriptionEventType
-subscription_event_get_event_type(subscription_event_wr sev);
-
-ProtocolCode subscription_event_get_proto_code(subscription_event_wr
-                                               sev);
-
+SubscriptionEventType subscription_event_get_event_type(subscription_event_wr sev);
+ProtocolCode subscription_event_get_proto_code(subscription_event_wr sev);
 unsigned int subscription_event_get_timestamp_0(subscription_event_wr sev);
-
 unsigned int subscription_event_get_timestamp_1(subscription_event_wr sev);
-
 Action  subscription_event_get_action(subscription_event_wr sev);
-
-net_class_wr  subscription_event_get_object(subscription_event_wr sev);
+net_class_wr subscription_event_get_object(subscription_event_wr sev);
 
 typedef void(*subscription_status_change_wr)(subscription_wr sbs,
                                              SubscriptionStatus status,
@@ -55,35 +46,22 @@ typedef void(*subscription_event_notify_wr)(subscription_wr sbs,
                                             void *ud);
 
 subscription_wr subscription_create(void);
-void            subscription_destroy(subscription_wr sbs);
+void subscription_destroy(subscription_wr sbs);
 
 RetCode subscription_bind(subscription_wr sbs,
                           connection_wr conn);
 
 connection_wr subscription_get_connection(subscription_wr sbs);
-
 unsigned int subscription_get_id(subscription_wr sbs);
-
 unsigned int subscription_get_subscription_class_id(subscription_wr sbs);
-
-SubscriptionType   subscription_get_subscription_type(subscription_wr sbs);
-
-SubscriptionMode   subscription_get_subscription_mode(subscription_wr sbs);
-
-SubscriptionFlowType
-subscription_get_subscription_flow_type(subscription_wr sbs);
-
-SubscriptionDownloadType
-subscription_get_subscription_download_type(subscription_wr sbs);
-
+SubscriptionType subscription_get_subscription_type(subscription_wr sbs);
+SubscriptionMode subscription_get_subscription_mode(subscription_wr sbs);
+SubscriptionFlowType subscription_get_subscription_flow_type(subscription_wr sbs);
+SubscriptionDownloadType subscription_get_subscription_download_type(subscription_wr sbs);
 Encode subscription_get_subscription_class_encode(subscription_wr sbs);
-
 unsigned int subscription_get_open_timestamp_0(subscription_wr sbs);
-
 unsigned int subscription_get_open_timestamp_1(subscription_wr sbs);
-
 int subscription_is_initial_query_ended(subscription_wr sbs);
-
 void subscription_set_subscription_class_id(subscription_wr sbs,
                                             unsigned int nclass_id);
 
@@ -108,22 +86,19 @@ void subscription_set_open_timestamp_0(subscription_wr sbs,
 void subscription_set_open_timestamp_1(subscription_wr sbs,
                                        unsigned int ts1);
 
-RetCode
-subscription_await_for_status_reached_or_outdated(subscription_wr sbs,
-                                                  SubscriptionStatus test,
-                                                  SubscriptionStatus *current,
-                                                  time_t sec,
-                                                  long nsec);
+RetCode subscription_await_for_status_reached_or_outdated(subscription_wr sbs,
+                                                          SubscriptionStatus test,
+                                                          SubscriptionStatus *current,
+                                                          time_t sec,
+                                                          long nsec);
 
-void
-subscription_set_status_change_handler(subscription_wr sbs,
-                                       subscription_status_change_wr handler,
-                                       void *ud);
+void subscription_set_status_change_handler(subscription_wr sbs,
+                                            subscription_status_change_wr handler,
+                                            void *ud);
 
-void
-subscription_set_event_notify_handler(subscription_wr sbs,
-                                      subscription_event_notify_wr handler,
-                                      void *ud);
+void subscription_set_event_notify_handler(subscription_wr sbs,
+                                           subscription_event_notify_wr handler,
+                                           void *ud);
 
 RetCode subscription_start(subscription_wr sbs);
 

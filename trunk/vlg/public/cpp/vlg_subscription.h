@@ -31,7 +31,7 @@ class subscription_event_impl_pub;
 class subscription_event : public vlg::collectable {
 
     public:
-        explicit subscription_event();
+        explicit subscription_event(subscription &sbs);
         ~subscription_event();
 
         virtual vlg::collector &get_collector();
@@ -41,10 +41,10 @@ class subscription_event : public vlg::collectable {
         unsigned int            get_id();
         SubscriptionEventType   get_event_type();
         ProtocolCode            get_proto_code();
-        unsigned int            get_timestamp_0(); //part. dwnl.
-        unsigned int            get_timestamp_1(); //part. dwnl.
+        unsigned int            get_timestamp_0();
+        unsigned int            get_timestamp_1();
         Action                  get_action();
-        nclass               *get_object();
+        nclass                  *get_object();
 
     public:
         subscription_event_impl_pub *get_opaque();
@@ -68,7 +68,7 @@ class subscription_factory {
         virtual subscription        *new_subscription(connection &conn);
 
     public:
-        static subscription_factory *default_subscription_factory();
+        static subscription_factory *default_factory();
 };
 
 /** @brief subscription class.
@@ -76,13 +76,13 @@ class subscription_factory {
 class subscription_impl_pub;
 class subscription : public vlg::collectable {
     public:
-        typedef void (*subscription_status_change)(subscription &sbs,
-                                                   SubscriptionStatus status,
-                                                   void *ud);
+        typedef void (*status_change)(subscription &sbs,
+                                      SubscriptionStatus status,
+                                      void *ud);
 
-        typedef void (*subscription_event_notify)(subscription &sbs,
-                                                  subscription_event &sbs_evt,
-                                                  void *ud);
+        typedef void (*event_notify)(subscription &sbs,
+                                     subscription_event &sbs_evt,
+                                     void *ud);
 
     public:
         explicit subscription();
@@ -96,31 +96,28 @@ class subscription : public vlg::collectable {
     public:
         connection                  *get_connection();
         unsigned int                get_id();
-        unsigned int                get_subscription_class_id();
-        SubscriptionType            get_subscription_type()             const;
-        SubscriptionMode            get_subscription_mode()             const;
-        SubscriptionFlowType        get_subscription_flow_type()        const;
-        SubscriptionDownloadType    get_subscription_download_type()    const;
-        Encode                      get_subscription_class_encode()     const;
-        unsigned int                get_open_timestamp_0()              const;
-        unsigned int                get_open_timestamp_1()              const;
+        unsigned int                get_nclass_id();
+        SubscriptionType            get_type()             const;
+        SubscriptionMode            get_mode()             const;
+        SubscriptionFlowType        get_flow_type()        const;
+        SubscriptionDownloadType    get_download_type()    const;
+        Encode                      get_nclass_encode()     const;
+        unsigned int                get_open_timestamp_0()  const;
+        unsigned int                get_open_timestamp_1()  const;
         bool                        is_initial_query_ended();
 
     public:
-        void    set_subscription_class_id(unsigned int nclass_id);
-        void    set_subscription_type(SubscriptionType sbs_type);
-        void    set_subscription_mode(SubscriptionMode sbs_mode);
-
-        void
-        set_subscription_flow_type(SubscriptionFlowType sbs_flow_type);
-
-        void
-        set_subscription_download_type(SubscriptionDownloadType
-                                       sbs_dwnl_type);
-
-        void    set_class_encode(Encode class_encode);
+        void    set_nclass_id(unsigned int nclass_id);
+        void    set_type(SubscriptionType sbs_type);
+        void    set_mode(SubscriptionMode sbs_mode);
+        void    set_flow_type(SubscriptionFlowType sbs_flow_type);
+        void    set_download_type(SubscriptionDownloadType sbs_dwnl_type);
+        void    set_nclass_encode(Encode nclass_encode);
         void    set_open_timestamp_0(unsigned int ts0);
         void    set_open_timestamp_1(unsigned int ts1);
+
+    public:
+        SubscriptionStatus get_status() const;
 
     public:
         vlg::RetCode
@@ -130,11 +127,11 @@ class subscription : public vlg::collectable {
                                              long nsec = 0);
 
     public:
-        void set_status_change_handler(subscription_status_change handler,
+        void set_status_change_handler(status_change handler,
                                        void *ud);
 
     public:
-        void set_event_notify_handler(subscription_event_notify handler,
+        void set_event_notify_handler(event_notify handler,
                                       void *ud);
 
     public:
