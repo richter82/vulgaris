@@ -349,16 +349,16 @@ extern "C" {
         return static_cast<peer *>(p)->is_configured();
     }
 
-    const entity_manager_wr peer_get_entity_manager(peer_wr p)
+    const nentity_manager_wr peer_get_entity_manager(peer_wr p)
     {
         const nentity_manager &nem = static_cast<peer *>(p)->get_entity_manager();
-        return (const entity_manager_wr)&nem;
+        return (const nentity_manager_wr)&nem;
     }
 
-    entity_manager_wr peer_get_entity_manager_m(peer_wr p)
+    nentity_manager_wr peer_get_entity_manager_m(peer_wr p)
     {
         nentity_manager &nem = static_cast<peer *>(p)->get_entity_manager_m();
-        return (entity_manager_wr)&nem;
+        return (nentity_manager_wr)&nem;
     }
 
     int peer_is_persistent(peer_wr p)
@@ -459,7 +459,7 @@ extern "C" {
         static_cast<peer *>(p)->add_load_persistent_driver(driver);
     }
 
-    RetCode peer_extend_model_with_em(peer_wr p, entity_manager_wr nem)
+    RetCode peer_extend_model_with_em(peer_wr p, nentity_manager_wr nem)
     {
         return static_cast<peer *>(p)->extend_model(static_cast<nentity_manager *>(nem));
     }
@@ -588,19 +588,19 @@ extern "C" {
 
     RetCode peer_class_persistent_load(peer_wr p, unsigned short class_key,
                                        unsigned int *ts_0_out, unsigned int *ts_1_out,
-                                       net_class_wr in_out_obj)
+                                       nclass_wr in_out_obj)
     {
         return static_cast<peer *>(p)->obj_load(class_key, *ts_0_out,
                                                 *ts_1_out, *(nclass *)in_out_obj);
     }
 
-    RetCode peer_class_persistent_save(peer_wr p, net_class_wr in_obj)
+    RetCode peer_class_persistent_save(peer_wr p, nclass_wr in_obj)
     {
         return static_cast<peer *>(p)->obj_save(*(nclass *)in_obj);
     }
 
     RetCode peer_class_persistent_update(peer_wr p, unsigned short class_key,
-                                         net_class_wr in_obj)
+                                         nclass_wr in_obj)
     {
         return static_cast<peer *>(p)->obj_update(class_key,
                                                   *(nclass *)in_obj);
@@ -608,7 +608,7 @@ extern "C" {
 
     RetCode peer_class_persistent_update_or_save(peer_wr p,
                                                  unsigned short class_key,
-                                                 net_class_wr in_obj)
+                                                 nclass_wr in_obj)
     {
         return static_cast<peer *>(p)->obj_update_or_save(class_key,
                                                           *(nclass *)in_obj);
@@ -616,7 +616,7 @@ extern "C" {
 
     RetCode peer_class_persistent_remove(peer_wr p, unsigned short class_key,
                                          PersistenceDeletionMode mode,
-                                         net_class_wr in_obj)
+                                         nclass_wr in_obj)
     {
         return static_cast<peer *>(p)->obj_remove(class_key, mode,
                                                   *(nclass *)in_obj);
@@ -624,28 +624,28 @@ extern "C" {
 
     RetCode peer_class_distribute(peer_wr p,
                                   SubscriptionEventType event_type,
-                                  Action action, net_class_wr in_obj)
+                                  Action action, nclass_wr in_obj)
     {
         return static_cast<peer *>(p)->obj_distribute(event_type, action,
                                                       *(nclass *)in_obj);
     }
 
     RetCode peer_class_persistent_save_and_distribute(peer_wr p,
-                                                      net_class_wr in_obj)
+                                                      nclass_wr in_obj)
     {
         return static_cast<peer *>(p)->obj_save_and_distribute(*
                                                                (nclass *)in_obj);
     }
 
     RetCode peer_class_persistent_update_and_distribute(peer_wr p,
-                                                        unsigned short class_key, net_class_wr in_obj)
+                                                        unsigned short class_key, nclass_wr in_obj)
     {
         return static_cast<peer *>(p)->obj_update_and_distribute(class_key,
                                                                  *(nclass *)in_obj);
     }
 
     RetCode peer_class_persistent_update_or_save_and_distribute(peer_wr p,
-                                                                unsigned short class_key, net_class_wr in_obj)
+                                                                unsigned short class_key, nclass_wr in_obj)
     {
         return static_cast<peer *>(p)->obj_update_or_save_and_distribute(
                    class_key, *(nclass *)in_obj);
@@ -654,7 +654,7 @@ extern "C" {
     RetCode peer_class_persistent_remove_and_distribute(peer_wr p,
                                                         unsigned short class_key,
                                                         PersistenceDeletionMode mode,
-                                                        net_class_wr in_obj)
+                                                        nclass_wr in_obj)
     {
         return static_cast<peer *>(p)->obj_remove_and_distribute(class_key,
                                                                  mode, *(nclass *)in_obj);

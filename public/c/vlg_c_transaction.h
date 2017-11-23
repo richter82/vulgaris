@@ -65,11 +65,11 @@ int transaction_is_transaction_result_class_required(transaction_wr tx);
 
 int transaction_is_transaction_result_class_set(transaction_wr tx);
 
-net_class_wr  transaction_get_request_obj(transaction_wr tx);
+nclass_wr  transaction_get_request_obj(transaction_wr tx);
 
-net_class_wr  transaction_get_current_obj(transaction_wr tx);
+nclass_wr  transaction_get_current_obj(transaction_wr tx);
 
-net_class_wr  transaction_get_result_obj(transaction_wr tx);
+nclass_wr  transaction_get_result_obj(transaction_wr tx);
 
 void transaction_set_transaction_result(transaction_wr tx,
                                         TransactionResult tx_res);
@@ -98,11 +98,11 @@ void transaction_set_transaction_result_class_encode(transaction_wr tx,
 void transaction_set_transaction_result_class_required(transaction_wr tx,
                                                        int res_class_req);
 
-void transaction_set_request_obj(transaction_wr tx, net_class_wr obj);
+void transaction_set_request_obj(transaction_wr tx, nclass_wr obj);
 
-void transaction_set_current_obj(transaction_wr tx, net_class_wr obj);
+void transaction_set_current_obj(transaction_wr tx, nclass_wr obj);
 
-void transaction_set_result_obj(transaction_wr tx, net_class_wr obj);
+void transaction_set_result_obj(transaction_wr tx, nclass_wr obj);
 
 TransactionStatus transaction_get_status(transaction_wr tx);
 
@@ -156,8 +156,8 @@ RetCode transaction_prepare(transaction_wr tx);
 RetCode transaction_prepare_full(transaction_wr tx,
                                  TransactionRequestType tx_request_type,
                                  Action tx_action,
-                                 net_class_wr sending_obj,
-                                 net_class_wr current_obj);
+                                 nclass_wr sending_obj,
+                                 nclass_wr current_obj);
 
 RetCode transaction_send(transaction_wr tx);
 

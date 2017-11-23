@@ -119,66 +119,66 @@ void enum_member_desc_wr_f(const member_desc &member_descriptor, void *ud,
 extern "C" {
     // VLG_ENTITY_DESC
 
-    unsigned int entity_desc_get_class_id(entity_desc_wr edesc)
+    unsigned int entity_desc_get_class_id(nentity_desc_wr edesc)
     {
         return static_cast<nentity_desc *>(edesc)->get_nclass_id();
     }
 
-    size_t entity_desc_get_entity_size(entity_desc_wr edesc)
+    size_t entity_desc_get_entity_size(nentity_desc_wr edesc)
     {
         return static_cast<nentity_desc *>(edesc)->get_nclass_size();
     }
 
-    size_t entity_desc_get_entity_max_align(entity_desc_wr edesc)
+    size_t entity_desc_get_entity_max_align(nentity_desc_wr edesc)
     {
         return static_cast<nentity_desc *>(edesc)->get_nclass_max_align();
     }
 
-    NEntityType entity_desc_get_entity_type(entity_desc_wr edesc)
+    NEntityType entity_desc_get_entity_type(nentity_desc_wr edesc)
     {
         return static_cast<nentity_desc *>(edesc)->get_nentity_type();
     }
 
-    const char *entity_desc_get_entity_namespace(entity_desc_wr edesc)
+    const char *entity_desc_get_entity_namespace(nentity_desc_wr edesc)
     {
         return static_cast<nentity_desc *>(edesc)->get_nentity_namespace();
     }
 
-    const char *entity_desc_get_entity_name(entity_desc_wr edesc)
+    const char *entity_desc_get_entity_name(nentity_desc_wr edesc)
     {
         return static_cast<nentity_desc *>(edesc)->get_nentity_name();
     }
 
-    alloc_func entity_desc_get_entity_allocation_function(entity_desc_wr edesc)
+    alloc_func entity_desc_get_entity_allocation_function(nentity_desc_wr edesc)
     {
         return static_cast<nentity_desc *>(edesc)->get_nclass_allocation_function();
     }
 
-    unsigned int entity_desc_get_entity_member_num(entity_desc_wr edesc)
+    unsigned int entity_desc_get_entity_member_num(nentity_desc_wr edesc)
     {
         return static_cast<nentity_desc *>(edesc)->get_nentity_member_num();
     }
 
-    int entity_desc_is_persistent(entity_desc_wr edesc)
+    int entity_desc_is_persistent(nentity_desc_wr edesc)
     {
         return static_cast<nentity_desc *>(edesc)->is_persistent() ? 1 : 0;
     }
 
-    const member_desc_wr entity_desc_get_member_desc_by_id(entity_desc_wr edesc,
+    const member_desc_wr entity_desc_get_member_desc_by_id(nentity_desc_wr edesc,
                                                            unsigned int member_id)
     {
         return (const member_desc_wr)static_cast<nentity_desc *>
                (edesc)->get_member_desc_by_id(member_id);
     }
 
-    const member_desc_wr entity_desc_get_member_desc_by_name(entity_desc_wr edesc,
+    const member_desc_wr entity_desc_get_member_desc_by_name(nentity_desc_wr edesc,
                                                              const char *member_name)
     {
         return (const member_desc_wr)static_cast<nentity_desc *>
                (edesc)->get_member_desc_by_name(member_name);
     }
 
-    void entity_desc_enum_member_descriptors(entity_desc_wr edesc,
+    void entity_desc_enum_member_descriptors(nentity_desc_wr edesc,
                                              enum_member_desc_wr emd_f,
                                              void *ud)
     {
@@ -189,137 +189,137 @@ extern "C" {
 
     // nclass
 
-    void net_class_delete(net_class_wr obj)
+    void nclass_delete(nclass_wr obj)
     {
         delete static_cast<nclass *>(obj);
     }
 
-    void net_class_retain(net_class_wr obj)
+    void nclass_retain(nclass_wr obj)
     {
         nclass *bc = static_cast<nclass *>(obj);
         bc->get_collector().retain(bc);
     }
 
-    int net_class_is_collected(net_class_wr obj)
+    int nclass_is_collected(nclass_wr obj)
     {
         nclass *bc = static_cast<nclass *>(obj);
         return bc->get_collector().is_instance_collected(bc) ? 1 : 0;
     }
 
-    void net_class_release(net_class_wr obj)
+    void nclass_release(nclass_wr obj)
     {
         nclass *bc = static_cast<nclass *>(obj);
         bc->get_collector().release(bc);
     }
 
-    unsigned int net_class_get_class_id(net_class_wr obj)
+    unsigned int nclass_get_class_id(nclass_wr obj)
     {
         return static_cast<nclass *>(obj)->get_nclass_id();
     }
 
-    unsigned int net_class_get_compiler_version(net_class_wr obj)
+    unsigned int nclass_get_compiler_version(nclass_wr obj)
     {
         return static_cast<nclass *>(obj)->get_compiler_version();
     }
 
-    size_t net_class_get_entity_size(net_class_wr obj)
+    size_t nclass_get_entity_size(nclass_wr obj)
     {
         return static_cast<nclass *>(obj)->get_size();
     }
 
-    const net_class_wr net_class_get_zero_object(net_class_wr obj)
+    const nclass_wr nclass_get_zero_object(nclass_wr obj)
     {
-        return (const net_class_wr)static_cast<nclass *>(obj)->get_zero_object();
+        return (const nclass_wr)static_cast<nclass *>(obj)->get_zero_object();
     }
 
-    void net_class_copy_to(net_class_wr obj, net_class_wr to_obj)
+    void nclass_copy_to(nclass_wr obj, nclass_wr to_obj)
     {
         static_cast<nclass *>(obj)->copy_to(static_cast<nclass *>(to_obj));
     }
 
-    net_class_wr net_class_clone(net_class_wr obj)
+    nclass_wr nclass_clone(nclass_wr obj)
     {
-        return (net_class_wr)static_cast<nclass *>(obj)->clone();
+        return (nclass_wr)static_cast<nclass *>(obj)->clone();
     }
 
-    int net_class_is_zero(net_class_wr obj)
+    int nclass_is_zero(nclass_wr obj)
     {
         return static_cast<nclass *>(obj)->is_zero() ? 1 : 0;
     }
 
-    void net_class_set_zero(net_class_wr obj)
+    void nclass_set_zero(nclass_wr obj)
     {
         static_cast<nclass *>(obj)->set_zero();
     }
 
-    void net_class_set_from(net_class_wr obj, const net_class_wr from_obj)
+    void nclass_set_from(nclass_wr obj, const nclass_wr from_obj)
     {
         static_cast<nclass *>(obj)->set_from(static_cast<nclass *>(from_obj));
     }
 
-    size_t net_class_get_field_size_by_id(net_class_wr obj,
-                                          unsigned int field_id)
+    size_t nclass_get_field_size_by_id(nclass_wr obj,
+                                       unsigned int field_id)
     {
         return static_cast<nclass *>(obj)->get_field_size_by_id(field_id);
     }
 
-    size_t net_class_get_field_size_by_name(net_class_wr obj,
-                                            const char *field_name)
+    size_t nclass_get_field_size_by_name(nclass_wr obj,
+                                         const char *field_name)
     {
         return static_cast<nclass *>(obj)->get_field_size_by_name(field_name);
     }
 
-    void *net_class_get_field_by_id(net_class_wr obj,
-                                    unsigned int field_id)
+    void *nclass_get_field_by_id(nclass_wr obj,
+                                 unsigned int field_id)
     {
         return static_cast<nclass *>(obj)->get_field_by_id(field_id);
     }
 
-    void *net_class_get_field_by_name(net_class_wr obj,
-                                      const char *field_name)
+    void *nclass_get_field_by_name(nclass_wr obj,
+                                   const char *field_name)
     {
         return static_cast<nclass *>(obj)->get_field_by_name(field_name);
     }
 
-    void *net_class_get_field_by_id_index(net_class_wr obj,
-                                          unsigned int field_id,
-                                          unsigned int index)
+    void *nclass_get_field_by_id_index(nclass_wr obj,
+                                       unsigned int field_id,
+                                       unsigned int index)
     {
         return static_cast<nclass *>(obj)->get_field_by_id_index(field_id,
                                                                  index);
     }
 
-    void *net_class_get_field_by_name_index(net_class_wr obj,
-                                            const char *field_name,
-                                            unsigned int index)
+    void *nclass_get_field_by_name_index(nclass_wr obj,
+                                         const char *field_name,
+                                         unsigned int index)
     {
         return static_cast<nclass *>(obj)->get_field_by_name_index(field_name,
                                                                    index);
     }
 
-    RetCode net_class_set_field_by_id(net_class_wr obj,
-                                      unsigned int field_id,
-                                      const void *ptr,
-                                      size_t maxlen)
+    RetCode nclass_set_field_by_id(nclass_wr obj,
+                                   unsigned int field_id,
+                                   const void *ptr,
+                                   size_t maxlen)
     {
         return static_cast<nclass *>(obj)->set_field_by_id(field_id,
                                                            ptr,
                                                            maxlen);
     }
 
-    RetCode net_class_set_field_by_name(net_class_wr obj,
-                                        const char *field_name,
-                                        const void *ptr,
-                                        size_t maxlen)
+    RetCode nclass_set_field_by_name(nclass_wr obj,
+                                     const char *field_name,
+                                     const void *ptr,
+                                     size_t maxlen)
     {
         return static_cast<nclass *>(obj)->set_field_by_name(field_name, ptr,
                                                              maxlen);
     }
 
-    RetCode net_class_set_field_by_id_index(net_class_wr obj,
-                                            unsigned int field_id,
-                                            const void *ptr, unsigned int index,
-                                            size_t maxlen)
+    RetCode nclass_set_field_by_id_index(nclass_wr obj,
+                                         unsigned int field_id,
+                                         const void *ptr, unsigned int index,
+                                         size_t maxlen)
     {
         return static_cast<nclass *>(obj)->set_field_by_id_index(field_id,
                                                                  ptr,
@@ -327,11 +327,11 @@ extern "C" {
                                                                  maxlen);
     }
 
-    RetCode net_class_set_field_by_name_index(net_class_wr obj,
-                                              const char *field_name,
-                                              const void *ptr,
-                                              unsigned int index,
-                                              size_t maxlen)
+    RetCode nclass_set_field_by_name_index(nclass_wr obj,
+                                           const char *field_name,
+                                           const void *ptr,
+                                           unsigned int index,
+                                           size_t maxlen)
     {
         return static_cast<nclass *>(obj)->set_field_by_name_index(field_name,
                                                                    ptr,
@@ -339,9 +339,9 @@ extern "C" {
                                                                    maxlen);
     }
 
-    RetCode net_class_is_field_zero_by_id(net_class_wr obj,
-                                          unsigned int field_id,
-                                          int *res)
+    RetCode nclass_is_field_zero_by_id(nclass_wr obj,
+                                       unsigned int field_id,
+                                       int *res)
     {
         bool b_res = false;
         RetCode r_res = static_cast<nclass *>(obj)->is_field_zero_by_id(field_id,
@@ -350,9 +350,9 @@ extern "C" {
         return r_res;
     }
 
-    RetCode net_class_is_field_zero_by_name(net_class_wr obj,
-                                            const char *field_name,
-                                            int *res)
+    RetCode nclass_is_field_zero_by_name(nclass_wr obj,
+                                         const char *field_name,
+                                         int *res)
     {
         bool b_res = false;
         RetCode r_res = static_cast<nclass *>(obj)->is_field_zero_by_name(
@@ -362,11 +362,11 @@ extern "C" {
         return r_res;
     }
 
-    RetCode net_class_is_field_zero_by_id_index(net_class_wr obj,
-                                                unsigned int field_id,
-                                                unsigned int index,
-                                                unsigned int nmenb,
-                                                int *res)
+    RetCode nclass_is_field_zero_by_id_index(nclass_wr obj,
+                                             unsigned int field_id,
+                                             unsigned int index,
+                                             unsigned int nmenb,
+                                             int *res)
     {
         bool b_res = false;
         RetCode r_res = static_cast<nclass *>(obj)->is_field_zero_by_id_index(field_id,
@@ -377,11 +377,11 @@ extern "C" {
         return r_res;
     }
 
-    RetCode net_class_is_field_zero_by_name_index(net_class_wr obj,
-                                                  const char *field_name,
-                                                  unsigned int index,
-                                                  unsigned int nmenb,
-                                                  int *res)
+    RetCode nclass_is_field_zero_by_name_index(nclass_wr obj,
+                                               const char *field_name,
+                                               unsigned int index,
+                                               unsigned int nmenb,
+                                               int *res)
     {
         bool b_res = false;
         RetCode r_res = static_cast<nclass *>(obj)->is_field_zero_by_name_index(
@@ -390,71 +390,71 @@ extern "C" {
         return r_res;
     }
 
-    RetCode net_class_set_field_zero_by_id(net_class_wr obj,
-                                           unsigned int field_id)
+    RetCode nclass_set_field_zero_by_id(nclass_wr obj,
+                                        unsigned int field_id)
     {
         return static_cast<nclass *>(obj)->set_field_zero_by_id(field_id);
     }
 
-    RetCode net_class_set_field_zero_by_name(net_class_wr obj,
-                                             const char *field_name)
+    RetCode nclass_set_field_zero_by_name(nclass_wr obj,
+                                          const char *field_name)
     {
         return static_cast<nclass *>(obj)->set_field_zero_by_name(field_name);
     }
 
-    RetCode net_class_set_field_zero_by_id_index(net_class_wr obj,
-                                                 unsigned int field_id,
-                                                 unsigned int index,
-                                                 unsigned int nmenb)
+    RetCode nclass_set_field_zero_by_id_index(nclass_wr obj,
+                                              unsigned int field_id,
+                                              unsigned int index,
+                                              unsigned int nmenb)
     {
         return static_cast<nclass *>(obj)->set_field_zero_by_id_index(field_id,
                                                                       index,
                                                                       nmenb);
     }
 
-    RetCode net_class_set_field_zero_by_name_index(net_class_wr obj,
-                                                   const char *field_name,
-                                                   unsigned int index,
-                                                   unsigned int nmenb)
+    RetCode nclass_set_field_zero_by_name_index(nclass_wr obj,
+                                                const char *field_name,
+                                                unsigned int index,
+                                                unsigned int nmenb)
     {
         return static_cast<nclass *>(obj)->set_field_zero_by_name_index(field_name,
                                                                         index,
                                                                         nmenb);
     }
 
-    char *net_class_get_term_field_ref_by_plain_idx(net_class_wr obj,
-                                                    unsigned int plain_idx,
-                                                    const entity_manager_wr nem,
-                                                    const member_desc_wr *member_descriptor)
+    char *nclass_get_term_field_ref_by_plain_idx(nclass_wr obj,
+                                                 unsigned int plain_idx,
+                                                 const nentity_manager_wr nem,
+                                                 const member_desc_wr *member_descriptor)
     {
         return static_cast<nclass *>(obj)->get_term_field_ref_by_plain_idx(plain_idx,
                                                                            *static_cast<const nentity_manager *>(nem),
                                                                            (const member_desc **)member_descriptor);
     }
 
-    const entity_desc_wr net_class_get_entity_descriptor(net_class_wr obj)
+    const nentity_desc_wr nclass_get_entity_descriptor(nclass_wr obj)
     {
-        return (entity_desc_wr)static_cast<nclass *>(obj)->get_nentity_descriptor();
+        return (nentity_desc_wr)static_cast<nclass *>(obj)->get_nentity_descriptor();
     }
 
-    size_t net_class_pretty_dump_to_buffer(net_class_wr obj,
-                                           char *buffer,
-                                           int print_class_name)
+    size_t nclass_pretty_dump_to_buffer(nclass_wr obj,
+                                        char *buffer,
+                                        int print_class_name)
     {
         return static_cast<nclass *>(obj)->pretty_dump_to_buffer(buffer,
                                                                  print_class_name ? true : false);
     }
 
-    size_t net_class_pretty_dump_to_file(net_class_wr obj,
-                                         FILE *file,
-                                         int print_class_name)
+    size_t nclass_pretty_dump_to_file(nclass_wr obj,
+                                      FILE *file,
+                                      int print_class_name)
     {
         return static_cast<nclass *>(obj)->pretty_dump_to_file(file,
                                                                print_class_name ? true : false);
     }
 
-    RetCode net_class_primary_key_string_value(net_class_wr obj,
-                                               ascii_str_wr out_str)
+    RetCode nclass_primary_key_string_value(nclass_wr obj,
+                                            ascii_str_wr out_str)
     {
         return static_cast<nclass *>(obj)->primary_key_string_value(
                    static_cast<ascii_string *>(out_str));
@@ -472,30 +472,30 @@ void enum_entity_desc_wr_f(const nentity_desc &entity_descriptor,
 {
     enum_entity_desc_wr_f_ud *f_ud = static_cast<enum_entity_desc_wr_f_ud *>(ud);
     int brk_c = 0;
-    f_ud->c_f((const entity_desc_wr)&entity_descriptor, f_ud->ud, &brk_c);
+    f_ud->c_f((const nentity_desc_wr)&entity_descriptor, f_ud->ud, &brk_c);
     stop = brk_c ? true : false;
 }
 
 extern "C" {
 
     // VLG_ENTITY_MANAGER
-    RetCode entity_manager_get_entity_descriptor_by_classid(entity_manager_wr emng,
+    RetCode entity_manager_get_entity_descriptor_by_classid(nentity_manager_wr emng,
                                                             unsigned int nclass_id,
-                                                            entity_desc_wr const *edesc)
+                                                            nentity_desc_wr const *edesc)
     {
         return static_cast<nentity_manager *>(emng)->get_nentity_descriptor(nclass_id,
                                                                             (nentity_desc const **)edesc);
     }
 
-    RetCode entity_manager_get_entity_descriptor_by_name(entity_manager_wr emng,
+    RetCode entity_manager_get_entity_descriptor_by_name(nentity_manager_wr emng,
                                                          const char *entity_name,
-                                                         entity_desc_wr const *edesc)
+                                                         nentity_desc_wr const *edesc)
     {
         return static_cast<nentity_manager *>(emng)->get_nentity_descriptor(entity_name,
                                                                             (nentity_desc const **)edesc);
     }
 
-    void entity_manager_enum_entity_descriptors(entity_manager_wr emng,
+    void entity_manager_enum_entity_descriptors(nentity_manager_wr emng,
                                                 enum_entity_desc_wr eedf,
                                                 void *ud)
     {
@@ -504,13 +504,13 @@ extern "C" {
             enum_entity_desc_wr_f, &f_ud);
     }
 
-    RetCode entity_manager_extend_with_model_name(entity_manager_wr emng,
+    RetCode entity_manager_extend_with_model_name(nentity_manager_wr emng,
                                                   const char *model_name)
     {
         return static_cast<nentity_manager *>(emng)->extend(model_name);
     }
 
-    void entity_manager_enum_enum_descriptors(entity_manager_wr emng,
+    void entity_manager_enum_enum_descriptors(nentity_manager_wr emng,
                                               enum_entity_desc_wr eedf,
                                               void *ud)
     {
@@ -519,7 +519,7 @@ extern "C" {
             enum_entity_desc_wr_f, &f_ud);
     }
 
-    void entity_manager_enum_class_descriptors(entity_manager_wr emng,
+    void entity_manager_enum_class_descriptors(nentity_manager_wr emng,
                                                enum_entity_desc_wr eedf,
                                                void *ud)
     {
@@ -528,43 +528,43 @@ extern "C" {
             enum_entity_desc_wr_f, &f_ud);
     }
 
-    RetCode entity_manager_new_class_instance(entity_manager_wr emng,
+    RetCode entity_manager_new_class_instance(nentity_manager_wr emng,
                                               unsigned int nclass_id,
-                                              net_class_wr *new_class_obj)
+                                              nclass_wr *new_class_obj)
     {
         return static_cast<nentity_manager *>(emng)->new_nclass_instance(nclass_id,
                                                                          (nclass **)new_class_obj);
     }
 
-    unsigned int entity_manager_entity_count(entity_manager_wr emng)
+    unsigned int entity_manager_entity_count(nentity_manager_wr emng)
     {
         return static_cast<nentity_manager *>(emng)->nentity_count();
     }
 
-    unsigned int entity_manager_enum_count(entity_manager_wr emng)
+    unsigned int entity_manager_enum_count(nentity_manager_wr emng)
     {
         return static_cast<nentity_manager *>(emng)->nenum_count();
     }
 
-    unsigned int entity_manager_class_count(entity_manager_wr emng)
+    unsigned int entity_manager_class_count(nentity_manager_wr emng)
     {
         return static_cast<nentity_manager *>(emng)->nclass_count();
     }
 
-    const char *entity_manager_get_class_name(entity_manager_wr emng,
+    const char *entity_manager_get_class_name(nentity_manager_wr emng,
                                               unsigned int nclass_id)
     {
         return static_cast<nentity_manager *>(emng)->get_nclass_name(nclass_id);
     }
 
-    RetCode entity_manager_extend_with_entity_desc(entity_manager_wr emng,
-                                                   const entity_desc_wr edesc)
+    RetCode entity_manager_extend_with_entity_desc(nentity_manager_wr emng,
+                                                   const nentity_desc_wr edesc)
     {
         return static_cast<nentity_manager *>(emng)->extend((const nentity_desc *)edesc);
     }
 
-    RetCode entity_manager_extend_with_entity_manager(entity_manager_wr emng,
-                                                      entity_manager_wr nem)
+    RetCode entity_manager_extend_with_entity_manager(nentity_manager_wr emng,
+                                                      nentity_manager_wr nem)
     {
         return static_cast<nentity_manager *>(emng)->extend((nentity_manager *)nem);
     }
@@ -643,7 +643,7 @@ extern "C" {
         return sz;
     }
 
-    size_t log_trc_class(vlg_logger_wr l, uint32_t id, const net_class_wr obj,
+    size_t log_trc_class(vlg_logger_wr l, uint32_t id, const nclass_wr obj,
                          int print_class_name,
                          const char *fmt, ...)
     {
@@ -656,7 +656,7 @@ extern "C" {
         return sz;
     }
 
-    size_t log_dbg_class(vlg_logger_wr l, uint32_t id, const net_class_wr obj,
+    size_t log_dbg_class(vlg_logger_wr l, uint32_t id, const nclass_wr obj,
                          int print_class_name,
                          const char *fmt, ...)
     {
@@ -669,7 +669,7 @@ extern "C" {
         return sz;
     }
 
-    size_t log_inf_class(vlg_logger_wr l, uint32_t id, const net_class_wr obj,
+    size_t log_inf_class(vlg_logger_wr l, uint32_t id, const nclass_wr obj,
                          int print_class_name,
                          const char *fmt, ...)
     {
@@ -682,7 +682,7 @@ extern "C" {
         return sz;
     }
 
-    size_t log_wrn_class(vlg_logger_wr l, uint32_t id, const net_class_wr obj,
+    size_t log_wrn_class(vlg_logger_wr l, uint32_t id, const nclass_wr obj,
                          int print_class_name,
                          const char *fmt, ...)
     {
@@ -695,7 +695,7 @@ extern "C" {
         return sz;
     }
 
-    size_t log_err_class(vlg_logger_wr l, uint32_t id, const net_class_wr obj,
+    size_t log_err_class(vlg_logger_wr l, uint32_t id, const nclass_wr obj,
                          int print_class_name,
                          const char *fmt, ...)
     {
@@ -708,7 +708,7 @@ extern "C" {
         return sz;
     }
 
-    size_t log_cri_class(vlg_logger_wr l, uint32_t id, const net_class_wr obj,
+    size_t log_cri_class(vlg_logger_wr l, uint32_t id, const nclass_wr obj,
                          int print_class_name,
                          const char *fmt, ...)
     {
@@ -721,7 +721,7 @@ extern "C" {
         return sz;
     }
 
-    size_t log_fat_class(vlg_logger_wr l, uint32_t id, const net_class_wr obj,
+    size_t log_fat_class(vlg_logger_wr l, uint32_t id, const nclass_wr obj,
                          int print_class_name,
                          const char *fmt, ...)
     {

@@ -85,8 +85,8 @@ unsigned int        peer_get_version_maintenance(peer_wr p);
 unsigned int        peer_get_version_architecture(peer_wr p);
 int                 peer_is_configured(peer_wr p);
 
-const entity_manager_wr   peer_get_entity_manager(peer_wr p);
-entity_manager_wr         peer_get_entity_manager_m(peer_wr p);
+const nentity_manager_wr   peer_get_entity_manager(peer_wr p);
+nentity_manager_wr         peer_get_entity_manager_m(peer_wr p);
 int                       peer_is_persistent(peer_wr p);
 int                       peer_is_persistent_schema_creating(peer_wr p);
 int                       peer_is_dropping_existing_schema(peer_wr p);
@@ -130,7 +130,7 @@ void peer_add_load_persistent_driver(peer_wr p,
                                      const char *driver);
 
 RetCode peer_extend_model_with_em(peer_wr p,
-                                  entity_manager_wr nem);
+                                  nentity_manager_wr nem);
 
 RetCode peer_extend_model_with_model_name(peer_wr p,
                                           const char *model_name);
@@ -210,44 +210,44 @@ RetCode peer_class_persistent_load(peer_wr p,
                                    unsigned short class_key,
                                    unsigned int *ts_0_out,
                                    unsigned int *ts_1_out,
-                                   net_class_wr in_out_obj);
+                                   nclass_wr in_out_obj);
 
 RetCode peer_class_persistent_save(peer_wr p,
-                                   net_class_wr in_obj);
+                                   nclass_wr in_obj);
 
 RetCode peer_class_persistent_update(peer_wr p,
                                      unsigned short class_key,
-                                     net_class_wr in_obj);
+                                     nclass_wr in_obj);
 
 RetCode peer_class_persistent_update_or_save(peer_wr p,
                                              unsigned short class_key,
-                                             net_class_wr in_obj);
+                                             nclass_wr in_obj);
 
 RetCode peer_class_persistent_remove(peer_wr p,
                                      unsigned short class_key,
                                      PersistenceDeletionMode mode,
-                                     net_class_wr in_obj);
+                                     nclass_wr in_obj);
 
 RetCode peer_class_distribute(peer_wr p,
                               SubscriptionEventType event_type,
                               Action action,
-                              net_class_wr in_obj);
+                              nclass_wr in_obj);
 
 RetCode peer_class_persistent_save_and_distribute(peer_wr p,
-                                                  net_class_wr in_obj);
+                                                  nclass_wr in_obj);
 
 RetCode peer_class_persistent_update_and_distribute(peer_wr p,
                                                     unsigned short class_key,
-                                                    net_class_wr in_obj);
+                                                    nclass_wr in_obj);
 
 RetCode peer_class_persistent_update_or_save_and_distribute(peer_wr p,
                                                             unsigned short class_key,
-                                                            net_class_wr in_obj);
+                                                            nclass_wr in_obj);
 
 RetCode peer_class_persistent_remove_and_distribute(peer_wr p,
                                                     unsigned short class_key,
                                                     PersistenceDeletionMode mode,
-                                                    net_class_wr in_obj);
+                                                    nclass_wr in_obj);
 
 #if defined(__cplusplus)
 }

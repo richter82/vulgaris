@@ -146,19 +146,19 @@ extern "C" {
         return static_cast<transaction *>(tx)->is_result_obj_set();
     }
 
-    net_class_wr transaction_get_request_obj(transaction_wr tx)
+    nclass_wr transaction_get_request_obj(transaction_wr tx)
     {
-        return (net_class_wr)static_cast<transaction *>(tx)->get_request_obj();
+        return (nclass_wr)static_cast<transaction *>(tx)->get_request_obj();
     }
 
-    net_class_wr transaction_get_current_obj(transaction_wr tx)
+    nclass_wr transaction_get_current_obj(transaction_wr tx)
     {
-        return (net_class_wr)static_cast<transaction *>(tx)->get_current_obj();
+        return (nclass_wr)static_cast<transaction *>(tx)->get_current_obj();
     }
 
-    net_class_wr transaction_get_result_obj(transaction_wr tx)
+    nclass_wr transaction_get_result_obj(transaction_wr tx)
     {
-        return (net_class_wr)static_cast<transaction *>(tx)->get_result_obj();
+        return (nclass_wr)static_cast<transaction *>(tx)->get_result_obj();
     }
 
     void transaction_set_transaction_result(transaction_wr tx,
@@ -217,17 +217,17 @@ extern "C" {
             res_class_req ? true : false);
     }
 
-    void transaction_set_request_obj(transaction_wr tx, net_class_wr obj)
+    void transaction_set_request_obj(transaction_wr tx, nclass_wr obj)
     {
         static_cast<transaction *>(tx)->set_request_obj((nclass *)obj);
     }
 
-    void transaction_set_current_obj(transaction_wr tx, net_class_wr obj)
+    void transaction_set_current_obj(transaction_wr tx, nclass_wr obj)
     {
         static_cast<transaction *>(tx)->set_current_obj((nclass *)obj);
     }
 
-    void transaction_set_result_obj(transaction_wr tx, net_class_wr obj)
+    void transaction_set_result_obj(transaction_wr tx, nclass_wr obj)
     {
         static_cast<transaction *>(tx)->set_result_obj((nclass *)obj);
     }
@@ -332,8 +332,8 @@ extern "C" {
     RetCode transaction_prepare_full(transaction_wr tx,
                                      TransactionRequestType tx_request_type,
                                      Action tx_action,
-                                     net_class_wr sending_obj,
-                                     net_class_wr current_obj)
+                                     nclass_wr sending_obj,
+                                     nclass_wr current_obj)
     {
         return static_cast<transaction *>(tx)->prepare(tx_request_type,
                                                        tx_action,

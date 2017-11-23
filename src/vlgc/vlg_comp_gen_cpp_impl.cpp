@@ -1570,10 +1570,10 @@ vlg::RetCode VLG_COMP_Render_EntryPoint_C__CPP_(compile_unit &cunit,
     fprintf(file,   OPN_CMMNT_LN
             "MODEL:%s C ENTRYPOINT\n"
             CLS_CMMNT_LN, cunit.model_name());
-    fprintf(file, "typedef void *entity_manager_wr;\n");
+    fprintf(file, "typedef void *nentity_manager_wr;\n");
     fprintf(file, "extern \"C\"{\n");
-    fprintf(file, "entity_manager_wr get_c_em_%s()\n{\n", cunit.model_name());
-    fprintf(file, CR_1IND"return (entity_manager_wr)get_em_%s();\n",
+    fprintf(file, "nentity_manager_wr get_c_em_%s()\n{\n", cunit.model_name());
+    fprintf(file, CR_1IND"return (nentity_manager_wr)get_em_%s();\n",
             cunit.model_name());
     fprintf(file, "}\n");
     fprintf(file, "}\n\n");

@@ -35,7 +35,7 @@ ProtocolCode subscription_event_get_proto_code(subscription_event_wr sev);
 unsigned int subscription_event_get_timestamp_0(subscription_event_wr sev);
 unsigned int subscription_event_get_timestamp_1(subscription_event_wr sev);
 Action  subscription_event_get_action(subscription_event_wr sev);
-net_class_wr subscription_event_get_object(subscription_event_wr sev);
+nclass_wr subscription_event_get_object(subscription_event_wr sev);
 
 typedef void(*subscription_status_change_wr)(subscription_wr sbs,
                                              SubscriptionStatus status,

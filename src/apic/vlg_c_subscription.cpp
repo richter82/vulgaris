@@ -114,7 +114,7 @@ extern "C" {
         return static_cast<subscription_event *>(sev)->get_action();
     }
 
-    net_class_wr subscription_event_get_object(subscription_event_wr sev)
+    nclass_wr subscription_event_get_object(subscription_event_wr sev)
     {
         return static_cast<subscription_event *>(sev)->get_object();
     }
