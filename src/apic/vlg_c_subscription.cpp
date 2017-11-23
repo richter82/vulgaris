@@ -146,34 +146,34 @@ extern "C" {
 
     unsigned int subscription_get_subscription_class_id(subscription_wr sbs)
     {
-        return static_cast<subscription *>(sbs)->get_subscription_class_id();
+        return static_cast<subscription *>(sbs)->get_nclass_id();
     }
 
     SubscriptionType subscription_get_subscription_type(subscription_wr sbs)
     {
-        return static_cast<subscription *>(sbs)->get_subscription_type();
+        return static_cast<subscription *>(sbs)->get_type();
     }
 
     SubscriptionMode subscription_get_subscription_mode(subscription_wr sbs)
     {
-        return static_cast<subscription *>(sbs)->get_subscription_mode();
+        return static_cast<subscription *>(sbs)->get_mode();
     }
 
     SubscriptionFlowType subscription_get_subscription_flow_type(
         subscription_wr sbs)
     {
-        return static_cast<subscription *>(sbs)->get_subscription_flow_type();
+        return static_cast<subscription *>(sbs)->get_flow_type();
     }
 
     SubscriptionDownloadType subscription_get_subscription_download_type(
         subscription_wr sbs)
     {
-        return static_cast<subscription *>(sbs)->get_subscription_download_type();
+        return static_cast<subscription *>(sbs)->get_download_type();
     }
 
     Encode subscription_get_subscription_class_encode(subscription_wr sbs)
     {
-        return static_cast<subscription *>(sbs)->get_subscription_class_encode();
+        return static_cast<subscription *>(sbs)->get_nclass_encode();
     }
 
     unsigned int subscription_get_open_timestamp_0(subscription_wr sbs)
@@ -194,36 +194,36 @@ extern "C" {
     void subscription_set_subscription_class_id(subscription_wr sbs,
                                                 unsigned int nclass_id)
     {
-        static_cast<subscription *>(sbs)->set_subscription_class_id(nclass_id);
+        static_cast<subscription *>(sbs)->set_nclass_id(nclass_id);
     }
 
     void subscription_set_subscription_type(subscription_wr sbs,
                                             SubscriptionType sbs_type)
     {
-        static_cast<subscription *>(sbs)->set_subscription_type(sbs_type);
+        static_cast<subscription *>(sbs)->set_type(sbs_type);
     }
 
     void subscription_set_subscription_mode(subscription_wr sbs,
                                             SubscriptionMode sbs_mode)
     {
-        static_cast<subscription *>(sbs)->set_subscription_mode(sbs_mode);
+        static_cast<subscription *>(sbs)->set_mode(sbs_mode);
     }
 
     void subscription_set_subscription_flow_type(subscription_wr sbs,
                                                  SubscriptionFlowType sbs_flow_type)
     {
-        static_cast<subscription *>(sbs)->set_subscription_flow_type(sbs_flow_type);
+        static_cast<subscription *>(sbs)->set_flow_type(sbs_flow_type);
     }
 
     void subscription_set_subscription_download_type(subscription_wr sbs,
                                                      SubscriptionDownloadType sbs_dwnl_type)
     {
-        static_cast<subscription *>(sbs)->set_subscription_download_type(sbs_dwnl_type);
+        static_cast<subscription *>(sbs)->set_download_type(sbs_dwnl_type);
     }
 
     void subscription_set_class_encode(subscription_wr sbs, Encode class_encode)
     {
-        static_cast<subscription *>(sbs)->set_class_encode(class_encode);
+        static_cast<subscription *>(sbs)->set_nclass_encode(class_encode);
     }
 
     void subscription_set_open_timestamp_0(subscription_wr sbs, unsigned int ts0)

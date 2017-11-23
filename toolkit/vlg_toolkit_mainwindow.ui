@@ -535,8 +535,8 @@
                 <property name="title">
                  <string>Peer Params</string>
                 </property>
-                <layout class="QGridLayout" name="gridLayout_2">
-                 <item row="0" column="0">
+                <layout class="QVBoxLayout" name="verticalLayout_9">
+                 <item>
                   <layout class="QHBoxLayout" name="horizontalLayout_2">
                    <item>
                     <widget class="QLabel" name="label_5">
@@ -581,8 +581,14 @@
                    </item>
                   </layout>
                  </item>
-                 <item row="1" column="0">
+                 <item>
                   <layout class="QGridLayout" name="gridLayout">
+                   <item row="1" column="1">
+                    <widget class="QLineEdit" name="pp_cfg_srv_sin_port"/>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QLineEdit" name="pp_cfg_srv_sin_addr"/>
+                   </item>
                    <item row="0" column="0">
                     <widget class="QLabel" name="label_2">
                      <property name="text">
@@ -592,9 +598,6 @@
                       <cstring>pp_cfg_srv_sin_addr</cstring>
                      </property>
                     </widget>
-                   </item>
-                   <item row="0" column="1">
-                    <widget class="QLineEdit" name="pp_cfg_srv_sin_addr"/>
                    </item>
                    <item row="1" column="0">
                     <widget class="QLabel" name="label_3">
@@ -606,8 +609,8 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="1">
-                    <widget class="QLineEdit" name="pp_cfg_srv_sin_port"/>
+                   <item row="2" column="1">
+                    <widget class="QLineEdit" name="pp_cfg_srv_exectrs"/>
                    </item>
                    <item row="2" column="0">
                     <widget class="QLabel" name="label_4">
@@ -619,23 +622,10 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="2" column="1">
-                    <widget class="QLineEdit" name="pp_cfg_srv_exectrs"/>
+                   <item row="3" column="1">
+                    <widget class="QLineEdit" name="pp_cfg_cli_exectrs"/>
                    </item>
                    <item row="3" column="0">
-                    <widget class="QLabel" name="label_7">
-                     <property name="text">
-                      <string>srv_pkt_q_len:</string>
-                     </property>
-                     <property name="buddy">
-                      <cstring>pp_cfg_srv_pkt_q_len</cstring>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="3" column="1">
-                    <widget class="QLineEdit" name="pp_cfg_srv_pkt_q_len"/>
-                   </item>
-                   <item row="4" column="0">
                     <widget class="QLabel" name="label">
                      <property name="text">
                       <string>cli_exectrs:</string>
@@ -645,36 +635,7 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="4" column="1">
-                    <widget class="QLineEdit" name="pp_cfg_cli_exectrs"/>
-                   </item>
-                   <item row="5" column="0">
-                    <widget class="QLabel" name="label_6">
-                     <property name="text">
-                      <string>cli_pkt_q_len:</string>
-                     </property>
-                     <property name="buddy">
-                      <cstring>pp_cfg_cli_pkt_q_len</cstring>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="5" column="1">
-                    <widget class="QLineEdit" name="pp_cfg_cli_pkt_q_len"/>
-                   </item>
-                   <item row="6" column="0">
-                    <widget class="QLabel" name="label_8">
-                     <property name="text">
-                      <string>srv_sbs_evt_q_len</string>
-                     </property>
-                     <property name="buddy">
-                      <cstring>pp_cfg_srv_sbs_evt_q_len</cstring>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="6" column="1">
-                    <widget class="QLineEdit" name="pp_cfg_srv_sbs_evt_q_len"/>
-                   </item>
-                   <item row="7" column="0">
+                   <item row="4" column="0">
                     <widget class="QLabel" name="label_9">
                      <property name="text">
                       <string>srv_sbs_exectrs</string>
@@ -684,12 +645,12 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="7" column="1">
+                   <item row="4" column="1">
                     <widget class="QLineEdit" name="pp_cfg_srv_sbs_exectrs"/>
                    </item>
                   </layout>
                  </item>
-                 <item row="2" column="0">
+                 <item>
                   <layout class="QVBoxLayout" name="verticalLayout_4">
                    <item>
                     <widget class="QCheckBox" name="pp_cfg_pers_enabled">
@@ -897,11 +858,15 @@
        <property name="font">
         <font>
          <family>Lucida Console</family>
-         <pointsize>10</pointsize>
+         <pointsize>8</pointsize>
+         <stylestrategy>NoAntialias</stylestrategy>
         </font>
        </property>
        <property name="styleSheet">
         <string notr="true"/>
+       </property>
+       <property name="lineWidth">
+        <number>0</number>
        </property>
        <property name="readOnly">
         <bool>true</bool>

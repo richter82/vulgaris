@@ -52,7 +52,7 @@ class pers_conn_sqlite;
 //-----------------------------
 // entity_desc_impl, partial
 //-----------------------------
-class entity_desc_impl {
+class nentity_desc_impl {
     public:
         const vlg::hash_map &GetMap_NM_MMBRDSC() const;
         const vlg::hash_map &GetMap_KEYID_KDESC() const;
@@ -60,7 +60,7 @@ class entity_desc_impl {
 
 class key_desc_impl {
     public:
-        const vlg::linked_list &GetKeyFieldSet() const;
+        const vlg::linked_list &get_key_field_set() const;
 };
 
 //-----------------------------
@@ -228,7 +228,7 @@ char *SQLTE_ENM_BUFF::getValBuff_RSZ(size_t req_size)
 // SQLTE_ENM_SELECT_REC_UD
 //-----------------------------
 struct SQLTE_ENM_SELECT_REC_UD {
-    const entity_manager &bem;
+    const nentity_manager &nem;
     char *obj_ptr;
     vlg::ascii_string *prfx;
     vlg::ascii_string *columns;
@@ -260,7 +260,7 @@ void enum_mmbrs_fill_entity(const vlg::hash_map &map, const void *key,
     const member_desc *mmbrd = *(const member_desc **)ptr;
     char *obj_f_ptr = NULL;
     if(mmbrd->get_field_vlg_type() == Type_ENTITY) {
-        if(mmbrd->get_field_entity_type() == EntityType_ENUM) {
+        if(mmbrd->get_field_nentity_type() == NEntityType_NENUM) {
             //treat enum as number
             if(mmbrd->get_field_nmemb() > 1) {
                 for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
@@ -277,8 +277,8 @@ void enum_mmbrs_fill_entity(const vlg::hash_map &map, const void *key,
         } else {
             //class, struct is a recursive step.
             SQLTE_ENM_SELECT_REC_UD rrud = *rud;
-            const entity_desc *edsc = NULL;
-            if(!rud->bem.get_entity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
+            const nentity_desc *edsc = NULL;
+            if(!rud->nem.get_nentity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
                 const vlg::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
                 if(mmbrd->get_field_nmemb() > 1) {
                     for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
@@ -292,7 +292,7 @@ void enum_mmbrs_fill_entity(const vlg::hash_map &map, const void *key,
                 }
             } else {
                 *rud->last_error_code = vlg::RetCode_GENERR;
-                rud->last_error_msg->assign("enum_mmbrs_fill_entity: entity not found in bem [");
+                rud->last_error_msg->assign("enum_mmbrs_fill_entity: entity not found in nem [");
                 rud->last_error_msg->append(mmbrd->get_field_user_type());
                 rud->last_error_msg->append("]");
             }
@@ -324,7 +324,7 @@ void enum_mmbrs_fill_entity(const vlg::hash_map &map, const void *key,
 // SQLTE_ENM_UPDATE_REC_UD
 //-----------------------------
 struct SQLTE_ENM_UPDATE_REC_UD {
-    const entity_manager &bem;
+    const nentity_manager &nem;
     const char *obj_ptr;
     vlg::ascii_string *prfx;
     vlg::ascii_string *set_section;
@@ -359,7 +359,7 @@ void enum_mmbrs_update(const vlg::hash_map &map, const void *key,
         idx_prfx.append(idx_b);
     }
     if(mmbrd->get_field_vlg_type() == Type_ENTITY) {
-        if(mmbrd->get_field_entity_type() == EntityType_ENUM) {
+        if(mmbrd->get_field_nentity_type() == NEntityType_NENUM) {
             //treat enum as number
             //coma handling
             if(*(rud->first_fld)) {
@@ -411,8 +411,8 @@ void enum_mmbrs_update(const vlg::hash_map &map, const void *key,
             }
             rprfx.append(mmbrd->get_member_name());
             rrud.prfx = &rprfx;
-            const entity_desc *edsc = NULL;
-            if(!rud->bem.get_entity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
+            const nentity_desc *edsc = NULL;
+            if(!rud->nem.get_nentity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
                 const vlg::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
                 if(mmbrd->get_field_nmemb() > 1) {
                     rrud.array_fld = true;
@@ -428,7 +428,7 @@ void enum_mmbrs_update(const vlg::hash_map &map, const void *key,
                 }
             } else {
                 *rud->last_error_code = vlg::RetCode_GENERR;
-                rud->last_error_msg->assign("enum_mmbrs_insert: entity not found in bem [");
+                rud->last_error_msg->assign("enum_mmbrs_insert: entity not found in nem [");
                 rud->last_error_msg->append(mmbrd->get_field_user_type());
                 rud->last_error_msg->append("]");
             }
@@ -502,7 +502,7 @@ void enum_mmbrs_update(const vlg::hash_map &map, const void *key,
 // SQLTE_ENM_DELETE_REC_UD
 //-----------------------------
 struct SQLTE_ENM_DELETE_REC_UD {
-    const entity_manager &bem;
+    const nentity_manager &nem;
     const char *obj_ptr;
     vlg::ascii_string *where_claus;
     bool *first_key;
@@ -516,7 +516,7 @@ struct SQLTE_ENM_DELETE_REC_UD {
 // SQLTE_ENM_INSERT_REC_UD
 //-----------------------------
 struct SQLTE_ENM_INSERT_REC_UD {
-    const entity_manager &bem;
+    const nentity_manager &nem;
     const char *obj_ptr;
     vlg::ascii_string *insert_stmt;
     vlg::ascii_string *prfx;
@@ -540,7 +540,7 @@ class pers_query_sqlite : public persistence_query_impl {
         //---ctors
         pers_query_sqlite(unsigned int id,
                           persistence_connection_impl &conn,
-                          const entity_manager &bem,
+                          const nentity_manager &nem,
                           sqlite3_stmt *stmt);
 
         ~pers_query_sqlite();
@@ -553,9 +553,9 @@ class pers_query_sqlite : public persistence_query_impl {
 
 pers_query_sqlite::pers_query_sqlite(unsigned int id,
                                      persistence_connection_impl &conn,
-                                     const entity_manager &bem,
+                                     const nentity_manager &nem,
                                      sqlite3_stmt *stmt) :
-    persistence_query_impl(id, conn, bem),
+    persistence_query_impl(id, conn, nem),
     stmt_(stmt)
 {}
 
@@ -595,36 +595,36 @@ class pers_conn_sqlite : public persistence_connection_impl {
 
         virtual vlg::RetCode do_connect();
 
-        virtual vlg::RetCode do_create_table(const entity_manager &bem,
-                                             const entity_desc &edesc,
+        virtual vlg::RetCode do_create_table(const nentity_manager &nem,
+                                             const nentity_desc &edesc,
                                              bool drop_if_exist);
 
         virtual vlg::RetCode do_select(unsigned int key,
-                                       const entity_manager &bem,
+                                       const nentity_manager &nem,
                                        unsigned int &ts0_out,
                                        unsigned int &ts1_out,
                                        nclass &in_out_obj);
 
         virtual vlg::RetCode do_update(unsigned int key,
-                                       const entity_manager &bem,
+                                       const nentity_manager &nem,
                                        unsigned int ts0,
                                        unsigned int ts1,
                                        const nclass &in_obj);
 
         virtual vlg::RetCode do_delete(unsigned int key,
-                                       const entity_manager &bem,
+                                       const nentity_manager &nem,
                                        unsigned int ts0,
                                        unsigned int ts1,
                                        PersistenceDeletionMode mode,
                                        const nclass &in_obj);
 
-        virtual vlg::RetCode do_insert(const entity_manager &bem,
+        virtual vlg::RetCode do_insert(const nentity_manager &nem,
                                        unsigned int ts0,
                                        unsigned int ts1,
                                        const nclass &in_obj,
                                        bool fail_is_error = true);
 
-        virtual vlg::RetCode do_execute_query(const entity_manager &bem,
+        virtual vlg::RetCode do_execute_query(const nentity_manager &nem,
                                               const char *sql,
                                               persistence_query_impl **qry_out);
 
@@ -679,7 +679,7 @@ class pers_conn_sqlite : public persistence_connection_impl {
                         if(in_drop_if_exist_) {
                             vlg::ascii_string drop_stmt;
                             RETURN_IF_NOT_OK(drop_stmt.assign("DROP TABLE "))
-                            RETURN_IF_NOT_OK(drop_stmt.append(in_edesc_->get_entity_name()))
+                            RETURN_IF_NOT_OK(drop_stmt.append(in_edesc_->get_nentity_name()))
                             RETURN_IF_NOT_OK(drop_stmt.append(";"))
                             IFLOG(dbg(TH_ID, LS_STM "%s() - drop_stmt:%s", __func__,
                                       drop_stmt.internal_buff()))
@@ -711,7 +711,7 @@ class pers_conn_sqlite : public persistence_connection_impl {
                         if(!(rcode = sql_conn_.sqlite_step_stmt(stmt, *sel_rud_->sqlite_rc))) {
                             if(*sel_rud_->sqlite_rc == SQLITE_ROW) {
                                 const vlg::hash_map &nm_desc =
-                                    in_out_obj_->get_entity_descriptor()->get_opaque()->GetMap_NM_MMBRDSC();
+                                    in_out_obj_->get_nentity_descriptor()->get_opaque()->GetMap_NM_MMBRDSC();
                                 read_timestamp_and_del_from_record(stmt, *sel_rud_->sqlite_rc, in_out_ts0_,
                                                                    in_out_ts1_, NULL);
                                 sel_rud_->stmt = stmt;
@@ -779,7 +779,7 @@ class pers_conn_sqlite : public persistence_connection_impl {
                                   rcode))
                         return rcode;
                     }
-                    in_out_query_ = new pers_query_sqlite(0, sql_conn_, *in_bem_,
+                    in_out_query_ = new pers_query_sqlite(0, sql_conn_, *in_nem_,
                                                           stmt);  //@fixme sanity and id..
                     return rcode;
                 }
@@ -798,7 +798,7 @@ class pers_conn_sqlite : public persistence_connection_impl {
                                                             *sel_rud_->sqlite_rc))) {
                         if(*sel_rud_->sqlite_rc == SQLITE_ROW) {
                             const vlg::hash_map &nm_desc =
-                                in_out_obj_->get_entity_descriptor()->get_opaque()->GetMap_NM_MMBRDSC();
+                                in_out_obj_->get_nentity_descriptor()->get_opaque()->GetMap_NM_MMBRDSC();
                             read_timestamp_and_del_from_record(qry_sqlite->get_sqlite_stmt(),
                                                                *sel_rud_->sqlite_rc, in_out_ts0_, in_out_ts1_, NULL);
                             nm_desc.enum_elements(enum_mmbrs_fill_entity, sel_rud_);
@@ -1011,7 +1011,7 @@ vlg::RetCode pers_conn_sqlite::do_connect()
 //--------------------- CREATE -------------------------------------------------
 
 struct SQLTE_ENM_CREATE_REC_UD {
-    const entity_manager &bem;
+    const nentity_manager &nem;
     vlg::ascii_string *create_stmt;
     vlg::ascii_string *prfx;
     bool array_fld;
@@ -1035,7 +1035,7 @@ void enum_mmbrs_create_table(const vlg::hash_map &map, const void *key,
         idx_prfx.append(idx_b);
     }
     if(mmbrd->get_field_vlg_type() == Type_ENTITY) {
-        if(mmbrd->get_field_entity_type() == EntityType_ENUM) {
+        if(mmbrd->get_field_nentity_type() == NEntityType_NENUM) {
             //treat enum as number
             if(mmbrd->get_field_nmemb() > 1) {
                 for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
@@ -1066,8 +1066,8 @@ void enum_mmbrs_create_table(const vlg::hash_map &map, const void *key,
             }
             rprfx.append(mmbrd->get_member_name());
             rrud.prfx = &rprfx;
-            const entity_desc *edsc = NULL;
-            if(!rud->bem.get_entity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
+            const nentity_desc *edsc = NULL;
+            if(!rud->nem.get_nentity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
                 const vlg::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
                 if(mmbrd->get_field_nmemb() > 1) {
                     rrud.array_fld = true;
@@ -1080,7 +1080,7 @@ void enum_mmbrs_create_table(const vlg::hash_map &map, const void *key,
                 }
             } else {
                 *rud->last_error_code = vlg::RetCode_GENERR;
-                rud->last_error_msg->assign("enum_mmbrs_create_table: entity not found in bem [");
+                rud->last_error_msg->assign("enum_mmbrs_create_table: entity not found in nem [");
                 rud->last_error_msg->append(mmbrd->get_field_user_type());
                 rud->last_error_msg->append("]");
             }
@@ -1141,7 +1141,7 @@ void enum_keys_create_table(const vlg::hash_map &map, const void *key,
 {
     SQLTE_ENM_CREATE_REC_UD *rud = static_cast<SQLTE_ENM_CREATE_REC_UD *>(ud);
     const key_desc *kdsc = *(const key_desc **)ptr;
-    const vlg::linked_list &kset = kdsc->get_opaque()->GetKeyFieldSet();
+    const vlg::linked_list &kset = kdsc->get_opaque()->get_key_field_set();
     //coma handling
     if(*(rud->first_key)) {
         *(rud->first_key) = false;
@@ -1161,8 +1161,8 @@ void enum_keys_create_table(const vlg::hash_map &map, const void *key,
     rud->create_stmt->append(")");
 }
 
-vlg::RetCode pers_conn_sqlite::do_create_table(const entity_manager &bem,
-                                               const entity_desc &edesc,
+vlg::RetCode pers_conn_sqlite::do_create_table(const nentity_manager &nem,
+                                               const nentity_desc &edesc,
                                                bool drop_if_exist)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(drop_if_exist:%d)", __func__, drop_if_exist))
@@ -1171,7 +1171,7 @@ vlg::RetCode pers_conn_sqlite::do_create_table(const entity_manager &bem,
     vlg::ascii_string last_error_str;
     vlg::ascii_string create_stmt;
     RETURN_IF_NOT_OK(create_stmt.assign("CREATE TABLE "))
-    RETURN_IF_NOT_OK(create_stmt.append(edesc.get_entity_name()))
+    RETURN_IF_NOT_OK(create_stmt.append(edesc.get_nentity_name()))
     RETURN_IF_NOT_OK(create_stmt.append("("))
     RETURN_IF_NOT_OK(create_stmt.append(P_F_TS0" " VLG_SQLITE_DTYPE_NUMERIC", "))
     RETURN_IF_NOT_OK(create_stmt.append(P_F_TS1" " VLG_SQLITE_DTYPE_NUMERIC", "))
@@ -1180,7 +1180,7 @@ vlg::RetCode pers_conn_sqlite::do_create_table(const entity_manager &bem,
     vlg::ascii_string prfx;
     RETURN_IF_NOT_OK(prfx.assign(""))
     bool frst_key = true, frst_key_mmbr = true;
-    SQLTE_ENM_CREATE_REC_UD rud = { bem,
+    SQLTE_ENM_CREATE_REC_UD rud = { nem,
                                     &create_stmt,
                                     &prfx,
                                     false,
@@ -1190,6 +1190,7 @@ vlg::RetCode pers_conn_sqlite::do_create_table(const entity_manager &bem,
                                     &last_error_code,
                                     &last_error_str
                                   };
+
     nm_desc.enum_elements(enum_mmbrs_create_table, &rud);
     const vlg::hash_map &idk_desc = edesc.get_opaque()->GetMap_KEYID_KDESC();
     idk_desc.enum_elements(enum_keys_create_table, &rud);
@@ -1253,7 +1254,7 @@ void enum_keyset_select(const vlg::linked_list &list, const void *ptr,
 }
 
 vlg::RetCode pers_conn_sqlite::do_select(unsigned int key,
-                                         const entity_manager &bem,
+                                         const nentity_manager &nem,
                                          unsigned int &ts0_out,
                                          unsigned int &ts1_out,
                                          nclass &in_out_obj)
@@ -1273,7 +1274,7 @@ vlg::RetCode pers_conn_sqlite::do_select(unsigned int key,
     bool frst_fld = true, frst_key = true, frst_key_mmbr = true;
     int column_idx = 3; //column idx, [ts0, ts1, del] we start from 3.
     SQLTE_ENM_BUFF *enm_buff = new SQLTE_ENM_BUFF();
-    SQLTE_ENM_SELECT_REC_UD rud = {bem,
+    SQLTE_ENM_SELECT_REC_UD rud = {nem,
                                    reinterpret_cast<char *>(&in_out_obj),
                                    &prfx,
                                    &columns,
@@ -1290,14 +1291,15 @@ vlg::RetCode pers_conn_sqlite::do_select(unsigned int key,
                                    &sqlite_rc,
                                    enm_buff
                                   };
+
     const vlg::hash_map &idk_desc =
-        in_out_obj.get_entity_descriptor()->get_opaque()->GetMap_KEYID_KDESC();
+        in_out_obj.get_nentity_descriptor()->get_opaque()->GetMap_KEYID_KDESC();
     const key_desc *kdsc = NULL;
     if(idk_desc.get(&key, &kdsc)) {
         IFLOG(err(TH_ID, LS_CLO "%s() - key not found [key:%d]", __func__, key))
         return vlg::RetCode_BADARG;
     }
-    const vlg::linked_list &kset = kdsc->get_opaque()->GetKeyFieldSet();
+    const vlg::linked_list &kset = kdsc->get_opaque()->get_key_field_set();
     kset.enum_elements(enum_keyset_select, &rud);
     /*not necessary because we can use select (*), column order is preserved*/
     //nm_desc.Enum(enum_mmbrs_select, &rud);
@@ -1306,13 +1308,13 @@ vlg::RetCode pers_conn_sqlite::do_select(unsigned int key,
     RETURN_IF_NOT_OK(select_stmt.append("*"))
     RETURN_IF_NOT_OK(select_stmt.append(" FROM "))
     RETURN_IF_NOT_OK(select_stmt.append(
-                         in_out_obj.get_entity_descriptor()->get_entity_name()))
+                         in_out_obj.get_nentity_descriptor()->get_nentity_name()))
     RETURN_IF_NOT_OK(select_stmt.append(" WHERE "))
     RETURN_IF_NOT_OK(select_stmt.append(where_claus));
     RETURN_IF_NOT_OK(select_stmt.append(";"));
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
                                                                 VLG_PERS_TASK_OP_SELECT);
-    task->in_bem(bem);
+    task->in_nem(nem);
     task->in_key(key);
     task->in_out_ts0(ts0_out);
     task->in_out_ts1(ts1_out);
@@ -1376,7 +1378,7 @@ void enum_keyset_update(const vlg::linked_list &list, const void *ptr,
 }
 
 vlg::RetCode pers_conn_sqlite::do_update(unsigned int key,
-                                         const entity_manager &bem,
+                                         const nentity_manager &nem,
                                          unsigned int ts0,
                                          unsigned int ts1,
                                          const nclass &in_obj)
@@ -1399,12 +1401,12 @@ vlg::RetCode pers_conn_sqlite::do_update(unsigned int key,
     RETURN_IF_NOT_OK(set_section.append(", "))
     RETURN_IF_NOT_OK(where_claus.assign(P_F_DEL"=0 AND "));
     const vlg::hash_map &nm_desc =
-        in_obj.get_entity_descriptor()->get_opaque()->GetMap_NM_MMBRDSC();
+        in_obj.get_nentity_descriptor()->get_opaque()->GetMap_NM_MMBRDSC();
     vlg::ascii_string prfx;
     RETURN_IF_NOT_OK(prfx.assign(""))
     bool frst_fld = true, frst_key = true, frst_key_mmbr = true;
     SQLTE_ENM_BUFF *enm_buff = new SQLTE_ENM_BUFF();
-    SQLTE_ENM_UPDATE_REC_UD rud = { bem,
+    SQLTE_ENM_UPDATE_REC_UD rud = { nem,
                                     reinterpret_cast<const char *>(&in_obj),
                                     &prfx,
                                     &set_section,
@@ -1418,19 +1420,20 @@ vlg::RetCode pers_conn_sqlite::do_update(unsigned int key,
                                     &last_error_str,
                                     enm_buff
                                   };
+
     const vlg::hash_map &idk_desc =
-        in_obj.get_entity_descriptor()->get_opaque()->GetMap_KEYID_KDESC();
+        in_obj.get_nentity_descriptor()->get_opaque()->GetMap_KEYID_KDESC();
     const key_desc *kdsc = NULL;
     if(idk_desc.get(&key, &kdsc)) {
         IFLOG(err(TH_ID, LS_CLO "%s() - key not found [key:%d]", __func__, key))
         return vlg::RetCode_BADARG;
     }
-    const vlg::linked_list &kset = kdsc->get_opaque()->GetKeyFieldSet();
+    const vlg::linked_list &kset = kdsc->get_opaque()->get_key_field_set();
     kset.enum_elements(enum_keyset_update, &rud);
     nm_desc.enum_elements(enum_mmbrs_update, &rud);
     RETURN_IF_NOT_OK(update_stmt.assign("UPDATE "))
     RETURN_IF_NOT_OK(update_stmt.append(
-                         in_obj.get_entity_descriptor()->get_entity_name()))
+                         in_obj.get_nentity_descriptor()->get_nentity_name()))
     RETURN_IF_NOT_OK(update_stmt.append(" SET "))
     RETURN_IF_NOT_OK(update_stmt.append(set_section))
     RETURN_IF_NOT_OK(update_stmt.append(" WHERE "))
@@ -1438,7 +1441,7 @@ vlg::RetCode pers_conn_sqlite::do_update(unsigned int key,
     RETURN_IF_NOT_OK(update_stmt.append(";"));
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
                                                                 VLG_PERS_TASK_OP_UPDATE);
-    task->in_bem(bem);
+    task->in_nem(nem);
     task->in_key(key);
     task->in_out_ts0(ts0);
     task->in_out_ts1(ts1);
@@ -1500,7 +1503,7 @@ void enum_keyset_delete(const vlg::linked_list &list, const void *ptr,
 }
 
 vlg::RetCode pers_conn_sqlite::do_delete(unsigned int key,
-                                         const entity_manager &bem,
+                                         const nentity_manager &nem,
                                          unsigned int ts0,
                                          unsigned int ts1,
                                          PersistenceDeletionMode  mode,
@@ -1515,7 +1518,7 @@ vlg::RetCode pers_conn_sqlite::do_delete(unsigned int key,
     RETURN_IF_NOT_OK(where_claus.assign(""))
     bool frst_key = true, frst_key_mmbr = true;
     SQLTE_ENM_BUFF *enm_buff = new SQLTE_ENM_BUFF();
-    SQLTE_ENM_DELETE_REC_UD rud = { bem,
+    SQLTE_ENM_DELETE_REC_UD rud = { nem,
                                     reinterpret_cast<const char *>(&in_obj),
                                     &where_claus,
                                     &frst_key,
@@ -1524,33 +1527,34 @@ vlg::RetCode pers_conn_sqlite::do_delete(unsigned int key,
                                     &last_error_str,
                                     enm_buff
                                   };
+
     const vlg::hash_map &idk_desc =
-        in_obj.get_entity_descriptor()->get_opaque()->GetMap_KEYID_KDESC();
+        in_obj.get_nentity_descriptor()->get_opaque()->GetMap_KEYID_KDESC();
     const key_desc *kdsc = NULL;
     if(idk_desc.get(&key, &kdsc)) {
         IFLOG(err(TH_ID, LS_CLO "%s() - key not found [key:%d]", __func__, key))
         return vlg::RetCode_BADARG;
     }
-    const vlg::linked_list &kset = kdsc->get_opaque()->GetKeyFieldSet();
+    const vlg::linked_list &kset = kdsc->get_opaque()->get_key_field_set();
     kset.enum_elements(enum_keyset_delete, &rud);
     if(mode == PersistenceDeletionMode_PHYSICAL) {
         RETURN_IF_NOT_OK(delete_stmt.assign("DELETE FROM "))
         RETURN_IF_NOT_OK(delete_stmt.append(
-                             in_obj.get_entity_descriptor()->get_entity_name()))
+                             in_obj.get_nentity_descriptor()->get_nentity_name()))
         RETURN_IF_NOT_OK(delete_stmt.append(" WHERE "))
         RETURN_IF_NOT_OK(delete_stmt.append(where_claus));
         RETURN_IF_NOT_OK(delete_stmt.append(";"));
     } else {
         RETURN_IF_NOT_OK(delete_stmt.assign("UPDATE "))
         RETURN_IF_NOT_OK(delete_stmt.append(
-                             in_obj.get_entity_descriptor()->get_entity_name()))
+                             in_obj.get_nentity_descriptor()->get_nentity_name()))
         RETURN_IF_NOT_OK(delete_stmt.append(" SET DEL=1 WHERE "))
         RETURN_IF_NOT_OK(delete_stmt.append(where_claus));
         RETURN_IF_NOT_OK(delete_stmt.append(";"));
     }
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
                                                                 VLG_PERS_TASK_OP_DELETE);
-    task->in_bem(bem);
+    task->in_nem(nem);
     task->in_key(key);
     task->in_out_ts0(ts0);
     task->in_out_ts1(ts1);
@@ -1590,7 +1594,7 @@ void enum_mmbrs_insert(const vlg::hash_map &map, const void *key,
         idx_prfx.append(idx_b);
     }
     if(mmbrd->get_field_vlg_type() == Type_ENTITY) {
-        if(mmbrd->get_field_entity_type() == EntityType_ENUM) {
+        if(mmbrd->get_field_nentity_type() == NEntityType_NENUM) {
             //treat enum as number
             //coma handling
             if(*(rud->first_fld)) {
@@ -1641,8 +1645,8 @@ void enum_mmbrs_insert(const vlg::hash_map &map, const void *key,
             }
             rprfx.append(mmbrd->get_member_name());
             rrud.prfx = &rprfx;
-            const entity_desc *edsc = NULL;
-            if(!rud->bem.get_entity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
+            const nentity_desc *edsc = NULL;
+            if(!rud->nem.get_nentity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
                 const vlg::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
                 if(mmbrd->get_field_nmemb() > 1) {
                     rrud.array_fld = true;
@@ -1658,7 +1662,7 @@ void enum_mmbrs_insert(const vlg::hash_map &map, const void *key,
                 }
             } else {
                 *rud->last_error_code = vlg::RetCode_GENERR;
-                rud->last_error_msg->assign("enum_mmbrs_insert: entity not found in bem [");
+                rud->last_error_msg->assign("enum_mmbrs_insert: entity not found in nem [");
                 rud->last_error_msg->append(mmbrd->get_field_user_type());
                 rud->last_error_msg->append("]");
             }
@@ -1727,7 +1731,7 @@ void enum_mmbrs_insert(const vlg::hash_map &map, const void *key,
     }
 }
 
-vlg::RetCode pers_conn_sqlite::do_insert(const entity_manager &bem,
+vlg::RetCode pers_conn_sqlite::do_insert(const nentity_manager &nem,
                                          unsigned int ts0,
                                          unsigned int ts1,
                                          const nclass &in_obj,
@@ -1749,15 +1753,15 @@ vlg::RetCode pers_conn_sqlite::do_insert(const entity_manager &bem,
     RETURN_IF_NOT_OK(values.append("0, ")) //del
     RETURN_IF_NOT_OK(insert_stmt.assign("INSERT INTO "))
     RETURN_IF_NOT_OK(insert_stmt.append(
-                         in_obj.get_entity_descriptor()->get_entity_name()))
+                         in_obj.get_nentity_descriptor()->get_nentity_name()))
     RETURN_IF_NOT_OK(insert_stmt.append("(" P_F_TS0", " P_F_TS1", " P_F_DEL", "))
     const vlg::hash_map &nm_desc =
-        in_obj.get_entity_descriptor()->get_opaque()->GetMap_NM_MMBRDSC();
+        in_obj.get_nentity_descriptor()->get_opaque()->GetMap_NM_MMBRDSC();
     vlg::ascii_string prfx;
     RETURN_IF_NOT_OK(prfx.assign(""))
     bool frst_fld = true;
     SQLTE_ENM_BUFF *enm_buff = new SQLTE_ENM_BUFF();
-    SQLTE_ENM_INSERT_REC_UD rud = {bem,
+    SQLTE_ENM_INSERT_REC_UD rud = {nem,
                                    reinterpret_cast<const char *>(&in_obj),
                                    &insert_stmt,
                                    &prfx,
@@ -1769,6 +1773,7 @@ vlg::RetCode pers_conn_sqlite::do_insert(const entity_manager &bem,
                                    &last_error_str,
                                    enm_buff
                                   };
+
     nm_desc.enum_elements(enum_mmbrs_insert, &rud);
     RETURN_IF_NOT_OK(insert_stmt.append(") VALUES ("));
     RETURN_IF_NOT_OK(insert_stmt.append(values));
@@ -1795,7 +1800,7 @@ vlg::RetCode pers_conn_sqlite::do_insert(const entity_manager &bem,
 
 //--------------------- QUERY -------------------------------------------------
 
-vlg::RetCode pers_conn_sqlite::do_execute_query(const entity_manager &bem,
+vlg::RetCode pers_conn_sqlite::do_execute_query(const nentity_manager &nem,
                                                 const char *sql, persistence_query_impl **qry_out)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sql:%p, qry_out:%p)", __func__, sql, qry_out))
@@ -1803,7 +1808,7 @@ vlg::RetCode pers_conn_sqlite::do_execute_query(const entity_manager &bem,
     IFLOG(trc(TH_ID, LS_QRY "%s() - query-sql:%s", __func__, sql))
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
                                                                 VLG_PERS_TASK_OP_EXECUTEQUERY);
-    task->in_bem(bem);
+    task->in_nem(nem);
     task->in_sql(sql);
     if((rcode = worker_->submit_task(task))) {
         IFLOG(cri(TH_ID, LS_CLO "%s(res:%d) - submit failed.", __func__, rcode))
@@ -1870,6 +1875,7 @@ vlg::RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_impl
                                     &sqlite_rc,
                                     enm_buff
                                   };
+
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
                                                                 VLG_PERS_TASK_OP_NEXTENTITYFROMQUERY);
     task->in_out_query(qry_sqlite);

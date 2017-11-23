@@ -252,8 +252,8 @@ class connection_impl : public vlg::collectable {
         vlg::RetCode    set_socket_error(vlg::RetCode cause_res =
                                              vlg::RetCode_UNKERR);
 
-        vlg::RetCode    set_implernal_error(vlg::RetCode cause_res =
-                                                vlg::RetCode_UNKERR);
+        vlg::RetCode    set_internal_error(vlg::RetCode cause_res =
+                                               vlg::RetCode_UNKERR);
 
         vlg::RetCode    set_status(ConnectionStatus status);
 

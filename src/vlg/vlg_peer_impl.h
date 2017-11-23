@@ -26,7 +26,6 @@
 #include "vlg_pers_impl.h"
 #include "vlg_subscription_impl.h"
 
-
 namespace vlg {
 
 class connection_impl;
@@ -99,12 +98,12 @@ class peer_impl : public peer_automa {
         //-----------------------------
     public:
         selector                &get_selector();
-        const entity_manager    &get_em() const;
-        entity_manager          &get_em_m();
+        const nentity_manager    &get_em() const;
+        nentity_manager          &get_em_m();
         persistence_manager_impl &get_pers_mng();
         bool                    persistent();
         bool                    pers_schema_create();
-        vlg::synch_hash_map   &get_srv_classid_condesc_set();
+        vlg::synch_hash_map     &get_srv_classid_condesc_set();
 
         //-----------------------------
         // CONFIG GETTERS
@@ -144,7 +143,7 @@ class peer_impl : public peer_automa {
         //-----------------------------
         // MODEL
         //-----------------------------
-        vlg::RetCode    extend_model(entity_manager *emng);
+        vlg::RetCode    extend_model(nentity_manager *emng);
         vlg::RetCode    extend_model(const char *model_name);
 
         //-----------------------------
@@ -170,11 +169,11 @@ class peer_impl : public peer_automa {
         vlg::RetCode    next_connid(unsigned int &connid);
 
     public:
-        vlg::RetCode    new_connection(connection_impl     **new_connection,
-                                       vlg_conn_factory   vlg_conn_factory_f = NULL,
-                                       ConnectionType     con_type = ConnectionType_OUTGOING,
-                                       unsigned int       connid = 0,
-                                       void               *ud = NULL);
+        vlg::RetCode    new_connection(connection_impl      **new_connection,
+                                       vlg_conn_factory     vlg_conn_factory_f = NULL,
+                                       ConnectionType       con_type = ConnectionType_OUTGOING,
+                                       unsigned int         connid = 0,
+                                       void                 *ud = NULL);
 
         vlg::RetCode    release_connection(connection_impl *connection);
 
@@ -320,20 +319,19 @@ class peer_impl : public peer_automa {
         unsigned int            srv_sbs_exectrs_;
 
     protected:
-        selector                        selector_;
-        mutable vlg::synch_monitor    mon_;
-        unsigned int                    prgr_conn_id_;
-        entity_manager                  bem_;
-        vlg::hash_map                 model_map_;
+        selector                    selector_;
+        mutable vlg::synch_monitor  mon_;
+        unsigned int                prgr_conn_id_;
+        nentity_manager              nem_;
+        vlg::hash_map               model_map_;
 
         //persistence
     protected:
-        bool                    pers_enabled_;
-        persistence_manager_impl &pers_mng_;
-        vlg::hash_map         pers_dri_load_;
-        bool                    pers_schema_create_;
-        /*use this only when develop*/
-        bool                    drop_existing_schema_;
+        bool                        pers_enabled_;
+        persistence_manager_impl    &pers_mng_;
+        vlg::hash_map               pers_dri_load_;
+        bool                        pers_schema_create_;
+        bool                        drop_existing_schema_;
 
         //sbs srv rep
     protected:

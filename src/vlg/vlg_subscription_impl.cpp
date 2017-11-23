@@ -288,7 +288,7 @@ nclass_logger *subscription_impl::log_ = NULL;
 subscription_impl::subscription_impl(connection_impl &conn) :
     peer_(conn.peer()),
     conn_(conn),
-    bem_(conn.peer().get_em()),
+    nem_(conn.peer().get_em()),
     sbsid_(0),
     reqid_(0),
     status_(SubscriptionStatus_EARLY),
@@ -1169,7 +1169,7 @@ vlg::RetCode subscription_impl::receive_event(const vlg_hdr_rec *pkt_hdr,
     vlg::RetCode rcode = vlg::RetCode_OK;
     if(sbs_evt->get_evttype() != SubscriptionEventType_DOWNLOAD_END) {
         nclass *nobj = NULL;
-        if((rcode = bem_.new_class_instance(nclass_id(), &nobj))) {
+        if((rcode = nem_.new_nclass_instance(nclass_id(), &nobj))) {
             IFLOG(cri(TH_ID,
                       LS_SBS"[sbs event receive failed - new class fail:%d, nclass_id:%d, aborting]",
                       rcode, nclass_id()))
@@ -1179,7 +1179,7 @@ vlg::RetCode subscription_impl::receive_event(const vlg_hdr_rec *pkt_hdr,
             c.retain(nobj);
         }
         sbs_evt->set_obj_on_event_receive(nobj);
-        if((rcode = nobj->restore(&bem_, enctyp_, pkt_body))) {
+        if((rcode = nobj->restore(&nem_, enctyp_, pkt_body))) {
             IFLOG(cri(TH_ID,
                       LS_SBS"[sbs event receive failed - class restore fail:%d, nclass_id:%d]",
                       rcode,
@@ -1277,7 +1277,7 @@ vlg::RetCode subscription_impl::submit_dwnl_event()
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     per_nclassid_helper_rec *sdr = NULL;
     subscription_event_impl *new_dwnl_sbs_event = NULL;
-    const entity_manager &bem = peer_.get_em();
+    const nentity_manager &nem = peer_.get_em();
     nclass *dwnl_obj = NULL;
     unsigned int ts0 = 0, ts1 = 0;
     if((rcode = peer_.get_per_classid_helper_class(nclassid_, &sdr))) {
@@ -1286,7 +1286,7 @@ vlg::RetCode subscription_impl::submit_dwnl_event()
         return rcode;
     }
     //we need to newinstance here because we do not know if query has ended here.
-    bem.new_class_instance(nclassid_, &dwnl_obj);
+    nem.new_nclass_instance(nclassid_, &dwnl_obj);
     vlg::collector &c = dwnl_obj->get_collector();
     c.retain(dwnl_obj);
 
@@ -1377,8 +1377,8 @@ vlg::RetCode subscription_impl::execute_initial_query()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     vlg::RetCode rcode = vlg::RetCode_OK;
-    const entity_desc *class_desc = NULL;
-    if(!(rcode = bem_.get_entity_descriptor(nclassid_, &class_desc))) {
+    const nentity_desc *class_desc = NULL;
+    if(!(rcode = nem_.get_nentity_descriptor(nclassid_, &class_desc))) {
         if(class_desc->is_persistent()) {
             persistence_driver_impl *driv = NULL;
             if((driv = peer_.get_pers_mng().available_driver(nclassid_))) {
@@ -1386,7 +1386,7 @@ vlg::RetCode subscription_impl::execute_initial_query()
                 if((conn = driv->available_connection(nclassid_))) {
                     vlg::ascii_string qry_s;
                     qry_s.assign("select * from ");
-                    qry_s.append(class_desc->get_entity_name());
+                    qry_s.append(class_desc->get_nentity_name());
                     if(dwltyp_ == SubscriptionDownloadType_PARTIAL) {
                         char ts_buff[TMSTMP_BUFF_SZ];
                         qry_s.append(" where (" P_F_TS0" = ");

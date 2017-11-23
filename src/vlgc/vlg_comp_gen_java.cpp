@@ -59,7 +59,7 @@ vlg::RetCode VLG_COMP_JAVA_VLG_Entity_Ctor(compile_unit &cunit,
     fprintf(file,  "/*****************************************************\n"
             "ctor\n"
             "*****************************************************/\n");
-    fprintf(file, "public %s(){\n", edsc.get_entity_name());
+    fprintf(file, "public %s(){\n", edsc.get_nentity_name());
     vlg::hash_map &entitymap = cunit.get_entity_map();
     vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
@@ -71,36 +71,36 @@ vlg::RetCode VLG_COMP_JAVA_VLG_Entity_Ctor(compile_unit &cunit,
         if(mdsc->get_field_type() == Type_ENTITY) {
             entity_desc_comp *inner_edsc = NULL;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &inner_edsc)) {
-                if(inner_edsc->get_entity_type() == EntityType_ENUM) {
+                if(inner_edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
                         //enum  nmemb == 1
                         fprintf(file, CR_1IND"%s = new %s();\n", mdsc->get_member_name(),
-                                inner_edsc->get_entity_name());
+                                inner_edsc->get_nentity_name());
                     } else {
                         //enum  nmemb > 1
                         fprintf(file, CR_1IND"%s = new %s[%lu];\n", mdsc->get_member_name(),
-                                inner_edsc->get_entity_name(),
+                                inner_edsc->get_nentity_name(),
                                 mdsc->get_nmemb());
                         fprintf(file, CR_1IND"for(int i=0; i<%s.length; i++){\n",
                                 mdsc->get_member_name());
                         fprintf(file, CR_2IND"%s[i] = new %s();\n", mdsc->get_member_name(),
-                                inner_edsc->get_entity_name());
+                                inner_edsc->get_nentity_name());
                         fprintf(file, CR_1IND"}\n");
                     }
                 } else {
                     if(mdsc->get_nmemb() == 1) {
                         //class, struct  nmemb == 1
                         fprintf(file, CR_1IND"%s = new %s();\n", mdsc->get_member_name(),
-                                inner_edsc->get_entity_name());
+                                inner_edsc->get_nentity_name());
                     } else {
                         //class, struct  nmemb > 1
                         fprintf(file, CR_1IND"%s = new %s[%lu];\n", mdsc->get_member_name(),
-                                inner_edsc->get_entity_name(),
+                                inner_edsc->get_nentity_name(),
                                 mdsc->get_nmemb());
                         fprintf(file, CR_1IND"for(int i=0; i<%s.length; i++){\n",
                                 mdsc->get_member_name());
                         fprintf(file, CR_2IND"%s[i] = new %s();\n", mdsc->get_member_name(),
-                                inner_edsc->get_entity_name());
+                                inner_edsc->get_nentity_name());
                         fprintf(file, CR_1IND"}\n");
                     }
                 }
@@ -168,9 +168,9 @@ vlg::RetCode ABSR_METH_ENT_COPY__Body_impl(compile_unit &cunit,
 {
     fprintf(file, CR_1IND"if(!(out instanceof %s)){\n"
             CR_2IND"throw new IllegalArgumentException(\"not instanceof %s\");\n"
-            CR_1IND"}\n", edsc.get_entity_name(), edsc.get_entity_name());
-    fprintf(file, CR_1IND"%s cstout = (%s)out;\n", edsc.get_entity_name(),
-            edsc.get_entity_name());
+            CR_1IND"}\n", edsc.get_nentity_name(), edsc.get_nentity_name());
+    fprintf(file, CR_1IND"%s cstout = (%s)out;\n", edsc.get_nentity_name(),
+            edsc.get_nentity_name());
     vlg::hash_map &entitymap = cunit.get_entity_map();
     vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
@@ -182,7 +182,7 @@ vlg::RetCode ABSR_METH_ENT_COPY__Body_impl(compile_unit &cunit,
         if(mdsc->get_field_type() == Type_ENTITY) {
             entity_desc_comp *inner_edsc = NULL;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &inner_edsc)) {
-                if(inner_edsc->get_entity_type() == EntityType_ENUM) {
+                if(inner_edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
                         //enum  nmemb == 1
                         fprintf(file, CR_1IND"cstout.%s.setValue(%s.getValue());\n",
@@ -240,7 +240,7 @@ vlg::RetCode ABSR_METH_ENT_CLONE__Body_impl(compile_unit &cunit,
                                             entity_desc_comp &edsc,
                                             FILE *file)
 {
-    fprintf(file, CR_1IND"NClass ne = new %s();\n", edsc.get_entity_name());
+    fprintf(file, CR_1IND"NClass ne = new %s();\n", edsc.get_nentity_name());
     fprintf(file, CR_1IND"ne.set(this);\n");
     fprintf(file, CR_1IND"return ne;\n");
     return vlg::RetCode_OK;
@@ -265,7 +265,7 @@ vlg::RetCode ABSR_METH_ENT_ISZERO__Body_impl(compile_unit &cunit,
         if(mdsc->get_field_type() == Type_ENTITY) {
             entity_desc_comp *inner_edsc = NULL;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &inner_edsc)) {
-                if(inner_edsc->get_entity_type() == EntityType_ENUM) {
+                if(inner_edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
                         //enum  nmemb == 1
                         fprintf(file, CR_1IND"if(%s.getValue() != 0) return false;\n",
@@ -338,7 +338,7 @@ vlg::RetCode ABSR_METH_ENT_SETZERO__Body_impl(compile_unit &cunit,
         if(mdsc->get_field_type() == Type_ENTITY) {
             entity_desc_comp *inner_edsc = NULL;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &inner_edsc)) {
-                if(inner_edsc->get_entity_type() == EntityType_ENUM) {
+                if(inner_edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
                         //enum  nmemb == 1
                         fprintf(file, CR_1IND"%s.setValue(0);\n", mdsc->get_member_name());
@@ -395,9 +395,9 @@ vlg::RetCode ABSR_METH_ENT_SET__Body_impl(compile_unit &cunit,
 {
     fprintf(file, CR_1IND"if(!(in instanceof %s)){\n"
             CR_2IND"throw new IllegalArgumentException(\"not instanceof %s\");\n"
-            CR_1IND"}\n", edsc.get_entity_name(), edsc.get_entity_name());
-    fprintf(file, CR_1IND"%s cstin = (%s)in;\n", edsc.get_entity_name(),
-            edsc.get_entity_name());
+            CR_1IND"}\n", edsc.get_nentity_name(), edsc.get_nentity_name());
+    fprintf(file, CR_1IND"%s cstin = (%s)in;\n", edsc.get_nentity_name(),
+            edsc.get_nentity_name());
     vlg::hash_map &entitymap = cunit.get_entity_map();
     vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
@@ -409,7 +409,7 @@ vlg::RetCode ABSR_METH_ENT_SET__Body_impl(compile_unit &cunit,
         if(mdsc->get_field_type() == Type_ENTITY) {
             entity_desc_comp *inner_edsc = NULL;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &inner_edsc)) {
-                if(inner_edsc->get_entity_type() == EntityType_ENUM) {
+                if(inner_edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
                         //enum  nmemb == 1
                         fprintf(file, CR_1IND"%s.setValue(cstin.%s.getValue());\n",
@@ -480,9 +480,9 @@ vlg::RetCode ABSR_METH_ENT_GENTDSC__Body_impl(compile_unit &cunit,
 {
     vlg::ascii_string ep_nm;
     ep_nm.append(cunit.model_name());
-    fprintf(file, CR_1IND"return %s.getBem().getEntityDesc(\"%s\");\n",
+    fprintf(file, CR_1IND"return %s.getNEntityManager().getNEntityDesc(\"%s\");\n",
             ep_nm.internal_buff(),
-            edsc.get_entity_name());
+            edsc.get_nentity_name());
     return vlg::RetCode_OK;
 }
 
@@ -507,7 +507,7 @@ vlg::RetCode ABSR_METH_ENT_PTOBUF__NotZeroMode(compile_unit &cunit,
         if(mdsc->get_field_type() == Type_ENTITY) {
             entity_desc_comp *inner_edsc = NULL;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &inner_edsc)) {
-                if(inner_edsc->get_entity_type() == EntityType_ENUM) {
+                if(inner_edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
                         //enum  nmemb == 1
                         fprintf(file, CR_2IND
@@ -612,7 +612,7 @@ vlg::RetCode ABSR_METH_ENT_PTOBUF__AllFildMode(compile_unit &cunit,
         if(mdsc->get_field_type() == Type_ENTITY) {
             entity_desc_comp *inner_edsc = NULL;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &inner_edsc)) {
-                if(inner_edsc->get_entity_type() == EntityType_ENUM) {
+                if(inner_edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
                         //enum  nmemb == 1
                         fprintf(file, CR_2IND
@@ -690,7 +690,7 @@ vlg::RetCode ABSR_METH_ENT_PTOBUF__Body_impl(compile_unit &cunit,
 {
     fprintf(file, CR_1IND "boolean frst_test = true;\n");
     fprintf(file, CR_1IND "if(print_cname) buff.append(\"%s\");\n",
-            edsc.get_entity_name());
+            edsc.get_nentity_name());
     //class opening curl brace
     fprintf(file, CR_1IND "buff.append(\"{\");\n");
     fprintf(file, CR_1IND "switch(mode){\n");
@@ -743,7 +743,7 @@ vlg::RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
         if(mdsc->get_field_type() == Type_ENTITY) {
             entity_desc_comp *inner_edsc = NULL;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &inner_edsc)) {
-                if(inner_edsc->get_entity_type() == EntityType_ENUM) {
+                if(inner_edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
                         //enum  nmemb == 1
                         fprintf(file, CR_4IND"bb.putInt(%s.getValue()).flip();\n"
@@ -1042,7 +1042,7 @@ vlg::RetCode VLG_COMP_JAVA_getter_setter(compile_unit &cunit,
         if(mdsc->get_field_type() == Type_ENTITY) {
             entity_desc_comp *inner_edsc = NULL;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &inner_edsc)) {
-                if(inner_edsc->get_entity_type() == EntityType_ENUM) {
+                if(inner_edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
                         //enum  nmemb == 1
                         fprintf(file, "public %s ", type_str.internal_buff());
@@ -1077,7 +1077,7 @@ vlg::RetCode VLG_COMP_JAVA_getter_setter(compile_unit &cunit,
         if(mdsc->get_field_type() == Type_ENTITY) {
             entity_desc_comp *edsc = NULL;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &edsc)) {
-                if(edsc->get_entity_type() == EntityType_ENUM) {
+                if(edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
                         //enum  nmemb == 1
                         fprintf(file, "public void %s(%s val){\n", meth_name.internal_buff(),
@@ -1143,7 +1143,7 @@ vlg::RetCode VLG_COMP_JAVA_getter_setter(compile_unit &cunit,
         if(mdsc->get_field_type() == Type_ENTITY) {
             entity_desc_comp *edsc = NULL;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &edsc)) {
-                if(edsc->get_entity_type() == EntityType_ENUM) {
+                if(edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
                         //enum  nmemb == 1
                         fprintf(file, CR_1IND"return %s.getValue() == 0;\n", mdsc->get_member_name());
@@ -1259,7 +1259,7 @@ vlg::RetCode VLG_COMP_JAVA_VLGEnum(compile_unit &cunit,
                                    entity_desc_comp &edsc,
                                    FILE *efile)
 {
-    fprintf(efile, "public class %s extends NEnum{\n", edsc.get_entity_name());
+    fprintf(efile, "public class %s extends NEnum{\n", edsc.get_nentity_name());
     fprintf(efile, "/*****************************************************\n"
             "Enum values\n"
             "*****************************************************/\n");
@@ -1281,12 +1281,12 @@ vlg::RetCode VLG_COMP_JAVA_NClass(compile_unit &cunit,
                                   entity_desc_comp &edsc,
                                   FILE *efile)
 {
-    fprintf(efile, "public class %s extends NClass{\n", edsc.get_entity_name());
+    fprintf(efile, "public class %s extends NClass{\n", edsc.get_nentity_name());
     fprintf(efile,  "/*****************************************************\n"
             "NClass ID\n"
             "*****************************************************/\n");
     fprintf(efile, "public static final int %s_NClass_ID=%u;\n",
-            edsc.get_entity_name(), edsc.get_entityid());
+            edsc.get_nentity_name(), edsc.get_entityid());
     RETURN_IF_NOT_OK(VLG_COMP_JAVA_VLG_Entity_Ctor(cunit, edsc, efile))
     RETURN_IF_NOT_OK(put_newline(efile))
     RETURN_IF_NOT_OK(VLG_COMP_JAVA_VLG_Entity_abs_meths(cunit, edsc, efile))
@@ -1317,11 +1317,11 @@ vlg::RetCode VLG_COMP_JAVA_NEntityDesc(compile_unit &cunit,
             CR_2IND"%u, //int fild_num\n"
             CR_2IND"%s //boolean persistent\n"
             CR_1IND");\n",
-            edsc.get_entity_name(),
+            edsc.get_nentity_name(),
             edsc.get_entityid(),
-            edsc.get_entity_type(),
+            edsc.get_nentity_type(),
             edsc.get_entity_namespace(),
-            edsc.get_entity_name(),
+            edsc.get_nentity_name(),
             edsc.get_field_num(),
             edsc.is_persistent() ? "true" : "false");
     vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
@@ -1341,7 +1341,7 @@ vlg::RetCode VLG_COMP_JAVA_NEntityDesc(compile_unit &cunit,
                 CR_2IND"%d, // int fild_entitytype\n"
                 CR_2IND"%ld  // int enum_value\n"
                 CR_1IND");\n",
-                edsc.get_entity_name(),
+                edsc.get_nentity_name(),
                 mdsc->get_member_name(),
                 mdsc->get_member_id(),
                 mdsc->get_member_type(),
@@ -1354,8 +1354,8 @@ vlg::RetCode VLG_COMP_JAVA_NEntityDesc(compile_unit &cunit,
                 mdsc->get_field_entity_type(),
                 mdsc->get_enum_value());
         fprintf(file, CR_1IND"%s_edesc.addMemberDesc(%s_%s_mdesc);\n",
-                edsc.get_entity_name(),
-                edsc.get_entity_name(),
+                edsc.get_nentity_name(),
+                edsc.get_nentity_name(),
                 mdsc->get_member_name());
     }
     if(edsc.is_persistent()) {
@@ -1365,7 +1365,7 @@ vlg::RetCode VLG_COMP_JAVA_NEntityDesc(compile_unit &cunit,
         while(!kdesc_map.next(NULL, &kdesc)) {
             fprintf(file,
                     CR_1IND"NKeyDesc %s_%d_kdesc = new NKeyDesc((short)%d, %s);\n",
-                    edsc.get_entity_name(),
+                    edsc.get_nentity_name(),
                     kdesc->get_key_id(),
                     kdesc->get_key_id(),
                     kdesc->is_primary() ? "true" : "false");
@@ -1374,14 +1374,14 @@ vlg::RetCode VLG_COMP_JAVA_NEntityDesc(compile_unit &cunit,
             kset.start_iteration();
             while(!kset.next(&k_mdsc)) {
                 fprintf(file, CR_1IND"%s_%d_kdesc.addMemberDesc(%s_%s_mdesc);\n",
-                        edsc.get_entity_name(),
+                        edsc.get_nentity_name(),
                         kdesc->get_key_id(),
-                        edsc.get_entity_name(),
+                        edsc.get_nentity_name(),
                         k_mdsc->get_member_name());
             }
             fprintf(file, CR_1IND"%s_edesc.AddKeyDesc(%s_%d_kdesc);\n",
-                    edsc.get_entity_name(),
-                    edsc.get_entity_name(),
+                    edsc.get_nentity_name(),
+                    edsc.get_nentity_name(),
                     kdesc->get_key_id());
         }
     }
@@ -1426,25 +1426,25 @@ vlg::RetCode VLG_COMP_JAVA_EntryPoint(compile_unit &cunit,
     RETURN_IF_NOT_OK(tknz.init(dfile_nm))
     RETURN_IF_NOT_OK(tknz.next_token(ep_name, VLG_COMP_DOT))
     fprintf(file, "/*****************************************************\n"
-            "bem entry point\n"
+            "nem entry point\n"
             "*****************************************************/\n");
     fprintf(file, "public final class %s{\n", ep_name.internal_buff());
     RETURN_IF_NOT_OK(put_newline(file))
-    fprintf(file, "private static NEntityManager bem;\n");
+    fprintf(file, "private static NEntityManager nem;\n");
     RETURN_IF_NOT_OK(put_newline(file))
-    fprintf(file, "public static NEntityManager getBem(){\n");
-    fprintf(file, CR_1IND"if(bem != null){\n"
-            CR_2IND"return bem;\n"
+    fprintf(file, "public static NEntityManager getNEntityManager(){\n");
+    fprintf(file, CR_1IND"if(nem != null){\n"
+            CR_2IND"return nem;\n"
             CR_1IND"}\n");
-    fprintf(file, CR_1IND"bem = new NEntityManager();\n");
+    fprintf(file, CR_1IND"nem = new NEntityManager();\n");
     vlg::hash_map &entitymap = cunit.get_entity_map();
     entitymap.start_iteration();
     entity_desc_comp *edsc = NULL;
     while(!entitymap.next(NULL, &edsc)) {
         RETURN_IF_NOT_OK(VLG_COMP_JAVA_NEntityDesc(cunit, *edsc, file))
-        fprintf(file, CR_1IND"bem.extend(%s_edesc);\n", edsc->get_entity_name());
+        fprintf(file, CR_1IND"nem.extend(%s_edesc);\n", edsc->get_nentity_name());
     }
-    fprintf(file, CR_1IND"return bem;\n");
+    fprintf(file, CR_1IND"return nem;\n");
     fprintf(file, "}\n");
     RETURN_IF_NOT_OK(VLG_COMP_Render_ModelVersion__Java_(cunit, file))
     fprintf(file, "}");
@@ -1464,7 +1464,7 @@ vlg::RetCode compile_Java(compile_unit &cunit)
     FILE *efile = NULL;
     //render entities
     while(!entitymap.next(NULL, &edsc)) {
-        RETURN_IF_NOT_OK(efile_n.assign(edsc->get_entity_name()))
+        RETURN_IF_NOT_OK(efile_n.assign(edsc->get_nentity_name()))
         RETURN_IF_NOT_OK(efile_n.append(".java"))
         COMMAND_IF_NOT_OK(open_output_file(efile_n.internal_buff(), &efile),
                           EXIT_ACTION)
@@ -1475,11 +1475,11 @@ vlg::RetCode compile_Java(compile_unit &cunit)
         RETURN_IF_NOT_OK(put_newline(efile))
         RETURN_IF_NOT_OK(VLG_COMP_JAVA_vlg_import(efile))
         RETURN_IF_NOT_OK(put_newline(efile))
-        switch(edsc->get_entity_type()) {
-            case EntityType_ENUM:
+        switch(edsc->get_nentity_type()) {
+            case NEntityType_NENUM:
                 RETURN_IF_NOT_OK(VLG_COMP_JAVA_VLGEnum(cunit, *edsc, efile))
                 break;
-            case EntityType_NCLASS:
+            case NEntityType_NCLASS:
                 RETURN_IF_NOT_OK(VLG_COMP_JAVA_NClass(cunit, *edsc, efile))
                 break;
             default:

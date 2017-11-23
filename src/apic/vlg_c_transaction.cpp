@@ -56,15 +56,15 @@ class c_transaction : public transaction {
         }
         void Tsc_ud(void *val) {
             tsc_ud_ = val;
-            set_transaction_status_change_handler(transaction_status_change_c_transaction,
-                                                  tsc_ud_);
+            set_status_change_handler(transaction_status_change_c_transaction,
+                                      tsc_ud_);
         }
         void *Tc_ud() const {
             return tc_ud_;
         }
         void Tc_ud(void *val) {
             tc_ud_ = val;
-            set_transaction_closure_handler(transaction_closure_c_transaction, tc_ud_);
+            set_close_handler(transaction_closure_c_transaction, tc_ud_);
         }
     private:
         transaction_closure_wr tc_wr_;
@@ -97,53 +97,53 @@ extern "C" {
 
     TransactionResult transaction_get_transaction_result(transaction_wr tx)
     {
-        return static_cast<transaction *>(tx)->get_transaction_result();
+        return static_cast<transaction *>(tx)->get_close_result();
     }
 
     ProtocolCode transaction_get_transaction_result_code(transaction_wr tx)
     {
-        return static_cast<transaction *>(tx)->get_transaction_result_code();
+        return static_cast<transaction *>(tx)->get_close_result_code();
     }
 
     TransactionRequestType transaction_get_transaction_request_type(
         transaction_wr tx)
     {
-        return static_cast<transaction *>(tx)->get_transaction_request_type();
+        return static_cast<transaction *>(tx)->get_request_type();
     }
 
     Action transaction_get_transaction_action(transaction_wr tx)
     {
-        return static_cast<transaction *>(tx)->get_transaction_action();
+        return static_cast<transaction *>(tx)->get_request_action();
     }
 
     unsigned int transaction_get_transaction_request_class_id(transaction_wr tx)
     {
-        return static_cast<transaction *>(tx)->get_transaction_request_class_id();
+        return static_cast<transaction *>(tx)->get_request_nclass_id();
     }
 
     Encode transaction_get_transaction_request_class_encode(transaction_wr tx)
     {
-        return static_cast<transaction *>(tx)->get_transaction_request_class_encode();
+        return static_cast<transaction *>(tx)->get_request_nclass_encode();
     }
 
     unsigned int transaction_get_transaction_result_class_id(transaction_wr tx)
     {
-        return static_cast<transaction *>(tx)->get_transaction_result_class_id();
+        return static_cast<transaction *>(tx)->get_result_nclass_id();
     }
 
     Encode transaction_get_transaction_result_class_encode(transaction_wr tx)
     {
-        return static_cast<transaction *>(tx)->get_transaction_result_class_encode();
+        return static_cast<transaction *>(tx)->get_result_nclass_encode();
     }
 
     int transaction_is_transaction_result_class_required(transaction_wr tx)
     {
-        return static_cast<transaction *>(tx)->is_transaction_result_class_required();
+        return static_cast<transaction *>(tx)->is_result_obj_required();
     }
 
     int transaction_is_transaction_result_class_set(transaction_wr tx)
     {
-        return static_cast<transaction *>(tx)->is_transaction_result_class_set();
+        return static_cast<transaction *>(tx)->is_result_obj_set();
     }
 
     net_class_wr transaction_get_request_obj(transaction_wr tx)
@@ -164,56 +164,56 @@ extern "C" {
     void transaction_set_transaction_result(transaction_wr tx,
                                             TransactionResult tx_res)
     {
-        static_cast<transaction *>(tx)->set_transaction_result(tx_res);
+        static_cast<transaction *>(tx)->set_result(tx_res);
     }
 
     void transaction_set_transaction_result_code(transaction_wr tx,
                                                  ProtocolCode tx_res_code)
     {
-        static_cast<transaction *>(tx)->set_transaction_result_code(tx_res_code);
+        static_cast<transaction *>(tx)->set_result_code(tx_res_code);
     }
 
     void transaction_set_transaction_request_type(transaction_wr tx,
                                                   TransactionRequestType tx_req_type)
     {
-        static_cast<transaction *>(tx)->set_transaction_request_type(tx_req_type);
+        static_cast<transaction *>(tx)->set_request_type(tx_req_type);
     }
 
     void transaction_set_transaction_action(transaction_wr tx, Action tx_act)
     {
-        static_cast<transaction *>(tx)->set_transaction_action(tx_act);
+        static_cast<transaction *>(tx)->set_request_action(tx_act);
     }
 
     void transaction_set_transaction_request_class_id(transaction_wr tx,
                                                       unsigned int nclass_id)
     {
-        static_cast<transaction *>(tx)->set_transaction_request_class_id(nclass_id);
+        static_cast<transaction *>(tx)->set_request_nclass_id(nclass_id);
     }
 
     void transaction_set_transaction_request_class_encode(transaction_wr tx,
                                                           Encode class_encode)
     {
-        static_cast<transaction *>(tx)->set_transaction_request_class_encode(
+        static_cast<transaction *>(tx)->set_request_nclass_encode(
             class_encode);
     }
 
     void transaction_set_transaction_result_class_id(transaction_wr tx,
                                                      unsigned int nclass_id)
     {
-        static_cast<transaction *>(tx)->set_transaction_result_class_id(nclass_id);
+        static_cast<transaction *>(tx)->set_result_nclass_id(nclass_id);
     }
 
     void transaction_set_transaction_result_class_encode(transaction_wr tx,
                                                          Encode class_encode)
     {
-        static_cast<transaction *>(tx)->set_transaction_result_class_encode(
+        static_cast<transaction *>(tx)->set_result_nclass_encode(
             class_encode);
     }
 
     void transaction_set_transaction_result_class_required(transaction_wr tx,
                                                            int res_class_req)
     {
-        static_cast<transaction *>(tx)->set_transaction_result_class_required(
+        static_cast<transaction *>(tx)->set_result_obj_required(
             res_class_req ? true : false);
     }
 
@@ -250,7 +250,7 @@ extern "C" {
     RetCode transaction_await_for_closure(transaction_wr tx, time_t sec,
                                           long nsec)
     {
-        return static_cast<transaction *>(tx)->await_for_closure(sec, nsec);
+        return static_cast<transaction *>(tx)->await_for_close(sec, nsec);
     }
 
     void transaction_set_transaction_status_change_handler(transaction_wr tx,
@@ -270,53 +270,53 @@ extern "C" {
 
     tx_id_wr *transaction_get_transaction_id(transaction_wr tx)
     {
-        tx_id &txid = static_cast<transaction *>(tx)->get_transaction_id();
+        tx_id &txid = static_cast<transaction *>(tx)->get_tx_id();
         return (tx_id_wr *)&txid;
     }
 
     void transaction_set_transaction_id(transaction_wr tx, tx_id_wr *txid)
     {
-        static_cast<transaction *>(tx)->set_transaction_id((tx_id &)*txid);
+        static_cast<transaction *>(tx)->set_tx_id((tx_id &)*txid);
     }
 
     unsigned int transaction_get_transaction_id_PLID(transaction_wr tx)
     {
-        return static_cast<transaction *>(tx)->get_transaction_id_PLID();
+        return static_cast<transaction *>(tx)->get_tx_id_PLID();
     }
 
     unsigned int transaction_get_transaction_id_SVID(transaction_wr tx)
     {
-        return static_cast<transaction *>(tx)->get_transaction_id_SVID();
+        return static_cast<transaction *>(tx)->get_tx_id_SVID();
     }
 
     unsigned int transaction_get_transaction_id_CNID(transaction_wr tx)
     {
-        return static_cast<transaction *>(tx)->get_transaction_id_CNID();
+        return static_cast<transaction *>(tx)->get_tx_id_CNID();
     }
 
     unsigned int transaction_get_transaction_id_PRID(transaction_wr tx)
     {
-        return static_cast<transaction *>(tx)->get_transaction_id_PRID();
+        return static_cast<transaction *>(tx)->get_tx_id_PRID();
     }
 
     void transaction_set_transaction_id_PLID(transaction_wr tx, unsigned int plid)
     {
-        static_cast<transaction *>(tx)->set_transaction_id_PLID(plid);
+        static_cast<transaction *>(tx)->set_tx_id_PLID(plid);
     }
 
     void transaction_set_transaction_id_SVID(transaction_wr tx, unsigned int svid)
     {
-        static_cast<transaction *>(tx)->set_transaction_id_SVID(svid);
+        static_cast<transaction *>(tx)->set_tx_id_SVID(svid);
     }
 
     void transaction_set_transaction_id_CNID(transaction_wr tx, unsigned int cnid)
     {
-        static_cast<transaction *>(tx)->set_transaction_id_CNID(cnid);
+        static_cast<transaction *>(tx)->set_tx_id_CNID(cnid);
     }
 
     void transaction_set_transaction_id_PRID(transaction_wr tx, unsigned int prid)
     {
-        static_cast<transaction *>(tx)->set_transaction_id_PRID(prid);
+        static_cast<transaction *>(tx)->set_tx_id_PRID(prid);
     }
 
     RetCode transaction_renew(transaction_wr tx)

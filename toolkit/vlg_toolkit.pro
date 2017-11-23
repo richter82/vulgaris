@@ -77,7 +77,8 @@ win32 {
     LIBS += -lpthreadVC2
 
     LIBS += -lcr\
-        -lvlg
+            -lvlg\
+            -lapicpp
 }
 
 macx {
@@ -89,7 +90,8 @@ macx {
     }
 
     LIBS += -lcr\
-        -lvlg
+            -lvlg\
+            -lapicpp
 }
 
 

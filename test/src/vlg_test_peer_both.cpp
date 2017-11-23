@@ -140,14 +140,14 @@ class incoming_transaction : public vlg::transaction {
                 switch(sending_obj->get_nclass_id()) {
                     case USER_ENTITY_ID:
                         IFLOG2(blog, dbg(TH_ID, LS_TST"[applicative-tx mng for USER]"))
-                        if(!get_connection()->get_peer()->class_persistent_update_or_save_and_distribute(
+                        if(!get_connection()->get_peer()->obj_update_or_save_and_distribute(
                                     1,
                                     *sending_obj)) {
-                            set_transaction_result(vlg::TransactionResult_COMMITTED);
-                            set_transaction_result_code(vlg::ProtocolCode_SUCCESS);
+                            set_result(vlg::TransactionResult_COMMITTED);
+                            set_result_code(vlg::ProtocolCode_SUCCESS);
                         } else {
-                            set_transaction_result(vlg::TransactionResult_FAILED);
-                            set_transaction_result_code(vlg::ProtocolCode_APPLICATIVE_ERROR);
+                            set_result(vlg::TransactionResult_FAILED);
+                            set_result_code(vlg::ProtocolCode_APPLICATIVE_ERROR);
                         }
                         {
                             vlg::nclass *result_obj = sending_obj->clone();
@@ -219,9 +219,9 @@ class outgoing_subscription : public vlg::subscription {
                     IFLOG2(blog, inf(TH_ID, LS_TST"[download event]")) {
                         vlg::nclass *obj = sbs_evt.get_object();
                         if(obj) {
-                            get_connection()->get_peer()->class_persistent_update_or_save(1, *obj);
+                            get_connection()->get_peer()->obj_update_or_save(1, *obj);
                         }
-                        switch(get_subscription_class_id()) {
+                        switch(get_nclass_id()) {
                             case USER_ENTITY_ID:
                                 save_class_position("user.pos",
                                                     sbs_evt.get_timestamp_0(),
@@ -328,7 +328,7 @@ class both_peer : public vlg::peer {
             return vlg::RetCode_OK;
         }
 
-        virtual vlg::RetCode on_transit_on_air() {
+        virtual vlg::RetCode on_move_running() {
             IFLOG2(blog, inf(TH_ID, LS_TST"[CALLED both_peer on_transit_on_air]"))
             return vlg::RetCode_OK;
         }
@@ -385,7 +385,7 @@ class entry_point {
         vlg::RetCode init() {
 #if STA_L
             vlg::persistence_driver_impl *sqlite_dri = vlg::get_pers_driv_sqlite();
-            vlg::persistence_manager::load_persistence_driver(&sqlite_dri, 1);
+            vlg::persistence_manager::load_driver(&sqlite_dri, 1);
             tpeer_.extend_model(get_em_smplmdl());
 #endif
             return vlg::RetCode_OK;
@@ -454,7 +454,7 @@ class entry_point {
                             &user,
                             NULL);
             out_tx_.send();
-            return out_tx_.await_for_closure(TEST_TMOUT);
+            return out_tx_.await_for_close(TEST_TMOUT);
         }
 
         vlg::RetCode start_sbs_dist_th() {
@@ -522,12 +522,12 @@ class entry_point {
                                   vlg::nclass &qry_obj) {
                     vlg::RetCode rcode = vlg::RetCode_OK;
                     unsigned int ts0 = 0, ts1 = 0;
-                    while((rcode = p_qry.next_entity(ts0,
-                                                     ts1,
-                                                     qry_obj)) == vlg::RetCode_DBROW) {
-                        ep_.tpeer_.class_distribute(vlg::SubscriptionEventType_LIVE,
-                                                    vlg::Action_UPDATE,
-                                                    qry_obj);
+                    while((rcode = p_qry.next_obj(ts0,
+                                                  ts1,
+                                                  qry_obj)) == vlg::RetCode_DBROW) {
+                        ep_.tpeer_.obj_distribute(vlg::SubscriptionEventType_LIVE,
+                                                  vlg::Action_UPDATE,
+                                                  qry_obj);
                     }
                 }
 

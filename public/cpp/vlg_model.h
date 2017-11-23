@@ -28,9 +28,8 @@
 namespace vlg {
 
 /** @brief member_desc describes a member of a vlg entity type.
-
     member_desc can describe both a field of a nclass type or a value of a
-    vlg_enum type.
+    nenum type.
  */
 class member_desc_impl;
 class member_desc {
@@ -45,14 +44,14 @@ class member_desc {
                              size_t         field_nmemb,
                              unsigned int   field_class_id,
                              const char     *field_user_type,
-                             EntityType     field_entity_type,
+                             NEntityType    field_entity_type,
                              long           enum_value);
 
         ~member_desc();
 
     public:
         /*
-        Member section
+        member section
         */
         unsigned short  get_member_id()             const;
         MemberType      get_member_type()           const;
@@ -60,26 +59,26 @@ class member_desc {
         const char      *get_member_description()   const;
 
         /*
-        Field section
+        field section
         */
         Type            get_field_vlg_type()        const;
         size_t          get_field_offset()          const;
         size_t          get_field_type_size()       const;
         size_t          get_field_nmemb()           const;
-        unsigned int    get_field_class_id()        const;
+        unsigned int    get_field_nclass_id()       const;
         const char      *get_field_user_type()      const;
-        EntityType      get_field_entity_type()     const;
+        NEntityType      get_field_nentity_type()   const;
 
         void            set_field_offset(size_t field_offset);
         void            set_field_type_size(size_t field_type_size);
 
         /*
-        Enum specific
+        nenum specific
         */
-        long            get_enum_value()            const;
+        long            get_nenum_value()           const;
 
     public:
-        const member_desc_impl *get_opaque()        const;
+        const member_desc_impl *get_opaque()    const;
 
     private:
         member_desc_impl *impl_;
@@ -96,7 +95,6 @@ class key_desc {
         ~key_desc();
 
     public:
-        vlg::RetCode  init();
         vlg::RetCode  add_member_desc(const member_desc *member_descriptor);
 
         unsigned short  get_key_id()        const;
@@ -114,64 +112,53 @@ typedef void (*enum_member_desc)(const member_desc &member_descriptor,
                                  void *ud,
                                  bool &stop);
 
-/** @brief entity_desc describes vlg entity type.
-
-    entity_desc can describe both a nclass type or a vlg_enum type.
+/** @brief nentity_desc describes nentity types.
+    nentity_desc can describe both a nclass type or a nenum type.
  */
-class entity_desc_impl;
-class entity_desc {
+class nentity_desc_impl;
+class nentity_desc {
     public:
-        explicit entity_desc(unsigned int       nclass_id,
-                             size_t             entity_size,
-                             size_t             entity_max_align,
-                             EntityType         entity_type,
-                             const char         *entity_namespace,
-                             const char         *entity_name,
-                             vlg::alloc_func  entity_allocation_function,
-                             unsigned int       entity_member_num,
-                             bool               persistent);
-
-        ~entity_desc();
+        explicit nentity_desc(unsigned int      nclass_id,
+                              size_t             nclass_size,
+                              size_t             nclass_max_align,
+                              NEntityType        nentity_type,
+                              const char         *entity_namespace,
+                              const char         *entity_name,
+                              vlg::alloc_func    nentity_allocation_function,
+                              unsigned int       nentity_member_num,
+                              bool               persistent);
+        ~nentity_desc();
 
     public:
-        vlg::RetCode      init();
         vlg::RetCode      add_member_desc(const member_desc *member_descriptor);
         vlg::RetCode      add_key_desc(const key_desc *key_descriptor);
 
         unsigned int        get_nclass_id()                     const;
-        size_t              get_entity_size()                   const;
-        size_t              get_entity_max_align()              const;
-        EntityType          get_entity_type()                   const;
-        const char          *get_entity_namespace()             const;
-        const char          *get_entity_name()                  const;
-        vlg::alloc_func   get_entity_allocation_function()    const;
-        unsigned int        get_entity_member_num()             const;
+        size_t              get_nclass_size()                   const;
+        size_t              get_nclass_max_align()              const;
+        NEntityType         get_nentity_type()                  const;
+        const char          *get_nentity_namespace()            const;
+        const char          *get_nentity_name()                 const;
+        vlg::alloc_func     get_nclass_allocation_function()    const;
+        unsigned int        get_nentity_member_num()            const;
         bool                is_persistent()                     const;
 
-        const member_desc *
-        get_member_desc_by_id(unsigned int member_id)           const;
-
-        const member_desc *
-        get_member_desc_by_name(const char *member_name)        const;
-
-        const member_desc *
-        get_member_desc_by_offset(size_t member_offset)         const;
-
-        void
-        enum_member_descriptors(enum_member_desc emd_f,
-                                void *ud)                       const;
+        const member_desc *get_member_desc_by_id(unsigned int member_id)    const;
+        const member_desc *get_member_desc_by_name(const char *member_name) const;
+        const member_desc *get_member_desc_by_offset(size_t member_offset)  const;
+        void enum_member_descriptors(enum_member_desc emd_f, void *ud)      const;
 
     public:
-        const entity_desc_impl *get_opaque()                    const;
+        const nentity_desc_impl *get_opaque() const;
 
     private:
-        entity_desc_impl *impl_;
+        nentity_desc_impl *impl_;
 };
 
 /** @brief nclass
  */
 class nclass : public vlg::collectable {
-        friend class entity_manager;
+        friend class nentity_manager;
 
     public:
         explicit nclass();
@@ -182,12 +169,12 @@ class nclass : public vlg::collectable {
     public:
         virtual unsigned int    get_nclass_id()             const = 0;
         virtual unsigned int    get_compiler_version()      const = 0;
-        virtual size_t          get_entity_size()           const = 0;
+        virtual size_t          get_size()                  const = 0;
         virtual const nclass    *get_zero_object()          const = 0;
 
-        /*************************************************************
-        -Class level manipulation
-        **************************************************************/
+        /*
+        nclass manipulation
+        */
     public:
         virtual void            copy_to(nclass *obj)        const = 0;
         virtual nclass          *clone()                    const = 0;
@@ -195,9 +182,9 @@ class nclass : public vlg::collectable {
         virtual void            set_zero() = 0;
         virtual void            set_from(const nclass *obj) = 0;
 
-        /*************************************************************
-        -Fields manipulation
-        **************************************************************/
+        /*
+        nclass field manipulation
+        */
     public:
         size_t          get_field_size_by_id(unsigned int field_id)     const;
         size_t          get_field_size_by_name(const char *field_name)  const;
@@ -272,112 +259,97 @@ class nclass : public vlg::collectable {
         Anyway in some very peculiar cases it is necessary.
 
         @param plain_idx
-        @param em
+        @param nem
         @param member_descriptor
         @return the address [byte aligned] to the TERMINAL-LEAF field of this
                 nclass object, denoted by plain_idx;
                 NULL if plain_idx exceeds the logical number of available
                 item-fields for this nclass object.
         */
-        char *
-        get_term_field_ref_by_plain_idx(unsigned int plain_idx,
-                                        const entity_manager &em,
-                                        const member_desc **member_descriptor);
+        char *get_term_field_ref_by_plain_idx(unsigned int plain_idx,
+                                              const nentity_manager &nem,
+                                              const member_desc **member_descriptor);
 
-        /*************************************************************
-        -Class Description
-        **************************************************************/
     public:
-        virtual const entity_desc *get_entity_descriptor()  const = 0;
+        virtual const nentity_desc *get_nentity_descriptor()  const = 0;
 
-        virtual size_t
-        pretty_dump_to_buffer(char *buffer,
-                              bool print_nclass_name = true) const = 0;
+        virtual size_t pretty_dump_to_buffer(char *buffer,
+                                             bool print_nclass_name = true) const = 0;
 
-        virtual size_t
-        pretty_dump_to_file(FILE *file,
-                            bool print_nclass_name = true)   const = 0;
+        virtual size_t pretty_dump_to_file(FILE *file,
+                                           bool print_nclass_name = true)   const = 0;
 
-        /*************************************************************
-        -Class Serialization
-        **************************************************************/
+        /*
+        serialize / restore
+        */
     public:
-        virtual int serialize(Encode class_encode_type,
+        virtual int serialize(Encode encode,
                               const nclass *previous_image,
                               vlg::grow_byte_buffer *obb) const = 0;
 
-        /*************************************************************
-        -Class Restore
-        **************************************************************/
-    public:
-        vlg::RetCode restore(const entity_manager *em,
-                             Encode class_encode_type,
+        vlg::RetCode restore(const nentity_manager *nem,
+                             Encode encode,
                              vlg::grow_byte_buffer *ibb);
 
-        /*************************************************************
-        -Class Persistence
-        **************************************************************/
+        /*
+        persistence related
+        */
     public:
-        virtual vlg::RetCode
-        primary_key_string_value(vlg::ascii_string *out_str);
+        virtual vlg::RetCode primary_key_string_value(vlg::ascii_string *out_str);
 
     protected:
         static nclass_logger *log_;
 };
 
 typedef const char *(*model_version_func)();
-typedef entity_manager *(*entity_manager_func)();
+typedef nentity_manager *(*nentity_manager_func)();
 
-typedef void (*enum_entity_desc)(const entity_desc &entity_descriptor,
-                                 void *ud,
-                                 bool &stop);
+typedef void (*enum_nentity_desc)(const nentity_desc &nentity_descriptor,
+                                  void *ud,
+                                  bool &stop);
 
-/** @brief entity_manager holds entity_desc objects.
+/** @brief nentity_manager holds nentity_desc objects.
  */
-class entity_manager_impl;
-class entity_manager {
-        friend class entity_manager_impl;
+class nentity_manager_impl;
+class nentity_manager {
+        friend class nentity_manager_impl;
     public:
-        explicit entity_manager();
-        ~entity_manager();
+        explicit nentity_manager();
+        ~nentity_manager();
 
-        vlg::RetCode init();
+        vlg::RetCode get_nentity_descriptor(unsigned int nclass_id,
+                                            nentity_desc const **entity_descriptor) const;
 
-        vlg::RetCode
-        get_entity_descriptor(unsigned int nclass_id,
-                              entity_desc const **entity_descriptor) const;
+        vlg::RetCode get_nentity_descriptor(const char *entity_name,
+                                            nentity_desc const **entity_descriptor) const;
 
-        vlg::RetCode
-        get_entity_descriptor(const char *entity_name,
-                              entity_desc const **entity_descriptor) const;
+        void enum_nentity_descriptors(enum_nentity_desc eedf,
+                                      void *ud) const;
 
-        void enum_entity_descriptors(enum_entity_desc eedf,
-                                     void *ud)                      const;
+        void enum_nenum_descriptors(enum_nentity_desc eedf,
+                                    void *ud)   const;
 
-        void enum_enum_descriptors(enum_entity_desc eedf,
-                                   void *ud)                        const;
+        void enum_nclass_descriptors(enum_nentity_desc eedf,
+                                     void *ud)  const;
 
-        void enum_nclass_descriptors(enum_entity_desc eedf,
-                                     void *ud)                      const;
+        vlg::RetCode new_nclass_instance(unsigned int nclass_id,
+                                         nclass **new_nclass_obj) const;
 
-        vlg::RetCode new_class_instance(unsigned int nclass_id,
-                                        nclass **new_class_obj) const;
-
-        unsigned int    entity_count()  const;
-        unsigned int    enum_count()    const;
+        unsigned int    nentity_count() const;
+        unsigned int    nenum_count()   const;
         unsigned int    nclass_count()  const;
 
-        const char      *get_class_name(unsigned int nclass_id) const;
+        const char      *get_nclass_name(unsigned int nclass_id) const;
 
-        vlg::RetCode  extend(const entity_desc *entity_descriptor);
-        vlg::RetCode  extend(entity_manager *em);
+        vlg::RetCode  extend(const nentity_desc *nentity_descriptor);
+        vlg::RetCode  extend(nentity_manager *nem);
         vlg::RetCode  extend(const char *model_name);
 
     public:
-        const entity_manager_impl *get_opaque()                 const;
+        const nentity_manager_impl *get_opaque() const;
 
     private:
-        entity_manager_impl *impl_;
+        nentity_manager_impl *impl_;
 };
 
 }

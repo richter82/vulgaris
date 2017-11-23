@@ -25,10 +25,14 @@
 #include <QtCore>
 #include <QVector>
 
-#include "vlg_peer_impl.h"
-#include "vlg_connection_impl.h"
-#include "vlg_transaction_impl.h"
-#include "vlg_subscription_impl.h"
+#include "vlg_logger.h"
+#include "vlg_model.h"
+#include "vlg_peer.h"
+#include "vlg_connection.h"
+#include "vlg_transaction.h"
+#include "vlg_subscription.h"
+#include "cr_structs_mt.h"
+#include "cr_cfg.h"
 
 #include <QMainWindow>
 #include <QtGui>
@@ -38,21 +42,8 @@
 #define KEY_POSITION    "position"
 #define KEY_SIZE        "size"
 
-#define HEAP_TEST_DBG                                        \
-{                                                            \
-    ascii_string stack_str;                                     \
-    stack_str.assign("");                                    \
-    HeapDebug(stack_str);                                    \
-    qDebug() << "heap test passed";                          \
-}
-
 #define GEN_HDR_VAL_BUFF 256
 #define GEN_HDR_FIDX_BUFF 16
-
-#define ASSERT_SPRNTF_DBG                                \
-if(sprintf_dbg >= GEN_HDR_FIDX_BUFF){                    \
-    qDebug() << "sprintf violation:" << sprintf_dbg;     \
-}
 
 //-----------------------------------------------------------------------------
 // INTERNAL TIMEOUT VALUE FOR AWAIT OPERATIONS (SECONDS)
@@ -73,7 +64,7 @@ void FillFldValue_Qstring(const QVariant &value,
 // entity_desc_impl, partial
 //-----------------------------------------------------------------------------
 namespace vlg {
-class entity_desc_impl {
+class nentity_desc_impl {
     public:
         const vlg::hash_map &GetMap_NM_MMBRDSC() const;
         const vlg::hash_map &GetMap_KEYID_KDESC() const;

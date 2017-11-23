@@ -382,7 +382,7 @@ vlg::RetCode connection_impl::set_socket_error(vlg::RetCode cause_res)
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode connection_impl::set_implernal_error(vlg::RetCode cause_res)
+vlg::RetCode connection_impl::set_internal_error(vlg::RetCode cause_res)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ < ConnectionStatus_INITIALIZED) {
@@ -840,7 +840,7 @@ vlg::RetCode connection_impl::recv_single_pkt(vlg_hdr_rec *pkt_hdr,
         default:
             clean_best_effort();
             socket_shutdown();
-            set_implernal_error(rcode);
+            set_internal_error(rcode);
             on_disconnect(ConnectivityEventResult_KO,
                           ConnectivityEventType_UNDEFINED);
             break;
@@ -875,7 +875,7 @@ vlg::RetCode connection_impl::recv_single_pkt(vlg_hdr_rec *pkt_hdr,
             default:
                 clean_best_effort();
                 socket_shutdown();
-                set_implernal_error(rcode);
+                set_internal_error(rcode);
                 on_disconnect(ConnectivityEventResult_KO,
                               ConnectivityEventType_UNDEFINED);
                 break;
@@ -1167,7 +1167,7 @@ vlg::RetCode connection_impl::recv_connection_request(const vlg_hdr_rec
     getpeername(socket_, (sockaddr *)&saddr, &len);
     if(!(rcode = peer_.new_incoming_connection_accept(*this))) {
         if((rcode = server_send_connect_res())) {
-            set_implernal_error(rcode);
+            set_internal_error(rcode);
             IFLOG(err(TH_ID,
                       LS_CON"[error responding to peer: sockid:%d, host:%s, port:%d]",
                       socket_,
@@ -1238,7 +1238,7 @@ vlg::RetCode connection_impl::recv_connection_response(
             break;
     }
     if((rcode = peer_.get_selector().evt_enqueue_and_notify(evt))) {
-        set_implernal_error(rcode);
+        set_internal_error(rcode);
         return rcode;
     }
     on_connect(con_evt_res, ConnectivityEventType_PROTOCOL);
@@ -1405,8 +1405,8 @@ vlg::RetCode connection_impl::recv_tx_req(const vlg_hdr_rec *pkt_hdr,
             trans->set_tx_req_class_encode(pkt_hdr->row_7.clsenc.enctyp);
             trans->set_tx_res_class_encode(pkt_hdr->row_7.clsenc.enctyp);
             nclass *req_obj = NULL;
-            if((rcode = peer_.bem_.new_class_instance(trans->tx_req_class_id(),
-                                                      &req_obj))) {
+            if((rcode = peer_.nem_.new_nclass_instance(trans->tx_req_class_id(),
+                                                       &req_obj))) {
                 trans->set_tx_res(TransactionResult_FAILED);
                 trans->set_tx_result_code(ProtocolCode_MALFORMED_REQUEST);
                 trans->set_result_class_set(false);
@@ -1416,7 +1416,7 @@ vlg::RetCode connection_impl::recv_tx_req(const vlg_hdr_rec *pkt_hdr,
                           trans->tx_req_class_id()))
             } else {
                 trans->set_request_obj_on_request(req_obj);
-                if((rcode = req_obj->restore(&peer_.bem_, trans->tx_req_class_encode(),
+                if((rcode = req_obj->restore(&peer_.nem_, trans->tx_req_class_encode(),
                                              pkt_body))) {
                     trans->set_tx_res(TransactionResult_FAILED);
                     trans->set_tx_result_code(ProtocolCode_MALFORMED_REQUEST);
@@ -1487,8 +1487,8 @@ vlg::RetCode connection_impl::recv_tx_res(const vlg_hdr_rec *pkt_hdr,
         trans->set_tx_res_class_id(pkt_hdr->row_7.clsenc.nclsid);
         trans->set_tx_res_class_encode(pkt_hdr->row_7.clsenc.enctyp);
         nclass *nobj = NULL;
-        if((rcode = peer_.bem_.new_class_instance(trans->tx_res_class_id(),
-                                                  &nobj))) {
+        if((rcode = peer_.nem_.new_nclass_instance(trans->tx_res_class_id(),
+                                                   &nobj))) {
             IFLOG(err(TH_ID,
                       LS_TXT"[tx response receive failed - new class fail:%d, nclass_id:%d]",
                       rcode,
@@ -1496,7 +1496,7 @@ vlg::RetCode connection_impl::recv_tx_res(const vlg_hdr_rec *pkt_hdr,
             aborted = true;
         }
         trans->set_result_obj_on_response(nobj);
-        if((rcode = nobj->restore(&peer_.bem_, trans->tx_res_class_encode(),
+        if((rcode = nobj->restore(&peer_.nem_, trans->tx_res_class_encode(),
                                   pkt_body))) {
             IFLOG(err(TH_ID,
                       LS_TXT"[tx response receive failed - class restore fail:%d, nclass_id:%d]",
@@ -1703,9 +1703,9 @@ vlg::RetCode connection_impl::recv_sbs_start_req(const vlg_hdr_rec *pkt_hdr)
               inc_sbs->open_tmstp0_,
               inc_sbs->open_tmstp1_
              ))
-    entity_desc const *edesc = NULL;
-    if((rcode = peer_.get_em().get_entity_descriptor(inc_sbs->nclassid_,
-                                                     &edesc))) {
+    nentity_desc const *edesc = NULL;
+    if((rcode = peer_.get_em().get_nentity_descriptor(inc_sbs->nclassid_,
+                                                      &edesc))) {
         inc_sbs->sbresl_ = SubscriptionResponse_KO;
         inc_sbs->last_vlgcod_ = ProtocolCode_UNSUPPORTED_REQUEST;
         IFLOG(err(TH_ID, LS_SBT"[unk. nclass_id requested in subscription: %u]",

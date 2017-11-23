@@ -249,7 +249,7 @@ member_desc_comp::member_desc_comp(unsigned short mmbrid,
                                    size_t nmemb,
                                    unsigned int fild_entityid,
                                    const char *fild_usr_str_type,
-                                   EntityType fild_entitytype,
+                                   NEntityType fild_entitytype,
                                    long enum_value) :
     mmbrid_(mmbrid),
     mmbr_type_(mmbr_type),
@@ -345,7 +345,7 @@ const char *member_desc_comp::get_field_usr_str_type() const
     return fild_usr_str_type_;
 }
 
-EntityType member_desc_comp::get_field_entity_type() const
+NEntityType member_desc_comp::get_field_entity_type() const
 {
     return fild_entitytype_;
 }
@@ -380,7 +380,7 @@ void member_desc_comp::set_field_type_size(size_t val,
 VLG_ENTITY_DESC_COMP
 ***********************************/
 entity_desc_comp::entity_desc_comp(unsigned int entityid,
-                                   EntityType entitytype,
+                                   NEntityType entitytype,
                                    const char *nmspace,
                                    const char *entityname,
                                    vlg::alloc_func afun,
@@ -446,10 +446,10 @@ unsigned int entity_desc_comp::get_entityid()  const
     return entityid_;
 }
 
-size_t entity_desc_comp::get_entity_size(VLG_COMP_ARCH arch,
-                                         VLG_COMP_OS os,
-                                         VLG_COMP_LANG lang,
-                                         VLG_COMP_TCOMP tcomp) const
+size_t entity_desc_comp::get_size(VLG_COMP_ARCH arch,
+                                  VLG_COMP_OS os,
+                                  VLG_COMP_LANG lang,
+                                  VLG_COMP_TCOMP tcomp) const
 {
     unsigned int key = TCOMP_DEP_GEN_KEY(arch, os, lang, tcomp);
     char outmsg[256] = {0};
@@ -476,7 +476,7 @@ size_t entity_desc_comp::get_entity_max_align(VLG_COMP_ARCH arch,
     return val;
 }
 
-EntityType entity_desc_comp::get_entity_type()  const
+NEntityType entity_desc_comp::get_nentity_type()  const
 {
     return entitytype_;
 }
@@ -486,7 +486,7 @@ const char *entity_desc_comp::get_entity_namespace() const
     return nmspace_;
 }
 
-const char *entity_desc_comp::get_entity_name()  const
+const char *entity_desc_comp::get_nentity_name()  const
 {
     return entityname_;
 }

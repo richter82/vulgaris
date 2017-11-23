@@ -27,7 +27,7 @@
 
 ENM_GEN_TX_REP_REC_UD::ENM_GEN_TX_REP_REC_UD(vlg_toolkit_tx_vlg_class_model
                                              &mdl,
-                                             const vlg::entity_manager &bem,
+                                             const vlg::nentity_manager &bem,
                                              vlg::ascii_string *prfx,
                                              bool array_fld,
                                              unsigned int fld_idx) :
@@ -56,12 +56,11 @@ void enum_generate_tx_model_rep(const vlg::hash_map &map, const void *key,
     if(rud->array_fld_) {
         sprintf_dbg = sprintf(idx_b, "%s%d", idx_prfx.length() ? "_" : "",
                               rud->fld_idx_);
-        ASSERT_SPRNTF_DBG
         idx_prfx.append(idx_b);
     }
 
     if(mmbrd->get_field_vlg_type() == vlg::Type_ENTITY) {
-        if(mmbrd->get_field_entity_type() == vlg::EntityType_ENUM) {
+        if(mmbrd->get_field_nentity_type() == vlg::NEntityType_NENUM) {
             //treat enum as number
             if(mmbrd->get_field_nmemb() > 1) {
                 for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
@@ -70,7 +69,6 @@ void enum_generate_tx_model_rep(const vlg::hash_map &map, const void *key,
                         hdr_row_nm.append("_");
                     }
                     sprintf_dbg = sprintf(idx_b, "_%d", i);
-                    ASSERT_SPRNTF_DBG
                     hdr_row_nm.append(mmbrd->get_member_name());
                     hdr_row_nm.append(idx_b);
                     rud->mdl_.AppendHdrRow(hdr_row_nm.internal_buff());
@@ -96,8 +94,8 @@ void enum_generate_tx_model_rep(const vlg::hash_map &map, const void *key,
             }
             rprfx.append(mmbrd->get_member_name());
             rrud.prfx_ = &rprfx;
-            const vlg::entity_desc *edsc = NULL;
-            if(!rud->bem_.get_entity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
+            const vlg::nentity_desc *edsc = NULL;
+            if(!rud->bem_.get_nentity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
                 const vlg::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
                 if(mmbrd->get_field_nmemb() > 1) {
                     rrud.array_fld_ = true;
@@ -129,7 +127,6 @@ void enum_generate_tx_model_rep(const vlg::hash_map &map, const void *key,
                     hdr_row_nm.append("_");
                 }
                 sprintf_dbg = sprintf(idx_b, "_%d", i);
-                ASSERT_SPRNTF_DBG
                 hdr_row_nm.append(mmbrd->get_member_name());
                 hdr_row_nm.append(idx_b);
                 rud->mdl_.AppendHdrRow(hdr_row_nm.internal_buff());
@@ -153,9 +150,9 @@ void enum_generate_tx_model_rep(const vlg::hash_map &map, const void *key,
 //------------------------------------------------------------------------------
 
 vlg_toolkit_tx_vlg_class_model::vlg_toolkit_tx_vlg_class_model(
-    const vlg::entity_desc &edesc,
-    const vlg::entity_manager &bem,
-    vlg::transaction_impl &tx,
+    const vlg::nentity_desc &edesc,
+    const vlg::nentity_manager &bem,
+    vlg::transaction &tx,
     QObject *parent) :
     edesc_(edesc),
     bem_(bem),
@@ -164,9 +161,9 @@ vlg_toolkit_tx_vlg_class_model::vlg_toolkit_tx_vlg_class_model(
     rownum_(0),
     QAbstractTableModel(parent)
 {
-    bem.new_class_instance(tx_.tx_req_class_id(), &local_obj_);
-    if(tx_.request_obj()) {
-        local_obj_->set_from(tx_.request_obj());
+    bem.new_nclass_instance(tx_.get_request_nclass_id(), &local_obj_);
+    if(tx_.get_request_obj()) {
+        local_obj_->set_from(tx_.get_request_obj());
     }
     GenerateModelRep();
 }

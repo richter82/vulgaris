@@ -55,7 +55,7 @@ class vlg_toolkit_Connection : public QWidget {
         Q_OBJECT
 
     public:
-        explicit vlg_toolkit_Connection(vlg::connection_impl &conn,
+        explicit vlg_toolkit_Connection(vlg::connection &conn,
                                         const QString &host,
                                         const QString &port,
                                         const QString &usr,
@@ -79,8 +79,7 @@ class vlg_toolkit_Connection : public QWidget {
         void EmitConnStatus(vlg::ConnectionStatus status);
 
 
-        friend void vlg_toolkit_connection_status_change_hndl(vlg::connection_impl
-                                                              &conn,
+        friend void vlg_toolkit_connection_status_change_hndl(vlg::connection &conn,
                                                               vlg::ConnectionStatus status,
                                                               void *ud);
 
@@ -110,7 +109,7 @@ class vlg_toolkit_Connection : public QWidget {
         int tab_idx_; //in the QTabWidget
         int tab_id_;
         QTabWidget &parent_;
-        vlg::connection_impl &conn_;
+        vlg::connection &conn_;
 
     private:
         vlg_toolkit_Conn_mdl b_mdl_;

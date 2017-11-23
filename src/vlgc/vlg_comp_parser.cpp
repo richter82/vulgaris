@@ -476,14 +476,14 @@ vlg::RetCode VLG_COMP_ParseVal(unsigned long &lnum,
     member_desc_comp *mmbrdesc = NULL;
     COMMAND_IF_NULL(
         mmbrdesc = new member_desc_comp(mmbrid,
-                                        MemberType_ENUM_VALUE,
+                                        MemberType_NENUM_VALUE,
                                         symb_name.new_buffer(),
                                         desc,
                                         Type_INT32,
                                         1,
                                         0,
                                         NULL,
-                                        EntityType_ENUM,
+                                        NEntityType_NENUM,
                                         last_enum_val), exit(1))
     COMMAND_IF_NOT_OK(mmbrdesc->init(), exit(1))
     //1
@@ -641,16 +641,16 @@ vlg::RetCode VLG_COMP_CalcFieldOffset(size_t max_align,
     while(!mmbrmap.next(NULL, &mdesc)) {
         //it is scalar if it is a primitive type or an enum
         bool scalar = (mdesc->get_field_type() != Type_ENTITY) ||
-                      (mdesc->get_field_entity_type() == EntityType_ENUM);
+                      (mdesc->get_field_entity_type() == NEntityType_NENUM);
         if(mdesc->get_field_type() == Type_ENTITY &&
-                mdesc->get_field_entity_type() != EntityType_ENUM) {
+                mdesc->get_field_entity_type() != NEntityType_NENUM) {
             //we get max align if it is a struct/class
             entity_desc_comp *edesc = NULL;
             if(entitymap.get(mdesc->get_field_usr_str_type(), &edesc)) {
                 return vlg::RetCode_KO;
             }
             type_align = edesc->get_entity_max_align(arch, os, lang, tcomp);
-        } else if(mdesc->get_field_entity_type() == EntityType_ENUM) {
+        } else if(mdesc->get_field_entity_type() == NEntityType_NENUM) {
             //we treat enum with int align.
             type_align = 4;
         } else {
@@ -697,10 +697,10 @@ vlg::RetCode VLG_COMP_CalcFieldsSizeAndEntityMaxAlign(size_t &max_align,
             //user-defined type
             entity_desc_comp *fld_entity_desc = NULL;
             if(!entitymap.get(mdesc->get_field_usr_str_type(), &fld_entity_desc)) {
-                type_size = fld_entity_desc->get_entity_size(arch,
-                                                             os,
-                                                             lang,
-                                                             tcomp);
+                type_size = fld_entity_desc->get_size(arch,
+                                                      os,
+                                                      lang,
+                                                      tcomp);
                 max_align = (fld_entity_desc->get_entity_max_align(arch,
                                                                    os,
                                                                    lang,
@@ -834,10 +834,10 @@ vlg::RetCode VLG_COMP_ParseFild(unsigned long &lnum,
 
     mmbrid++;
     fld_nmemb = fld_nmemb ? fld_nmemb : 1;
-    EntityType etype = EntityType_UNDEFINED;
+    NEntityType etype = NEntityType_UNDEFINED;
     if(fld_type == Type_ENTITY) {
         //user-defined type
-        etype = fld_entity_desc->get_entity_type();
+        etype = fld_entity_desc->get_nentity_type();
     }
     if(fld_type == Type_ASCII && fld_nmemb > 1) {
         //adjust size +1 for string null terminator
@@ -859,7 +859,7 @@ vlg::RetCode VLG_COMP_ParseFild(unsigned long &lnum,
                                                     fld_type,
                                                     fld_nmemb,
                                                     fld_entityid,
-                                                    (fld_type == Type_ENTITY) ? fld_entity_desc->get_entity_name() : NULL,
+                                                    (fld_type == Type_ENTITY) ? fld_entity_desc->get_nentity_name() : NULL,
                                                     etype,
                                                     0   //not sign. for fields
                                                    ), exit(1))
@@ -1090,7 +1090,7 @@ vlg::RetCode VLG_COMP_ParseEnum(unsigned long &lnum,
     //at this point we can create a VLG_ENTITY_DESC_COMP for this ENUM
     entity_desc_comp *entitydesc = NULL;
     COMMAND_IF_NULL(entitydesc = new entity_desc_comp(0,  //0 for enum
-                                                      EntityType_ENUM,
+                                                      NEntityType_NENUM,
                                                       unit_nmspace.new_buffer(),
                                                       symb_name.new_buffer(),
                                                       0, //alloc f
@@ -1130,7 +1130,7 @@ vlg::RetCode VLG_COMP_ParseEnum(unsigned long &lnum,
                                      VLG_COMP_LANG_CPP,
                                      VLG_COMP_TCOMP_GCC);
     COMMAND_IF_NOT_OK(entitydesc->extend(&mmbrmap, NULL), exit(1))
-    COMMAND_IF_NOT_OK(entitymap.put(entitydesc->get_entity_name(), &entitydesc),
+    COMMAND_IF_NOT_OK(entitymap.put(entitydesc->get_nentity_name(), &entitydesc),
                       exit(1))
     return vlg::RetCode_OK;
 }
@@ -1231,7 +1231,7 @@ vlg::RetCode VLG_COMP_ParseEntity(unsigned long &lnum,
     //at this point we can create a VLG_ENTITY_DESC_COMP for this Class
     entity_desc_comp *entitydesc = NULL;
     COMMAND_IF_NULL(entitydesc = new entity_desc_comp(nclass_id,
-                                                      EntityType_NCLASS,
+                                                      NEntityType_NCLASS,
                                                       unit_nmspace.new_buffer(),
                                                       symb_name.new_buffer(),
                                                       0, //alloc f
@@ -1273,7 +1273,7 @@ vlg::RetCode VLG_COMP_ParseEntity(unsigned long &lnum,
                                                        VLG_COMP_LANG_CPP,
                                                        VLG_COMP_TCOMP_GCC))
     COMMAND_IF_NOT_OK(entitydesc->extend(&mmbrmap, &keymap),exit(1))
-    COMMAND_IF_NOT_OK(entitymap.put(entitydesc->get_entity_name(), &entitydesc),
+    COMMAND_IF_NOT_OK(entitymap.put(entitydesc->get_nentity_name(), &entitydesc),
                       exit(1))
     return vlg::RetCode_OK;
 }

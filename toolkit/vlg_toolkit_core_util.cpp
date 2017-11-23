@@ -35,7 +35,7 @@ void FillQstring_FldValue(const char *fld_ptr,
 {
     switch(mdesc->get_field_vlg_type()) {
         case vlg::Type_ENTITY: {
-            if(mdesc->get_field_entity_type() == vlg::EntityType_ENUM) {
+            if(mdesc->get_field_nentity_type() == vlg::NEntityType_NENUM) {
                 int val = *(int *)fld_ptr;
                 out = QString("%1").arg(val);
             }
@@ -102,7 +102,7 @@ void FillFldValue_Qstring(const QVariant &value,
 {
     switch(mdesc->get_field_vlg_type()) {
         case vlg::Type_ENTITY:
-            if(mdesc->get_field_entity_type() == vlg::EntityType_ENUM) {
+            if(mdesc->get_field_nentity_type() == vlg::NEntityType_NENUM) {
                 *(int *)fld_ptr = value.toInt();
             }
             break;

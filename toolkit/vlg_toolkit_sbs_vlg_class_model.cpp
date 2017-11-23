@@ -87,7 +87,7 @@ void vlg_toolkit_sbs_vlg_class_model::OnCellResetColor(VLG_SBS_COL_DATA_ENTRY
 
 ENM_GEN_SBS_REP_REC_UD::ENM_GEN_SBS_REP_REC_UD(vlg_toolkit_sbs_vlg_class_model
                                                &mdl,
-                                               const vlg::entity_manager &bem,
+                                               const vlg::nentity_manager &bem,
                                                vlg::ascii_string *prfx,
                                                bool array_fld,
                                                unsigned int fld_idx) :
@@ -118,12 +118,11 @@ void enum_generate_sbs_model_rep(const vlg::hash_map &map,
     if(rud->array_fld_) {
         sprintf_dbg = sprintf(idx_b, "%s%d", idx_prfx.length() ? "_" : "",
                               rud->fld_idx_);
-        ASSERT_SPRNTF_DBG
         idx_prfx.append(idx_b);
     }
 
     if(mmbrd->get_field_vlg_type() == vlg::Type_ENTITY) {
-        if(mmbrd->get_field_entity_type() == vlg::EntityType_ENUM) {
+        if(mmbrd->get_field_nentity_type() == vlg::NEntityType_NENUM) {
             //treat enum as number
             if(mmbrd->get_field_nmemb() > 1) {
                 for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
@@ -132,7 +131,6 @@ void enum_generate_sbs_model_rep(const vlg::hash_map &map,
                         hdr_col_nm.append("_");
                     }
                     sprintf_dbg = sprintf(idx_b, "_%d", i);
-                    ASSERT_SPRNTF_DBG
                     hdr_col_nm.append(mmbrd->get_member_name());
                     hdr_col_nm.append(idx_b);
                     rud->mdl_.AppendHdrColumn(hdr_col_nm.internal_buff());
@@ -158,8 +156,8 @@ void enum_generate_sbs_model_rep(const vlg::hash_map &map,
             }
             rprfx.append(mmbrd->get_member_name());
             rrud.prfx_ = &rprfx;
-            const vlg::entity_desc *edsc = NULL;
-            if(!rud->bem_.get_entity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
+            const vlg::nentity_desc *edsc = NULL;
+            if(!rud->bem_.get_nentity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
                 const vlg::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
                 if(mmbrd->get_field_nmemb() > 1) {
                     rrud.array_fld_ = true;
@@ -191,7 +189,6 @@ void enum_generate_sbs_model_rep(const vlg::hash_map &map,
                     hdr_col_nm.append("_");
                 }
                 sprintf_dbg = sprintf(idx_b, "_%d", i);
-                ASSERT_SPRNTF_DBG
                 hdr_col_nm.append(mmbrd->get_member_name());
                 hdr_col_nm.append(idx_b);
                 rud->mdl_.AppendHdrColumn(hdr_col_nm.internal_buff());
@@ -220,7 +217,7 @@ void enum_generate_sbs_model_rep(const vlg::hash_map &map,
 
 ENM_UPD_CLS_ROW_REC_UD::ENM_UPD_CLS_ROW_REC_UD(vlg_toolkit_sbs_vlg_class_model
                                                &mdl,
-                                               const vlg::entity_manager &bem,
+                                               const vlg::nentity_manager &bem,
                                                const char *obj_ptr,
                                                const char *obj_ptr_prev,
                                                int rowidx,
@@ -251,7 +248,7 @@ void enum_update_class_row(const vlg::hash_map &map,
     QModelIndex qindex;
 
     if(mmbrd->get_field_vlg_type() == vlg::Type_ENTITY) {
-        if(mmbrd->get_field_entity_type() == vlg::EntityType_ENUM) {
+        if(mmbrd->get_field_nentity_type() == vlg::NEntityType_NENUM) {
             //treat enum as number
             if(mmbrd->get_field_nmemb() > 1) {
                 for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
@@ -295,8 +292,8 @@ void enum_update_class_row(const vlg::hash_map &map,
         } else {
             //class, struct is a recursive step.
             ENM_UPD_CLS_ROW_REC_UD rrud = *rud;
-            const vlg::entity_desc *edsc = NULL;
-            if(!rud->bem_.get_entity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
+            const vlg::nentity_desc *edsc = NULL;
+            if(!rud->bem_.get_nentity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
                 const vlg::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
                 if(mmbrd->get_field_nmemb() > 1) {
                     rrud.array_fld_ = true;
@@ -377,8 +374,8 @@ void enum_update_class_row(const vlg::hash_map &map,
 
 
 vlg_toolkit_sbs_vlg_class_model::vlg_toolkit_sbs_vlg_class_model(
-    const vlg::entity_desc &edesc,
-    const vlg::entity_manager &bem,
+    const vlg::nentity_desc &edesc,
+    const vlg::nentity_manager &bem,
     QObject *parent) :
     edesc_(edesc),
     bem_(bem),

@@ -79,8 +79,8 @@ class connection_impl_pub {
             impl_(NULL),
             csh_(NULL),
             csh_ud_(NULL),
-            tx_factory_(transaction_factory::default_transaction_factory()),
-            sbs_factory_(subscription_factory::default_subscription_factory()) {}
+            tx_factory_(transaction_factory::default_factory()),
+            sbs_factory_(subscription_factory::default_factory()) {}
         ~connection_impl_pub() {
             if(impl_) {
                 //destroy of underling object must be done only for outgoing-client connections
@@ -147,7 +147,7 @@ class connection_impl_pub {
             impl_->set_sbs_factory_ud(sbs_factory_);
         }
 
-        vlg::RetCode bind_implernal(peer &p) {
+        vlg::RetCode bind_internal(peer &p) {
             vlg::RetCode rcode = vlg::RetCode_OK;
             if(!impl_) { //ugly test to detect outgoing/ingoing connection type..
                 connection_impl *c_impl = NULL;
@@ -233,7 +233,7 @@ connection::~connection()
 vlg::RetCode connection::bind(peer &p)
 {
     impl_->set_peer(p);
-    return impl_->bind_implernal(p);
+    return impl_->bind_internal(p);
 }
 
 peer *connection::get_peer()
@@ -463,15 +463,15 @@ connection_factory *connection_factory::default_connection_factory()
 }
 
 connection_impl *connection_factory::conn_factory_impl_f(
-    peer_impl &peer_implernal,
+    peer_impl &peer_internal,
     ConnectionType con_type,
     unsigned int connid,
     void *ud)
 {
     connection_factory *csf = static_cast<connection_factory *>(ud);
-    peer_impl *peer_implernal_ptr = &peer_implernal;
+    peer_impl *peer_internal_ptr = &peer_internal;
     peer *p_publ = NULL;
-    if(impl_publ_peer_map().get(&peer_implernal_ptr, &p_publ)) {
+    if(impl_publ_peer_map().get(&peer_internal_ptr, &p_publ)) {
         EXIT_ACTION
     }
     connection *publ = csf->new_connection(*p_publ);
@@ -482,7 +482,7 @@ connection_impl *connection_factory::conn_factory_impl_f(
     c.retain(publ);
 
     connection_impl *impl_conn = new cimpl_conn_impl_server(*publ,
-                                                            peer_implernal,
+                                                            peer_internal,
                                                             con_type,
                                                             connid);
     publ->set_opaque(impl_conn);

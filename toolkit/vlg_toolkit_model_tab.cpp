@@ -63,9 +63,9 @@ vlg_toolkit_model_tab::~vlg_toolkit_model_tab()
 void vlg_toolkit_model_tab::On_VLG_MODEL_Update()
 {
     ui->entities_no_label_disp->setText(QString("%1").arg(
-                                            b_mdl_.wrapped_mdl().bem().entity_count()));
+                                            b_mdl_.wrapped_mdl().bem().nentity_count()));
     ui->enum_no_label_disp->setText(QString("%1").arg(
-                                        b_mdl_.wrapped_mdl().bem().enum_count()));
+                                        b_mdl_.wrapped_mdl().bem().nenum_count()));
     ui->class_no_label_disp->setText(QString("%1").arg(
                                          b_mdl_.wrapped_mdl().bem().nclass_count()));
 }
