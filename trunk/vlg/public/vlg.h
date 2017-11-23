@@ -560,11 +560,11 @@ typedef void *transaction_wr;
 typedef void *subscription_wr;
 typedef void *subscription_event_wr;
 typedef void *member_desc_wr;
-typedef void *entity_desc_wr;
+typedef void *nentity_desc_wr;
 typedef void *key_desc_wr;
-typedef void *entity_manager_wr;
+typedef void *nentity_manager_wr;
 typedef void *vlg_logger_wr;
-typedef void *net_class_wr;
+typedef void *nclass_wr;
 typedef void *ascii_str_wr;
 
 #if defined(__cplusplus)

@@ -62,49 +62,49 @@ unsigned int persistence_connection_get_id(persistence_connection_wr pconn);
 
 RetCode persistence_connection_create_entity_schema_by_class_id(persistence_connection_wr pconn,
                                                                 PersistenceAlteringMode mode,
-                                                                const entity_manager_wr nem,
+                                                                const nentity_manager_wr nem,
                                                                 unsigned int nclass_id);
 
 RetCode persistence_connection_create_entity_schema_by_edesc(persistence_connection_wr pconn,
                                                              PersistenceAlteringMode mode,
-                                                             const entity_manager_wr nem,
-                                                             const entity_desc_wr desc);
+                                                             const nentity_manager_wr nem,
+                                                             const nentity_desc_wr desc);
 
 RetCode persistence_connection_save_entity(persistence_connection_wr pconn,
-                                           const entity_manager_wr nem,
+                                           const nentity_manager_wr nem,
                                            unsigned int ts0,
                                            unsigned int ts1,
-                                           const net_class_wr in_obj);
+                                           const nclass_wr in_obj);
 
 RetCode persistence_connection_update_entity(persistence_connection_wr pconn,
                                              unsigned short key,
-                                             const entity_manager_wr nem,
+                                             const nentity_manager_wr nem,
                                              unsigned int ts0,
                                              unsigned int ts1,
-                                             const net_class_wr in_obj);
+                                             const nclass_wr in_obj);
 
 RetCode persistence_connection_save_or_update_entity(persistence_connection_wr
                                                      pconn,
                                                      unsigned short key,
-                                                     const entity_manager_wr nem,
+                                                     const nentity_manager_wr nem,
                                                      unsigned int ts0,
                                                      unsigned int ts1,
-                                                     const net_class_wr in_obj);
+                                                     const nclass_wr in_obj);
 
 RetCode persistence_connection_remove_entity(persistence_connection_wr pconn,
                                              unsigned short key,
-                                             const entity_manager_wr nem,
+                                             const nentity_manager_wr nem,
                                              unsigned int ts0,
                                              unsigned int ts1,
                                              PersistenceDeletionMode mode,
-                                             const net_class_wr in_obj);
+                                             const nclass_wr in_obj);
 
 RetCode persistence_connection_load_entity(persistence_connection_wr pconn,
                                            unsigned short key,
-                                           const entity_manager_wr nem,
+                                           const nentity_manager_wr nem,
                                            unsigned int *ts0_out,
                                            unsigned int *ts1_out,
-                                           net_class_wr in_out_obj);
+                                           nclass_wr in_out_obj);
 
 RetCode persistence_connection_execute_statement(persistence_connection_wr
                                                  pconn,
@@ -118,14 +118,14 @@ unsigned int persistence_query_get_id(persistence_query_wr pqry);
 
 PersistenceQueryStatus persistence_query_get_status(persistence_query_wr pqry);
 
-const entity_manager_wr persistence_query_get_entity_manager(persistence_query_wr pqry);
+const nentity_manager_wr persistence_query_get_entity_manager(persistence_query_wr pqry);
 
 persistence_connection_wr persistence_query_get_connection(persistence_query_wr pqry);
 
 RetCode persistence_query_next_entity(persistence_query_wr pqry,
                                       unsigned int *ts0_out,
                                       unsigned int *ts1_out,
-                                      net_class_wr out_obj);
+                                      nclass_wr out_obj);
 
 #if defined(__cplusplus)
 }

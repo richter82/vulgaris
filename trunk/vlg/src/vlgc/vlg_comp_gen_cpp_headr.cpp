@@ -116,7 +116,7 @@ vlg::RetCode VLG_COMP_Render_EntryPoint_C_decl__H_(compile_unit &cunit,
     fprintf(file, OPN_CMMNT_LN
             "NEM entry point C\n"
             CLS_CMMNT_LN);
-    fprintf(file, "entity_manager_wr get_c_em_%s();\n", cunit.model_name());
+    fprintf(file, "nentity_manager_wr get_c_em_%s();\n", cunit.model_name());
     fprintf(file, "#endif\n");
     return vlg::RetCode_OK;
 }

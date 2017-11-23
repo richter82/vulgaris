@@ -1031,26 +1031,26 @@ vlg::RetCode nentity_manager::new_nclass_instance(unsigned int entityid,
 
 //nclass MEMORY
 
-class net_class_inst_collector : public vlg::collector {
+class nclass_inst_collector : public vlg::collector {
     public:
-        net_class_inst_collector() : vlg::collector("nclass") {}
+        nclass_inst_collector() : vlg::collector("nclass") {}
 };
 
-vlg::collector *net_class_inst_coll_ = NULL;
-vlg::collector &net_class_get_instance_collector()
+vlg::collector *nclass_inst_coll_ = NULL;
+vlg::collector &nclass_get_instance_collector()
 {
-    if(net_class_inst_coll_) {
-        return *net_class_inst_coll_;
+    if(nclass_inst_coll_) {
+        return *nclass_inst_coll_;
     }
-    if(!(net_class_inst_coll_ = new net_class_inst_collector())) {
+    if(!(nclass_inst_coll_ = new nclass_inst_collector())) {
         EXIT_ACTION
     }
-    return *net_class_inst_coll_;
+    return *nclass_inst_coll_;
 }
 
 vlg::collector &nclass::get_collector()
 {
-    return net_class_get_instance_collector();
+    return nclass_get_instance_collector();
 }
 
 //-----------------------------

@@ -85,49 +85,49 @@ size_t log_fat(vlg_logger_wr l,
 
 size_t log_trc_class(vlg_logger_wr l,
                      uint32_t id,
-                     const net_class_wr obj,
+                     const nclass_wr obj,
                      int print_class_name,
                      const char *fmt,
                      ...);
 
 size_t log_dbg_class(vlg_logger_wr l,
                      uint32_t id,
-                     const net_class_wr obj,
+                     const nclass_wr obj,
                      int print_class_name,
                      const char *fmt,
                      ...);
 
 size_t log_inf_class(vlg_logger_wr l,
                      uint32_t id,
-                     const net_class_wr obj,
+                     const nclass_wr obj,
                      int print_class_name,
                      const char *fmt,
                      ...);
 
 size_t log_wrn_class(vlg_logger_wr l,
                      uint32_t id,
-                     const net_class_wr obj,
+                     const nclass_wr obj,
                      int print_class_name,
                      const char *fmt,
                      ...);
 
 size_t log_err_class(vlg_logger_wr l,
                      uint32_t id,
-                     const net_class_wr obj,
+                     const nclass_wr obj,
                      int print_class_name,
                      const char *fmt,
                      ...);
 
 size_t log_cri_class(vlg_logger_wr l,
                      uint32_t id,
-                     const net_class_wr obj,
+                     const nclass_wr obj,
                      int print_class_name,
                      const char *fmt,
                      ...);
 
 size_t log_fat_class(vlg_logger_wr l,
                      uint32_t id,
-                     const net_class_wr obj,
+                     const nclass_wr obj,
                      int print_class_name,
                      const char *fmt,
                      ...);

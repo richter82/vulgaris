@@ -45,7 +45,7 @@ size_t          member_desc_get_field_type_size(member_desc_wr mdesc);
 size_t          member_desc_get_field_nmemb(member_desc_wr mdesc);
 unsigned int    member_desc_get_field_class_id(member_desc_wr mdesc);
 const char      *member_desc_get_field_user_type(member_desc_wr mdesc);
-NEntityType      member_desc_get_field_entity_type(member_desc_wr mdesc);
+NEntityType     member_desc_get_field_entity_type(member_desc_wr mdesc);
 
 /*
 Enum specific
@@ -60,194 +60,191 @@ typedef void(*enum_member_desc_wr)(const member_desc_wr member_descriptor,
                                    void *ud,
                                    int *stop);
 
-unsigned int    entity_desc_get_class_id(entity_desc_wr edesc);
-size_t          entity_desc_get_entity_size(entity_desc_wr edesc);
-size_t          entity_desc_get_entity_max_align(entity_desc_wr edesc);
-NEntityType      entity_desc_get_entity_type(entity_desc_wr edesc);
-const char      *entity_desc_get_entity_namespace(entity_desc_wr edesc);
-const char      *entity_desc_get_entity_name(entity_desc_wr edesc);
+unsigned int    entity_desc_get_class_id(nentity_desc_wr edesc);
+size_t          entity_desc_get_entity_size(nentity_desc_wr edesc);
+size_t          entity_desc_get_entity_max_align(nentity_desc_wr edesc);
+NEntityType     entity_desc_get_entity_type(nentity_desc_wr edesc);
+const char      *entity_desc_get_entity_namespace(nentity_desc_wr edesc);
+const char      *entity_desc_get_entity_name(nentity_desc_wr edesc);
 
-alloc_func entity_desc_get_entity_allocation_function(entity_desc_wr edesc);
+alloc_func entity_desc_get_entity_allocation_function(nentity_desc_wr edesc);
 
-unsigned int    entity_desc_get_entity_member_num(entity_desc_wr edesc);
-int             entity_desc_is_persistent(entity_desc_wr edesc);
+unsigned int    entity_desc_get_entity_member_num(nentity_desc_wr edesc);
+int             entity_desc_is_persistent(nentity_desc_wr edesc);
 
-const member_desc_wr
-entity_desc_get_member_desc_by_id(entity_desc_wr edesc,
-                                  unsigned int member_id);
+const member_desc_wr entity_desc_get_member_desc_by_id(nentity_desc_wr edesc,
+                                                       unsigned int member_id);
 
-const member_desc_wr
-entity_desc_get_member_desc_by_name(entity_desc_wr edesc,
-                                    const char *member_name);
+const member_desc_wr entity_desc_get_member_desc_by_name(nentity_desc_wr edesc,
+                                                         const char *member_name);
 
-void
-entity_desc_enum_member_descriptors(entity_desc_wr edesc,
-                                    enum_member_desc_wr emd_f,
-                                    void *ud);
+void entity_desc_enum_member_descriptors(nentity_desc_wr edesc,
+                                         enum_member_desc_wr emd_f,
+                                         void *ud);
 
 //---delete
-void            net_class_delete(net_class_wr obj);
+void            nclass_delete(nclass_wr obj);
 
 //---memory
-void            net_class_retain(net_class_wr obj);
-int             net_class_is_collected(net_class_wr obj);
-void            net_class_release(net_class_wr obj);
+void            nclass_retain(nclass_wr obj);
+int             nclass_is_collected(nclass_wr obj);
+void            nclass_release(nclass_wr obj);
 
 //---getters
-unsigned int        net_class_get_class_id(net_class_wr obj);
-unsigned int        net_class_get_compiler_version(net_class_wr obj);
-size_t              net_class_get_entity_size(net_class_wr obj);
-const net_class_wr  net_class_get_zero_object(net_class_wr obj);
+unsigned int        nclass_get_class_id(nclass_wr obj);
+unsigned int        nclass_get_compiler_version(nclass_wr obj);
+size_t              nclass_get_entity_size(nclass_wr obj);
+const nclass_wr     nclass_get_zero_object(nclass_wr obj);
 
-void            net_class_copy_to(net_class_wr obj, net_class_wr to_obj);
-net_class_wr    net_class_clone(net_class_wr obj);
-int             net_class_is_zero(net_class_wr obj);
-void            net_class_set_zero(net_class_wr obj);
-void            net_class_set_from(net_class_wr obj,
-                                   const net_class_wr from_obj);
+void            nclass_copy_to(nclass_wr obj, nclass_wr to_obj);
+nclass_wr       nclass_clone(nclass_wr obj);
+int             nclass_is_zero(nclass_wr obj);
+void            nclass_set_zero(nclass_wr obj);
+void            nclass_set_from(nclass_wr obj,
+                                const nclass_wr from_obj);
 
-size_t  net_class_get_field_size_by_id(net_class_wr obj,
+size_t  nclass_get_field_size_by_id(nclass_wr obj,
+                                    unsigned int field_id);
+
+size_t  nclass_get_field_size_by_name(nclass_wr obj,
+                                      const char *field_name);
+
+void   *nclass_get_field_by_id(nclass_wr obj,
+                               unsigned int field_id);
+
+void   *nclass_get_field_by_name(nclass_wr obj,
+                                 const char *field_name);
+
+void   *nclass_get_field_by_id_index(nclass_wr obj,
+                                     unsigned int field_id,
+                                     unsigned int index);
+
+void   *nclass_get_field_by_name_index(nclass_wr obj,
+                                       const char *field_name,
+                                       unsigned int index);
+
+RetCode    nclass_set_field_by_id(nclass_wr obj,
+                                  unsigned int field_id,
+                                  const void *ptr,
+                                  size_t maxlen);
+
+RetCode    nclass_set_field_by_name(nclass_wr obj,
+                                    const char *field_name,
+                                    const void *ptr, size_t maxlen);
+
+RetCode    nclass_set_field_by_id_index(nclass_wr obj,
+                                        unsigned int field_id,
+                                        const void *ptr,
+                                        unsigned int index,
+                                        size_t maxlen);
+
+RetCode    nclass_set_field_by_name_index(nclass_wr obj,
+                                          const char *field_name,
+                                          const void *ptr,
+                                          unsigned int index,
+                                          size_t maxlen);
+
+RetCode    nclass_is_field_zero_by_id(nclass_wr obj,
+                                      unsigned int field_id,
+                                      int *res);
+
+RetCode    nclass_is_field_zero_by_name(nclass_wr obj,
+                                        const char *field_name,
+                                        int *res);
+
+RetCode    nclass_is_field_zero_by_id_index(nclass_wr obj,
+                                            unsigned int field_id,
+                                            unsigned int index,
+                                            unsigned int nmenb,
+                                            int *res);
+
+RetCode    nclass_is_field_zero_by_name_index(nclass_wr obj,
+                                              const char *field_name,
+                                              unsigned int index,
+                                              unsigned int nmenb,
+                                              int *res);
+
+RetCode    nclass_set_field_zero_by_id(nclass_wr obj,
                                        unsigned int field_id);
 
-size_t  net_class_get_field_size_by_name(net_class_wr obj,
+RetCode    nclass_set_field_zero_by_name(nclass_wr obj,
                                          const char *field_name);
 
-void   *net_class_get_field_by_id(net_class_wr obj,
-                                  unsigned int field_id);
-
-void   *net_class_get_field_by_name(net_class_wr obj,
-                                    const char *field_name);
-
-void   *net_class_get_field_by_id_index(net_class_wr obj,
-                                        unsigned int field_id,
-                                        unsigned int index);
-
-void   *net_class_get_field_by_name_index(net_class_wr obj,
-                                          const char *field_name,
-                                          unsigned int index);
-
-RetCode    net_class_set_field_by_id(net_class_wr obj,
-                                     unsigned int field_id,
-                                     const void *ptr,
-                                     size_t maxlen);
-
-RetCode    net_class_set_field_by_name(net_class_wr obj,
-                                       const char *field_name,
-                                       const void *ptr, size_t maxlen);
-
-RetCode    net_class_set_field_by_id_index(net_class_wr obj,
-                                           unsigned int field_id,
-                                           const void *ptr,
-                                           unsigned int index,
-                                           size_t maxlen);
-
-RetCode    net_class_set_field_by_name_index(net_class_wr obj,
-                                             const char *field_name,
-                                             const void *ptr,
+RetCode    nclass_set_field_zero_by_id_index(nclass_wr obj,
+                                             unsigned int field_id,
                                              unsigned int index,
-                                             size_t maxlen);
+                                             unsigned int nmenb);
 
-RetCode    net_class_is_field_zero_by_id(net_class_wr obj,
-                                         unsigned int field_id,
-                                         int *res);
-
-RetCode    net_class_is_field_zero_by_name(net_class_wr obj,
-                                           const char *field_name,
-                                           int *res);
-
-RetCode    net_class_is_field_zero_by_id_index(net_class_wr obj,
-                                               unsigned int field_id,
+RetCode    nclass_set_field_zero_by_name_index(nclass_wr obj,
+                                               const char *field_name,
                                                unsigned int index,
-                                               unsigned int nmenb,
-                                               int *res);
+                                               unsigned int nmenb);
 
-RetCode    net_class_is_field_zero_by_name_index(net_class_wr obj,
-                                                 const char *field_name,
-                                                 unsigned int index,
-                                                 unsigned int nmenb,
-                                                 int *res);
+char *nclass_get_term_field_ref_by_plain_idx(nclass_wr obj,
+                                             unsigned int plain_idx,
+                                             const nentity_manager_wr nem,
+                                             const member_desc_wr *member_descriptor);
 
-RetCode    net_class_set_field_zero_by_id(net_class_wr obj,
-                                          unsigned int field_id);
+const nentity_desc_wr nclass_get_entity_descriptor(nclass_wr obj);
 
-RetCode    net_class_set_field_zero_by_name(net_class_wr obj,
-                                            const char *field_name);
+size_t nclass_pretty_dump_to_buffer(nclass_wr obj,
+                                    char *buffer,
+                                    int print_class_name);
 
-RetCode    net_class_set_field_zero_by_id_index(net_class_wr obj,
-                                                unsigned int field_id,
-                                                unsigned int index,
-                                                unsigned int nmenb);
+size_t nclass_pretty_dump_to_file(nclass_wr obj,
+                                  FILE *file,
+                                  int print_class_name);
 
-RetCode    net_class_set_field_zero_by_name_index(net_class_wr obj,
-                                                  const char *field_name,
-                                                  unsigned int index,
-                                                  unsigned int nmenb);
+RetCode nclass_primary_key_string_value(nclass_wr obj,
+                                        ascii_str_wr out_str);
 
-char *net_class_get_term_field_ref_by_plain_idx(net_class_wr obj,
-                                                unsigned int plain_idx,
-                                                const entity_manager_wr nem,
-                                                const member_desc_wr *member_descriptor);
-
-const entity_desc_wr net_class_get_entity_descriptor(net_class_wr obj);
-
-size_t net_class_pretty_dump_to_buffer(net_class_wr obj,
-                                       char *buffer,
-                                       int print_class_name);
-
-size_t net_class_pretty_dump_to_file(net_class_wr obj,
-                                     FILE *file,
-                                     int print_class_name);
-
-RetCode net_class_primary_key_string_value(net_class_wr obj,
-                                           ascii_str_wr out_str);
-
-typedef void(*enum_entity_desc_wr)(const entity_desc_wr edesc,
+typedef void(*enum_entity_desc_wr)(const nentity_desc_wr edesc,
                                    void *ud,
                                    int *stop);
 
-RetCode    entity_manager_get_entity_descriptor_by_classid(entity_manager_wr emng,
+RetCode    entity_manager_get_entity_descriptor_by_classid(nentity_manager_wr emng,
                                                            unsigned int nclass_id,
-                                                           entity_desc_wr const *edesc);
+                                                           nentity_desc_wr const *edesc);
 
-RetCode    entity_manager_get_entity_descriptor_by_name(entity_manager_wr emng,
+RetCode    entity_manager_get_entity_descriptor_by_name(nentity_manager_wr emng,
                                                         const char *entity_name,
-                                                        entity_desc_wr const *edesc);
+                                                        nentity_desc_wr const *edesc);
 
-void    entity_manager_enum_entity_descriptors(entity_manager_wr emng,
+void    entity_manager_enum_entity_descriptors(nentity_manager_wr emng,
                                                enum_entity_desc_wr eedf,
                                                void *ud);
 
-void    entity_manager_enum_enum_descriptors(entity_manager_wr emng,
+void    entity_manager_enum_enum_descriptors(nentity_manager_wr emng,
                                              enum_entity_desc_wr eedf,
                                              void *ud);
 
-void    entity_manager_enum_struct_descriptors(entity_manager_wr emng,
+void    entity_manager_enum_struct_descriptors(nentity_manager_wr emng,
                                                enum_entity_desc_wr eedf,
                                                void *ud);
 
-void    entity_manager_enum_class_descriptors(entity_manager_wr emng,
+void    entity_manager_enum_class_descriptors(nentity_manager_wr emng,
                                               enum_entity_desc_wr eedf,
                                               void *ud);
 
-RetCode    entity_manager_new_class_instance(entity_manager_wr emng,
+RetCode    entity_manager_new_class_instance(nentity_manager_wr emng,
                                              unsigned int nclass_id,
-                                             net_class_wr *new_class_obj);
+                                             nclass_wr *new_class_obj);
 
-unsigned int     entity_manager_entity_count(entity_manager_wr emng);
-unsigned int     entity_manager_enum_count(entity_manager_wr emng);
-unsigned int     entity_manager_struct_count(entity_manager_wr emng);
-unsigned int     entity_manager_class_count(entity_manager_wr emng);
+unsigned int     entity_manager_entity_count(nentity_manager_wr emng);
+unsigned int     entity_manager_enum_count(nentity_manager_wr emng);
+unsigned int     entity_manager_struct_count(nentity_manager_wr emng);
+unsigned int     entity_manager_class_count(nentity_manager_wr emng);
 
-const char      *entity_manager_get_class_name(entity_manager_wr emng,
+const char      *entity_manager_get_class_name(nentity_manager_wr emng,
                                                unsigned int nclass_id);
 
-RetCode    entity_manager_extend_with_entity_desc(entity_manager_wr emng,
-                                                  const entity_desc_wr edesc);
+RetCode    entity_manager_extend_with_entity_desc(nentity_manager_wr emng,
+                                                  const nentity_desc_wr edesc);
 
-RetCode    entity_manager_extend_with_entity_manager(entity_manager_wr emng,
-                                                     entity_manager_wr nem);
+RetCode    entity_manager_extend_with_entity_manager(nentity_manager_wr emng,
+                                                     nentity_manager_wr nem);
 
-RetCode    entity_manager_extend_with_model_name(entity_manager_wr emng,
+RetCode    entity_manager_extend_with_model_name(nentity_manager_wr emng,
                                                  const char *model_name);
 
 #if defined(__cplusplus)
