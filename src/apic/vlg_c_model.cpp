@@ -427,9 +427,9 @@ extern "C" {
                                                  const nentity_manager_wr nem,
                                                  const member_desc_wr *member_descriptor)
     {
-        return static_cast<nclass *>(obj)->get_term_field_ref_by_plain_idx(plain_idx,
-                                                                           *static_cast<const nentity_manager *>(nem),
-                                                                           (const member_desc **)member_descriptor);
+        return static_cast<nclass *>(obj)->get_field_by_column_number(plain_idx,
+                                                                      *static_cast<const nentity_manager *>(nem),
+                                                                      (const member_desc **)member_descriptor);
     }
 
     const nentity_desc_wr nclass_get_entity_descriptor(nclass_wr obj)
@@ -456,8 +456,9 @@ extern "C" {
     RetCode nclass_primary_key_string_value(nclass_wr obj,
                                             ascii_str_wr out_str)
     {
-        return static_cast<nclass *>(obj)->primary_key_string_value(
-                   static_cast<ascii_string *>(out_str));
+        //@FIXME
+        //return static_cast<nclass *>(obj)->get_primary_key_value_as_string(static_cast<ascii_string *>(out_str));
+        return RetCode_OK;
     }
 }
 

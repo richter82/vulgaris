@@ -1344,21 +1344,21 @@ vlg::RetCode nclass::set_field_zero_by_id_index(unsigned int fldid,
 }
 
 /*************************************************************
--get_term_field_ref_by_plain_idx
+-get_field_address_by_column_number
 **************************************************************/
 
 struct ENM_FND_IDX_REC_UD {
     ENM_FND_IDX_REC_UD(char *obj_ptr,
                        const nentity_manager &nem,
-                       unsigned int plain_idx,
-                       unsigned int *current_plain_idx,
+                       unsigned int col_num,
+                       unsigned int *current_col_num,
                        char **obj_fld_ptr,
                        bool *res_valid) :
         nem_(nem),
         obj_ptr_(obj_ptr),
         fld_mmbrd_(NULL),
-        plain_idx_(plain_idx),
-        current_plain_idx_(current_plain_idx),
+        col_num_(col_num),
+        current_col_num_(current_col_num),
         obj_fld_ptr_(obj_fld_ptr),
         res_valid_(res_valid) {
     }
@@ -1369,8 +1369,8 @@ struct ENM_FND_IDX_REC_UD {
     const nentity_manager    &nem_;
     char                    *obj_ptr_;
     const member_desc       *fld_mmbrd_;
-    unsigned int            plain_idx_;
-    unsigned int            *current_plain_idx_;
+    unsigned int            col_num_;
+    unsigned int            *current_col_num_;
     char                    **obj_fld_ptr_;
     bool                    *res_valid_;
 };
@@ -1388,7 +1388,7 @@ void enum_edesc_fnd_idx(const vlg::hash_map &map,
             //treat enum as number
             if(mmbrd->get_field_nmemb() > 1) {
                 for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
-                    if(rud->plain_idx_ == *(rud->current_plain_idx_)) {
+                    if(rud->col_num_ == *(rud->current_col_num_)) {
                         *(rud->obj_fld_ptr_) = rud->obj_ptr_ +
                                                mmbrd->get_field_offset() +
                                                mmbrd->get_field_type_size()*i;
@@ -1396,16 +1396,16 @@ void enum_edesc_fnd_idx(const vlg::hash_map &map,
                         brk = *(rud->res_valid_) = true;
                         break;
                     } else {
-                        (*(rud->current_plain_idx_))++;
+                        (*(rud->current_col_num_))++;
                     }
                 }
             } else {
-                if(rud->plain_idx_ == *(rud->current_plain_idx_)) {
+                if(rud->col_num_ == *(rud->current_col_num_)) {
                     *(rud->obj_fld_ptr_) = rud->obj_ptr_ + mmbrd->get_field_offset();
                     rud->fld_mmbrd_ = mmbrd;
                     brk = *(rud->res_valid_) = true;
                 } else {
-                    (*(rud->current_plain_idx_))++;
+                    (*(rud->current_col_num_))++;
                 }
             }
         } else {
@@ -1441,16 +1441,16 @@ void enum_edesc_fnd_idx(const vlg::hash_map &map,
     } else {
         //primitive type
         if(mmbrd->get_field_vlg_type() == Type_ASCII) {
-            if(rud->plain_idx_ == *(rud->current_plain_idx_)) {
+            if(rud->col_num_ == *(rud->current_col_num_)) {
                 *(rud->obj_fld_ptr_) = rud->obj_ptr_ + mmbrd->get_field_offset();
                 rud->fld_mmbrd_ = mmbrd;
                 brk = *(rud->res_valid_) = true;
             } else {
-                (*(rud->current_plain_idx_))++;
+                (*(rud->current_col_num_))++;
             }
         } else if(mmbrd->get_field_nmemb() > 1) {
             for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
-                if(rud->plain_idx_ == *(rud->current_plain_idx_)) {
+                if(rud->col_num_ == *(rud->current_col_num_)) {
                     *(rud->obj_fld_ptr_) = rud->obj_ptr_ +
                                            mmbrd->get_field_offset() +
                                            mmbrd->get_field_type_size()*i;
@@ -1458,24 +1458,24 @@ void enum_edesc_fnd_idx(const vlg::hash_map &map,
                     brk = *(rud->res_valid_) = true;
                     break;
                 } else {
-                    (*(rud->current_plain_idx_))++;
+                    (*(rud->current_col_num_))++;
                 }
             }
         } else {
-            if(rud->plain_idx_ == *(rud->current_plain_idx_)) {
+            if(rud->col_num_ == *(rud->current_col_num_)) {
                 *(rud->obj_fld_ptr_) = rud->obj_ptr_ + mmbrd->get_field_offset();
                 rud->fld_mmbrd_ = mmbrd;
                 brk = *(rud->res_valid_) = true;
             } else {
-                (*(rud->current_plain_idx_))++;
+                (*(rud->current_col_num_))++;
             }
         }
     }
 }
 
-char *nclass::get_term_field_ref_by_plain_idx(unsigned int plainidx,
-                                              const nentity_manager &nem,
-                                              const member_desc **mdesc)
+char *nclass::get_field_by_column_number(unsigned int col_num,
+                                         const nentity_manager &nem,
+                                         const member_desc **mdesc)
 {
     if(!mdesc) {
         return NULL;
@@ -1487,7 +1487,7 @@ char *nclass::get_term_field_ref_by_plain_idx(unsigned int plainidx,
     char *obj_fld_ptr = NULL;
     ENM_FND_IDX_REC_UD fnd_idx_rud((char *)this,
                                    nem,
-                                   plainidx,
+                                   col_num,
                                    &current_plain_idx,
                                    &obj_fld_ptr,
                                    &res_valid);
@@ -1696,13 +1696,18 @@ void enum_prim_key_str_value(const vlg::hash_map &map,
     }
 }
 
-vlg::RetCode nclass::primary_key_string_value(vlg::ascii_string *out)
+vlg::RetCode nclass::get_primary_key_value_as_string(vlg::shared_pointer<char> &out_str)
 {
-    const vlg::hash_map &idk_desc =
-        get_nentity_descriptor()->get_opaque()->GetMap_KEYID_KDESC();
-    prim_key_str_value_rec_ud rud((const char *)this, out);
+    vlg::ascii_string str;
+    const vlg::hash_map &idk_desc = get_nentity_descriptor()->get_opaque()->GetMap_KEYID_KDESC();
+    prim_key_str_value_rec_ud rud((const char *)this, &str);
     idk_desc.enum_elements(enum_prim_key_str_value, &rud);
+    if(!rud.res) {
+        out_str.set_pointer(str.new_buffer());
+    }
     return rud.res;
 }
+
+
 
 }

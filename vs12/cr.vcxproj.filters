@@ -66,9 +66,6 @@
     <ClCompile Include="..\src\cr\cr_parse.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\cr\cr_strings.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\cr\cr_structs.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -76,6 +73,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\src\cr\cr_structs_rep.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cr\cr_ascii_string.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

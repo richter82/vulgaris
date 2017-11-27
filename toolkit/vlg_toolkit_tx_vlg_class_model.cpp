@@ -242,8 +242,9 @@ QVariant vlg_toolkit_tx_vlg_class_model::data(const QModelIndex &index,
         if(local_obj_) {
             const vlg::member_desc *obj_fld_mdesc = NULL;
             char *obj_fld_ptr = NULL;
-            if((obj_fld_ptr = local_obj_->get_term_field_ref_by_plain_idx(index.row(), bem_,
-                                                                          &obj_fld_mdesc))) {
+            if((obj_fld_ptr = local_obj_->get_field_by_column_number(index.row(),
+                                                                     bem_,
+                                                                     &obj_fld_mdesc))) {
                 QString out;
                 if((obj_fld_mdesc->get_field_vlg_type() == vlg::Type_ASCII) &&
                         obj_fld_mdesc->get_field_nmemb() > 1) {
@@ -287,8 +288,9 @@ bool vlg_toolkit_tx_vlg_class_model::setData(const QModelIndex &index,
         if(local_obj_) {
             const vlg::member_desc *obj_fld_mdesc = NULL;
             char *obj_fld_ptr = NULL;
-            if((obj_fld_ptr = local_obj_->get_term_field_ref_by_plain_idx(index.row(), bem_,
-                                                                          &obj_fld_mdesc))) {
+            if((obj_fld_ptr = local_obj_->get_field_by_column_number(index.row(),
+                                                                     bem_,
+                                                                     &obj_fld_mdesc))) {
                 FillFldValue_Qstring(value, obj_fld_mdesc, obj_fld_ptr);
                 emit(dataChanged(index, index));
                 return true;
