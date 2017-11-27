@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     qApp->setApplicationVersion(QUOTE(APP_VERSION));
     qApp->setApplicationName(QUOTE(APP_NAME));
-    qApp->setOrganizationName("Blaze");
+    qApp->setOrganizationName("Vulgaris");
     qApp->setOrganizationDomain("www.vlg-tech.net");
     vlg_toolkit_MainWindow w;
     w.setWindowTitle(qApp->applicationName() + QString(" - ") +

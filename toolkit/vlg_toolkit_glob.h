@@ -32,7 +32,6 @@
 #include "vlg_transaction.h"
 #include "vlg_subscription.h"
 #include "cr_structs_mt.h"
-#include "cr_cfg.h"
 #include "cr_ascii_string.h"
 
 #include <QMainWindow>
