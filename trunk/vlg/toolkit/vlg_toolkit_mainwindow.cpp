@@ -22,6 +22,8 @@
 #include "vlg_toolkit_mainwindow.h"
 #include "ui_vlg_toolkit_mainwindow.h"
 
+#include "cr_cfg.h"
+
 void vlg_toolkit_peer_status_change_hndlr(vlg::peer &p,
                                           vlg::PeerStatus status,
                                           void *ud)
@@ -272,8 +274,10 @@ vlg::RetCode vlg_toolkit_MainWindow::PeerLoadCfgHndl(int pnum,
 void vlg_toolkit_MainWindow::on_action_Load_Config_triggered()
 {
     vlg::RetCode res = vlg::RetCode_OK;
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Load Config"),
-                                                    QDir::currentPath(), tr("Blaze config (*.*)"));
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("Load Config"),
+                                                    QDir::currentPath(),
+                                                    tr("config (*.*)"));
     if(fileName.isEmpty()) {
         qDebug() << "fileName empty.";
         return;
@@ -556,11 +560,11 @@ void vlg_toolkit_MainWindow::LoadDefPeerCfgFile()
     const char *fileName_cstr = "params";
     vlg::config_loader peer_conf_ldr;
     if((res = peer_conf_ldr.init(fileName_cstr))) {
-        qDebug() << "peer_conf_ldr.Init() failed." << res;
+        qDebug() << "peer_conf_ldr.init() failed." << res;
         return;
     }
     if((res = peer_conf_ldr.load_config())) {
-        qDebug() << "peer_conf_ldr.LoadCfg() failed." << res;
+        qDebug() << "peer_conf_ldr.load_config() failed." << res;
         return;
     }
     peer_conf_ldr.enum_params(peer_params_clbk_ud, this);
