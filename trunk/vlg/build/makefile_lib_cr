@@ -6,7 +6,7 @@ SRC =	../src/cr/cr_cfg.cpp\
 		../src/cr/cr_structs.cpp\
 		../src/cr/cr_structs_mt.cpp\
 		../src/cr/cr_core.cpp\
-		../src/cr/cr_strings.cpp\
+		../src/cr/cr_ascii_string.cpp\
 		../src/cr/cr_parse.cpp\
 		../src/cr/cr_structs_rep.cpp\
 		../src/cr/cr_bbuf.cpp\

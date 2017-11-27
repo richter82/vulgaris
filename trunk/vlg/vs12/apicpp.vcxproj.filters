@@ -26,9 +26,6 @@
     <ClInclude Include="..\public\cpp\vlg_transaction.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\cpp\vlg_ascii_string.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="..\public\cpp\vlg_byte_buffer.h">
       <Filter>h</Filter>
     </ClInclude>
