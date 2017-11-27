@@ -1506,8 +1506,7 @@ vlg::RetCode VLG_COMP_Render_EntryPoint__CPP_(compile_unit &cunit, FILE *file)
             "MODEL:%s ENTRYPOINT\n"
             CLS_CMMNT_LN, cunit.model_name());
     fprintf(file, "extern \"C\"{\n");
-    fprintf(file, EXPORT_SYMBOL VLG_COMP_CPP_ENTRY_PT_OPN, cunit.model_name(),
-            cunit.model_name());
+    fprintf(file, EXPORT_SYMBOL VLG_COMP_CPP_ENTRY_PT_OPN, cunit.model_name());
     vlg::hash_map &entitymap = cunit.get_entity_map();
     entitymap.start_iteration();
     entity_desc_comp *edsc = NULL;
