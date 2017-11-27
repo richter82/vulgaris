@@ -30,6 +30,7 @@
     <ClInclude Include="..\src\cr\cr_time.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\cr\cr_ascii_string.cpp" />
     <ClCompile Include="..\src\cr\cr_bbuf.cpp" />
     <ClCompile Include="..\src\cr\cr_cfg.cpp" />
     <ClCompile Include="..\src\cr\cr_concurrent.cpp" />
@@ -38,7 +39,6 @@
     <ClCompile Include="..\src\cr\cr_logger.cpp" />
     <ClCompile Include="..\src\cr\cr_obj_coll.cpp" />
     <ClCompile Include="..\src\cr\cr_parse.cpp" />
-    <ClCompile Include="..\src\cr\cr_strings.cpp" />
     <ClCompile Include="..\src\cr\cr_structs.cpp" />
     <ClCompile Include="..\src\cr\cr_structs_mt.cpp" />
     <ClCompile Include="..\src\cr\cr_structs_rep.cpp" />

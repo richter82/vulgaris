@@ -443,8 +443,9 @@ QVariant vlg_toolkit_sbs_vlg_class_model::data(const QModelIndex &index,
         if(obj) {
             const vlg::member_desc *obj_fld_mdesc = NULL;
             char *obj_fld_ptr = NULL;
-            if((obj_fld_ptr = obj->get_term_field_ref_by_plain_idx(index.column(), bem_,
-                                                                   &obj_fld_mdesc))) {
+            if((obj_fld_ptr = obj->get_field_by_column_number(index.column(),
+                                                              bem_,
+                                                              &obj_fld_mdesc))) {
                 QString out;
                 if((obj_fld_mdesc->get_field_vlg_type() == vlg::Type_ASCII) &&
                         obj_fld_mdesc->get_field_nmemb() > 1) {
@@ -558,9 +559,9 @@ void vlg_toolkit_sbs_vlg_class_model::offerEntry(vlg::nclass *entry)
 {
     int rowidx = 0;
     VLG_CLASS_ROW_IDX_PAIR crip;
-    vlg::ascii_string entry_key;
-    entry->primary_key_string_value(&entry_key);
-    QString hkey(entry_key.internal_buff());
+    vlg::shared_pointer<char> entry_key;
+    entry->get_primary_key_value_as_string(entry_key);
+    QString hkey(entry_key.ptr());
     if(data_hlpr_.contains(hkey)) {
         crip = data_hlpr_[hkey];
         rowidx = crip.rowidx_;

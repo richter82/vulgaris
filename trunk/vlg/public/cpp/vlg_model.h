@@ -119,14 +119,14 @@ class nentity_desc_impl;
 class nentity_desc {
     public:
         explicit nentity_desc(unsigned int      nclass_id,
-                              size_t             nclass_size,
-                              size_t             nclass_max_align,
-                              NEntityType        nentity_type,
-                              const char         *entity_namespace,
-                              const char         *entity_name,
-                              vlg::alloc_func    nentity_allocation_function,
-                              unsigned int       nentity_member_num,
-                              bool               persistent);
+                              size_t            nclass_size,
+                              size_t            nclass_max_align,
+                              NEntityType       nentity_type,
+                              const char        *entity_namespace,
+                              const char        *entity_name,
+                              vlg::alloc_func   nentity_allocation_function,
+                              unsigned int      nentity_member_num,
+                              bool              persistent);
         ~nentity_desc();
 
     public:
@@ -242,33 +242,9 @@ class nclass : public vlg::collectable {
                                                    unsigned int index,
                                                    unsigned int nmenb);
 
-        /**
-        This method returns the memory address to the LEAF
-        field of this nclass object, denoted by plain_idx.
-        If plain_idx exceeds the logical number of available item-fields
-        for this nclass object, this function returns NULL.
-        In case of success *member_descriptor points to the member_desc linked
-        to the leaf-field-pointer returned.
-        Significant fields of member_desc struct are: get_field_vlg_type() and
-        get_field_type_size().
-        *member_descriptor can never point to a descriptor for a
-        EntityType field; instead it will always point to a primitive
-        VLG_TYPE field.
-        The use of this function is *DISCOURAGED*
-        because it is inherently inefficient.
-        Anyway in some very peculiar cases it is necessary.
-
-        @param plain_idx
-        @param nem
-        @param member_descriptor
-        @return the address [byte aligned] to the TERMINAL-LEAF field of this
-                nclass object, denoted by plain_idx;
-                NULL if plain_idx exceeds the logical number of available
-                item-fields for this nclass object.
-        */
-        char *get_term_field_ref_by_plain_idx(unsigned int plain_idx,
-                                              const nentity_manager &nem,
-                                              const member_desc **member_descriptor);
+        char *get_field_by_column_number(unsigned int column_number,
+                                         const nentity_manager &nem,
+                                         const member_desc **member_descriptor);
 
     public:
         virtual const nentity_desc *get_nentity_descriptor()  const = 0;
@@ -295,7 +271,7 @@ class nclass : public vlg::collectable {
         persistence related
         */
     public:
-        virtual vlg::RetCode primary_key_string_value(vlg::ascii_string *out_str);
+        virtual vlg::RetCode get_primary_key_value_as_string(vlg::shared_pointer<char> &out_str);
 
     protected:
         static nclass_logger *log_;

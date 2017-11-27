@@ -916,25 +916,23 @@ vlg::RetCode subscription_impl::send_event_ack()
 
 // VLG_SUBSCRIPTION ASYNCH SENDING
 
-vlg::RetCode subscription_impl::store_sbs_evt_srv_asynch(subscription_event_impl
-                                                         *evt)
+vlg::RetCode subscription_impl::store_sbs_evt_srv_asynch(subscription_event_impl *evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, evt:%p)", __func__, this, evt))
     vlg::RetCode rcode = vlg::RetCode_OK;
-    vlg::ascii_string pkey;
+    vlg::shared_pointer<char> pkey;
     vlg::blocking_queue *classkeyvalue_inst_evt_q = NULL;
     sbs_event_wrapper *sev_wrpr = NULL;
     if(evt->get_evttype() == SubscriptionEventType_LIVE) {
         //class instance.
-        evt->get_obj()->primary_key_string_value(&pkey);
-        if((rcode = srv_sbs_classkey_evt_q_hm_.get(pkey.internal_buff(),
+        evt->get_obj()->get_primary_key_value_as_string(pkey);
+        if((rcode = srv_sbs_classkey_evt_q_hm_.get(pkey.ptr(),
                                                    &classkeyvalue_inst_evt_q))) {
             //not found.
-            classkeyvalue_inst_evt_q =
-                new vlg::blocking_queue(vlg::sngl_ptr_obj_mng());
+            classkeyvalue_inst_evt_q = new vlg::blocking_queue(vlg::sngl_ptr_obj_mng());
             classkeyvalue_inst_evt_q->init();
 
-            if((rcode = srv_sbs_classkey_evt_q_hm_.put(pkey.internal_buff(),
+            if((rcode = srv_sbs_classkey_evt_q_hm_.put(pkey.ptr(),
                                                        &classkeyvalue_inst_evt_q))) {
                 IFLOG(cri(TH_ID, LS_CLO
                           "%s(res:%d) - failed to put into srv_sbs_classkey_evt_q_hm_",
@@ -945,13 +943,13 @@ vlg::RetCode subscription_impl::store_sbs_evt_srv_asynch(subscription_event_impl
                 IFLOG(trc(TH_ID, LS_TRL
                           "%s() - put into srv_sbs_classkey_evt_q_hm_ {%p} - [key:%s]",
                           __func__,
-                          classkeyvalue_inst_evt_q, pkey.internal_buff()))
+                          classkeyvalue_inst_evt_q, pkey.ptr()))
             }
         } else {
             IFLOG(trc(TH_ID, LS_TRL
                       "%s() - get from srv_sbs_classkey_evt_q_hm_ {%p} - [key:%s]",
                       __func__,
-                      classkeyvalue_inst_evt_q, pkey.internal_buff()))
+                      classkeyvalue_inst_evt_q, pkey.ptr()))
         }
         if(flotyp_ == SubscriptionFlowType_LAST) {
             if((rcode = classkeyvalue_inst_evt_q->peek(0, 0, &sev_wrpr))) {
@@ -973,7 +971,7 @@ vlg::RetCode subscription_impl::store_sbs_evt_srv_asynch(subscription_event_impl
                               __func__,
                               evt->get_evtid(),
                               sev_wrpr,
-                              pkey.internal_buff()))
+                              pkey.ptr()))
                 }
                 if((rcode = srv_sbs_evt_glob_q_.put(&sev_wrpr))) {
                     IFLOG(cri(TH_ID, LS_CLO
@@ -989,7 +987,7 @@ vlg::RetCode subscription_impl::store_sbs_evt_srv_asynch(subscription_event_impl
                               __func__,
                               evt->get_evtid(),
                               sev_wrpr,
-                              pkey.internal_buff()))
+                              pkey.ptr()))
                 }
             } else {
                 //snapshotting
@@ -998,7 +996,7 @@ vlg::RetCode subscription_impl::store_sbs_evt_srv_asynch(subscription_event_impl
                           __func__,
                           sev_wrpr->get_evt()->get_evtid(),
                           evt->get_evtid(),
-                          pkey.internal_buff()))
+                          pkey.ptr()))
                 sev_wrpr->set_evt(evt);
             }
         } else {
@@ -1046,30 +1044,27 @@ vlg::RetCode subscription_impl::store_sbs_evt_srv_asynch(subscription_event_impl
     return rcode;
 }
 
-vlg::RetCode subscription_impl::consume_sbs_evt_srv_asynch(
-    subscription_event_impl **evt_out)
+vlg::RetCode subscription_impl::consume_sbs_evt_srv_asynch(subscription_event_impl **evt_out)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, evt_out:%p)", __func__, this, evt_out))
     vlg::RetCode rcode = vlg::RetCode_OK;
     sbs_event_wrapper *sev_wrpr_1 = NULL, *sev_wrpr_2 = NULL;
     if(!(rcode = srv_sbs_evt_glob_q_.get(0, 0, &sev_wrpr_1))) {
-        vlg::ascii_string pkey;
-        sev_wrpr_1->get_evt()->get_obj()->primary_key_string_value(&pkey);
+        vlg::shared_pointer<char> pkey;
+        sev_wrpr_1->get_evt()->get_obj()->get_primary_key_value_as_string(pkey);
         IFLOG(trc(TH_ID, LS_TRL "%s() - new event[%u] available. - [key:%s]",
                   __func__,
                   sev_wrpr_1->get_evt()->get_evtid(),
-                  pkey.internal_buff()))
-        if(sev_wrpr_1->get_evt()->get_evttype() ==
-                SubscriptionEventType_LIVE) {
+                  pkey.ptr()))
+        if(sev_wrpr_1->get_evt()->get_evttype() == SubscriptionEventType_LIVE) {
             vlg::blocking_queue *classkeyvalue_inst_evt_q = NULL;
-            if(!(rcode = srv_sbs_classkey_evt_q_hm_.get(pkey.internal_buff(),
-                                                        &classkeyvalue_inst_evt_q))) {
+            if(!(rcode = srv_sbs_classkey_evt_q_hm_.get(pkey.ptr(), &classkeyvalue_inst_evt_q))) {
                 if(!(rcode = classkeyvalue_inst_evt_q->get(0, 0, &sev_wrpr_2))) {
                     if(sev_wrpr_1 != sev_wrpr_2) { //check for same obj.
                         IFLOG(cri(TH_ID, LS_CLO
                                   "%s(res:%d) - inconsistence: [sev_wrpr_1:%p != sev_wrpr_2:%p] - [key:%s] - [clsskeyval_q:%p] - aborting.",
                                   __func__,
-                                  rcode, sev_wrpr_1, sev_wrpr_2, pkey.internal_buff(),
+                                  rcode, sev_wrpr_1, sev_wrpr_2, pkey.ptr(),
                                   classkeyvalue_inst_evt_q))
                         return vlg::RetCode_GENERR;
                     }
@@ -1078,7 +1073,7 @@ vlg::RetCode subscription_impl::consume_sbs_evt_srv_asynch(
                     IFLOG(cri(TH_ID, LS_CLO
                               "%s(res:%d) - failed to get sev_wrpr_2 from classkeyvalue_inst_evt_q - [key:%s] - aborting",
                               __func__,
-                              rcode, pkey.internal_buff()))
+                              rcode, pkey.ptr()))
                     return vlg::RetCode_GENERR;
                 }
             } else {
@@ -1086,7 +1081,7 @@ vlg::RetCode subscription_impl::consume_sbs_evt_srv_asynch(
                 IFLOG(cri(TH_ID, LS_CLO
                           "%s(res:%d) - failed to get event from srv_sbs_classkey_evt_q_hm_ - [key:%s] - aborting",
                           __func__,
-                          rcode, pkey.internal_buff()))
+                          rcode, pkey.ptr()))
                 return vlg::RetCode_GENERR;
             }
         }
@@ -1100,8 +1095,7 @@ vlg::RetCode subscription_impl::consume_sbs_evt_srv_asynch(
     } else {
         IFLOG(trc(TH_ID, LS_TRL "%s() - no new event available.", __func__))
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d, *evt_out:%p)", __func__, rcode,
-              &evt_out))
+    IFLOG(trc(TH_ID, LS_CLO "%s(res:%d, *evt_out:%p)", __func__, rcode, &evt_out))
     return rcode;
 }
 
