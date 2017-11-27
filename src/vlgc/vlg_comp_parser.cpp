@@ -100,8 +100,7 @@ vlg::hash_map &GetResWordsMap()
         if(!rword_map) {
             EXIT_ACTION_STDOUT("failed creating rword_map")
         }
-        COMMAND_IF_NOT_OK(rword_map->init(HM_SIZE_MINI), EXIT_ACTION(__func__,
-                                                                     __LINE__))
+        COMMAND_IF_NOT_OK(rword_map->init(HM_SIZE_MINI), EXIT_ACTION)
         COMMAND_IF_NOT_OK(LoadResWordsMap(*rword_map), EXIT_ACTION)
     }
     return *rword_map;
@@ -136,8 +135,7 @@ vlg::hash_map &GetTypesMap()
         if(!types_map) {
             EXIT_ACTION_STDOUT("failed creating types_map")
         }
-        COMMAND_IF_NOT_OK(types_map->init(HM_SIZE_MINI), EXIT_ACTION(__func__,
-                                                                     __LINE__))
+        COMMAND_IF_NOT_OK(types_map->init(HM_SIZE_MINI), EXIT_ACTION)
         COMMAND_IF_NOT_OK(LoadTypesMap(*types_map), EXIT_ACTION)
     }
     return *types_map;
