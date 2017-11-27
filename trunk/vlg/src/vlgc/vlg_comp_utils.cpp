@@ -310,8 +310,7 @@ size_t member_desc_comp::get_field_offset(VLG_COMP_ARCH arch,
     sprintf(outmsg, "key not found(arch:%d, os:%d, lang:%d, tcomp:%d)", arch, os,
             lang, tcomp);
     size_t val = 0;
-    COMMAND_IF_NOT_OK(fild_offset_map_.get(&key, &val), EXIT_ACTION(__func__,
-                                                                    __LINE__))
+    COMMAND_IF_NOT_OK(fild_offset_map_.get(&key, &val), EXIT_ACTION)
     return val;
 }
 
@@ -325,8 +324,7 @@ size_t member_desc_comp::get_field_type_size(VLG_COMP_ARCH arch,
     sprintf(outmsg, "key not found(arch:%d, os:%d, lang:%d, tcomp:%d)", arch, os,
             lang, tcomp);
     size_t val = 0;
-    COMMAND_IF_NOT_OK(fild_type_size_map_.get(&key, &val), EXIT_ACTION(__func__,
-                                                                       __LINE__))
+    COMMAND_IF_NOT_OK(fild_type_size_map_.get(&key, &val), EXIT_ACTION)
     return val;
 }
 
@@ -456,8 +454,7 @@ size_t entity_desc_comp::get_size(VLG_COMP_ARCH arch,
     sprintf(outmsg, "key not found(arch:%d, os:%d, lang:%d, tcomp:%d)", arch, os,
             lang, tcomp);
     size_t val = 0;
-    COMMAND_IF_NOT_OK(entity_size_map_.get(&key, &val), EXIT_ACTION(__func__,
-                                                                    __LINE__))
+    COMMAND_IF_NOT_OK(entity_size_map_.get(&key, &val), EXIT_ACTION)
     return val;
 }
 
@@ -471,8 +468,7 @@ size_t entity_desc_comp::get_entity_max_align(VLG_COMP_ARCH arch,
     sprintf(outmsg, "key not found(arch:%d, os:%d, lang:%d, tcomp:%d)", arch, os,
             lang, tcomp);
     size_t val = 0;
-    COMMAND_IF_NOT_OK(entity_max_align_map_.get(&key, &val), EXIT_ACTION(__func__,
-                                                                         __LINE__))
+    COMMAND_IF_NOT_OK(entity_max_align_map_.get(&key, &val), EXIT_ACTION)
     return val;
 }
 
