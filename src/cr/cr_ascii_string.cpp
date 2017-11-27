@@ -20,7 +20,7 @@
  */
 
 #include "vlg_globint.h"
-#include "vlg_ascii_string.h"
+#include "cr_ascii_string.h"
 
 namespace vlg {
 

@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\public\cpp\vlg_ascii_string.h" />
     <ClInclude Include="..\public\cpp\vlg_byte_buffer.h" />
     <ClInclude Include="..\public\cpp\vlg_connection.h" />
     <ClInclude Include="..\public\cpp\vlg_drv_sqlite.h" />

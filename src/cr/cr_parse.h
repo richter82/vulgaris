@@ -21,7 +21,7 @@
 
 #ifndef CR_PARSE_H_
 #define CR_PARSE_H_
-#include "vlg_ascii_string.h"
+#include "cr_ascii_string.h"
 
 namespace vlg {
 
