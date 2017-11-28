@@ -10,7 +10,7 @@ CCFLAGS = -std=c++11 -Wall -fPIC $(CC_DBG_REL_OPT)
 CCC = g++
 LDFLAGS = -shared
 LDFLAGS_1 = -Wl,-no-whole-archive,-error-unresolved-symbols
-LDLIBS= -L../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/lib -lblzmodel -lcr -lpthread $(LD_ARCH_LIB)
+LDLIBS= -L../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/lib -lvlg -lcr -lpthread $(LD_ARCH_LIB)
 LDFLAGS_2 = -Wl,-no-whole-archive
 
 default: libsmplmdl
