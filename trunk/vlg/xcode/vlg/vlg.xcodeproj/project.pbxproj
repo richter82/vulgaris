@@ -6,33 +6,24 @@
 	objectVersion = 46;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		E3527ECD1AF1197A00171956 /* libblzpers.a in CopyFiles */ = {isa = PBXBuildFile; fileRef = E3527EB41AF118D800171956 /* libblzpers.a */; };
-		E3AA74C61EB790E1004C4423 /* blz_pers_mng.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3AA74C51EB790E1004C4423 /* blz_pers_mng.cpp */; };
-		E3AA74C81EB790ED004C4423 /* blz_persistence_int.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3AA74C71EB790ED004C4423 /* blz_persistence_int.cpp */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXCopyFilesBuildPhase section */
-		E3527EB21AF118D800171956 /* CopyFiles */ = {
+		E357C6471FC819A6009CD894 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = /Users/giuseppe/dev/blz_sys_ng/blaze/bin/IOS_64/DBG/lib;
-			dstSubfolderSpec = 0;
+			dstPath = "include/$(PRODUCT_NAME)";
+			dstSubfolderSpec = 16;
 			files = (
-				E3527ECD1AF1197A00171956 /* libblzpers.a in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		E3527EB41AF118D800171956 /* libblzpers.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libblzpers.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		E3AA74C51EB790E1004C4423 /* blz_pers_mng.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = blz_pers_mng.cpp; path = ../../src/blzperslib/blz_pers_mng.cpp; sourceTree = "<group>"; };
-		E3AA74C71EB790ED004C4423 /* blz_persistence_int.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = blz_persistence_int.cpp; path = ../../src/blzperslib/blz_persistence_int.cpp; sourceTree = "<group>"; };
+		E357C6491FC819A6009CD894 /* libvlg.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libvlg.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		E3527EB11AF118D800171956 /* Frameworks */ = {
+		E357C6461FC819A6009CD894 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -42,137 +33,147 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		E387896F1A8A634F005A753E = {
+		E38785601A852398005A753E = {
 			isa = PBXGroup;
 			children = (
-				E38789871A8A63D3005A753E /* hdr */,
-				E38789861A8A63C7005A753E /* src */,
-				E38789791A8A634F005A753E /* Products */,
+				E38785781A8523D3005A753E /* src */,
+				E38785771A8523C5005A753E /* hdr */,
+				E387856A1A852398005A753E /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		E38789791A8A634F005A753E /* Products */ = {
+		E387856A1A852398005A753E /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				E3527EB41AF118D800171956 /* libblzpers.a */,
+				E357C6491FC819A6009CD894 /* libvlg.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		E38789861A8A63C7005A753E /* src */ = {
-			isa = PBXGroup;
-			children = (
-				E3AA74C71EB790ED004C4423 /* blz_persistence_int.cpp */,
-				E3AA74C51EB790E1004C4423 /* blz_pers_mng.cpp */,
-			);
-			name = src;
-			sourceTree = "<group>";
-		};
-		E38789871A8A63D3005A753E /* hdr */ = {
+		E38785771A8523C5005A753E /* hdr */ = {
 			isa = PBXGroup;
 			children = (
 			);
 			name = hdr;
 			sourceTree = "<group>";
 		};
+		E38785781A8523D3005A753E /* src */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = src;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		E3527EB31AF118D800171956 /* blz_persistence_ios */ = {
+		E357C6481FC819A6009CD894 /* vlg */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E3527EC91AF118D800171956 /* Build configuration list for PBXNativeTarget "blz_persistence_ios" */;
+			buildConfigurationList = E357C64F1FC819A6009CD894 /* Build configuration list for PBXNativeTarget "vlg" */;
 			buildPhases = (
-				E3527EB01AF118D800171956 /* Sources */,
-				E3527EB11AF118D800171956 /* Frameworks */,
-				E3527EB21AF118D800171956 /* CopyFiles */,
+				E357C6451FC819A6009CD894 /* Sources */,
+				E357C6461FC819A6009CD894 /* Frameworks */,
+				E357C6471FC819A6009CD894 /* CopyFiles */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = blz_persistence_ios;
-			productName = blz_persistence_ios;
-			productReference = E3527EB41AF118D800171956 /* libblzpers.a */;
+			name = vlg;
+			productName = vlg;
+			productReference = E357C6491FC819A6009CD894 /* libvlg.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		E38789701A8A634F005A753E /* Project object */ = {
+		E38785611A852398005A753E /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0900;
-				ORGANIZATIONNAME = blaze;
+				ORGANIZATIONNAME = "";
 				TargetAttributes = {
-					E3527EB31AF118D800171956 = {
-						CreatedOnToolsVersion = 6.3;
+					E357C6481FC819A6009CD894 = {
+						CreatedOnToolsVersion = 9.1;
+						DevelopmentTeam = GN9B6VM38Y;
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
-			buildConfigurationList = E38789731A8A634F005A753E /* Build configuration list for PBXProject "blz_persistence" */;
+			buildConfigurationList = E38785641A852398005A753E /* Build configuration list for PBXProject "vlg" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 			);
-			mainGroup = E387896F1A8A634F005A753E;
-			productRefGroup = E38789791A8A634F005A753E /* Products */;
+			mainGroup = E38785601A852398005A753E;
+			productRefGroup = E387856A1A852398005A753E /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				E3527EB31AF118D800171956 /* blz_persistence_ios */,
+				E357C6481FC819A6009CD894 /* vlg */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		E3527EB01AF118D800171956 /* Sources */ = {
+		E357C6451FC819A6009CD894 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E3AA74C81EB790ED004C4423 /* blz_persistence_int.cpp in Sources */,
-				E3AA74C61EB790E1004C4423 /* blz_pers_mng.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		E3527EC51AF118D800171956 /* Debug */ = {
+		E357C6501FC819A6009CD894 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = GN9B6VM38Y;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.1;
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = blzpers;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
-		E3527EC61AF118D800171956 /* Release */ = {
+		E357C6511FC819A6009CD894 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				GCC_NO_COMMON_BLOCKS = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
+				DEVELOPMENT_TEAM = GN9B6VM38Y;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.1;
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = blzpers;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
-		E38789811A8A634F005A753E /* Debug */ = {
+		E38785721A852398005A753E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -219,11 +220,11 @@
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
-				USER_HEADER_SEARCH_PATHS = "../../src ../../src/crlib ../../public/cpp";
+				USER_HEADER_SEARCH_PATHS = "../../src ../../src/cr ../../public/cpp ../../public";
 			};
 			name = Debug;
 		};
-		E38789821A8A634F005A753E /* Release */ = {
+		E38785731A852398005A753E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -263,32 +264,32 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
-				USER_HEADER_SEARCH_PATHS = "../../src ../../src/crlib ../../public/cpp";
+				USER_HEADER_SEARCH_PATHS = "../../src ../../src/cr ../../public/cpp ../../public";
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		E3527EC91AF118D800171956 /* Build configuration list for PBXNativeTarget "blz_persistence_ios" */ = {
+		E357C64F1FC819A6009CD894 /* Build configuration list for PBXNativeTarget "vlg" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				E3527EC51AF118D800171956 /* Debug */,
-				E3527EC61AF118D800171956 /* Release */,
+				E357C6501FC819A6009CD894 /* Debug */,
+				E357C6511FC819A6009CD894 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		E38789731A8A634F005A753E /* Build configuration list for PBXProject "blz_persistence" */ = {
+		E38785641A852398005A753E /* Build configuration list for PBXProject "vlg" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				E38789811A8A634F005A753E /* Debug */,
-				E38789821A8A634F005A753E /* Release */,
+				E38785721A852398005A753E /* Debug */,
+				E38785731A852398005A753E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = E38789701A8A634F005A753E /* Project object */;
+	rootObject = E38785611A852398005A753E /* Project object */;
 }
