@@ -1,0 +1,4 @@
+-lang CPP
+-I "../../sample_vlg_model"
+-O "../../sample_vlg_model"
+-F "vlg_model_sample.vlg"
