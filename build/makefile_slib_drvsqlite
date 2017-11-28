@@ -14,6 +14,10 @@ LDFLAGS_1 = -Wl$(LDFLAGS_1_OPT)
 LDLIBS= -L../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/lib -L../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/contrib/lib -lsqlite -lvlg -lcr -lpthread $(LD_ARCH_LIB)
 LDFLAGS_2 = -Wl$(LDFLAGS_2_OPT)
 
+ifndef SOLIB_EXT
+SOLIB_EXT=so
+endif
+
 default: libdrvsqlite
 
 all: clean libdrvsqlite
@@ -22,9 +26,9 @@ all: clean libdrvsqlite
 	$(CCC) $(INCLUDES) $(CCFLAGS) -c $< -o $@
 
 libdrvsqlite: 	$(OBJ)
-	$(CCC) $(LD_DBG_REL_OPT) $(LDFLAGS) -o $(OUTDIR)/libdrvsqlite.so $(OBJ) $(LDFLAGS_1) $(LDLIBS) $(LDFLAGS_2)
+	$(CCC) $(LD_DBG_REL_OPT) $(LDFLAGS) -o $(OUTDIR)/libdrvsqlite.$(SOLIB_EXT) $(OBJ) $(LDFLAGS_1) $(LDLIBS) $(LDFLAGS_2)
 
 clean:
-	rm -f $(OBJ) $(OUTDIR)/libdrvsqlite.so
+	rm -f $(OBJ) $(OUTDIR)/libdrvsqlite.$(SOLIB_EXT)
 
 	
