@@ -5,6 +5,8 @@ export OUT_TRGT_DIR=DBG
 export CC_DBG_REL_OPT=-g
 export LD_DBG_REL_OPT=-g
 export LD_ARCH_LIB="-lrt -ldl"
+export LDFLAGS_1_OPT=",-no-whole-archive,-error-unresolved-symbols"
+export LDFLAGS_2_OPT=",-no-whole-archive"
 echo "@@@@@@ begin DEBUG build @@@@@@"
 make -f makefile_lib_cr all;
 make -f makefile_lib_vlg all; 

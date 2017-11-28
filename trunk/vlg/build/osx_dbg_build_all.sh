@@ -4,6 +4,8 @@ export OUT_ARCH_DIR=OSX_64
 export OUT_TRGT_DIR=DBG
 export CC_DBG_REL_OPT=-g
 export LD_DBG_REL_OPT=-g
+export LDFLAGS_1_OPT
+export LDFLAGS_2_OPT
 echo "@@@@@@ begin DEBUG build @@@@@@"
 make -f makefile_lib_cr all;
 make -f makefile_lib_vlg all; 
