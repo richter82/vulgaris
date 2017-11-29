@@ -52,7 +52,6 @@ typedef void(*listts_enum_func_breakable)(const synch_linked_list &list,
 
 
 /** @brief Basic thread safe Linked-List class.
-
 */
 class synch_linked_list {
     public:
@@ -274,7 +273,6 @@ typedef void(*hmapts_enum_func_breakable)(const synch_hash_map &map,
                                           bool &brk);
 
 /** @brief Basic thread safe Hash-Map class.
-
 */
 class synch_hash_map {
     public:
@@ -457,7 +455,6 @@ class synch_hash_map {
 };
 
 /** @brief Basic Blocking-Queue class.
-
 */
 class blocking_queue_rep;
 class blocking_queue {
@@ -587,8 +584,10 @@ class blocking_queue {
         mutable synch_monitor   mon_;
 };
 
+/** @brief object manager for shared pointers.
+*/
 template <typename T>
-class shared_ptr_obj_mng_priv : public obj_mng {
+class shared_ptr_obj_mng : public obj_mng {
     private:
         static void *shared_ptr_alloc_func(size_t type_size, const void *copy) {
             shared_pointer<T *> &sh_ptr_cpy = *(shared_pointer<T *> *)(copy);
@@ -610,19 +609,13 @@ class shared_ptr_obj_mng_priv : public obj_mng {
         }
 
     protected:
-        shared_ptr_obj_mng_priv() : obj_mng(0,
-                                                shared_ptr_alloc_func,
-                                                shared_ptr_dealloc_func,
-                                                memcmp,
-                                                shared_ptr_cpy_func,
-                                                MurmurHash3_x86_32) {}
+        shared_ptr_obj_mng() : obj_mng(0,
+                                           shared_ptr_alloc_func,
+                                           shared_ptr_dealloc_func,
+                                           memcmp,
+                                           shared_ptr_cpy_func,
+                                           MurmurHash3_x86_32) {}
 };
-
-/** @brief shared pointer object manager class.
-*/
-template <typename T>
-class shared_ptr_queue_obj_mng : public
-    shared_ptr_obj_mng_priv<shared_pointer<T>> {};
 
 }
 
