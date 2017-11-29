@@ -36,38 +36,38 @@ extern vlg::RetCode VLG_COMP_CPP_Calc_NMspc(entity_desc_comp &edesc,
 #define BBUF_DECL \
 "namespace vlg { class grow_byte_buffer {\n"\
 "public:\n"\
-CR_1IND "explicit grow_byte_buffer();\n"\
-CR_1IND "~grow_byte_buffer();\n"\
-CR_1IND "RetCode init(size_t initial_capacity);\n"\
-CR_1IND "void reset();\n"\
-CR_1IND "void flip();\n"\
-CR_1IND "RetCode grow(size_t);\n"\
-CR_1IND "RetCode ensure_capacity(size_t);\n"\
-CR_1IND "RetCode append(const void*, size_t, size_t);\n"\
-CR_1IND "RetCode append_ushort(unsigned short);\n"\
-CR_1IND "RetCode append_uint(unsigned int);\n"\
-CR_1IND "RetCode put(const void*, size_t, size_t);\n"\
-CR_1IND "size_t position() const;\n"\
-CR_1IND "size_t limit() const;\n"\
-CR_1IND "size_t mark() const;\n"\
-CR_1IND "size_t capacity() const;\n"\
-CR_1IND "size_t remaining() const;\n"\
-CR_1IND "unsigned char *buffer();\n"\
-CR_1IND "char *buffer_as_char();\n"\
-CR_1IND "unsigned int *buffer_as_uint();\n"\
-CR_1IND "RetCode advance_pos_write(size_t);\n"\
-CR_1IND "RetCode set_pos_write(size_t);\n"\
-CR_1IND "void move_pos_write(size_t);\n"\
-CR_1IND "RetCode advance_pos_read(size_t);\n"\
-CR_1IND "RetCode set_pos_read(size_t);\n"\
-CR_1IND "void set_mark();\n"\
-CR_1IND "RetCode set_mark(size_t);\n"\
-CR_1IND "size_t from_mark() const;\n"\
-CR_1IND "size_t available_read();\n"\
-CR_1IND "RetCode read(size_t, void*);\n"\
-CR_1IND "RetCode read_ushort(unsigned short*);\n"\
-CR_1IND "RetCode read_uint(unsigned int*);\n"\
-CR_1IND "RetCode read_uint_to_sizet(size_t*);\n"\
+ CR_1IND"explicit grow_byte_buffer();\n"\
+ CR_1IND"~grow_byte_buffer();\n"\
+ CR_1IND"RetCode init(size_t initial_capacity);\n"\
+ CR_1IND"void reset();\n"\
+ CR_1IND"void flip();\n"\
+ CR_1IND"RetCode grow(size_t);\n"\
+ CR_1IND"RetCode ensure_capacity(size_t);\n"\
+ CR_1IND"RetCode append(const void*, size_t, size_t);\n"\
+ CR_1IND"RetCode append_ushort(unsigned short);\n"\
+ CR_1IND"RetCode append_uint(unsigned int);\n"\
+ CR_1IND"RetCode put(const void*, size_t, size_t);\n"\
+ CR_1IND"size_t position() const;\n"\
+ CR_1IND"size_t limit() const;\n"\
+ CR_1IND"size_t mark() const;\n"\
+ CR_1IND"size_t capacity() const;\n"\
+ CR_1IND"size_t remaining() const;\n"\
+ CR_1IND"unsigned char *buffer();\n"\
+ CR_1IND"char *buffer_as_char();\n"\
+ CR_1IND"unsigned int *buffer_as_uint();\n"\
+ CR_1IND"RetCode advance_pos_write(size_t);\n"\
+ CR_1IND"RetCode set_pos_write(size_t);\n"\
+ CR_1IND"void move_pos_write(size_t);\n"\
+ CR_1IND"RetCode advance_pos_read(size_t);\n"\
+ CR_1IND"RetCode set_pos_read(size_t);\n"\
+ CR_1IND"void set_mark();\n"\
+ CR_1IND"RetCode set_mark(size_t);\n"\
+ CR_1IND"size_t from_mark() const;\n"\
+ CR_1IND"size_t available_read();\n"\
+ CR_1IND"RetCode read(size_t, void*);\n"\
+ CR_1IND"RetCode read_ushort(unsigned short*);\n"\
+ CR_1IND"RetCode read_uint(unsigned int*);\n"\
+ CR_1IND"RetCode read_uint_to_sizet(size_t*);\n"\
 "}; }\n\n"
 
 /***********************************
