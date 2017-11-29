@@ -191,8 +191,7 @@ vlg::RetCode acceptor::accept(unsigned int new_connid,
                   *new_conn,
                   rcode))
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(new_conn:%p, res:%d)", __func__, *new_conn,
-              rcode))
+    IFLOG(trc(TH_ID, LS_CLO "%s(new_conn:%p, res:%d)", __func__, *new_conn, rcode))
     return rcode;
 }
 

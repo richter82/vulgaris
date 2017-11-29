@@ -951,8 +951,7 @@ vlg::RetCode connection_impl::client_connect(sockaddr_in &params)
     }
     if(status_ != ConnectionStatus_INITIALIZED &&
             status_ != ConnectionStatus_DISCONNECTED) {
-        IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p) - invalid connection status.", __func__,
-                  this))
+        IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p) - invalid connection status.", __func__, this))
         return vlg::RetCode_BADSTTS;
     }
 
@@ -968,8 +967,7 @@ vlg::RetCode connection_impl::client_connect(sockaddr_in &params)
     build_PKT_CONREQ(cli_agrhbt_, gbb);
     gbb->flip();
     RETURN_IF_NOT_OK(pkt_sending_q_.put(&gbb))
-    selector_event *evt =
-        new selector_event(VLG_SELECTOR_Evt_ConnectRequest, this);
+    selector_event *evt = new selector_event(VLG_SELECTOR_Evt_ConnectRequest, this);
     memcpy(&evt->saddr_, &params, sizeof(sockaddr_in));
     if((rcode = peer_.get_selector().evt_enqueue_and_notify(evt))) {
         set_status(ConnectionStatus_ERROR);
@@ -1034,12 +1032,11 @@ vlg::RetCode connection_impl::disconnect(DisconnectionResultReason
     return rcode;
 }
 
-vlg::RetCode connection_impl::await_for_connection_result(
-    ConnectivityEventResult
-    &con_evt_res,
-    ConnectivityEventType &connectivity_evt_type,
-    time_t sec,
-    long nsec)
+vlg::RetCode connection_impl::await_for_connection_result(ConnectivityEventResult
+                                                          &con_evt_res,
+                                                          ConnectivityEventType &connectivity_evt_type,
+                                                          time_t sec,
+                                                          long nsec)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ < ConnectionStatus_INITIALIZED) {
@@ -1134,8 +1131,7 @@ vlg::RetCode connection_impl::await_for_disconnection_result(
     return rcode;
 }
 
-vlg::RetCode connection_impl::recv_connection_request(const vlg_hdr_rec
-                                                      *pkt_hdr)
+vlg::RetCode connection_impl::recv_connection_request(const vlg_hdr_rec *pkt_hdr)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sockid:%d, pkt_hdr:%p)", __func__, get_socket(),
               pkt_hdr))
@@ -1200,8 +1196,7 @@ vlg::RetCode connection_impl::recv_connection_request(const vlg_hdr_rec
     return rcode;
 }
 
-vlg::RetCode connection_impl::recv_connection_response(
-    const vlg_hdr_rec *pkt_hdr)
+vlg::RetCode connection_impl::recv_connection_response(const vlg_hdr_rec *pkt_hdr)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(pkt_hdr:%p)", __func__, pkt_hdr))
     vlg::RetCode rcode = vlg::RetCode_OK;
@@ -1210,8 +1205,7 @@ vlg::RetCode connection_impl::recv_connection_response(
     set_conn_res_code(pkt_hdr->row_1.srvcrs.errcod);
     set_server_agrhbt(pkt_hdr->row_1.srvcrs.agrhbt);
     set_connid(pkt_hdr->row_2.connid.connid);
-    selector_event *evt = new selector_event(VLG_SELECTOR_Evt_Undef,
-                                             this);
+    selector_event *evt = new selector_event(VLG_SELECTOR_Evt_Undef, this);
     switch(conn_response()) {
         case ConnectionResult_ACCEPTED:
             IFLOG(inf(TH_ID, LS_CON"[connection accepted by peer][connid:%d][socket:%d]",
@@ -1529,17 +1523,16 @@ vlg::RetCode connection_impl::recv_tx_res(const vlg_hdr_rec *pkt_hdr,
 
 // SUBSCRIPTION
 
-subscription_impl *connection_impl::vlg_sbs_factory_default_func(
-    connection_impl &connection, void *ud)
+subscription_impl *connection_impl::vlg_sbs_factory_default_func(connection_impl &connection,
+                                                                 void *ud)
 {
     subscription_impl *new_subscription = new subscription_impl(
         connection);
     return new_subscription;
 }
 
-vlg::RetCode connection_impl::new_subscription(subscription_impl
-                                               **new_subscription,
-                                               vlg_sbs_factory_func  vlg_sbs_factory_f,
+vlg::RetCode connection_impl::new_subscription(subscription_impl **new_subscription,
+                                               vlg_sbs_factory_func vlg_sbs_factory_f,
                                                void *ud)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(new_subscription:%p)", __func__, new_subscription))
@@ -1563,8 +1556,7 @@ vlg::RetCode connection_impl::new_subscription(subscription_impl
 }
 
 //client only
-vlg::RetCode connection_impl::detach_subscription(subscription_impl
-                                                  *subscription)
+vlg::RetCode connection_impl::detach_subscription(subscription_impl *subscription)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(subscription:%p)", __func__, subscription))
     vlg::RetCode rcode = vlg::RetCode_OK;
@@ -1604,8 +1596,7 @@ vlg::RetCode connection_impl::detach_subscription(subscription_impl
     return rcode;
 }
 
-vlg::RetCode connection_impl::release_subscription(subscription_impl
-                                                   *subscription)
+vlg::RetCode connection_impl::release_subscription(subscription_impl *subscription)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(subscription:%p)", __func__, subscription))
     vlg::RetCode rcode = vlg::RetCode_OK;
@@ -1726,8 +1717,7 @@ vlg::RetCode connection_impl::recv_sbs_start_req(const vlg_hdr_rec *pkt_hdr)
             if((rcode = srv_classid_sbs_repo_.put(&inc_sbs->nclassid_, &inc_sbs))) {
                 inc_sbs->sbresl_ = SubscriptionResponse_KO;
                 inc_sbs->last_vlgcod_ = ProtocolCode_SERVER_ERROR;
-                IFLOG(cri(TH_ID, LS_SBT"[error putting sbs into nclass_id map - res:%d]",
-                          rcode))
+                IFLOG(cri(TH_ID, LS_SBT"[error putting sbs into nclass_id map - res:%d]", rcode))
             }
             inc_sbs->sbsid_ = sbsid;
             inc_sbs->sbresl_ = SubscriptionResponse_OK;
