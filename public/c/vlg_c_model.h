@@ -196,55 +196,55 @@ size_t nclass_pretty_dump_to_file(nclass_wr obj,
                                   int print_class_name);
 
 RetCode nclass_primary_key_string_value(nclass_wr obj,
-                                        ascii_str_wr out_str);
+                                        char **newly_alloc_out_pkey);
 
 typedef void(*enum_entity_desc_wr)(const nentity_desc_wr edesc,
                                    void *ud,
                                    int *stop);
 
-RetCode    entity_manager_get_entity_descriptor_by_classid(nentity_manager_wr emng,
+RetCode    entity_manager_get_entity_descriptor_by_classid(nentity_manager_wr nem,
                                                            unsigned int nclass_id,
                                                            nentity_desc_wr const *edesc);
 
-RetCode    entity_manager_get_entity_descriptor_by_name(nentity_manager_wr emng,
+RetCode    entity_manager_get_entity_descriptor_by_name(nentity_manager_wr nem,
                                                         const char *entity_name,
                                                         nentity_desc_wr const *edesc);
 
-void    entity_manager_enum_entity_descriptors(nentity_manager_wr emng,
+void    entity_manager_enum_entity_descriptors(nentity_manager_wr nem,
                                                enum_entity_desc_wr eedf,
                                                void *ud);
 
-void    entity_manager_enum_enum_descriptors(nentity_manager_wr emng,
+void    entity_manager_enum_enum_descriptors(nentity_manager_wr nem,
                                              enum_entity_desc_wr eedf,
                                              void *ud);
 
-void    entity_manager_enum_struct_descriptors(nentity_manager_wr emng,
+void    entity_manager_enum_struct_descriptors(nentity_manager_wr nem,
                                                enum_entity_desc_wr eedf,
                                                void *ud);
 
-void    entity_manager_enum_class_descriptors(nentity_manager_wr emng,
+void    entity_manager_enum_class_descriptors(nentity_manager_wr nem,
                                               enum_entity_desc_wr eedf,
                                               void *ud);
 
-RetCode    entity_manager_new_class_instance(nentity_manager_wr emng,
+RetCode    entity_manager_new_class_instance(nentity_manager_wr nem,
                                              unsigned int nclass_id,
                                              nclass_wr *new_class_obj);
 
-unsigned int     entity_manager_entity_count(nentity_manager_wr emng);
-unsigned int     entity_manager_enum_count(nentity_manager_wr emng);
-unsigned int     entity_manager_struct_count(nentity_manager_wr emng);
-unsigned int     entity_manager_class_count(nentity_manager_wr emng);
+unsigned int     entity_manager_entity_count(nentity_manager_wr nem);
+unsigned int     entity_manager_enum_count(nentity_manager_wr nem);
+unsigned int     entity_manager_struct_count(nentity_manager_wr nem);
+unsigned int     entity_manager_class_count(nentity_manager_wr nem);
 
-const char      *entity_manager_get_class_name(nentity_manager_wr emng,
+const char      *entity_manager_get_class_name(nentity_manager_wr nem,
                                                unsigned int nclass_id);
 
-RetCode    entity_manager_extend_with_entity_desc(nentity_manager_wr emng,
+RetCode    entity_manager_extend_with_entity_desc(nentity_manager_wr nem,
                                                   const nentity_desc_wr edesc);
 
-RetCode    entity_manager_extend_with_entity_manager(nentity_manager_wr emng,
-                                                     nentity_manager_wr nem);
+RetCode    entity_manager_extend_with_entity_manager(nentity_manager_wr nem1,
+                                                     const nentity_manager_wr nem2);
 
-RetCode    entity_manager_extend_with_model_name(nentity_manager_wr emng,
+RetCode    entity_manager_extend_with_model_name(nentity_manager_wr nem,
                                                  const char *model_name);
 
 #if defined(__cplusplus)

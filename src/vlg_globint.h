@@ -27,7 +27,7 @@
 #include "cr_dl.h"
 #include "cr_cfg.h"
 #include "cr_structs_mt.h"
-#include "vlg_byte_buffer.h"
+#include "cr_bbuf.h"
 
 #ifdef WIN32
 #include <winsock2.h>
@@ -58,6 +58,12 @@
 
 #ifndef min
 #define min(a,b) (((a) < (b)) ? (a) : (b))
+#endif
+
+#if defined(_MSC_VER)
+#define VLG_STRDUP _strdup
+#else
+#define VLG_STRDUP strdup
 #endif
 
 #define VLG_TK_COMMENT      "#"

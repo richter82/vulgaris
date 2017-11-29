@@ -1032,7 +1032,7 @@ vlg::RetCode get_local_date(char *out)
 }
 
 /***********************************
-RENDER- VLG_COMP_Render_Hdr
+GEN- VLG_COMP_Gen_Hdr
 ***********************************/
 vlg::RetCode render_hdr(compile_unit &cunit, vlg::ascii_string &fname,
                         FILE *file)
@@ -1095,7 +1095,7 @@ vlg::RetCode compile_unit::init(const char *fname)
         return vlg::RetCode_KO;
     }
 #ifdef WIN32
-    COMMAND_IF_NULL(fname_ = _strdup(fname), exit(1))
+    COMMAND_IF_NULL(fname_ = VLG_STRDUP(fname), exit(1))
 #else
     COMMAND_IF_NULL(fname_ = strdup(fname), exit(1))
 #endif

@@ -27,7 +27,7 @@ namespace vlg {
 
 /** @brief class grow_byte_buffer.
 */
-class grow_byte_buffer_rep;
+class grow_byte_buffer_impl;
 class grow_byte_buffer {
     public:
 
@@ -214,7 +214,7 @@ class grow_byte_buffer {
         RetCode         read_uint_to_sizet(size_t *out);
 
     private:
-        grow_byte_buffer_rep *impl_;
+        grow_byte_buffer_impl *impl_;
 };
 }
 

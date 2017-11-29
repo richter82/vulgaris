@@ -4,7 +4,7 @@ SRC = 	../src/apic/vlg_c_connection.cpp\
 		../src/apic/vlg_c_persistence.cpp\
 		../src/apic/vlg_c_subscription.cpp\
 		../src/apic/vlg_c_transaction.cpp\
-		../src/apic/vlg_c_pers_driv_sqlite.cpp
+		../src/apic/vlg_c_drv_sqlite.cpp
 		
 OBJ = $(SRC:.cpp=.o)
 OUTDIR = ../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/lib

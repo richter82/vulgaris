@@ -50,7 +50,7 @@ const char *rec_brackets_cond(member_desc_comp *mdsc)
 }
 
 /***********************************
-RENDER- VLG_COMP_JAVA_VLG_Entity_Ctor
+GEN- VLG_COMP_JAVA_VLG_Entity_Ctor
 ***********************************/
 vlg::RetCode VLG_COMP_JAVA_VLG_Entity_Ctor(compile_unit &cunit,
                                            entity_desc_comp &edsc,
@@ -160,7 +160,7 @@ java NClass abstract meths
 
 
 /***********************************
-RENDER- ABSR_METH_ENT_COPY__Body_impl
+GEN- ABSR_METH_ENT_COPY__Body_impl
 ***********************************/
 vlg::RetCode ABSR_METH_ENT_COPY__Body_impl(compile_unit &cunit,
                                            entity_desc_comp &edsc,
@@ -234,7 +234,7 @@ vlg::RetCode ABSR_METH_ENT_COPY__Body_impl(compile_unit &cunit,
 }
 
 /***********************************
-RENDER- ABSR_METH_ENT_CLONE__Body_impl
+GEN- ABSR_METH_ENT_CLONE__Body_impl
 ***********************************/
 vlg::RetCode ABSR_METH_ENT_CLONE__Body_impl(compile_unit &cunit,
                                             entity_desc_comp &edsc,
@@ -247,7 +247,7 @@ vlg::RetCode ABSR_METH_ENT_CLONE__Body_impl(compile_unit &cunit,
 }
 
 /***********************************
-RENDER- ABSR_METH_ENT_ISZERO__Body_impl
+GEN- ABSR_METH_ENT_ISZERO__Body_impl
 ***********************************/
 vlg::RetCode ABSR_METH_ENT_ISZERO__Body_impl(compile_unit &cunit,
                                              entity_desc_comp &edsc,
@@ -320,7 +320,7 @@ vlg::RetCode ABSR_METH_ENT_ISZERO__Body_impl(compile_unit &cunit,
 }
 
 /***********************************
-RENDER- ABSR_METH_ENT_SETZERO__Body_impl
+GEN- ABSR_METH_ENT_SETZERO__Body_impl
 ***********************************/
 vlg::RetCode ABSR_METH_ENT_SETZERO__Body_impl(compile_unit &cunit,
                                               entity_desc_comp &edsc,
@@ -387,7 +387,7 @@ vlg::RetCode ABSR_METH_ENT_SETZERO__Body_impl(compile_unit &cunit,
 }
 
 /***********************************
-RENDER- ABSR_METH_ENT_SET__Body_impl
+GEN- ABSR_METH_ENT_SET__Body_impl
 ***********************************/
 vlg::RetCode ABSR_METH_ENT_SET__Body_impl(compile_unit &cunit,
                                           entity_desc_comp &edsc,
@@ -461,7 +461,7 @@ vlg::RetCode ABSR_METH_ENT_SET__Body_impl(compile_unit &cunit,
 }
 
 /***********************************
-RENDER- ABSR_METH_ENT_GCOMPVER__Body_impl
+GEN- ABSR_METH_ENT_GCOMPVER__Body_impl
 ***********************************/
 vlg::RetCode ABSR_METH_ENT_GCOMPVER__Body_impl(compile_unit &cunit,
                                                entity_desc_comp &edsc,
@@ -472,7 +472,7 @@ vlg::RetCode ABSR_METH_ENT_GCOMPVER__Body_impl(compile_unit &cunit,
 }
 
 /***********************************
-RENDER- ABSR_METH_ENT_GENTDSC__Body_impl
+GEN- ABSR_METH_ENT_GENTDSC__Body_impl
 ***********************************/
 vlg::RetCode ABSR_METH_ENT_GENTDSC__Body_impl(compile_unit &cunit,
                                               entity_desc_comp &edsc,
@@ -487,7 +487,7 @@ vlg::RetCode ABSR_METH_ENT_GENTDSC__Body_impl(compile_unit &cunit,
 }
 
 /***********************************
-RENDER- ABSR_METH_ENT_PTOBUF__NotZeroMode
+GEN- ABSR_METH_ENT_PTOBUF__NotZeroMode
 ***********************************/
 vlg::RetCode ABSR_METH_ENT_PTOBUF__NotZeroMode(compile_unit &cunit,
                                                entity_desc_comp &edsc,
@@ -595,7 +595,7 @@ vlg::RetCode ABSR_METH_ENT_PTOBUF__NotZeroMode(compile_unit &cunit,
 }
 
 /***********************************
-RENDER- ABSR_METH_ENT_PTOBUF__AllFildMode
+GEN- ABSR_METH_ENT_PTOBUF__AllFildMode
 ***********************************/
 vlg::RetCode ABSR_METH_ENT_PTOBUF__AllFildMode(compile_unit &cunit,
                                                entity_desc_comp &edsc,
@@ -682,7 +682,7 @@ vlg::RetCode ABSR_METH_ENT_PTOBUF__AllFildMode(compile_unit &cunit,
 }
 
 /***********************************
-RENDER- ABSR_METH_ENT_PTOBUF__Body_impl
+GEN- ABSR_METH_ENT_PTOBUF__Body_impl
 ***********************************/
 vlg::RetCode ABSR_METH_ENT_PTOBUF__Body_impl(compile_unit &cunit,
                                              entity_desc_comp &edsc,
@@ -713,7 +713,7 @@ vlg::RetCode ABSR_METH_ENT_PTOBUF__Body_impl(compile_unit &cunit,
 }
 
 /***********************************
-RENDER- ABSR_METH_ENT_SER__IndexedNotZero
+GEN- ABSR_METH_ENT_SER__IndexedNotZero
 ***********************************/
 vlg::RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
                                                entity_desc_comp &edsc,
@@ -938,7 +938,7 @@ vlg::RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
 
 
 /***********************************
-RENDER- ABSR_METH_ENT_SER__Body_impl -*-SERIALIZE-*-
+GEN- ABSR_METH_ENT_SER__Body_impl -*-SERIALIZE-*-
 ***********************************/
 vlg::RetCode ABSR_METH_ENT_SER__Body_impl(compile_unit &cunit,
                                           entity_desc_comp &edsc,
@@ -957,7 +957,7 @@ vlg::RetCode ABSR_METH_ENT_SER__Body_impl(compile_unit &cunit,
 
 
 /***********************************
-RENDER- VLG_COMP_JAVA_VLG_Entity_abs_meths
+GEN- VLG_COMP_JAVA_VLG_Entity_abs_meths
 ***********************************/
 vlg::RetCode VLG_COMP_JAVA_VLG_Entity_abs_meths(compile_unit &cunit,
                                                 entity_desc_comp &edsc,
@@ -997,7 +997,7 @@ vlg::RetCode VLG_COMP_JAVA_VLG_Entity_abs_meths(compile_unit &cunit,
 }
 
 /***********************************
-RENDER- VLG_COMP_JAVA_VLG_Class_abs_meths
+GEN- VLG_COMP_JAVA_VLG_Class_abs_meths
 ***********************************/
 vlg::RetCode VLG_COMP_JAVA_VLG_Class_abs_meths(compile_unit &cunit,
                                                entity_desc_comp &edsc,
@@ -1013,7 +1013,7 @@ vlg::RetCode VLG_COMP_JAVA_VLG_Class_abs_meths(compile_unit &cunit,
 }
 
 /***********************************
-RENDER- VLG_COMP_JAVA_getter_setter
+GEN- VLG_COMP_JAVA_getter_setter
 ***********************************/
 vlg::RetCode VLG_COMP_JAVA_getter_setter(compile_unit &cunit,
                                          entity_desc_comp &edsc,
@@ -1195,7 +1195,7 @@ vlg::RetCode VLG_COMP_JAVA_getter_setter(compile_unit &cunit,
 
 
 /***********************************
-RENDER- VLG_COMP_JAVA_rep
+GEN- VLG_COMP_JAVA_rep
 ***********************************/
 vlg::RetCode VLG_COMP_JAVA_rep(compile_unit &cunit,
                                entity_desc_comp &edsc,
@@ -1233,7 +1233,7 @@ vlg::RetCode VLG_COMP_JAVA_rep(compile_unit &cunit,
 }
 
 /***********************************
-RENDER- VLG_COMP_JAVA_package_decl
+GEN- VLG_COMP_JAVA_package_decl
 ***********************************/
 vlg::RetCode VLG_COMP_JAVA_package_decl(FILE *file, const char *nmsp)
 {
@@ -1242,7 +1242,7 @@ vlg::RetCode VLG_COMP_JAVA_package_decl(FILE *file, const char *nmsp)
 }
 
 /***********************************
-RENDER- VLG_COMP_JAVA_vlg_import
+GEN- VLG_COMP_JAVA_vlg_import
 ***********************************/
 vlg::RetCode VLG_COMP_JAVA_vlg_import(FILE *file)
 {
@@ -1253,7 +1253,7 @@ vlg::RetCode VLG_COMP_JAVA_vlg_import(FILE *file)
 }
 
 /***********************************
-RENDER- VLG_COMP_JAVA_VLGEnum
+GEN- VLG_COMP_JAVA_VLGEnum
 ***********************************/
 vlg::RetCode VLG_COMP_JAVA_VLGEnum(compile_unit &cunit,
                                    entity_desc_comp &edsc,
@@ -1275,7 +1275,7 @@ vlg::RetCode VLG_COMP_JAVA_VLGEnum(compile_unit &cunit,
 }
 
 /***********************************
-RENDER- VLG_COMP_JAVA_NClass
+GEN- VLG_COMP_JAVA_NClass
 ***********************************/
 vlg::RetCode VLG_COMP_JAVA_NClass(compile_unit &cunit,
                                   entity_desc_comp &edsc,
@@ -1302,7 +1302,7 @@ vlg::RetCode VLG_COMP_JAVA_NClass(compile_unit &cunit,
 }
 
 /***********************************
-RENDER- VLG_COMP_JAVA_NEntityDesc
+GEN- VLG_COMP_JAVA_NEntityDesc
 ***********************************/
 vlg::RetCode VLG_COMP_JAVA_NEntityDesc(compile_unit &cunit,
                                        entity_desc_comp &edsc,
@@ -1391,10 +1391,10 @@ vlg::RetCode VLG_COMP_JAVA_NEntityDesc(compile_unit &cunit,
 extern int comp_ver[4];
 
 /***********************************
-RENDER- VLG_COMP_Render_ModelVersion__Java_
+GEN- VLG_COMP_Gen_ModelVersion__Java_
 ***********************************/
-vlg::RetCode VLG_COMP_Render_ModelVersion__Java_(compile_unit &cunit,
-                                                 FILE *file)
+vlg::RetCode VLG_COMP_Gen_ModelVersion__Java_(compile_unit &cunit,
+                                              FILE *file)
 {
     fprintf(file,   "/*****************************************************\n"
             "MODEL:%s VERSION\n"
@@ -1415,7 +1415,7 @@ vlg::RetCode VLG_COMP_Render_ModelVersion__Java_(compile_unit &cunit,
 }
 
 /***********************************
-RENDER- VLG_COMP_JAVA_EntryPoint
+GEN- VLG_COMP_JAVA_EntryPoint
 ***********************************/
 vlg::RetCode VLG_COMP_JAVA_EntryPoint(compile_unit &cunit,
                                       vlg::ascii_string &dfile_nm,
@@ -1446,7 +1446,7 @@ vlg::RetCode VLG_COMP_JAVA_EntryPoint(compile_unit &cunit,
     }
     fprintf(file, CR_1IND"return nem;\n");
     fprintf(file, "}\n");
-    RETURN_IF_NOT_OK(VLG_COMP_Render_ModelVersion__Java_(cunit, file))
+    RETURN_IF_NOT_OK(VLG_COMP_Gen_ModelVersion__Java_(cunit, file))
     fprintf(file, "}");
     return vlg::RetCode_OK;
 }

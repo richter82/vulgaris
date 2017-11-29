@@ -355,9 +355,8 @@ extern "C" {
                                          int *res)
     {
         bool b_res = false;
-        RetCode r_res = static_cast<nclass *>(obj)->is_field_zero_by_name(
-                            field_name,
-                            b_res);
+        RetCode r_res = static_cast<nclass *>(obj)->is_field_zero_by_name(field_name,
+                                                                          b_res);
         *res = b_res ? 1 : 0;
         return r_res;
     }
@@ -454,11 +453,14 @@ extern "C" {
     }
 
     RetCode nclass_primary_key_string_value(nclass_wr obj,
-                                            ascii_str_wr out_str)
+                                            char **newly_alloc_out_pkey)
     {
-        //@FIXME
-        //return static_cast<nclass *>(obj)->get_primary_key_value_as_string(static_cast<ascii_string *>(out_str));
-        return RetCode_OK;
+        vlg::shared_pointer<char> pkey;
+        RetCode r_res = static_cast<nclass *>(obj)->get_primary_key_value_as_string(pkey);
+        if(newly_alloc_out_pkey && !r_res) {
+            *newly_alloc_out_pkey = VLG_STRDUP(pkey.ptr());
+        }
+        return r_res;
     }
 }
 
@@ -480,94 +482,94 @@ void enum_entity_desc_wr_f(const nentity_desc &entity_descriptor,
 extern "C" {
 
     // VLG_ENTITY_MANAGER
-    RetCode entity_manager_get_entity_descriptor_by_classid(nentity_manager_wr emng,
+    RetCode entity_manager_get_entity_descriptor_by_classid(nentity_manager_wr nem,
                                                             unsigned int nclass_id,
                                                             nentity_desc_wr const *edesc)
     {
-        return static_cast<nentity_manager *>(emng)->get_nentity_descriptor(nclass_id,
-                                                                            (nentity_desc const **)edesc);
+        return static_cast<nentity_manager *>(nem)->get_nentity_descriptor(nclass_id,
+                                                                           (nentity_desc const **)edesc);
     }
 
-    RetCode entity_manager_get_entity_descriptor_by_name(nentity_manager_wr emng,
+    RetCode entity_manager_get_entity_descriptor_by_name(nentity_manager_wr nem,
                                                          const char *entity_name,
                                                          nentity_desc_wr const *edesc)
     {
-        return static_cast<nentity_manager *>(emng)->get_nentity_descriptor(entity_name,
-                                                                            (nentity_desc const **)edesc);
+        return static_cast<nentity_manager *>(nem)->get_nentity_descriptor(entity_name,
+                                                                           (nentity_desc const **)edesc);
     }
 
-    void entity_manager_enum_entity_descriptors(nentity_manager_wr emng,
+    void entity_manager_enum_entity_descriptors(nentity_manager_wr nem,
                                                 enum_entity_desc_wr eedf,
                                                 void *ud)
     {
         enum_entity_desc_wr_f_ud f_ud = { eedf, ud };
-        static_cast<nentity_manager *>(emng)->enum_nentity_descriptors(
+        static_cast<nentity_manager *>(nem)->enum_nentity_descriptors(
             enum_entity_desc_wr_f, &f_ud);
     }
 
-    RetCode entity_manager_extend_with_model_name(nentity_manager_wr emng,
+    RetCode entity_manager_extend_with_model_name(nentity_manager_wr nem,
                                                   const char *model_name)
     {
-        return static_cast<nentity_manager *>(emng)->extend(model_name);
+        return static_cast<nentity_manager *>(nem)->extend(model_name);
     }
 
-    void entity_manager_enum_enum_descriptors(nentity_manager_wr emng,
+    void entity_manager_enum_enum_descriptors(nentity_manager_wr nem,
                                               enum_entity_desc_wr eedf,
                                               void *ud)
     {
         enum_entity_desc_wr_f_ud f_ud = { eedf, ud };
-        static_cast<nentity_manager *>(emng)->enum_nenum_descriptors(
+        static_cast<nentity_manager *>(nem)->enum_nenum_descriptors(
             enum_entity_desc_wr_f, &f_ud);
     }
 
-    void entity_manager_enum_class_descriptors(nentity_manager_wr emng,
+    void entity_manager_enum_class_descriptors(nentity_manager_wr nem,
                                                enum_entity_desc_wr eedf,
                                                void *ud)
     {
         enum_entity_desc_wr_f_ud f_ud = { eedf, ud };
-        static_cast<nentity_manager *>(emng)->enum_nclass_descriptors(
+        static_cast<nentity_manager *>(nem)->enum_nclass_descriptors(
             enum_entity_desc_wr_f, &f_ud);
     }
 
-    RetCode entity_manager_new_class_instance(nentity_manager_wr emng,
+    RetCode entity_manager_new_class_instance(nentity_manager_wr nem,
                                               unsigned int nclass_id,
                                               nclass_wr *new_class_obj)
     {
-        return static_cast<nentity_manager *>(emng)->new_nclass_instance(nclass_id,
-                                                                         (nclass **)new_class_obj);
+        return static_cast<nentity_manager *>(nem)->new_nclass_instance(nclass_id,
+                                                                        (nclass **)new_class_obj);
     }
 
-    unsigned int entity_manager_entity_count(nentity_manager_wr emng)
+    unsigned int entity_manager_entity_count(nentity_manager_wr nem)
     {
-        return static_cast<nentity_manager *>(emng)->nentity_count();
+        return static_cast<nentity_manager *>(nem)->nentity_count();
     }
 
-    unsigned int entity_manager_enum_count(nentity_manager_wr emng)
+    unsigned int entity_manager_enum_count(nentity_manager_wr nem)
     {
-        return static_cast<nentity_manager *>(emng)->nenum_count();
+        return static_cast<nentity_manager *>(nem)->nenum_count();
     }
 
-    unsigned int entity_manager_class_count(nentity_manager_wr emng)
+    unsigned int entity_manager_class_count(nentity_manager_wr nem)
     {
-        return static_cast<nentity_manager *>(emng)->nclass_count();
+        return static_cast<nentity_manager *>(nem)->nclass_count();
     }
 
-    const char *entity_manager_get_class_name(nentity_manager_wr emng,
+    const char *entity_manager_get_class_name(nentity_manager_wr nem,
                                               unsigned int nclass_id)
     {
-        return static_cast<nentity_manager *>(emng)->get_nclass_name(nclass_id);
+        return static_cast<nentity_manager *>(nem)->get_nclass_name(nclass_id);
     }
 
-    RetCode entity_manager_extend_with_entity_desc(nentity_manager_wr emng,
+    RetCode entity_manager_extend_with_entity_desc(nentity_manager_wr nem,
                                                    const nentity_desc_wr edesc)
     {
-        return static_cast<nentity_manager *>(emng)->extend((const nentity_desc *)edesc);
+        return static_cast<nentity_manager *>(nem)->extend((const nentity_desc *)edesc);
     }
 
-    RetCode entity_manager_extend_with_entity_manager(nentity_manager_wr emng,
-                                                      nentity_manager_wr nem)
+    RetCode entity_manager_extend_with_entity_manager(nentity_manager_wr nem1,
+                                                      const nentity_manager_wr nem2)
     {
-        return static_cast<nentity_manager *>(emng)->extend((nentity_manager *)nem);
+        return static_cast<nentity_manager *>(nem1)->extend((nentity_manager *)nem2);
     }
 
     // VLG_LOGGER
