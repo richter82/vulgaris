@@ -102,16 +102,19 @@ vlg::RetCode acceptor::set_sockaddr_in(sockaddr_in &serv_sockaddr_in) {
 }
 
 vlg::RetCode acceptor::create_server_socket(SOCKET &serv_socket) {
-    IFLOG(trc(TH_ID, LS_OPN "%s(srv_implrf:%s, srv_port:%d)", __func__,
+    IFLOG(trc(TH_ID, LS_OPN "%s(srv_interf:%s, srv_port:%d)", __func__,
               inet_ntoa(serv_sockaddr_in_.sin_addr),
               ntohs(serv_sockaddr_in_.sin_port)))
     if((serv_socket = serv_socket_ = socket(AF_INET, SOCK_STREAM,
                                             0)) != INVALID_SOCKET) {
-        IFLOG(dbg(TH_ID, LS_TRL "%s(srv_sockid:%d) -socket OK-", __func__, serv_socket))
+        IFLOG(dbg(TH_ID, LS_TRL "%s(srv_sockid:%d) -socket OK-", __func__,
+                  serv_socket))
         if(!bind(serv_socket_, (sockaddr *)&serv_sockaddr_in_, sizeof(sockaddr_in))) {
-            IFLOG(dbg(TH_ID, LS_TRL "%s(srv_sockid:%d) -bind OK-", __func__, serv_socket))
+            IFLOG(dbg(TH_ID, LS_TRL "%s(srv_sockid:%d) -bind OK-", __func__,
+                      serv_socket))
             if(!listen(serv_socket_, SOMAXCONN)) {
-                IFLOG(dbg(TH_ID, LS_TRL "%s(srv_sockid:%d) -listen OK-", __func__, serv_socket))
+                IFLOG(dbg(TH_ID, LS_TRL "%s(srv_sockid:%d) -listen OK-", __func__,
+                          serv_socket))
             } else {
                 IFLOG(err(TH_ID, LS_CLO "%s(srv_sockid:%d) -listen KO-", __func__,
                           serv_socket_))
@@ -124,15 +127,18 @@ vlg::RetCode acceptor::create_server_socket(SOCKET &serv_socket) {
 #else
             err = errno;
 #endif
-            IFLOG(err(TH_ID, LS_CLO "%s(srv_sockid:%d, err:%d) -bind KO-", __func__,
-                      serv_socket_, err))
+            IFLOG(err(TH_ID, LS_CLO "%s(srv_sockid:%d, err:%d) -bind KO-",
+                      __func__,
+                      serv_socket_,
+                      err))
             return vlg::RetCode_SYSERR;
         }
     } else {
         IFLOG(err(TH_ID, LS_CLO "%s() -socket KO-", __func__))
         return vlg::RetCode_SYSERR;
     }
-    IFLOG(inf(TH_ID, LS_CLO "%s(srv_implrf:%s, srv_port:%d)", __func__,
+    IFLOG(inf(TH_ID, LS_CLO "%s(srv_interf:%s, srv_port:%d)",
+              __func__,
               inet_ntoa(serv_sockaddr_in_.sin_addr),
               ntohs(serv_sockaddr_in_.sin_port)))
     return vlg::RetCode_OK;

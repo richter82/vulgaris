@@ -549,6 +549,7 @@ class persistence_manager_impl;
 class persistence_task;
 class persistence_connection_pool;
 class persistence_worker;
+class grow_byte_buffer;
 #endif
 typedef void *persistence_manager_wr;
 typedef void *persistence_connection_wr;

@@ -422,15 +422,15 @@ vlg::RetCode peer_impl::next_connid(unsigned int &connid)
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode peer_impl::extend_model(nentity_manager *emng)
+vlg::RetCode peer_impl::extend_model(nentity_manager *nem)
 {
-    IFLOG(trc(TH_ID, LS_OPN "%s(emng:%p)", __func__, emng))
+    IFLOG(trc(TH_ID, LS_OPN "%s(nem:%p)", __func__, nem))
     vlg::RetCode rcode = vlg::RetCode_OK;
-    if((rcode = nem_.extend(emng))) {
+    if((rcode = nem_.extend(nem))) {
         IFLOG(cri(TH_ID, LS_MDL "%s(res:%d) - [failed to extend nem]", __func__,
                   rcode))
     }
-    IFLOG(trc(TH_ID, LS_CLO "%s(emng:%p)", __func__, emng))
+    IFLOG(trc(TH_ID, LS_CLO "%s(nem:%p)", __func__, nem))
     return rcode;
 }
 

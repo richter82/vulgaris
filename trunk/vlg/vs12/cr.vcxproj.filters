@@ -37,6 +37,9 @@
     <ClInclude Include="..\src\cr\cr_structs_rep.h">
       <Filter>h</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\cr\cr_bbuf.h">
+      <Filter>h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\cr\cr_time.cpp">

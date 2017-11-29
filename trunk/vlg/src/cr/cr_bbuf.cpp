@@ -19,8 +19,8 @@
  *
  */
 
+#include "cr_bbuf.h"
 #include "vlg_globint.h"
-#include "vlg_byte_buffer.h"
 
 namespace vlg {
 
@@ -28,27 +28,25 @@ void *grow_buff_or_die(void *buf, size_t cur_size, size_t amnt)
 {
     void *nout = NULL;
     if(buf) {
-        COMMAND_IF_NULL(nout = realloc(buf, cur_size+amnt),
-                        EXIT_ACTION)
+        COMMAND_IF_NULL(nout = realloc(buf, cur_size+amnt), EXIT_ACTION)
     } else {
-        COMMAND_IF_NULL(nout = malloc(amnt),
-                        EXIT_ACTION)
+        COMMAND_IF_NULL(nout = malloc(amnt), EXIT_ACTION)
     }
     return nout;
 }
 
 //-----------------------------
 // grow_byte_buffer_rep
-class grow_byte_buffer_rep {
+class grow_byte_buffer_impl {
     public:
-        grow_byte_buffer_rep() :
+        grow_byte_buffer_impl() :
             capcty_(0),
             pos_(0),
             limit_(0),
             mark_(0),
             buf_(0) {}
 
-        ~grow_byte_buffer_rep() {
+        ~grow_byte_buffer_impl() {
             if(buf_) {
                 free(buf_);
             }
@@ -58,8 +56,7 @@ class grow_byte_buffer_rep {
             if(!capcty) {
                 return RetCode_BADARG;
             }
-            COMMAND_IF_NULL(buf_ = (unsigned char *)malloc(capcty),
-                            EXIT_ACTION)
+            COMMAND_IF_NULL(buf_ = (unsigned char *)malloc(capcty), EXIT_ACTION)
             return RetCode_OK;
         }
 
@@ -68,8 +65,7 @@ class grow_byte_buffer_rep {
                 return RetCode_BADARG;
             }
             capcty_ += amnt;
-            COMMAND_IF_NULL(buf_ = (unsigned char *)realloc(buf_, capcty_),
-                            EXIT_ACTION)
+            COMMAND_IF_NULL(buf_ = (unsigned char *)realloc(buf_, capcty_), EXIT_ACTION)
             return RetCode_OK;
         }
 
@@ -280,7 +276,7 @@ grow_byte_buffer::~grow_byte_buffer()
 
 RetCode grow_byte_buffer::init(size_t capcty)
 {
-    impl_ = new grow_byte_buffer_rep();
+    impl_ = new grow_byte_buffer_impl();
     return impl_->r_init(capcty);
 }
 

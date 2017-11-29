@@ -19,7 +19,7 @@
  *
  */
 
-#include "vlg_c_pers_driv_sqlite.h"
+#include "vlg_c_drv_sqlite.h"
 #include "vlg_drv_sqlite.h"
 
 namespace vlg {

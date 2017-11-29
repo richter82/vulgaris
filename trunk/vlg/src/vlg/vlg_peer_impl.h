@@ -143,7 +143,7 @@ class peer_impl : public peer_automa {
         //-----------------------------
         // MODEL
         //-----------------------------
-        vlg::RetCode    extend_model(nentity_manager *emng);
+        vlg::RetCode    extend_model(nentity_manager *nem);
         vlg::RetCode    extend_model(const char *model_name);
 
         //-----------------------------

@@ -21,6 +21,12 @@
 
 #include "cr_structs_rep.h"
 
+#if defined(_MSC_VER)
+#define VLG_STRDUP _strdup
+#else
+#define VLG_STRDUP strdup
+#endif
+
 //-----------------------------
 // HASHING - LOW LEVEL FUNCS
 
@@ -135,7 +141,6 @@ void MurmurHash3_x86_32(const void *key, int len, uint32_t seed, void *out)
     *(uint32_t *) out = h1;
 }
 
-
 //-----------------------------
 // MEMORY MANAGEMENT
 namespace vlg {
@@ -160,11 +165,7 @@ void *def_alloc_func(size_t type_size, const void *copy)
 
 void *cstr_alloc_func(size_t type_size, const void *copy)
 {
-#ifdef WIN32
-    void *new_ptr = _strdup((char *)copy);
-#else
-    void *new_ptr = strdup((char *)copy);
-#endif
+    void *new_ptr = VLG_STRDUP((char *)copy);
     if(!new_ptr) {
         return NULL;
     }

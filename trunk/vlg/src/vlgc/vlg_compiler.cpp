@@ -54,11 +54,7 @@ void vlg_comp_param_clbk(int pnum, const char *param, const char *value)
     }
     if(!strcmp(param, VLG_COMP_START_PAR_OUTPT_DIR)) {
         if(value) {
-#ifdef WIN32
-            comp_cfg.out_dir = _strdup(value);
-#else
-            comp_cfg.out_dir = strdup(value);
-#endif
+            comp_cfg.out_dir = VLG_STRDUP(value);
         } else {
             fprintf(stderr, PAR_REQ_VAL_FMT, VLG_COMP_START_PAR_OUTPT_DIR);
             EXIT_ACTION_STDOUT("")

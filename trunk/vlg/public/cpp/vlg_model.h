@@ -22,7 +22,6 @@
 #ifndef VLG_CPP_MDL_H_
 #define VLG_CPP_MDL_H_
 #include "vlg_memory.h"
-#include "vlg_byte_buffer.h"
 
 namespace vlg {
 

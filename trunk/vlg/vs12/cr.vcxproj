@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\cr\cr.h" />
+    <ClInclude Include="..\src\cr\cr_bbuf.h" />
     <ClInclude Include="..\src\cr\cr_cfg.h" />
     <ClInclude Include="..\src\cr\cr_concurrent.h" />
     <ClInclude Include="..\src\cr\cr_dl.h" />

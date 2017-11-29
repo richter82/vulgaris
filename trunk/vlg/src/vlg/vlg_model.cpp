@@ -820,11 +820,11 @@ class nentity_manager_impl {
             return vlg::RetCode_OK;
         }
 
-        vlg::RetCode extend(nentity_manager_impl *emng) {
-            IFLOG(trc(TH_ID, LS_OPN "%s(emng:%p)", __func__, emng))
-            emng->entnm_edesc_.start_iteration();
+        vlg::RetCode extend(nentity_manager_impl *nem) {
+            IFLOG(trc(TH_ID, LS_OPN "%s(nem:%p)", __func__, nem))
+            nem->entnm_edesc_.start_iteration();
             nentity_desc *nentity_desc = NULL;
-            while(!emng->entnm_edesc_.next(NULL, &nentity_desc)) {
+            while(!nem->entnm_edesc_.next(NULL, &nentity_desc)) {
                 int fake_id = next_fake_id();
                 const char *enm = nentity_desc->get_nentity_name();
                 if(fakeid_edesc_.put(&fake_id, &nentity_desc)) {
@@ -843,9 +843,9 @@ class nentity_manager_impl {
                     }
                 }
             }
-            num_nentity_ += emng->num_nentity_;
-            num_nenum_   += emng->num_nenum_;
-            num_nclass_  += emng->num_nclass_;
+            num_nentity_ += nem->num_nentity_;
+            num_nenum_   += nem->num_nenum_;
+            num_nclass_  += nem->num_nclass_;
             IFLOG(trc(TH_ID, LS_CLO
                       "%s(num_nenum:%d, num_nclass:%d, num_nentity:%d)", __func__,
                       num_nenum_, num_nclass_, num_nentity_))
@@ -1013,9 +1013,9 @@ vlg::RetCode nentity_manager::extend(const nentity_desc *nentity_desc)
     return impl_->extend(nentity_desc);
 }
 
-vlg::RetCode nentity_manager::extend(nentity_manager *emng)
+vlg::RetCode nentity_manager::extend(nentity_manager *nem)
 {
-    return impl_->extend(emng->impl_);
+    return impl_->extend(nem->impl_);
 }
 
 vlg::RetCode nentity_manager::extend(const char *model_name)
