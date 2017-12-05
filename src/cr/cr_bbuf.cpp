@@ -26,7 +26,7 @@ namespace vlg {
 
 void *grow_buff_or_die(void *buf, size_t cur_size, size_t amnt)
 {
-    void *nout = NULL;
+    void *nout = nullptr;
     if(buf) {
         COMMAND_IF_NULL(nout = realloc(buf, cur_size+amnt), EXIT_ACTION)
     } else {
@@ -35,7 +35,7 @@ void *grow_buff_or_die(void *buf, size_t cur_size, size_t amnt)
     return nout;
 }
 
-//-----------------------------
+
 // grow_byte_buffer_rep
 class grow_byte_buffer_impl {
     public:
@@ -263,9 +263,9 @@ class grow_byte_buffer_impl {
         unsigned char *buf_;
 };
 
-//-----------------------------
+
 // grow_byte_buffer
-grow_byte_buffer::grow_byte_buffer() : impl_(NULL) {}
+grow_byte_buffer::grow_byte_buffer() : impl_(nullptr) {}
 
 grow_byte_buffer::~grow_byte_buffer()
 {

@@ -77,8 +77,7 @@ vlg_toolkit_tx_window::vlg_toolkit_tx_window(const vlg::nentity_desc &edesc,
 {
     ui->setupUi(this);
     ui->vlg_class_tx_table_view->setModel(&tx_mdl_wrp_);
-    ui->connid_label_disp->setText(QString("%1").arg(
-                                       tx_.get_connection()->get_connection_id()));
+    ui->connid_label_disp->setText(QString("%1").arg(tx_.get_connection().get_connection_id()));
     TxClosedActions();
 
     connect(this,

@@ -40,7 +40,7 @@ class c_subscription : public subscription {
         }
 
     public:
-        c_subscription() : sen_wr_(NULL), ssc_wr_(NULL), ssc_ud_(NULL), sen_ud_(NULL) {}
+        c_subscription() : sen_wr_(nullptr), ssc_wr_(nullptr), ssc_ud_(nullptr), sen_ud_(nullptr) {}
 
         subscription_event_notify_wr Sen_wr() const {
             return sen_wr_;
@@ -80,7 +80,7 @@ extern "C" {
 
     subscription_wr subscription_event_get_subscription(subscription_event_wr sev)
     {
-        return static_cast<subscription_event *>(sev)->get_subscription();
+        return &static_cast<subscription_event *>(sev)->get_subscription();
     }
 
     unsigned int subscription_event_get_id(subscription_event_wr sev)
@@ -136,7 +136,7 @@ extern "C" {
 
     connection_wr subscription_get_connection(subscription_wr sbs)
     {
-        return static_cast<subscription *>(sbs)->get_connection();
+        return &static_cast<subscription *>(sbs)->get_connection();
     }
 
     unsigned int subscription_get_id(subscription_wr sbs)

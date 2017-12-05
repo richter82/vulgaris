@@ -101,7 +101,7 @@ class collector_impl {
         }
 
         void retain(collectable *ptr) {
-            reference_counter *rfc = NULL;
+            reference_counter *rfc = nullptr;
             mon_.lock();
             if(inst_collector_.get(&ptr, &rfc)) {
                 rfc = new reference_counter();
@@ -118,11 +118,11 @@ class collector_impl {
         RetCode release(collectable *ptr) {
             RetCode res = RetCode_MEMNOTR;
             mon_.lock();
-            reference_counter *rfc = NULL;
+            reference_counter *rfc = nullptr;
             if(!(inst_collector_.get(&ptr, &rfc))) {
                 if(rfc->ref_counter_) {
                     if(!--rfc->ref_counter_) {
-                        inst_collector_.remove(&ptr, NULL);
+                        inst_collector_.remove(&ptr, nullptr);
                         IFLOG(trc(TH_ID,
                                   LS_TRL "%s(ptr:%p, class:%s) - [deleted] [ref-count:%d]",
                                   __func__,
@@ -164,7 +164,7 @@ class collector_impl {
         }
 };
 
-logger *collector_impl::log_ = NULL;
+logger *collector_impl::log_ = nullptr;
 unsigned int collector_impl::nextid_ = 0;
 
 // collector
@@ -255,9 +255,9 @@ class collector_stat_impl : public p_thread {
             while(true) {
                 mssleep(freq_sec_*1000);
                 collector_map_.start_iteration();
-                collector *curr_coll = NULL;
+                collector *curr_coll = nullptr;
                 IFLOG(log(level_, TH_ID, LS_STA "*** memory-coll-stats-begin"))
-                while(!collector_map_.next(NULL, &curr_coll)) {
+                while(!collector_map_.next(nullptr, &curr_coll)) {
                     curr_coll->enum_collected_instances(collector_stat_impl_enum,
                                                         this);
                 }
@@ -291,12 +291,12 @@ void collector_stat_impl_enum(const collector &coll,
                                           ref_c->ref_counter_))
 }
 
-logger *collector_stat_impl::log_ = NULL;
+logger *collector_stat_impl::log_ = nullptr;
 
-collector_stat *coll_stat_instance_ = NULL;
+collector_stat *coll_stat_instance_ = nullptr;
 collector_stat &coll_stat_instance()
 {
-    if(coll_stat_instance_  == NULL) {
+    if(coll_stat_instance_  == nullptr) {
         coll_stat_instance_ = new collector_stat();
         if(!coll_stat_instance_) {
             EXIT_ACTION

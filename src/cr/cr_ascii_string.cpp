@@ -38,19 +38,19 @@ namespace vlg {
 //32 MB
 #define STR_MAX_SIZE 33554432
 
-//-----------------------------
+
 // ascii_str_impl
-//-----------------------------
+
 class ascii_string_impl {
     public:
         ascii_string_impl() :
-            buf_(NULL),
+            buf_(nullptr),
             len_(0),
             capacity_(0) {
         }
 
         ascii_string_impl(ascii_string_impl &oth) :
-            buf_(NULL),
+            buf_(nullptr),
             len_(0),
             capacity_(0) {
             EXIT_ACTION
@@ -182,7 +182,7 @@ class ascii_string_impl {
         char *new_buff() const {
             char *new_str = (char *)malloc(len_+1);
             if(!new_str) {
-                return NULL;
+                return nullptr;
             }
             strncpy(&new_str[0], &buf_[0], len_); //OK
             new_str[len_] = '\0';
@@ -216,7 +216,7 @@ class ascii_string_impl {
             if(val > STR_MAX_SIZE) {
                 return RetCode_OVRSZ;
             }
-            void *buf = NULL;
+            void *buf = nullptr;
             if(buf_) {
                 if(!(buf = realloc(buf_, val))) {
                     return RetCode_MEMERR;
@@ -411,17 +411,17 @@ class ascii_string_impl {
         size_t capacity_;
 };
 
-//-----------------------------
+
 // ascii_str
-//-----------------------------
-ascii_string::ascii_string() : impl_(NULL)
+
+ascii_string::ascii_string() : impl_(nullptr)
 {
     if(!(impl_ = new ascii_string_impl())) {
         EXIT_ACTION
     }
 }
 
-ascii_string::ascii_string(ascii_string &oth) : impl_(NULL)
+ascii_string::ascii_string(ascii_string &oth) : impl_(nullptr)
 {
     EXIT_ACTION
 }
@@ -634,9 +634,9 @@ bool ascii_string::operator <(const ascii_string &str) const
     return impl_->compare(*str.impl_) < 0;
 }
 
-//-----------------------------
+
 // ascii_str_tk_impl
-//-----------------------------
+
 static const char *def_delims = " \t\n\r\f";
 
 class ascii_string_tok_impl {
@@ -774,13 +774,13 @@ class ascii_string_tok_impl {
         bool ret_delims_, delims_changed_;
 };
 
-//-----------------------------
+
 // ascii_str_tk
-//-----------------------------
-ascii_string_tok::ascii_string_tok() : impl_(NULL)
+
+ascii_string_tok::ascii_string_tok() : impl_(nullptr)
 {}
 
-ascii_string_tok::ascii_string_tok(ascii_string_tok &oth) : impl_(NULL)
+ascii_string_tok::ascii_string_tok(ascii_string_tok &oth) : impl_(nullptr)
 {
     EXIT_ACTION
 }

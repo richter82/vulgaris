@@ -31,7 +31,7 @@ extern bool deflt_log_loaded;
 
 namespace vlg {
 
-vlg::hash_map *vlg_lgname_lg = NULL;
+vlg::hash_map *vlg_lgname_lg = nullptr;
 vlg::hash_map &get_vlg_logger_map()
 {
     if(vlg_lgname_lg) {
@@ -53,9 +53,9 @@ nclass_logger *get_nclass_logger(const char *logger_name)
         COMMAND_IF_NOT_OK(vlg::logger::load_logger_config(), NO_ACTION)
         vlg::deflt_log_loaded = true;
     }
-    nclass_logger *b_log = NULL;
+    nclass_logger *b_log = nullptr;
     IF_RetCode_OK_CMD(get_vlg_logger_map().get(logger_name, &b_log), return b_log)
-    vlg::logger *log = NULL;
+    vlg::logger *log = nullptr;
     vlg::logger::get_logger(logger_name, &log);
     if(!log) {
         COMMAND_IF_NOT_OK(vlg::logger::get_logger("root", &log), NO_ACTION)
@@ -66,12 +66,12 @@ nclass_logger *get_nclass_logger(const char *logger_name)
         get_vlg_logger_map().put(logger_name, &b_log);
         return b_log;
     }
-    return NULL;
+    return nullptr;
 }
 
-//-----------------------------
+
 // VLG_LOGGER
-//-----------------------------
+
 
 nclass_logger::nclass_logger()
 {}

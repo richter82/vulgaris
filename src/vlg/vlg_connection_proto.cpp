@@ -974,13 +974,13 @@ void build_PKT_SBSSPR(SubscriptionResponse sbresl,
     }
 }
 
-//-----------------------------
-// CONNECTION RECV METHS
-//-----------------------------
 
-inline vlg::RetCode connection_impl::recv_single_hdr_row(unsigned int *hdr_row)
+// CONNECTION RECV METHS
+
+
+inline RetCode connection_impl::recv_single_hdr_row(unsigned int *hdr_row)
 {
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     bool stay = true;
     long brecv = 0, tot_brecv = 0, recv_buf_sz = VLG_WRD_BYTE_SIZE;
     char buff[VLG_WRD_BYTE_SIZE] = {0};
@@ -1008,9 +1008,9 @@ inline vlg::RetCode connection_impl::recv_single_hdr_row(unsigned int *hdr_row)
 
 #define RCVSNGLROW if((rcode = recv_single_hdr_row(&hdr_row))) return rcode;
 
-vlg::RetCode connection_impl::recv_and_decode_hdr(vlg_hdr_rec *pkt_hdr)
+RetCode connection_impl::recv_and_decode_hdr(vlg_hdr_rec *pkt_hdr)
 {
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     unsigned int hdr_row = 0;
     RCVSNGLROW
     Decode_WRD_PKTHDR(&hdr_row, &pkt_hdr->phdr);

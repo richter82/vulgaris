@@ -87,8 +87,7 @@ vlg_toolkit_sbs_window::vlg_toolkit_sbs_window(const vlg::nentity_desc &edesc,
 {
     ui->setupUi(this);
     ui->vlg_class_sbs_table_view->setModel(&sbs_mdl_);
-    ui->connid_label_disp->setText(QString("%1").arg(
-                                       sbs_.get_connection()->get_connection_id()));
+    ui->connid_label_disp->setText(QString("%1").arg(sbs_.get_connection().get_connection_id()));
     SbsStoppedActions();
 
     connect(this, SIGNAL(SignalSbsStatusChange(vlg::SubscriptionStatus)),
@@ -290,35 +289,33 @@ void vlg_toolkit_sbs_window::OnNewTxRequested()
     }
 
     const vlg::nentity_desc *edesc = NULL;
-    sbs_.get_connection()->get_peer()->get_entity_manager().get_nentity_descriptor(
-        item->get_nclass_id(),
-        &edesc);
+    sbs_.get_connection().get_peer().get_entity_manager().get_nentity_descriptor(item->get_nclass_id(),&edesc);
 
     if(!edesc) {
         return;
     }
 
     vlg::transaction &new_tx = *new vlg::transaction();
-    new_tx.bind(*sbs_.get_connection());
+    new_tx.bind(sbs_.get_connection());
     new_tx.set_request_obj(item);
 
     vlg_toolkit_tx_vlg_class_model *tx_mdl =
         new vlg_toolkit_tx_vlg_class_model(*edesc,
-                                           sbs_.get_connection()->get_peer()->get_entity_manager(),
+                                           sbs_.get_connection().get_peer().get_entity_manager(),
                                            new_tx,
                                            this);
 
     /*if last param set to 'this' child will be always on TOP*/
     vlg_toolkit_tx_window *new_tx_window =
         new vlg_toolkit_tx_window(*edesc,
-                                  sbs_.get_connection()->get_peer()->get_entity_manager(),
+                                  sbs_.get_connection().get_peer().get_entity_manager(),
                                   new_tx,
                                   *tx_mdl,
                                   NULL);
 
     new_tx_window->setAttribute(Qt::WA_DeleteOnClose, true);
     new_tx_window->setWindowTitle(QString("[TX][CONNID:%1][NCLASS:%2]").arg(
-                                      sbs_.get_connection()->get_connection_id()).arg(
+                                      sbs_.get_connection().get_connection_id()).arg(
                                       item->get_nclass_id()));
     new_tx_window->show();
     //new_tx_window->raise();

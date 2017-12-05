@@ -24,12 +24,12 @@
 
 namespace vlg {
 
-//-----------------------------
+
 // linked_list
-linked_list::linked_list(size_t elem_size) : manager_(elem_size), impl_(NULL)
+linked_list::linked_list(size_t elem_size) : manager_(elem_size), impl_(nullptr)
 {}
 
-linked_list::linked_list(obj_mng &obj_mng) : manager_(obj_mng), impl_(NULL)
+linked_list::linked_list(obj_mng &obj_mng) : manager_(obj_mng), impl_(nullptr)
 {}
 
 linked_list::~linked_list()
@@ -63,7 +63,7 @@ RetCode linked_list::at(uint32_t idx, void *copy) const
 const void *linked_list::at(uint32_t idx) const
 {
     if(idx >= impl_->elems_cnt()) {
-        return NULL;
+        return nullptr;
     }
     return impl_->r_at(idx);
 }
@@ -198,34 +198,34 @@ const void *linked_list::operator [](uint32_t idx)
     return at(idx);
 }
 
-//-----------------------------
+
 // hash_map
 hash_map::hash_map(size_t elem_size,
                    size_t key_size) :
     elem_manager_(elem_size),
     key_manager_(key_size),
-    impl_(NULL)
+    impl_(nullptr)
 {}
 
 hash_map::hash_map(obj_mng &elem_manager,
                    obj_mng &key_manager) :
     elem_manager_(elem_manager),
     key_manager_(key_manager),
-    impl_(NULL)
+    impl_(nullptr)
 {}
 
 hash_map::hash_map(size_t elem_size,
                    obj_mng &key_manager) :
     elem_manager_(elem_size),
     key_manager_(key_manager),
-    impl_(NULL)
+    impl_(nullptr)
 {}
 
 hash_map::hash_map(obj_mng &elem_manager,
                    size_t key_size) :
     elem_manager_(elem_manager),
     key_manager_(key_size),
-    impl_(NULL)
+    impl_(nullptr)
 {}
 
 hash_map::~hash_map()
@@ -288,7 +288,7 @@ RetCode hash_map::get(const void *key, void *copy) const
 const void *hash_map::get(const void *key) const
 {
     if(!key) {
-        return NULL;
+        return nullptr;
     }
     return impl_->r_get(key);
 }

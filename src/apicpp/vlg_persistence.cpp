@@ -24,11 +24,11 @@
 
 namespace vlg {
 
-//-----------------------------
-// CLASS persistence_manager
-//-----------------------------
 
-vlg::RetCode persistence_manager::load_driver_dynamic(
+// CLASS persistence_manager
+
+
+RetCode persistence_manager::load_driver_dynamic(
     const char *drivers[],
     int drivers_num)
 {
@@ -36,7 +36,7 @@ vlg::RetCode persistence_manager::load_driver_dynamic(
                                                                           drivers_num);
 }
 
-vlg::RetCode persistence_manager::load_driver(
+RetCode persistence_manager::load_driver(
     persistence_driver_impl
     *drivers[], int drivers_num)
 {
@@ -44,26 +44,26 @@ vlg::RetCode persistence_manager::load_driver(
                                                                      drivers_num);
 }
 
-vlg::RetCode persistence_manager::set_config_file_dir(
+RetCode persistence_manager::set_config_file_dir(
     const char *dir)
 {
     return persistence_manager_impl::get_instance().set_cfg_file_dir(dir);
 }
 
-vlg::RetCode persistence_manager::set_config_file_path_name(
+RetCode persistence_manager::set_config_file_path_name(
     const char *file_path)
 {
     return persistence_manager_impl::get_instance().set_cfg_file_path_name(
                file_path);
 }
 
-vlg::RetCode persistence_manager::load_config(
+RetCode persistence_manager::load_config(
     const char *file_name)
 {
     return persistence_manager_impl::get_instance().load_cfg(file_name);
 }
 
-vlg::RetCode persistence_manager::start_all_drivers()
+RetCode persistence_manager::start_all_drivers()
 {
     return persistence_manager_impl::get_instance().start_all_drivers();
 }
@@ -74,13 +74,13 @@ persistence_driver_impl *persistence_manager::available_driver(
     return persistence_manager_impl::get_instance().available_driver(nclass_id);
 }
 
-//-----------------------------
+
 // CLASS persistence_connection_impl
-//-----------------------------
+
 
 class persistence_connection_impl_pub {
     public:
-        persistence_connection_impl_pub() : driv_(NULL), conn_(NULL) {}
+        persistence_connection_impl_pub() : driv_(nullptr), conn_(nullptr) {}
         ~persistence_connection_impl_pub() {}
 
         persistence_driver_impl *get_driver() const {
@@ -91,7 +91,7 @@ class persistence_connection_impl_pub {
             driv_ = &val;
         }
 
-        vlg::RetCode set_connection(unsigned int nclass_id) {
+        RetCode set_connection(unsigned int nclass_id) {
             conn_ = driv_->available_connection(nclass_id);
             return conn_ ? vlg::RetCode_OK : vlg::RetCode_UNVRSC;
         }
@@ -105,9 +105,9 @@ class persistence_connection_impl_pub {
         persistence_connection_impl *conn_;
 };
 
-//-----------------------------
+
 // CLASS persistence_connection
-//-----------------------------
+
 
 persistence_connection::persistence_connection()
 {
@@ -121,8 +121,8 @@ persistence_connection::~persistence_connection()
     }
 }
 
-vlg::RetCode persistence_connection::bind(unsigned int nclass_id,
-                                          persistence_driver_impl &driver)
+RetCode persistence_connection::bind(unsigned int nclass_id,
+                                     persistence_driver_impl &driver)
 {
     impl_->set_driver(driver);
     return impl_->set_connection(nclass_id);
@@ -148,7 +148,7 @@ PersistenceConnectionStatus persistence_connection::get_status() const
     return impl_->get_conn_impl()->status();
 }
 
-vlg::RetCode persistence_connection::create_entity_schema(
+RetCode persistence_connection::create_entity_schema(
     PersistenceAlteringMode mode,
     const nentity_manager &nem,
     unsigned int nclass_id)
@@ -156,7 +156,7 @@ vlg::RetCode persistence_connection::create_entity_schema(
     return impl_->get_conn_impl()->create_entity_schema(mode, nem, nclass_id);
 }
 
-vlg::RetCode persistence_connection::create_entity_schema(
+RetCode persistence_connection::create_entity_schema(
     PersistenceAlteringMode mode,
     const nentity_manager &nem,
     const nentity_desc &desc)
@@ -164,64 +164,64 @@ vlg::RetCode persistence_connection::create_entity_schema(
     return impl_->get_conn_impl()->create_entity_schema(mode, nem, desc);
 }
 
-vlg::RetCode persistence_connection::save_obj(const nentity_manager &nem,
-                                              unsigned int ts0,
-                                              unsigned int ts1,
-                                              const nclass &in_obj)
+RetCode persistence_connection::save_obj(const nentity_manager &nem,
+                                         unsigned int ts0,
+                                         unsigned int ts1,
+                                         const nclass &in_obj)
 {
     return impl_->get_conn_impl()->save_entity(nem, ts0, ts1, in_obj);
 }
 
-vlg::RetCode persistence_connection::update_obj(unsigned short key,
-                                                const nentity_manager &nem,
-                                                unsigned int ts0,
-                                                unsigned int ts1,
-                                                const nclass &in_obj)
+RetCode persistence_connection::update_obj(unsigned short key,
+                                           const nentity_manager &nem,
+                                           unsigned int ts0,
+                                           unsigned int ts1,
+                                           const nclass &in_obj)
 {
     return impl_->get_conn_impl()->update_entity(key, nem, ts0, ts1, in_obj);
 }
 
-vlg::RetCode persistence_connection::save_or_update_obj(unsigned short key,
-                                                        const nentity_manager &nem,
-                                                        unsigned int ts0,
-                                                        unsigned int ts1,
-                                                        const nclass &in_obj)
+RetCode persistence_connection::save_or_update_obj(unsigned short key,
+                                                   const nentity_manager &nem,
+                                                   unsigned int ts0,
+                                                   unsigned int ts1,
+                                                   const nclass &in_obj)
 {
     return impl_->get_conn_impl()->save_or_update_entity(key, nem, ts0, ts1, in_obj);
 }
 
-vlg::RetCode persistence_connection::remove_obj(unsigned short key,
-                                                const nentity_manager &nem,
-                                                unsigned int ts0,
-                                                unsigned int ts1,
-                                                PersistenceDeletionMode mode,
-                                                const nclass &in_obj)
+RetCode persistence_connection::remove_obj(unsigned short key,
+                                           const nentity_manager &nem,
+                                           unsigned int ts0,
+                                           unsigned int ts1,
+                                           PersistenceDeletionMode mode,
+                                           const nclass &in_obj)
 {
     return impl_->get_conn_impl()->remove_entity(key, nem, ts0, ts1, mode, in_obj);
 }
 
-vlg::RetCode persistence_connection::load_obj(unsigned short key,
-                                              const nentity_manager &nem,
-                                              unsigned int &ts0_out,
-                                              unsigned int &ts1_out,
-                                              nclass &in_out_obj)
+RetCode persistence_connection::load_obj(unsigned short key,
+                                         const nentity_manager &nem,
+                                         unsigned int &ts0_out,
+                                         unsigned int &ts1_out,
+                                         nclass &in_out_obj)
 {
     return impl_->get_conn_impl()->load_entity(key, nem, ts0_out, ts1_out,
                                                in_out_obj);
 }
 
-vlg::RetCode persistence_connection::execute_statement(const char *stmt)
+RetCode persistence_connection::execute_statement(const char *stmt)
 {
     return impl_->get_conn_impl()->execute_statement(stmt);
 }
 
-//-----------------------------
+
 // CLASS persistence_query_impl_pub
-//-----------------------------
+
 class persistence_query_impl_pub {
     public:
         persistence_query_impl_pub(const nentity_manager &nem) : em_(nem),
-            impl_(NULL) {}
+            impl_(nullptr) {}
         ~persistence_query_impl_pub() {
             if(impl_) {
                 persistence_connection_impl &conn_impl_ref = impl_->get_connection();
@@ -238,7 +238,7 @@ class persistence_query_impl_pub {
             impl_ = val;
         }
 
-        vlg::RetCode request_new_query_impl(unsigned int nclass_id, const char *sql) {
+        RetCode request_new_query_impl(unsigned int nclass_id, const char *sql) {
             persistence_driver_impl *driv =
                 persistence_manager_impl::get_instance().available_driver(nclass_id);
             if(driv) {
@@ -258,9 +258,9 @@ class persistence_query_impl_pub {
         persistence_query_impl *impl_;
 };
 
-//-----------------------------
+
 // CLASS persistence_query
-//-----------------------------
+
 
 persistence_query::persistence_query(const nentity_manager &nem)
 {
@@ -274,7 +274,7 @@ persistence_query::~persistence_query()
     }
 }
 
-vlg::RetCode persistence_query::bind(unsigned int nclass_id, const char *sql)
+RetCode persistence_query::bind(unsigned int nclass_id, const char *sql)
 {
     return impl_->request_new_query_impl(nclass_id, sql);
 }
@@ -294,13 +294,13 @@ const nentity_manager &persistence_query::get_entity_manager() const
     return impl_->get_query_impl()->get_em();
 }
 
-vlg::RetCode persistence_query::next_obj(unsigned int &ts0_out,
-                                         unsigned int &ts1_out, nclass &out_obj)
+RetCode persistence_query::next_obj(unsigned int &ts0_out,
+                                    unsigned int &ts1_out, nclass &out_obj)
 {
     return impl_->get_query_impl()->load_next_entity(ts0_out, ts1_out, out_obj);
 }
 
-vlg::RetCode persistence_query::release()
+RetCode persistence_query::release()
 {
     return impl_->get_query_impl()->release();
 }

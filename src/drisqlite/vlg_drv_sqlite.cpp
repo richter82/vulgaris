@@ -49,9 +49,9 @@ enum VLG_SQLITE_DATATYPE {
 
 class pers_conn_sqlite;
 
-//-----------------------------
+
 // entity_desc_impl, partial
-//-----------------------------
+
 class nentity_desc_impl {
     public:
         const vlg::hash_map &GetMap_NM_MMBRDSC() const;
@@ -63,9 +63,9 @@ class key_desc_impl {
         const vlg::linked_list &get_key_field_set() const;
 };
 
-//-----------------------------
+
 // general utils
-//-----------------------------
+
 const char *SQLITE_TypeStr_From_VLGType(Type type)
 {
     switch(type) {
@@ -90,7 +90,7 @@ const char *SQLITE_TypeStr_From_VLGType(Type type)
         case Type_ASCII:
             return VLG_SQLITE_DTYPE_TEXT;
         default:
-            return NULL;
+            return nullptr;
     }
 }
 
@@ -174,9 +174,9 @@ static int entity_fill_fld(const member_desc *mmbrd,
     }
 }
 
-//-----------------------------
+
 // SQLTE_ENM_BUFF
-//-----------------------------
+
 struct SQLTE_ENM_BUFF {
     SQLTE_ENM_BUFF();
     ~SQLTE_ENM_BUFF();
@@ -191,7 +191,7 @@ struct SQLTE_ENM_BUFF {
 
 SQLTE_ENM_BUFF::SQLTE_ENM_BUFF() :
     val_buf_sz_(0),
-    val_buf_(NULL)
+    val_buf_(nullptr)
 {
     Init();
 }
@@ -224,9 +224,9 @@ char *SQLTE_ENM_BUFF::getValBuff_RSZ(size_t req_size)
     return val_buf_;
 }
 
-//-----------------------------
+
 // SQLTE_ENM_SELECT_REC_UD
-//-----------------------------
+
 struct SQLTE_ENM_SELECT_REC_UD {
     const nentity_manager &nem;
     char *obj_ptr;
@@ -241,7 +241,7 @@ struct SQLTE_ENM_SELECT_REC_UD {
     bool *first_key;
     bool *first_key_mmbr;
 
-    vlg::RetCode *last_error_code;
+    RetCode *last_error_code;
     vlg::ascii_string *last_error_msg;
 
     //used in enum_mmbrs_fill_entity
@@ -258,7 +258,7 @@ void enum_mmbrs_fill_entity(const vlg::hash_map &map, const void *key,
 {
     SQLTE_ENM_SELECT_REC_UD *rud = static_cast<SQLTE_ENM_SELECT_REC_UD *>(ud);
     const member_desc *mmbrd = *(const member_desc **)ptr;
-    char *obj_f_ptr = NULL;
+    char *obj_f_ptr = nullptr;
     if(mmbrd->get_field_vlg_type() == Type_ENTITY) {
         if(mmbrd->get_field_nentity_type() == NEntityType_NENUM) {
             //treat enum as number
@@ -277,7 +277,7 @@ void enum_mmbrs_fill_entity(const vlg::hash_map &map, const void *key,
         } else {
             //class, struct is a recursive step.
             SQLTE_ENM_SELECT_REC_UD rrud = *rud;
-            const nentity_desc *edsc = NULL;
+            const nentity_desc *edsc = nullptr;
             if(!rud->nem.get_nentity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
                 const vlg::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
                 if(mmbrd->get_field_nmemb() > 1) {
@@ -320,9 +320,9 @@ void enum_mmbrs_fill_entity(const vlg::hash_map &map, const void *key,
     }
 }
 
-//-----------------------------
+
 // SQLTE_ENM_UPDATE_REC_UD
-//-----------------------------
+
 struct SQLTE_ENM_UPDATE_REC_UD {
     const nentity_manager &nem;
     const char *obj_ptr;
@@ -337,7 +337,7 @@ struct SQLTE_ENM_UPDATE_REC_UD {
     bool *first_key;
     bool *first_key_mmbr;
 
-    vlg::RetCode *last_error_code;
+    RetCode *last_error_code;
     vlg::ascii_string *last_error_msg;
 
     SQLTE_ENM_BUFF *enm_buff;
@@ -352,7 +352,7 @@ void enum_mmbrs_update(const vlg::hash_map &map, const void *key,
     const member_desc *mmbrd = *(const member_desc **)ptr;
     vlg::ascii_string idx_prfx;
     char idx_b[SQLITE_FIDX_BUFF] = { 0 };
-    const char *obj_f_ptr = NULL;
+    const char *obj_f_ptr = nullptr;
     idx_prfx.assign(*(rud->prfx));
     if(rud->array_fld) {
         sprintf(idx_b, "%s%u", idx_prfx.length() ? "_" : "", rud->fld_idx);
@@ -411,7 +411,7 @@ void enum_mmbrs_update(const vlg::hash_map &map, const void *key,
             }
             rprfx.append(mmbrd->get_member_name());
             rrud.prfx = &rprfx;
-            const nentity_desc *edsc = NULL;
+            const nentity_desc *edsc = nullptr;
             if(!rud->nem.get_nentity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
                 const vlg::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
                 if(mmbrd->get_field_nmemb() > 1) {
@@ -498,23 +498,23 @@ void enum_mmbrs_update(const vlg::hash_map &map, const void *key,
     }
 }
 
-//-----------------------------
+
 // SQLTE_ENM_DELETE_REC_UD
-//-----------------------------
+
 struct SQLTE_ENM_DELETE_REC_UD {
     const nentity_manager &nem;
     const char *obj_ptr;
     vlg::ascii_string *where_claus;
     bool *first_key;
     bool *first_key_mmbr;
-    vlg::RetCode *last_error_code;
+    RetCode *last_error_code;
     vlg::ascii_string *last_error_msg;
     SQLTE_ENM_BUFF *enm_buff;
 };
 
-//-----------------------------
+
 // SQLTE_ENM_INSERT_REC_UD
-//-----------------------------
+
 struct SQLTE_ENM_INSERT_REC_UD {
     const nentity_manager &nem;
     const char *obj_ptr;
@@ -526,15 +526,15 @@ struct SQLTE_ENM_INSERT_REC_UD {
     bool array_fld;
     unsigned int fld_idx;   //used to render column name when the field is an array
 
-    vlg::RetCode *last_error_code;
+    RetCode *last_error_code;
     vlg::ascii_string *last_error_msg;
 
     SQLTE_ENM_BUFF *enm_buff;
 };
 
-//-----------------------------
+
 // VLG_PERS_QUERY_SQLITE
-//-----------------------------
+
 class pers_query_sqlite : public persistence_query_impl {
     public:
         //---ctors
@@ -567,83 +567,83 @@ sqlite3_stmt *pers_query_sqlite::get_sqlite_stmt()
     return stmt_;
 }
 
-//-----------------------------
+
 // VLG_PERS_CONN_SQLITE - CONNECTION
-//-----------------------------
+
 class pers_conn_sqlite : public persistence_connection_impl {
     public:
         pers_conn_sqlite(unsigned int id,
                          persistence_connection_pool &conn_pool);
 
-        vlg::RetCode sqlite_connect(const char *filename,
-                                    int flags);
+        RetCode sqlite_connect(const char *filename,
+                               int flags);
 
-        vlg::RetCode sqlite_disconnect();
+        RetCode sqlite_disconnect();
 
-        vlg::RetCode sqlite_exec_stmt(const char *stmt,
-                                      bool fail_is_error = true);
+        RetCode sqlite_exec_stmt(const char *stmt,
+                                 bool fail_is_error = true);
 
-        vlg::RetCode sqlite_prepare_stmt(const char *sql_stmt,
-                                         sqlite3_stmt **stmt);
+        RetCode sqlite_prepare_stmt(const char *sql_stmt,
+                                    sqlite3_stmt **stmt);
 
-        vlg::RetCode sqlite_step_stmt(sqlite3_stmt *stmt,
-                                      int &sqlite_rc);
+        RetCode sqlite_step_stmt(sqlite3_stmt *stmt,
+                                 int &sqlite_rc);
 
-        vlg::RetCode sqlite_release_stmt(sqlite3_stmt *stmt);
+        RetCode sqlite_release_stmt(sqlite3_stmt *stmt);
 
         int  sqlite_last_err_code();
 
-        virtual vlg::RetCode do_connect();
+        virtual RetCode do_connect();
 
-        virtual vlg::RetCode do_create_table(const nentity_manager &nem,
-                                             const nentity_desc &edesc,
-                                             bool drop_if_exist);
+        virtual RetCode do_create_table(const nentity_manager &nem,
+                                        const nentity_desc &edesc,
+                                        bool drop_if_exist);
 
-        virtual vlg::RetCode do_select(unsigned int key,
-                                       const nentity_manager &nem,
-                                       unsigned int &ts0_out,
-                                       unsigned int &ts1_out,
-                                       nclass &in_out_obj);
+        virtual RetCode do_select(unsigned int key,
+                                  const nentity_manager &nem,
+                                  unsigned int &ts0_out,
+                                  unsigned int &ts1_out,
+                                  nclass &in_out_obj);
 
-        virtual vlg::RetCode do_update(unsigned int key,
-                                       const nentity_manager &nem,
-                                       unsigned int ts0,
-                                       unsigned int ts1,
-                                       const nclass &in_obj);
+        virtual RetCode do_update(unsigned int key,
+                                  const nentity_manager &nem,
+                                  unsigned int ts0,
+                                  unsigned int ts1,
+                                  const nclass &in_obj);
 
-        virtual vlg::RetCode do_delete(unsigned int key,
-                                       const nentity_manager &nem,
-                                       unsigned int ts0,
-                                       unsigned int ts1,
-                                       PersistenceDeletionMode mode,
-                                       const nclass &in_obj);
+        virtual RetCode do_delete(unsigned int key,
+                                  const nentity_manager &nem,
+                                  unsigned int ts0,
+                                  unsigned int ts1,
+                                  PersistenceDeletionMode mode,
+                                  const nclass &in_obj);
 
-        virtual vlg::RetCode do_insert(const nentity_manager &nem,
-                                       unsigned int ts0,
-                                       unsigned int ts1,
-                                       const nclass &in_obj,
-                                       bool fail_is_error = true);
+        virtual RetCode do_insert(const nentity_manager &nem,
+                                  unsigned int ts0,
+                                  unsigned int ts1,
+                                  const nclass &in_obj,
+                                  bool fail_is_error = true);
 
-        virtual vlg::RetCode do_execute_query(const nentity_manager &nem,
-                                              const char *sql,
-                                              persistence_query_impl **qry_out);
+        virtual RetCode do_execute_query(const nentity_manager &nem,
+                                         const char *sql,
+                                         persistence_query_impl **qry_out);
 
-        virtual vlg::RetCode do_release_query(persistence_query_impl *qry);
+        virtual RetCode do_release_query(persistence_query_impl *qry);
 
-        virtual vlg::RetCode do_next_entity_from_query(persistence_query_impl *qry,
-                                                       unsigned int &ts0_out,
-                                                       unsigned int &ts1_out,
-                                                       nclass &out_obj);
+        virtual RetCode do_next_entity_from_query(persistence_query_impl *qry,
+                                                  unsigned int &ts0_out,
+                                                  unsigned int &ts1_out,
+                                                  nclass &out_obj);
 
-        virtual vlg::RetCode do_execute_statement(const char *sql);
+        virtual RetCode do_execute_statement(const char *sql);
 
 
     private:
-        static vlg::RetCode read_timestamp_and_del_from_record(sqlite3_stmt  *stmt,
-                                                               int           &sqlite_rc,
-                                                               unsigned int  *ts0,
-                                                               unsigned int  *ts1,
-                                                               bool          *del);
+        static RetCode read_timestamp_and_del_from_record(sqlite3_stmt  *stmt,
+                                                          int           &sqlite_rc,
+                                                          unsigned int  *ts0,
+                                                          unsigned int  *ts1,
+                                                          bool          *del);
 
 
     protected:
@@ -651,30 +651,30 @@ class pers_conn_sqlite : public persistence_connection_impl {
         persistence_worker  *worker_;
 
     private:
-        //-----------------------------
+
         // persistence_task_sqlite
-        //-----------------------------
+
         class persistence_task_sqlite : public persistence_task {
             public:
                 persistence_task_sqlite(pers_conn_sqlite &sql_conn, VLG_PERS_TASK_OP op_code) :
                     persistence_task(op_code),
                     sql_conn_(sql_conn),
-                    sel_rud_(NULL) {
+                    sel_rud_(nullptr) {
                 }
             protected:
 
-                virtual vlg::RetCode do_connect() {
+                virtual RetCode do_connect() {
                     persistence_connection_pool &pcp = sql_conn_.get_connection_pool();
                     IFLOG(trc(TH_ID, LS_OPN "%s(url:%s, usr:%s, psswd:%s)", __func__, pcp.url(),
                               pcp.user(), pcp.password()))
-                    vlg::RetCode rcode = sql_conn_.sqlite_connect(pcp.url(),
-                                                                  SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
+                    RetCode rcode = sql_conn_.sqlite_connect(pcp.url(),
+                                                             SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
                     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d)", __func__, rcode))
                     return rcode;
                 }
 
-                virtual vlg::RetCode do_create_table() {
-                    vlg::RetCode rcode = vlg::RetCode_OK;
+                virtual RetCode do_create_table() {
+                    RetCode rcode = vlg::RetCode_OK;
                     if((rcode = sql_conn_.sqlite_exec_stmt(stmt_bf_->internal_buff(), false))) {
                         if(in_drop_if_exist_) {
                             vlg::ascii_string drop_stmt;
@@ -700,9 +700,9 @@ class pers_conn_sqlite : public persistence_connection_impl {
                     return rcode;
                 }
 
-                virtual vlg::RetCode do_select() {
-                    vlg::RetCode rcode = vlg::RetCode_OK;
-                    sqlite3_stmt *stmt = NULL;
+                virtual RetCode do_select() {
+                    RetCode rcode = vlg::RetCode_OK;
+                    sqlite3_stmt *stmt = nullptr;
                     if((rcode = sql_conn_.sqlite_prepare_stmt(stmt_bf_->internal_buff(),
                                                               &stmt))) {
                         IFLOG(err(TH_ID, LS_CLO "%s(res:%d) - sqlite_prepare_stmt failed.", __func__,
@@ -713,7 +713,7 @@ class pers_conn_sqlite : public persistence_connection_impl {
                                 const vlg::hash_map &nm_desc =
                                     in_out_obj_->get_nentity_descriptor()->get_opaque()->GetMap_NM_MMBRDSC();
                                 read_timestamp_and_del_from_record(stmt, *sel_rud_->sqlite_rc, in_out_ts0_,
-                                                                   in_out_ts1_, NULL);
+                                                                   in_out_ts1_, nullptr);
                                 sel_rud_->stmt = stmt;
                                 nm_desc.enum_elements(enum_mmbrs_fill_entity, sel_rud_);
                                 rcode = vlg::RetCode_DBROW;
@@ -725,7 +725,7 @@ class pers_conn_sqlite : public persistence_connection_impl {
                                           __func__, *sel_rud_->sqlite_rc))
                                 rcode = vlg::RetCode_DBERR;
                             }
-                            vlg::RetCode rels_rcode = vlg::RetCode_OK;
+                            RetCode rels_rcode = vlg::RetCode_OK;
                             if((rels_rcode = sql_conn_.sqlite_release_stmt(stmt))) {
                                 IFLOG(err(TH_ID, LS_TRL "%s(res:%d) - sqlite_release_stmt failed.", __func__,
                                           rels_rcode))
@@ -738,8 +738,8 @@ class pers_conn_sqlite : public persistence_connection_impl {
                     return rcode;
                 }
 
-                virtual vlg::RetCode do_update() {
-                    vlg::RetCode rcode = vlg::RetCode_OK;
+                virtual RetCode do_update() {
+                    RetCode rcode = vlg::RetCode_OK;
                     if((rcode = sql_conn_.sqlite_exec_stmt(stmt_bf_->internal_buff()))) {
                         IFLOG(err(TH_ID, LS_TRL "%s(res:%d) - sqlite_exec_stmt failed.", __func__,
                                   rcode))
@@ -747,8 +747,8 @@ class pers_conn_sqlite : public persistence_connection_impl {
                     return rcode;
                 }
 
-                virtual vlg::RetCode do_delete() {
-                    vlg::RetCode rcode = vlg::RetCode_OK;
+                virtual RetCode do_delete() {
+                    RetCode rcode = vlg::RetCode_OK;
                     if((rcode = sql_conn_.sqlite_exec_stmt(stmt_bf_->internal_buff()))) {
                         IFLOG(err(TH_ID, LS_TRL "%s(res:%d) - sqlite_exec_stmt failed.", __func__,
                                   rcode))
@@ -756,8 +756,8 @@ class pers_conn_sqlite : public persistence_connection_impl {
                     return rcode;
                 }
 
-                virtual vlg::RetCode do_insert() {
-                    vlg::RetCode rcode = vlg::RetCode_OK;
+                virtual RetCode do_insert() {
+                    RetCode rcode = vlg::RetCode_OK;
                     if((rcode = sql_conn_.sqlite_exec_stmt(stmt_bf_->internal_buff(),
                                                            in_fail_is_error_))) {
                         if(in_fail_is_error_) {
@@ -771,9 +771,9 @@ class pers_conn_sqlite : public persistence_connection_impl {
                     return rcode;
                 }
 
-                virtual vlg::RetCode do_execute_query() {
-                    vlg::RetCode rcode = vlg::RetCode_OK;
-                    sqlite3_stmt *stmt = NULL;
+                virtual RetCode do_execute_query() {
+                    RetCode rcode = vlg::RetCode_OK;
+                    sqlite3_stmt *stmt = nullptr;
                     if((rcode = sql_conn_.sqlite_prepare_stmt(in_sql_, &stmt))) {
                         IFLOG(err(TH_ID, LS_CLO "%s(res:%d) - sqlite_prepare_stmt failed.", __func__,
                                   rcode))
@@ -784,15 +784,15 @@ class pers_conn_sqlite : public persistence_connection_impl {
                     return rcode;
                 }
 
-                virtual vlg::RetCode do_release_query() {
+                virtual RetCode do_release_query() {
                     pers_query_sqlite *qry_sqlite = static_cast<pers_query_sqlite *>(in_out_query_);
-                    vlg::RetCode rcode = sql_conn_.sqlite_release_stmt(
-                                             qry_sqlite->get_sqlite_stmt());
+                    RetCode rcode = sql_conn_.sqlite_release_stmt(
+                                        qry_sqlite->get_sqlite_stmt());
                     return rcode;
                 }
 
-                virtual vlg::RetCode do_next_entity_from_query() {
-                    vlg::RetCode rcode = vlg::RetCode_OK;
+                virtual RetCode do_next_entity_from_query() {
+                    RetCode rcode = vlg::RetCode_OK;
                     pers_query_sqlite *qry_sqlite = static_cast<pers_query_sqlite *>(in_out_query_);
                     if(!(rcode = sql_conn_.sqlite_step_stmt(qry_sqlite->get_sqlite_stmt(),
                                                             *sel_rud_->sqlite_rc))) {
@@ -800,7 +800,7 @@ class pers_conn_sqlite : public persistence_connection_impl {
                             const vlg::hash_map &nm_desc =
                                 in_out_obj_->get_nentity_descriptor()->get_opaque()->GetMap_NM_MMBRDSC();
                             read_timestamp_and_del_from_record(qry_sqlite->get_sqlite_stmt(),
-                                                               *sel_rud_->sqlite_rc, in_out_ts0_, in_out_ts1_, NULL);
+                                                               *sel_rud_->sqlite_rc, in_out_ts0_, in_out_ts1_, nullptr);
                             nm_desc.enum_elements(enum_mmbrs_fill_entity, sel_rud_);
                             rcode = vlg::RetCode_DBROW;
                         } else if(*sel_rud_->sqlite_rc == SQLITE_DONE) {
@@ -817,7 +817,7 @@ class pers_conn_sqlite : public persistence_connection_impl {
                     return rcode;
                 }
 
-                virtual vlg::RetCode do_execute_statement() {
+                virtual RetCode do_execute_statement() {
                     return sql_conn_.sqlite_exec_stmt(in_sql_);
                 }
 
@@ -828,22 +828,22 @@ class pers_conn_sqlite : public persistence_connection_impl {
         };
 };
 
-//-----------------------------
+
 
 pers_conn_sqlite::pers_conn_sqlite(unsigned int id,
                                    persistence_connection_pool &conn_pool) :
     persistence_connection_impl(id, conn_pool),
-    db_(NULL),
-    worker_(NULL)
+    db_(nullptr),
+    worker_(nullptr)
 {
     IFLOG(trc(TH_ID, LS_CTR "%s(id:%d)", __func__, id))
 }
 
-vlg::RetCode pers_conn_sqlite::sqlite_connect(const char *filename, int flags)
+RetCode pers_conn_sqlite::sqlite_connect(const char *filename, int flags)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(id:%d, filename:%s, flags:%d)", __func__, id_,
               filename, flags))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     int last_rc = sqlite3_open_v2(filename, &db_, flags, 0);
     if(last_rc) {
         IFLOG(err(TH_ID, LS_TRL
@@ -859,10 +859,10 @@ vlg::RetCode pers_conn_sqlite::sqlite_connect(const char *filename, int flags)
     return rcode;
 }
 
-vlg::RetCode pers_conn_sqlite::sqlite_disconnect()
+RetCode pers_conn_sqlite::sqlite_disconnect()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(id:%d)", __func__, id_))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     int last_rc = sqlite3_close_v2(db_);
     if(last_rc) {
         IFLOG(err(TH_ID, LS_CLO
@@ -878,11 +878,11 @@ vlg::RetCode pers_conn_sqlite::sqlite_disconnect()
     return rcode;
 }
 
-vlg::RetCode pers_conn_sqlite::sqlite_exec_stmt(const char *stmt,
-                                                bool fail_is_error)
+RetCode pers_conn_sqlite::sqlite_exec_stmt(const char *stmt,
+                                           bool fail_is_error)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(id:%d, stmt:%p)", __func__, id_, stmt))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     char *zErrMsg = 0;
     int last_rc = sqlite3_exec(db_, stmt, 0, 0, &zErrMsg);
     if(last_rc != SQLITE_OK) {
@@ -904,15 +904,15 @@ vlg::RetCode pers_conn_sqlite::sqlite_exec_stmt(const char *stmt,
     return rcode;
 }
 
-vlg::RetCode pers_conn_sqlite::sqlite_prepare_stmt(const char *sql_stmt,
-                                                   sqlite3_stmt **stmt)
+RetCode pers_conn_sqlite::sqlite_prepare_stmt(const char *sql_stmt,
+                                              sqlite3_stmt **stmt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sql_stmt:p, stmt:%p)", __func__, sql_stmt, stmt))
     if(!stmt) {
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_BADARG;
     }
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     int last_rc = sqlite3_prepare_v2(db_, sql_stmt, (int)strlen(sql_stmt), stmt, 0);
     if(last_rc != SQLITE_OK) {
         IFLOG(err(TH_ID, LS_TRL
@@ -925,11 +925,11 @@ vlg::RetCode pers_conn_sqlite::sqlite_prepare_stmt(const char *sql_stmt,
     return rcode;
 }
 
-vlg::RetCode pers_conn_sqlite::sqlite_step_stmt(sqlite3_stmt *stmt,
-                                                int &sqlite_rc)
+RetCode pers_conn_sqlite::sqlite_step_stmt(sqlite3_stmt *stmt,
+                                           int &sqlite_rc)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(stmt:%p)", __func__, stmt))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     if(!stmt) {
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_BADARG;
@@ -946,10 +946,10 @@ vlg::RetCode pers_conn_sqlite::sqlite_step_stmt(sqlite3_stmt *stmt,
     return rcode;
 }
 
-vlg::RetCode pers_conn_sqlite::sqlite_release_stmt(sqlite3_stmt *stmt)
+RetCode pers_conn_sqlite::sqlite_release_stmt(sqlite3_stmt *stmt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(id:%d)", __func__, id_))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     if(!stmt) {
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_BADARG;
@@ -964,14 +964,14 @@ vlg::RetCode pers_conn_sqlite::sqlite_release_stmt(sqlite3_stmt *stmt)
     return rcode;
 }
 
-vlg::RetCode pers_conn_sqlite::read_timestamp_and_del_from_record(
+RetCode pers_conn_sqlite::read_timestamp_and_del_from_record(
     sqlite3_stmt  *stmt,
     int           &sqlite_rc,
     unsigned int  *ts0,
     unsigned int  *ts1,
     bool          *del)
 {
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     //TS0
     *ts0 = (unsigned int)sqlite3_column_int(stmt, 0);
     //TS1
@@ -985,12 +985,12 @@ vlg::RetCode pers_conn_sqlite::read_timestamp_and_del_from_record(
 
 //--------------------- CONNECT -------------------------------------------------
 
-vlg::RetCode pers_conn_sqlite::do_connect()
+RetCode pers_conn_sqlite::do_connect()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(id:%d)", __func__, id_))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     worker_ = conn_pool_.get_worker_rr_can_create_start();
-    if(worker_ == NULL) {
+    if(worker_ == nullptr) {
         IFLOG(cri(TH_ID, LS_CLO "%s() - unavailable thread.", __func__,
                   vlg::RetCode_UNVRSC))
         return vlg::RetCode_UNVRSC;
@@ -1018,7 +1018,7 @@ struct SQLTE_ENM_CREATE_REC_UD {
     unsigned int fld_idx;   //used to render column name when the field is an array
     bool *first_key;
     bool *first_key_mmbr;
-    vlg::RetCode *last_error_code;
+    RetCode *last_error_code;
     vlg::ascii_string *last_error_msg;
 };
 
@@ -1066,7 +1066,7 @@ void enum_mmbrs_create_table(const vlg::hash_map &map, const void *key,
             }
             rprfx.append(mmbrd->get_member_name());
             rrud.prfx = &rprfx;
-            const nentity_desc *edsc = NULL;
+            const nentity_desc *edsc = nullptr;
             if(!rud->nem.get_nentity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
                 const vlg::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
                 if(mmbrd->get_field_nmemb() > 1) {
@@ -1161,13 +1161,13 @@ void enum_keys_create_table(const vlg::hash_map &map, const void *key,
     rud->create_stmt->append(")");
 }
 
-vlg::RetCode pers_conn_sqlite::do_create_table(const nentity_manager &nem,
-                                               const nentity_desc &edesc,
-                                               bool drop_if_exist)
+RetCode pers_conn_sqlite::do_create_table(const nentity_manager &nem,
+                                          const nentity_desc &edesc,
+                                          bool drop_if_exist)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(drop_if_exist:%d)", __func__, drop_if_exist))
-    vlg::RetCode rcode = vlg::RetCode_OK;
-    vlg::RetCode last_error_code = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
+    RetCode last_error_code = vlg::RetCode_OK;
     vlg::ascii_string last_error_str;
     vlg::ascii_string create_stmt;
     RETURN_IF_NOT_OK(create_stmt.assign("CREATE TABLE "))
@@ -1220,7 +1220,7 @@ void enum_keyset_select(const vlg::linked_list &list, const void *ptr,
 {
     SQLTE_ENM_SELECT_REC_UD *rud = static_cast<SQLTE_ENM_SELECT_REC_UD *>(ud);
     const member_desc *mmbrd = *(const member_desc **)ptr;
-    const char *obj_f_ptr = NULL;
+    const char *obj_f_ptr = nullptr;
     //coma handling
     if(*(rud->first_key)) {
         *(rud->first_key) = false;
@@ -1253,15 +1253,15 @@ void enum_keyset_select(const vlg::linked_list &list, const void *ptr,
     }
 }
 
-vlg::RetCode pers_conn_sqlite::do_select(unsigned int key,
-                                         const nentity_manager &nem,
-                                         unsigned int &ts0_out,
-                                         unsigned int &ts1_out,
-                                         nclass &in_out_obj)
+RetCode pers_conn_sqlite::do_select(unsigned int key,
+                                    const nentity_manager &nem,
+                                    unsigned int &ts0_out,
+                                    unsigned int &ts1_out,
+                                    nclass &in_out_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%d)", __func__, key))
-    vlg::RetCode rcode = vlg::RetCode_OK;
-    vlg::RetCode last_error_code = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
+    RetCode last_error_code = vlg::RetCode_OK;
     vlg::ascii_string last_error_str;
     vlg::ascii_string select_stmt;
     vlg::ascii_string columns;
@@ -1294,7 +1294,7 @@ vlg::RetCode pers_conn_sqlite::do_select(unsigned int key,
 
     const vlg::hash_map &idk_desc =
         in_out_obj.get_nentity_descriptor()->get_opaque()->GetMap_KEYID_KDESC();
-    const key_desc *kdsc = NULL;
+    const key_desc *kdsc = nullptr;
     if(idk_desc.get(&key, &kdsc)) {
         IFLOG(err(TH_ID, LS_CLO "%s() - key not found [key:%d]", __func__, key))
         return vlg::RetCode_BADARG;
@@ -1344,7 +1344,7 @@ void enum_keyset_update(const vlg::linked_list &list, const void *ptr,
 {
     SQLTE_ENM_UPDATE_REC_UD *rud = static_cast<SQLTE_ENM_UPDATE_REC_UD *>(ud);
     const member_desc *mmbrd = *(const member_desc **)ptr;
-    const char *obj_f_ptr = NULL;
+    const char *obj_f_ptr = nullptr;
     //coma handling
     if(*(rud->first_key)) {
         *(rud->first_key) = false;
@@ -1377,15 +1377,15 @@ void enum_keyset_update(const vlg::linked_list &list, const void *ptr,
     }
 }
 
-vlg::RetCode pers_conn_sqlite::do_update(unsigned int key,
-                                         const nentity_manager &nem,
-                                         unsigned int ts0,
-                                         unsigned int ts1,
-                                         const nclass &in_obj)
+RetCode pers_conn_sqlite::do_update(unsigned int key,
+                                    const nentity_manager &nem,
+                                    unsigned int ts0,
+                                    unsigned int ts1,
+                                    const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%d)", __func__, key))
-    vlg::RetCode rcode = vlg::RetCode_OK;
-    vlg::RetCode last_error_code = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
+    RetCode last_error_code = vlg::RetCode_OK;
     vlg::ascii_string last_error_str;
     vlg::ascii_string update_stmt;
     vlg::ascii_string set_section;
@@ -1423,7 +1423,7 @@ vlg::RetCode pers_conn_sqlite::do_update(unsigned int key,
 
     const vlg::hash_map &idk_desc =
         in_obj.get_nentity_descriptor()->get_opaque()->GetMap_KEYID_KDESC();
-    const key_desc *kdsc = NULL;
+    const key_desc *kdsc = nullptr;
     if(idk_desc.get(&key, &kdsc)) {
         IFLOG(err(TH_ID, LS_CLO "%s() - key not found [key:%d]", __func__, key))
         return vlg::RetCode_BADARG;
@@ -1469,7 +1469,7 @@ void enum_keyset_delete(const vlg::linked_list &list, const void *ptr,
 {
     SQLTE_ENM_DELETE_REC_UD *rud = static_cast<SQLTE_ENM_DELETE_REC_UD *>(ud);
     const member_desc *mmbrd = *(const member_desc **)ptr;
-    const char *obj_f_ptr = NULL;
+    const char *obj_f_ptr = nullptr;
     //coma handling
     if(*(rud->first_key)) {
         *(rud->first_key) = false;
@@ -1502,16 +1502,16 @@ void enum_keyset_delete(const vlg::linked_list &list, const void *ptr,
     }
 }
 
-vlg::RetCode pers_conn_sqlite::do_delete(unsigned int key,
-                                         const nentity_manager &nem,
-                                         unsigned int ts0,
-                                         unsigned int ts1,
-                                         PersistenceDeletionMode  mode,
-                                         const nclass &in_obj)
+RetCode pers_conn_sqlite::do_delete(unsigned int key,
+                                    const nentity_manager &nem,
+                                    unsigned int ts0,
+                                    unsigned int ts1,
+                                    PersistenceDeletionMode  mode,
+                                    const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%d)", __func__, key))
-    vlg::RetCode rcode = vlg::RetCode_OK;
-    vlg::RetCode last_error_code = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
+    RetCode last_error_code = vlg::RetCode_OK;
     vlg::ascii_string last_error_str;
     vlg::ascii_string delete_stmt;
     vlg::ascii_string where_claus;
@@ -1530,7 +1530,7 @@ vlg::RetCode pers_conn_sqlite::do_delete(unsigned int key,
 
     const vlg::hash_map &idk_desc =
         in_obj.get_nentity_descriptor()->get_opaque()->GetMap_KEYID_KDESC();
-    const key_desc *kdsc = NULL;
+    const key_desc *kdsc = nullptr;
     if(idk_desc.get(&key, &kdsc)) {
         IFLOG(err(TH_ID, LS_CLO "%s() - key not found [key:%d]", __func__, key))
         return vlg::RetCode_BADARG;
@@ -1587,7 +1587,7 @@ void enum_mmbrs_insert(const vlg::hash_map &map, const void *key,
     const member_desc *mmbrd = *(const member_desc **)ptr;
     vlg::ascii_string idx_prfx;
     char idx_b[SQLITE_FIDX_BUFF] = {0};
-    const char *obj_f_ptr = NULL;
+    const char *obj_f_ptr = nullptr;
     idx_prfx.assign(*(rud->prfx));
     if(rud->array_fld) {
         sprintf(idx_b, "%s%u", idx_prfx.length() ? "_" : "", rud->fld_idx);
@@ -1645,7 +1645,7 @@ void enum_mmbrs_insert(const vlg::hash_map &map, const void *key,
             }
             rprfx.append(mmbrd->get_member_name());
             rrud.prfx = &rprfx;
-            const nentity_desc *edsc = NULL;
+            const nentity_desc *edsc = nullptr;
             if(!rud->nem.get_nentity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
                 const vlg::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
                 if(mmbrd->get_field_nmemb() > 1) {
@@ -1731,15 +1731,15 @@ void enum_mmbrs_insert(const vlg::hash_map &map, const void *key,
     }
 }
 
-vlg::RetCode pers_conn_sqlite::do_insert(const nentity_manager &nem,
-                                         unsigned int ts0,
-                                         unsigned int ts1,
-                                         const nclass &in_obj,
-                                         bool fail_is_error)
+RetCode pers_conn_sqlite::do_insert(const nentity_manager &nem,
+                                    unsigned int ts0,
+                                    unsigned int ts1,
+                                    const nclass &in_obj,
+                                    bool fail_is_error)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode rcode = vlg::RetCode_OK;
-    vlg::RetCode last_error_code = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
+    RetCode last_error_code = vlg::RetCode_OK;
     vlg::ascii_string last_error_str;
     vlg::ascii_string insert_stmt;
     vlg::ascii_string values;
@@ -1800,11 +1800,11 @@ vlg::RetCode pers_conn_sqlite::do_insert(const nentity_manager &nem,
 
 //--------------------- QUERY -------------------------------------------------
 
-vlg::RetCode pers_conn_sqlite::do_execute_query(const nentity_manager &nem,
-                                                const char *sql, persistence_query_impl **qry_out)
+RetCode pers_conn_sqlite::do_execute_query(const nentity_manager &nem,
+                                           const char *sql, persistence_query_impl **qry_out)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sql:%p, qry_out:%p)", __func__, sql, qry_out))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     IFLOG(trc(TH_ID, LS_QRY "%s() - query-sql:%s", __func__, sql))
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
                                                                 VLG_PERS_TASK_OP_EXECUTEQUERY);
@@ -1822,10 +1822,10 @@ vlg::RetCode pers_conn_sqlite::do_execute_query(const nentity_manager &nem,
     return rcode;
 }
 
-vlg::RetCode pers_conn_sqlite::do_release_query(persistence_query_impl *qry)
+RetCode pers_conn_sqlite::do_release_query(persistence_query_impl *qry)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(qry:%p)", __func__, qry))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
                                                                 VLG_PERS_TASK_OP_RELEASEQUERY);
     task->in_out_query(qry);
@@ -1840,16 +1840,16 @@ vlg::RetCode pers_conn_sqlite::do_release_query(persistence_query_impl *qry)
     return rcode;
 }
 
-vlg::RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_impl
-                                                         *qry,
-                                                         unsigned int &ts0_out,
-                                                         unsigned int &ts1_out,
-                                                         nclass &out_obj)
+RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_impl
+                                                    *qry,
+                                                    unsigned int &ts0_out,
+                                                    unsigned int &ts1_out,
+                                                    nclass &out_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(qry:%p)", __func__, qry))
     pers_query_sqlite *qry_sqlite = static_cast<pers_query_sqlite *>(qry);
-    vlg::RetCode rcode = vlg::RetCode_OK;
-    vlg::RetCode last_error_code = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
+    RetCode last_error_code = vlg::RetCode_OK;
     vlg::ascii_string last_error_str;
     vlg::ascii_string select_stmt;
     vlg::ascii_string columns;
@@ -1860,7 +1860,7 @@ vlg::RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_impl
     SQLTE_ENM_BUFF *enm_buff = new SQLTE_ENM_BUFF();
     SQLTE_ENM_SELECT_REC_UD rud = { qry->get_em(),
                                     reinterpret_cast<char *>(&out_obj),
-                                    NULL,
+                                    nullptr,
                                     &columns,
                                     &where_claus,
                                     &frst_fld,
@@ -1899,10 +1899,10 @@ vlg::RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_impl
 
 //--------------------- EXEC STMT ----------------------------------------------
 
-vlg::RetCode pers_conn_sqlite::do_execute_statement(const char *sql)
+RetCode pers_conn_sqlite::do_execute_statement(const char *sql)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sql:%p)", __func__, sql))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     IFLOG(trc(TH_ID, LS_STM "%s() - sql:%s", __func__, sql))
     persistence_task_sqlite *task = new persistence_task_sqlite(*this,
                                                                 VLG_PERS_TASK_OP_EXECUTESTATEMENT);
@@ -1918,18 +1918,18 @@ vlg::RetCode pers_conn_sqlite::do_execute_statement(const char *sql)
     return rcode;
 }
 
-//-----------------------------
+
 // VLG_PERS_DRIV_SQLITE - DRIVER
-//-----------------------------
+
 static unsigned int sqlite_connid = 0;
 unsigned int GetSQLITE_NEXT_CONNID()
 {
     return ++sqlite_connid;
 }
 
-//-----------------------------
+
 // pers_driv_sqlite
-//-----------------------------
+
 class pers_driv_sqlite : public persistence_driver_impl {
     public:
         static pers_driv_sqlite *get_instance();
@@ -1940,15 +1940,15 @@ class pers_driv_sqlite : public persistence_driver_impl {
         ~pers_driv_sqlite();
 
     public:
-        virtual vlg::RetCode new_connection(persistence_connection_pool &conn_pool,
-                                            persistence_connection_impl **new_conn);
+        virtual RetCode new_connection(persistence_connection_pool &conn_pool,
+                                       persistence_connection_impl **new_conn);
 
-        virtual vlg::RetCode close_connection(persistence_connection_impl &conn);
+        virtual RetCode close_connection(persistence_connection_impl &conn);
 
         virtual const char *get_driver_name();
 };
 
-pers_driv_sqlite *drv_sqlite_instance = NULL;
+pers_driv_sqlite *drv_sqlite_instance = nullptr;
 
 pers_driv_sqlite *pers_driv_sqlite::get_instance()
 {
@@ -1962,7 +1962,7 @@ pers_driv_sqlite *pers_driv_sqlite::get_instance()
             drv_sqlite_instance->init();
         } else {
             IFLOG(cri(TH_ID, LS_TRL "%s() - instance creation failed.", __func__))
-            return NULL;
+            return nullptr;
         }
     }
     return drv_sqlite_instance;
@@ -1979,14 +1979,14 @@ pers_driv_sqlite::~pers_driv_sqlite()
     IFLOG(trc(TH_ID, LS_DTR "%s", __func__))
 }
 
-vlg::RetCode pers_driv_sqlite::new_connection(persistence_connection_pool
-                                              &conn_pool,
-                                              persistence_connection_impl **new_conn)
+RetCode pers_driv_sqlite::new_connection(persistence_connection_pool
+                                         &conn_pool,
+                                         persistence_connection_impl **new_conn)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(url:%s, usr:%s, psswd:%s, new_conn:%p)", __func__,
               conn_pool.url(), conn_pool.user(),
               conn_pool.password(), new_conn))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     pers_conn_sqlite *new_conn_instance = new pers_conn_sqlite(
         GetSQLITE_NEXT_CONNID(), conn_pool);
     if(!new_conn_instance) {
@@ -2002,11 +2002,11 @@ vlg::RetCode pers_driv_sqlite::new_connection(persistence_connection_pool
     return rcode;
 }
 
-vlg::RetCode pers_driv_sqlite::close_connection(persistence_connection_impl
-                                                &conn)
+RetCode pers_driv_sqlite::close_connection(persistence_connection_impl
+                                           &conn)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode res = static_cast<pers_conn_sqlite &>(conn).sqlite_disconnect();
+    RetCode res = static_cast<pers_conn_sqlite &>(conn).sqlite_disconnect();
     IFLOG(trc(TH_ID, LS_CLO "%s(res:%d, id:%d)", __func__, res, conn.get_id()))
     return res;
 }

@@ -27,7 +27,7 @@
 #define VLG_STRDUP strdup
 #endif
 
-//-----------------------------
+
 // HASHING - LOW LEVEL FUNCS
 
 #define FNV_32_PRIME ((uint32_t)0x01000193)
@@ -61,7 +61,7 @@ inline uint64_t rotl64(uint64_t x, int8_t r)
 
 #endif // !defined(_MSC_VER)
 
-//-----------------------------
+
 // Block read - if your platform needs to do endian-swapping or can only
 // handle aligned reads, do the conversion here
 inline uint32_t getblock(const uint32_t *p, int i)
@@ -74,7 +74,7 @@ inline uint64_t getblock(const uint64_t *p, int i)
     return p[i];
 }
 
-//-----------------------------
+
 // Finalization mix - force all bits of a hash block to avalanche
 inline uint32_t fmix(uint32_t h)
 {
@@ -96,7 +96,7 @@ inline uint64_t fmix(uint64_t k)
     return k;
 }
 
-//-----------------------------
+
 // MurmurHash3 was written by Austin Appleby, and is placed in the public
 // domain. The author hereby disclaims copyright to this source code.
 void MurmurHash3_x86_32(const void *key, int len, uint32_t seed, void *out)
@@ -141,7 +141,7 @@ void MurmurHash3_x86_32(const void *key, int len, uint32_t seed, void *out)
     *(uint32_t *) out = h1;
 }
 
-//-----------------------------
+
 // MEMORY MANAGEMENT
 namespace vlg {
 
@@ -155,7 +155,7 @@ void *def_alloc_func(size_t type_size, const void *copy)
 {
     void *new_ptr = malloc(type_size);
     if(!new_ptr) {
-        return NULL;
+        return nullptr;
     }
     if(copy) {
         return memcpy(new_ptr, copy, type_size);
@@ -167,7 +167,7 @@ void *cstr_alloc_func(size_t type_size, const void *copy)
 {
     void *new_ptr = VLG_STRDUP((char *)copy);
     if(!new_ptr) {
-        return NULL;
+        return nullptr;
     }
     return new_ptr;
 }
@@ -191,7 +191,7 @@ void *int_alloc_func(size_t type_size, const void *copy)
 {
     void *new_ptr = malloc(sizeof(int));
     if(!new_ptr) {
-        return NULL;
+        return nullptr;
     }
     if(copy) {
         *(int *)new_ptr = (int)(intptr_t)copy;
@@ -216,7 +216,7 @@ void int_hash_func(const void *key, int len, uint32_t seed, void *out)
     MurmurHash3_x86_32(key, sizeof(int), seed, out);
 }
 
-//-----------------------------
+
 // obj_mng_impl
 class obj_mng_impl {
     public:
@@ -272,11 +272,11 @@ class obj_mng_impl {
                 if(!type_size_) {
                     size_t strl = strlen((char *)ptr) + 1;
                     if(!(copy = realloc(copy, strl))) {
-                        return NULL;
+                        return nullptr;
                     }
                 }
             }
-            return copy ? cpy_func_(copy, ptr, type_size_) : NULL;
+            return copy ? cpy_func_(copy, ptr, type_size_) : nullptr;
         }
 
         int cmp_obj(const void *ptr1, const void *ptr2) const {
@@ -297,7 +297,7 @@ class obj_mng_impl {
         hash_func       hash_func_;
 };
 
-//-----------------------------
+
 // obj_mng
 class obj_mng {
     public:
@@ -329,7 +329,7 @@ class obj_mng {
         obj_mng_impl *impl_;
 };
 
-obj_mng::obj_mng(size_t type_size) : impl_(NULL)
+obj_mng::obj_mng(size_t type_size) : impl_(nullptr)
 {
     impl_ = new obj_mng_impl(type_size);
 }
@@ -339,7 +339,7 @@ obj_mng::obj_mng(size_t type_size,
                  dealloc_func dealloc_f,
                  cmp_func cmp_f,
                  cpy_func copy_f,
-                 hash_func hash_f) : impl_(NULL)
+                 hash_func hash_f) : impl_(nullptr)
 {
     impl_ = new obj_mng_impl(type_size,
                              alloc_f,
@@ -349,7 +349,7 @@ obj_mng::obj_mng(size_t type_size,
                              hash_f);
 }
 
-obj_mng::obj_mng(const obj_mng &other) : impl_(NULL)
+obj_mng::obj_mng(const obj_mng &other) : impl_(nullptr)
 {
     impl_ = new obj_mng_impl(*other.impl_);
 }
@@ -391,7 +391,7 @@ void obj_mng::hash_obj(const void *ptr, void *out) const
 }
 
 namespace vlg {
-//-----------------------------
+
 // COMMON MANAGER SINGLETONS
 class ptr_obj_mng : public obj_mng {
         friend ptr_obj_mng &sngl_ptr_obj_mng();
@@ -421,10 +421,10 @@ class int_obj_mng : public obj_mng {
 
 ptr_obj_mng::ptr_obj_mng() : obj_mng(sizeof(void *)) {}
 
-ptr_obj_mng *ptr_obj_mng::instance_ = NULL;
+ptr_obj_mng *ptr_obj_mng::instance_ = nullptr;
 ptr_obj_mng &sngl_ptr_obj_mng()
 {
-    if(ptr_obj_mng::instance_ == NULL) {
+    if(ptr_obj_mng::instance_ == nullptr) {
         ptr_obj_mng::instance_ = new ptr_obj_mng();
     }
     return *ptr_obj_mng::instance_;
@@ -437,10 +437,10 @@ cstr_obj_mng::cstr_obj_mng() : obj_mng(0,
                                            cstr_cpy_func,
                                            cstr_hash_func) {}
 
-cstr_obj_mng *cstr_obj_mng::instance_ = NULL;
+cstr_obj_mng *cstr_obj_mng::instance_ = nullptr;
 cstr_obj_mng &sngl_cstr_obj_mng()
 {
-    if(cstr_obj_mng::instance_ == NULL) {
+    if(cstr_obj_mng::instance_ == nullptr) {
         cstr_obj_mng::instance_ = new cstr_obj_mng();
     }
     return *cstr_obj_mng::instance_;
@@ -453,21 +453,21 @@ int_obj_mng::int_obj_mng() : obj_mng(0,
                                          int_cpy_func,
                                          int_hash_func) {}
 
-int_obj_mng *int_obj_mng::instance_ = NULL;
+int_obj_mng *int_obj_mng::instance_ = nullptr;
 int_obj_mng &sngl_impl_obj_mng()
 {
-    if(int_obj_mng::instance_ == NULL) {
+    if(int_obj_mng::instance_ == nullptr) {
         int_obj_mng::instance_ = new int_obj_mng();
     }
     return *int_obj_mng::instance_;
 }
 }
 
-//-----------------------------
+
 // Linked-List and Hash-Map REPS
 namespace vlg {
 
-//-----------------------------
+
 // base_rep
 base_rep::base_rep() : elemcount_(0) {};
 
@@ -491,25 +491,25 @@ uint32_t base_rep::elems_cnt()  const
     return elemcount_;
 }
 
-//-----------------------------
+
 // lnk_node
 class lnk_node {
     public:
         lnk_node(void *ptr) : ptr_(ptr),
-            next_(NULL),
-            previous_(NULL) {}
+            next_(nullptr),
+            previous_(nullptr) {}
         void *ptr_;
         lnk_node *next_;
         lnk_node *previous_;
 };
 
-//-----------------------------
+
 // linked_list_rep
 linked_list_rep::linked_list_rep(obj_mng &manager) : manager_(manager),
-    head_(NULL),
-    tail_(NULL),
-    it_(NULL),
-    prev_(NULL)
+    head_(nullptr),
+    tail_(nullptr),
+    it_(nullptr),
+    prev_(nullptr)
 {
 }
 
@@ -549,25 +549,25 @@ RetCode linked_list_rep::r_set_at(uint32_t idx, const void *ptr)
 void linked_list_rep::r_start_it()
 {
     it_ = head_;
-    prev_ = NULL;
+    prev_ = nullptr;
 }
 
 void linked_list_rep::r_clear()
 {
-    lnk_node *cur_ln = head_, *next = NULL;
-    while(cur_ln != NULL) {
+    lnk_node *cur_ln = head_, *next = nullptr;
+    while(cur_ln != nullptr) {
         next = cur_ln->next_;
         manager_.del_obj(cur_ln->ptr_);
         delete cur_ln;
         cur_ln = next;
     }
-    head_ = tail_ = NULL;
+    head_ = tail_ = nullptr;
     rst_elems();
 }
 
 RetCode linked_list_rep::r_ins_at(uint32_t idx, const void *ptr)
 {
-    void *new_obj = NULL;
+    void *new_obj = nullptr;
     if(!(new_obj = manager_.new_obj(ptr))) {
         return RetCode_MEMERR;
     }
@@ -596,9 +596,9 @@ void linked_list_rep::r_pop_bk(void *copy)
     delete tail_;
     if(tail) {
         tail_ = tail;
-        tail_->next_ = NULL;
+        tail_->next_ = nullptr;
     } else {
-        head_ = tail_ = NULL;
+        head_ = tail_ = nullptr;
     }
     dcr_elems();
 }
@@ -611,9 +611,9 @@ void linked_list_rep::r_pop_fr(void *copy)
     delete head_;
     if(head) {
         head_ = head;
-        head_->previous_ = NULL;
+        head_->previous_ = nullptr;
     } else {
-        head_ = tail_ = NULL;
+        head_ = tail_ = nullptr;
     }
     dcr_elems();
 }
@@ -628,7 +628,7 @@ void linked_list_rep::r_rem_at(uint32_t idx, void *copy)
 
 RetCode linked_list_rep::r_push_bk(const void *ptr)
 {
-    void *new_obj = NULL;
+    void *new_obj = nullptr;
     if(!(new_obj = manager_.new_obj(ptr))) {
         return RetCode_MEMERR;
     }
@@ -649,7 +649,7 @@ RetCode linked_list_rep::r_push_bk(const void *ptr)
 
 RetCode linked_list_rep::r_push_fr(const void *ptr)
 {
-    void *new_obj = NULL;
+    void *new_obj = nullptr;
     if(!(new_obj = manager_.new_obj(ptr))) {
         return RetCode_MEMERR;
     }
@@ -686,14 +686,14 @@ bool linked_list_rep::r_rem_in_iter()
     }
     r_rem(prev_);
     dcr_elems();
-    prev_ = NULL;
+    prev_ = nullptr;
     return true;
 }
 
 void linked_list_rep::r_enum(const linked_list &list,
                              list_enum_func enum_f, void *ud) const
 {
-    lnk_node *it = head_, *prev = NULL;
+    lnk_node *it = head_, *prev = nullptr;
     while(it) {
         prev = it;
         it = it->next_;
@@ -705,7 +705,7 @@ void linked_list_rep::r_enum_br(const linked_list &list,
                                 list_enum_func_breakable enum_f,
                                 void *ud) const
 {
-    lnk_node *it = head_, *prev = NULL;
+    lnk_node *it = head_, *prev = nullptr;
     bool brk = false;
     while(!brk && it) {
         prev = it;
@@ -718,7 +718,7 @@ void linked_list_rep::r_enum_ts(const synch_linked_list &list,
                                 listts_enum_func enum_f,
                                 void *ud) const
 {
-    lnk_node *it = head_, *prev = NULL;
+    lnk_node *it = head_, *prev = nullptr;
     while(it) {
         prev = it;
         it = it->next_;
@@ -730,7 +730,7 @@ void linked_list_rep::r_enum_ts_br(const synch_linked_list &list,
                                    listts_enum_func_breakable enum_f,
                                    void *ud) const
 {
-    lnk_node *it = head_, *prev = NULL;
+    lnk_node *it = head_, *prev = nullptr;
     bool brk = false;
     while(!brk && it) {
         prev = it;
@@ -765,18 +765,18 @@ lnk_node *linked_list_rep::r_lnk_node_at(uint32_t idx) const
     return cur_ln;
 }
 
-//-----------------------------
+
 // hm_node
 class hm_node {
     public:
         hm_node(void *ptr,
                 void *key_ptr) :
-            next_(NULL),
-            prev_(NULL),
+            next_(nullptr),
+            prev_(nullptr),
             ptr_(ptr),
             key_ptr_(key_ptr),
-            insrt_next_(NULL),
-            insrt_prev_(NULL) {}
+            insrt_next_(nullptr),
+            insrt_prev_(nullptr) {}
         hm_node *next_, *prev_;
         void *ptr_, *key_ptr_;
         hm_node *insrt_next_, *insrt_prev_;
@@ -807,27 +807,27 @@ typedef void(*hmapts_enum_func_breakable)(const synch_hash_map &map,
                                           void *ud,
                                           bool &brk);
 
-//-----------------------------
+
 // hash_map_rep
 hash_map_rep::hash_map_rep(uint32_t hash_size,
                            obj_mng &elem_manager,
                            obj_mng &key_manager) :
     hash_size_(hash_size),
-    buckets_(NULL),
+    buckets_(nullptr),
     elem_manager_(elem_manager),
     key_manager_(key_manager),
-    head_(NULL),
-    tail_(NULL),
-    it_(NULL),
-    prev_(NULL)
+    head_(nullptr),
+    tail_(nullptr),
+    it_(nullptr),
+    prev_(nullptr)
 {
 }
 
 hash_map_rep::~hash_map_rep()
 {
     if(buckets_) {
-        hm_node *cur_mn = head_, *next = NULL;
-        while(cur_mn != NULL) {
+        hm_node *cur_mn = head_, *next = nullptr;
+        while(cur_mn != nullptr) {
             next = cur_mn->insrt_next_;
             elem_manager_.del_obj(cur_mn->ptr_);
             key_manager_.del_obj(cur_mn->key_ptr_);
@@ -847,7 +847,7 @@ RetCode hash_map_rep::r_init()
 void hash_map_rep::r_start_it()
 {
     it_ = head_;
-    prev_ = NULL;
+    prev_ = nullptr;
 }
 
 uint32_t hash_map_rep::r_get_idx(const void *key) const
@@ -859,8 +859,8 @@ uint32_t hash_map_rep::r_get_idx(const void *key) const
 
 void hash_map_rep::r_clear()
 {
-    hm_node *cur_mn = head_, *next = NULL;
-    while(cur_mn != NULL) {
+    hm_node *cur_mn = head_, *next = nullptr;
+    while(cur_mn != nullptr) {
         next = cur_mn->insrt_next_;
         elem_manager_.del_obj(cur_mn->ptr_);
         key_manager_.del_obj(cur_mn->key_ptr_);
@@ -868,7 +868,7 @@ void hash_map_rep::r_clear()
         cur_mn = next;
     }
     memset(buckets_, 0, (hash_size_*sizeof(hm_node *)));
-    head_ = tail_ = NULL;
+    head_ = tail_ = nullptr;
     rst_elems();
 }
 
@@ -962,7 +962,7 @@ void *hash_map_rep::r_get(const void *key) const
         }
         m_node = m_node->next_;
     }
-    return NULL;
+    return nullptr;
 }
 
 RetCode hash_map_rep::r_rem(const void *key, void *copy)
@@ -1016,14 +1016,14 @@ bool hash_map_rep::r_rem_in_it()
     }
     r_rem(prev_, r_get_idx(prev_->key_ptr_));
     dcr_elems();
-    prev_ = NULL;
+    prev_ = nullptr;
     return true;
 }
 
 void hash_map_rep::r_enum(const hash_map &map, hmap_enum_func enum_f,
                           void *ud) const
 {
-    hm_node *it = head_, *prev = NULL;
+    hm_node *it = head_, *prev = nullptr;
     while(it) {
         prev = it;
         it = it->insrt_next_;
@@ -1034,7 +1034,7 @@ void hash_map_rep::r_enum(const hash_map &map, hmap_enum_func enum_f,
 void hash_map_rep::r_enum_ts(const synch_hash_map &map, hmapts_enum_func enum_f,
                              void *ud)
 {
-    hm_node *it = head_, *prev = NULL;
+    hm_node *it = head_, *prev = nullptr;
     while(it) {
         prev = it;
         it = it->insrt_next_;
@@ -1045,7 +1045,7 @@ void hash_map_rep::r_enum_ts(const synch_hash_map &map, hmapts_enum_func enum_f,
 void hash_map_rep::r_enum_br(const hash_map &map,
                              hmap_enum_func_breakable enum_f, void *ud)
 {
-    hm_node *it = head_, *prev = NULL;
+    hm_node *it = head_, *prev = nullptr;
     bool brk = false;
     while(!brk && it) {
         prev = it;
@@ -1057,7 +1057,7 @@ void hash_map_rep::r_enum_br(const hash_map &map,
 void hash_map_rep::r_enum_ts_br(const synch_hash_map &map,
                                 hmapts_enum_func_breakable enum_f, void *ud)
 {
-    hm_node *it = head_, *prev = NULL;
+    hm_node *it = head_, *prev = nullptr;
     bool brk = false;
     while(!brk && it) {
         prev = it;
@@ -1091,22 +1091,22 @@ void hash_map_rep::r_rem(hm_node *del_mn, uint32_t idx)
     delete del_mn;
 }
 
-//-----------------------------
+
 // blocking_queue_rep
 blocking_queue_rep::blocking_queue_rep(uint32_t capacity,
                                        obj_mng &manager) :
     inifinite_cpcty_(capacity ? false : true),
     capacity_(capacity),
     manager_(manager),
-    head_(NULL),
-    tail_(NULL)
+    head_(nullptr),
+    tail_(nullptr)
 {
 }
 
 blocking_queue_rep::~blocking_queue_rep()
 {
-    lnk_node *cur = tail_, *next = NULL;
-    while(cur != NULL) {
+    lnk_node *cur = tail_, *next = nullptr;
+    while(cur != nullptr) {
         next = cur->next_;
         manager_.del_obj(cur->ptr_);
         delete cur;
@@ -1128,14 +1128,14 @@ uint32_t blocking_queue_rep::r_rem_cpcty()
 
 void blocking_queue_rep::r_clear()
 {
-    lnk_node *cur = tail_, *next = NULL;
-    while(cur != NULL) {
+    lnk_node *cur = tail_, *next = nullptr;
+    while(cur != nullptr) {
         next = cur->next_;
         manager_.del_obj(cur->ptr_);
         delete cur;
         cur = next;
     }
-    tail_ = head_ = NULL;
+    tail_ = head_ = nullptr;
     rst_elems();
 }
 
@@ -1149,9 +1149,9 @@ void blocking_queue_rep::r_deque(void *copy)
     delete head_;
     if(new_head) {
         head_ = new_head;
-        head_->next_ = NULL;
+        head_->next_ = nullptr;
     } else {
-        tail_ = head_ = NULL;
+        tail_ = head_ = nullptr;
     }
     dcr_elems();
 }

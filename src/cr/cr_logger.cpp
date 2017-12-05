@@ -113,9 +113,9 @@ const char *get_trace_level_string(TraceLVL lvl)
     }
 }
 
-//-----------------------------
+
 // logger_cfg_loader
-//-----------------------------
+
 class logger_cfg_loader {
     public:
         virtual ~logger_cfg_loader() {};
@@ -129,9 +129,9 @@ void apnd_dealloc_func(void *ptr)
     free(ptr);
 }
 
-//-----------------------------
+
 // appender_obj_mng
-//-----------------------------
+
 
 void *def_alloc_func(size_t type_size, const void *copy);
 
@@ -147,10 +147,10 @@ class appender_obj_mng : public obj_mng {
         static appender_obj_mng *instance_;
 };
 
-appender_obj_mng *appender_obj_mng::instance_ = NULL;
+appender_obj_mng *appender_obj_mng::instance_ = nullptr;
 appender_obj_mng &sngl_apnd_obj_mng()
 {
-    if(appender_obj_mng::instance_  == NULL) {
+    if(appender_obj_mng::instance_  == nullptr) {
         appender_obj_mng::instance_  = new appender_obj_mng();
         if(!appender_obj_mng::instance_) {
             EXIT_ACTION
@@ -178,10 +178,10 @@ class logger_obj_mng : public obj_mng {
         static logger_obj_mng *instance_;
 };
 
-logger_obj_mng *logger_obj_mng::instance_ = NULL;
+logger_obj_mng *logger_obj_mng::instance_ = nullptr;
 logger_obj_mng &sngl_logger_obj_mng()
 {
-    if(logger_obj_mng::instance_  == NULL) {
+    if(logger_obj_mng::instance_  == nullptr) {
         logger_obj_mng::instance_  = new logger_obj_mng();
         if(!logger_obj_mng::instance_) {
             EXIT_ACTION
@@ -191,7 +191,7 @@ logger_obj_mng &sngl_logger_obj_mng()
 }
 
 bool deflt_log_loaded = false;
-hash_map *lgname_lg = NULL;
+hash_map *lgname_lg = nullptr;
 hash_map &get_logger_map()
 {
     if(lgname_lg) {
@@ -209,9 +209,9 @@ hash_map &get_logger_map()
 RetCode logger::add_appender_to_all_loggers(appender *apnd)
 {
     RetCode res = RetCode_OK;
-    logger *logger = NULL;
+    logger *logger = nullptr;
     get_logger_map().start_iteration();
-    while(!get_logger_map().next(NULL, &logger)) {
+    while(!get_logger_map().next(nullptr, &logger)) {
         if((res = logger->add_appender(apnd))) {
             return res;
         }
@@ -221,9 +221,9 @@ RetCode logger::add_appender_to_all_loggers(appender *apnd)
 
 void logger::set_level_for_all_loggers(TraceLVL lvl)
 {
-    logger *logger = NULL;
+    logger *logger = nullptr;
     get_logger_map().start_iteration();
-    while(!get_logger_map().next(NULL, &logger)) {
+    while(!get_logger_map().next(nullptr, &logger)) {
         logger->set_level(lvl);
     }
 }
@@ -231,9 +231,9 @@ void logger::set_level_for_all_loggers(TraceLVL lvl)
 RetCode logger::remove_last_appender_from_all_loggers()
 {
     RetCode res = RetCode_OK;
-    logger *logger = NULL;
+    logger *logger = nullptr;
     get_logger_map().start_iteration();
-    while(!get_logger_map().next(NULL, &logger)) {
+    while(!get_logger_map().next(nullptr, &logger)) {
         if((res = logger->remove_last_appender())) {
             return res;
         }
@@ -300,11 +300,11 @@ void LPrsERR_UNEXP(const char *unexp)
     }
 }
 
-//-----------------------------
-// appender_impl
-//-----------------------------
 
-hash_map *apnds = NULL;
+// appender_impl
+
+
+hash_map *apnds = nullptr;
 hash_map &get_appender_map()
 {
     if(apnds) {
@@ -324,13 +324,13 @@ class appender_impl {
     public:
         appender_impl() :
             valid_(true),
-            fd_(NULL),
+            fd_(nullptr),
             msg_b_ln_(0) {
         }
 
         appender_impl(const char *fname) :
             valid_(false),
-            fd_(NULL),
+            fd_(nullptr),
             msg_b_ln_(0) {
             fd_ = fopen(fname, "a+");
             valid_ = true;
@@ -434,7 +434,7 @@ class appender_impl {
             char *msg_b = buff;
             uint16_t msg_b_idx = 0;
             struct timeval tv;
-            gettimeofday(&tv, NULL);
+            gettimeofday(&tv, nullptr);
             time_t secs = (time_t)tv.tv_sec;
             struct tm *gmt = localtime(&secs);
             sprintf(msg_b, "%02d:%02d:%02d.%03ld",
@@ -496,7 +496,7 @@ class appender_impl {
             char *msg_b = buff;
             uint16_t msg_b_idx = 0;
             struct timeval tv;
-            gettimeofday(&tv, NULL);
+            gettimeofday(&tv, nullptr);
             time_t secs = (time_t)tv.tv_sec;
             struct tm *gmt = localtime(&secs);
             sprintf(msg_b, "%02d:%02d:%02d.%03ld",
@@ -537,9 +537,9 @@ class appender_impl {
         uint16_t msg_b_ln_;
 };
 
-//-----------------------------
+
 // appender
-//-----------------------------
+
 appender::appender()
 {
     impl_ = new appender_impl();
@@ -660,13 +660,13 @@ size_t appender::render_msg_va(const char *lvl_str,
                                 args);
 }
 
-//-----------------------------
+
 // std_logger_cfg_loader
-//-----------------------------
+
 class std_logger_cfg_loader : public logger_cfg_loader {
     public:
 
-        std_logger_cfg_loader(const char *fname) : log_cfg_(NULL) {
+        std_logger_cfg_loader(const char *fname) : log_cfg_(nullptr) {
             strncpy(fname_, fname, CR_MAX_SRC_FILE_NAME_LEN);
         }
 
@@ -779,12 +779,12 @@ class std_logger_cfg_loader : public logger_cfg_loader {
             int lnmax;
             ascii_string tkn;
             ascii_string app_file_name;
-            appender *apnd = NULL;
+            appender *apnd = nullptr;
             bool apnd_parsed = false, skip = false;
             while(!apnd_parsed && !toknz.next_token(tkn, ",\n\r\f\t ", true)) {
                 CR_SKIP_SP_TABS(tkn)
                 if(tkn == "stdout") {
-                    while(!toknz.next_token(tkn, NULL, true)) {
+                    while(!toknz.next_token(tkn, nullptr, true)) {
                         CR_SKIP_SP_TABS(tkn)
                         if(is_new_line(tkn)) {
                             if(!(apnd = new appender(stdout))) {
@@ -807,7 +807,7 @@ class std_logger_cfg_loader : public logger_cfg_loader {
                         }
                     }
                 } else if(tkn == "file") {
-                    while(!toknz.next_token(tkn, NULL, true)) {
+                    while(!toknz.next_token(tkn, nullptr, true)) {
                         CR_SKIP_SP_TABS(tkn)
                         CR_BREAK_ON_TKN(tkn, CR_TK_COMA)
                         if(is_new_line(tkn)) {
@@ -817,7 +817,7 @@ class std_logger_cfg_loader : public logger_cfg_loader {
                             LPrsERR_UNEXP(TKAPND, tkn.internal_buff());
                         }
                     }
-                    while(!toknz.next_token(tkn, NULL, true)) {
+                    while(!toknz.next_token(tkn, nullptr, true)) {
                         CR_SKIP_SP_TABS(tkn)
                         if(tkn == CR_TK_COMA) {
                             LPrsERR_UNEXP(TKAPND, CR_TK_COMA);
@@ -830,7 +830,7 @@ class std_logger_cfg_loader : public logger_cfg_loader {
                         break;
                     }
                     RETURN_IF_NOT_OK(app_file_name.assign(tkn))
-                    while(!toknz.next_token(tkn, NULL, true)) {
+                    while(!toknz.next_token(tkn, nullptr, true)) {
                         CR_SKIP_SP_TABS(tkn)
                         CR_BREAK_ON_TKN(tkn, CR_TK_COMA)
                         if(is_new_line(tkn)) {
@@ -877,7 +877,7 @@ class std_logger_cfg_loader : public logger_cfg_loader {
                            ascii_string &lgsign,
                            ascii_string_tok &toknz) {
             ascii_string tkn;
-            logger *lggr = NULL;
+            logger *lggr = nullptr;
             bool lggr_parsed = false;
             while(!lggr_parsed && !toknz.next_token(tkn, ",\n\r\f\t ", true)) {
                 CR_SKIP_SP_TABS(tkn)
@@ -886,10 +886,10 @@ class std_logger_cfg_loader : public logger_cfg_loader {
                     uint16_t apnds_n = 0;
                     appender *apnds_l[LG_MAX_APNDS];
                     memset(apnds_l, 0, sizeof(apnds_l));
-                    while(!toknz.next_token(tkn, NULL, true)) {
+                    while(!toknz.next_token(tkn, nullptr, true)) {
                         CR_SKIP_SP_TABS(tkn)
                         if(tkn == CR_TK_COMA) {
-                            while(!toknz.next_token(tkn, NULL, true)) {
+                            while(!toknz.next_token(tkn, nullptr, true)) {
                                 CR_SKIP_SP_TABS(tkn)
                                 if(is_new_line(tkn)) {
                                     LPrsERR_UNEXP(TKLGR, S_NL);
@@ -976,9 +976,9 @@ class std_logger_cfg_loader : public logger_cfg_loader {
         FILE *log_cfg_;
 };
 
-//-----------------------------
+
 // logger_impl
-//-----------------------------
+
 class logger_impl {
     public:
         logger_impl(TraceLVL level,
@@ -1064,9 +1064,9 @@ for(uint16_t i = 0; i < impl_->apnds_n_; i++){\
     va_end(args);\
 }
 
-//-----------------------------
+
 // logger
-//-----------------------------
+
 RetCode logger::set_logger_cfg_file_dir(const char *dir)
 {
     strncpy(log_cfg_file_dir,dir, LOG_CFG_FILE_DIR_LEN);
@@ -1101,7 +1101,7 @@ logger *logger::get_logger(const char *logger_name)
         COMMAND_IF_NOT_OK(load_logger_config(), NO_ACTION)
         deflt_log_loaded = true;
     }
-    logger *log = NULL;
+    logger *log = nullptr;
     COMMAND_IF_NOT_OK(get_logger(logger_name, &log), NO_ACTION)
     if(!log) {
         COMMAND_IF_NOT_OK(get_logger("root", &log), NO_ACTION)
@@ -1111,7 +1111,7 @@ logger *logger::get_logger(const char *logger_name)
 
 RetCode logger::get_logger(const char *logger_name, logger **lggr)
 {
-    logger *l_ptr = NULL;
+    logger *l_ptr = nullptr;
     if(!logger_name || !logger_name[0]) {
         return RetCode_BADARG;
     }
@@ -1123,7 +1123,7 @@ RetCode logger::get_logger(const char *logger_name, logger **lggr)
     }
 }
 
-logger::logger() : impl_(NULL)
+logger::logger() : impl_(nullptr)
 {}
 
 logger::~logger()

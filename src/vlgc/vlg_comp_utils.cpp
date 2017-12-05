@@ -53,12 +53,12 @@
 
 namespace vlg {
 
-//-----------------------------
+
 // VLG_COMP_ARCH: x86_64
 // VLG_COMP_OS: unix
 // VLG_COMP_LANG: CPP
 // VLG_COMP_TCOMP: GCC
-//-----------------------------
+
 static size_t  get_in_arch_type_size_x86_64_unix_CPP_GCC(Type type)
 {
     switch(type) {
@@ -88,12 +88,12 @@ static size_t  get_in_arch_type_size_x86_64_unix_CPP_GCC(Type type)
     return 0;
 }
 
-//-----------------------------
+
 // VLG_COMP_ARCH: x86_64
 // VLG_COMP_OS: win
 // VLG_COMP_LANG: CPP
 // VLG_COMP_TCOMP: MSVC
-//-----------------------------
+
 static size_t  get_in_arch_type_size_x86_64_win_CPP_MSVC(Type type)
 {
     switch(type) {
@@ -265,7 +265,7 @@ member_desc_comp::member_desc_comp(unsigned short mmbrid,
     enum_value_(enum_value)
 {}
 
-vlg::RetCode member_desc_comp::init()
+RetCode member_desc_comp::init()
 {
     RETURN_IF_NOT_OK(fild_offset_map_.init(HM_SIZE_NANO))
     RETURN_IF_NOT_OK(fild_type_size_map_.init(HM_SIZE_NANO))
@@ -398,7 +398,7 @@ entity_desc_comp::entity_desc_comp(unsigned int entityid,
     keyid_kdesc_(vlg::sngl_ptr_obj_mng(), sizeof(unsigned short))
 {}
 
-vlg::RetCode entity_desc_comp::init()
+RetCode entity_desc_comp::init()
 {
     RETURN_IF_NOT_OK(entity_size_map_.init(HM_SIZE_NANO))
     RETURN_IF_NOT_OK(entity_max_align_map_.init(HM_SIZE_NANO))
@@ -410,19 +410,19 @@ vlg::RetCode entity_desc_comp::init()
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode entity_desc_comp::extend(vlg::hash_map *mmbrmap,
-                                      vlg::hash_map *keymap)
+RetCode entity_desc_comp::extend(vlg::hash_map *mmbrmap,
+                                 vlg::hash_map *keymap)
 {
-    member_desc_comp *mdesc = NULL;
+    member_desc_comp *mdesc = nullptr;
     mmbrmap->start_iteration();
-    while(!mmbrmap->next(NULL, &mdesc)) {
+    while(!mmbrmap->next(nullptr, &mdesc)) {
         unsigned long mmbrid = mdesc->get_member_id();
         RETURN_IF_NOT_OK(mmbrid_mdesc_.put(&mmbrid, &mdesc))
         const char *mmbrnm = mdesc->get_member_name();
         RETURN_IF_NOT_OK(mmbrnm_mdesc_.put(mmbrnm, &mdesc))
     }
     if(persistent_) {
-        key_desc_comp *keydesc = NULL;
+        key_desc_comp *keydesc = nullptr;
         unsigned short keyid = 0;
         keymap->start_iteration();
         while(!keymap->next(&keyid, &keydesc)) {
@@ -432,7 +432,7 @@ vlg::RetCode entity_desc_comp::extend(vlg::hash_map *mmbrmap,
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode entity_desc_comp::add_key_desc(const key_desc_comp *keydesc)
+RetCode entity_desc_comp::add_key_desc(const key_desc_comp *keydesc)
 {
     unsigned short keyid = keydesc->get_key_id();
     RETURN_IF_NOT_OK(keyid_kdesc_.put(&keyid, &keydesc))
@@ -526,14 +526,14 @@ const member_desc_comp  *entity_desc_comp::get_member_desc_by_id(
     unsigned int mmbrid) const
 {
     const void *ptr = mmbrid_mdesc_.get(&mmbrid);
-    return ptr ? *(const member_desc_comp **)ptr : NULL;
+    return ptr ? *(const member_desc_comp **)ptr : nullptr;
 }
 
 const member_desc_comp  *entity_desc_comp::get_member_desc_by_name(
     const char *name) const
 {
     const void *ptr = mmbrnm_mdesc_.get(name);
-    return ptr ? *(const member_desc_comp **)ptr : NULL;
+    return ptr ? *(const member_desc_comp **)ptr : nullptr;
 }
 
 void entity_desc_comp::enum_member_desc(enum_member_desc_comp_func func) const
@@ -571,16 +571,16 @@ key_desc_comp::key_desc_comp(unsigned short keyid, bool primary) :
 {
 }
 
-vlg::RetCode key_desc_comp::init()
+RetCode key_desc_comp::init()
 {
     RETURN_IF_NOT_OK(fildset_.init())
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode key_desc_comp::init(vlg::linked_list *fldset)
+RetCode key_desc_comp::init(vlg::linked_list *fldset)
 {
     RETURN_IF_NOT_OK(fildset_.init())
-    member_desc_comp *mmbrdesc = NULL;
+    member_desc_comp *mmbrdesc = nullptr;
     fldset->start_iteration();
     while(!fldset->next(&mmbrdesc)) {
         RETURN_IF_NOT_OK(fildset_.push_back(&mmbrdesc))
@@ -588,7 +588,7 @@ vlg::RetCode key_desc_comp::init(vlg::linked_list *fldset)
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode key_desc_comp::add_member_desc(const member_desc_comp  *mmbrdesc)
+RetCode key_desc_comp::add_member_desc(const member_desc_comp  *mmbrdesc)
 {
     RETURN_IF_NOT_OK(fildset_.push_back(&mmbrdesc))
     return vlg::RetCode_OK;
@@ -615,8 +615,8 @@ vlg::linked_list &key_desc_comp::get_key_member_set_m()
 }
 
 
-vlg::RetCode get_zero_val_for_VLG_TYPE(Type type,
-                                       vlg::ascii_string &out)
+RetCode get_zero_val_for_VLG_TYPE(Type type,
+                                  vlg::ascii_string &out)
 {
     switch(comp_cfg.lang) {
         case VLG_COMP_LANG_C:
@@ -693,8 +693,8 @@ vlg::RetCode get_zero_val_for_VLG_TYPE(Type type,
     }
 }
 
-vlg::RetCode target_type_from_builtin_VLG_TYPE(member_desc_comp &mdsc,
-                                               vlg::ascii_string &out)
+RetCode target_type_from_builtin_VLG_TYPE(member_desc_comp &mdsc,
+                                          vlg::ascii_string &out)
 {
     switch(comp_cfg.lang) {
         case VLG_COMP_LANG_C:
@@ -783,9 +783,9 @@ vlg::RetCode target_type_from_builtin_VLG_TYPE(member_desc_comp &mdsc,
     }
 }
 
-vlg::RetCode target_type_from_VLG_TYPE(member_desc_comp &mdsc,
-                                       vlg::hash_map &entitymap,
-                                       vlg::ascii_string &out)
+RetCode target_type_from_VLG_TYPE(member_desc_comp &mdsc,
+                                  vlg::hash_map &entitymap,
+                                  vlg::ascii_string &out)
 {
     switch(mdsc.get_field_type()) {
         case Type_UNDEFINED:
@@ -810,9 +810,9 @@ vlg::RetCode target_type_from_VLG_TYPE(member_desc_comp &mdsc,
     }
 }
 
-vlg::RetCode printf_percent_from_VLG_TYPE(member_desc_comp &mdsc,
-                                          vlg::ascii_string &out,
-                                          bool strict_linux)
+RetCode printf_percent_from_VLG_TYPE(member_desc_comp &mdsc,
+                                     vlg::ascii_string &out,
+                                     bool strict_linux)
 {
     switch(mdsc.get_field_type()) {
         case Type_BOOL:
@@ -857,7 +857,7 @@ VLG_COMP_ARCH arch_from_str(const char *str)
     }
 }
 
-vlg::RetCode str_from_arch(VLG_COMP_ARCH arch, vlg::ascii_string &out)
+RetCode str_from_arch(VLG_COMP_ARCH arch, vlg::ascii_string &out)
 {
     switch(arch) {
         case VLG_COMP_ARCH_x86_64:
@@ -885,7 +885,7 @@ VLG_COMP_LANG lang_from_str(const char *str)
     }
 }
 
-vlg::RetCode str_from_lang(VLG_COMP_LANG lang, vlg::ascii_string &out)
+RetCode str_from_lang(VLG_COMP_LANG lang, vlg::ascii_string &out)
 {
     switch(lang) {
         case VLG_COMP_LANG_C:
@@ -918,7 +918,7 @@ VLG_COMP_TCOMP tcomp_from_str(const char *str)
     }
 }
 
-vlg::RetCode str_from_tcomp(VLG_COMP_TCOMP tcomp, vlg::ascii_string &out)
+RetCode str_from_tcomp(VLG_COMP_TCOMP tcomp, vlg::ascii_string &out)
 {
     switch(tcomp) {
         case VLG_COMP_TCOMP_MSVC:
@@ -965,7 +965,7 @@ size_t adjust_entity_size(size_t cur_offset,
 /***********************************
 OPEN- VLG_COMP_OpenInputFile
 ***********************************/
-vlg::RetCode open_input_file(const char *fname, FILE **fdesc)
+RetCode open_input_file(const char *fname, FILE **fdesc)
 {
     comp_cfg.path_list.start_iteration();
     vlg::ascii_string ffname;
@@ -990,7 +990,7 @@ vlg::RetCode open_input_file(const char *fname, FILE **fdesc)
 /***********************************
 OPEN- VLG_COMP_OpenOutputFile
 ***********************************/
-vlg::RetCode open_output_file(const char *fname, FILE **fdesc)
+RetCode open_output_file(const char *fname, FILE **fdesc)
 {
     vlg::ascii_string ffname;
     COMMAND_IF_NOT_OK(ffname.assign(comp_cfg.out_dir), exit(1))
@@ -1008,7 +1008,7 @@ vlg::RetCode open_output_file(const char *fname, FILE **fdesc)
 /***********************************
 PUT- VLG_COMP_Put_NewLine
 ***********************************/
-vlg::RetCode put_newline(FILE *file)
+RetCode put_newline(FILE *file)
 {
     fprintf(file,  "\n");
     return vlg::RetCode_OK;
@@ -1017,14 +1017,14 @@ vlg::RetCode put_newline(FILE *file)
 /***********************************
 GET- VLG_COMP_Get_LocalDate
 ***********************************/
-vlg::RetCode get_local_date(char *out)
+RetCode get_local_date(char *out)
 {
 #ifdef WIN32
     SYSTEMTIME time;
     GetLocalTime(&time);
     sprintf(out, "%02d-%02d-%d", time.wDay, time.wMonth, time.wYear);
 #else
-    time_t t = time(NULL);
+    time_t t = time(nullptr);
     struct tm tm = *localtime(&t);
     sprintf(out, "%02d-%02d-%d", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
 #endif
@@ -1034,8 +1034,8 @@ vlg::RetCode get_local_date(char *out)
 /***********************************
 GEN- VLG_COMP_Gen_Hdr
 ***********************************/
-vlg::RetCode render_hdr(compile_unit &cunit, vlg::ascii_string &fname,
-                        FILE *file)
+RetCode render_hdr(compile_unit &cunit, vlg::ascii_string &fname,
+                   FILE *file)
 {
     fprintf(file,  "/********************************************************");
     RETURN_IF_NOT_OK(put_newline(file))
@@ -1064,7 +1064,7 @@ compiler_config::compiler_config() :    verblvl(0),
     file_list(vlg::sngl_cstr_obj_mng()),
     out_dir(VLG_COMP_DFLT_DIR) {}
 
-vlg::RetCode compiler_config::init()
+RetCode compiler_config::init()
 {
     RETURN_IF_NOT_OK(path_list.init())
     RETURN_IF_NOT_OK(file_list.init())
@@ -1073,9 +1073,9 @@ vlg::RetCode compiler_config::init()
 
 
 compile_unit::compile_unit() :
-    fname_(NULL),
-    model_name_(NULL),
-    model_version_(NULL),
+    fname_(nullptr),
+    model_name_(nullptr),
+    model_version_(nullptr),
     define_map_(vlg::sngl_cstr_obj_mng(),
                 vlg::sngl_cstr_obj_mng()),
     entity_map_(vlg::sngl_ptr_obj_mng(),
@@ -1089,7 +1089,7 @@ compile_unit::~compile_unit()
     }
 }
 
-vlg::RetCode compile_unit::init(const char *fname)
+RetCode compile_unit::init(const char *fname)
 {
     if(!fname) {
         return vlg::RetCode_KO;
@@ -1104,9 +1104,9 @@ vlg::RetCode compile_unit::init(const char *fname)
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode compile_unit::parse()
+RetCode compile_unit::parse()
 {
-    FILE *fdesc = NULL;
+    FILE *fdesc = nullptr;
     vlg::ascii_string data; //file content loaded on data
     RETURN_IF_NOT_OK(open_input_file(fname_, &fdesc))
     RETURN_IF_NOT_OK(load_file(fdesc, data))
@@ -1119,7 +1119,7 @@ vlg::RetCode compile_unit::parse()
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode compile_unit::compile()
+RetCode compile_unit::compile()
 {
     switch(comp_cfg.lang) {
         case VLG_COMP_LANG_C:

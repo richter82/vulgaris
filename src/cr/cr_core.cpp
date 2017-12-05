@@ -23,7 +23,7 @@
 
 namespace vlg {
 
-//-----------------------------
+
 // #VER#
 const char *crlib_ver(void)
 {
@@ -31,7 +31,7 @@ const char *crlib_ver(void)
     return str;
 }
 
-//-----------------------------
+
 // GET ARCH
 const char *get_arch()
 {

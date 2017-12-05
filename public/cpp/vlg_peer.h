@@ -21,7 +21,7 @@
 
 #ifndef VLG_CPP_PEER_H_
 #define VLG_CPP_PEER_H_
-#include "vlg.h"
+#include "vlg_memory.h"
 #ifdef WIN32
 #include <winsock2.h>
 #else
@@ -47,8 +47,8 @@ class peer {
         explicit peer();
         virtual ~peer();
 
-        vlg::RetCode set_params_file_dir(const char *dir);
-        vlg::RetCode set_params_file_path_name(const char *file_path);
+        RetCode set_params_file_dir(const char *dir);
+        RetCode set_params_file_path_name(const char *file_path);
 
     public:
         const char              *get_name();
@@ -88,8 +88,8 @@ class peer {
         void add_load_persistent_driver(const char *driver);
 
     public:
-        vlg::RetCode    extend_model(nentity_manager *nem);
-        vlg::RetCode    extend_model(const char *model_name);
+        RetCode    extend_model(nentity_manager *nem);
+        RetCode    extend_model(const char *model_name);
 
         // AUTOMA - User mandatory entrypoints
     public:
@@ -98,14 +98,14 @@ class peer {
 
         // AUTOMA - User opt. entrypoints
     public:
-        virtual vlg::RetCode  on_load_config(int pnum,
-                                             const char *param,
-                                             const char *value);
+        virtual RetCode     on_load_config(int pnum,
+                                           const char *param,
+                                           const char *value);
 
-        virtual vlg::RetCode  on_init();
-        virtual vlg::RetCode  on_starting();
-        virtual vlg::RetCode  on_stopping();
-        virtual vlg::RetCode  on_move_running();
+        virtual RetCode     on_init();
+        virtual RetCode     on_starting();
+        virtual RetCode     on_stopping();
+        virtual RetCode     on_move_running();
         virtual void          on_error();
         virtual void          on_dying_breath();
 
@@ -117,71 +117,70 @@ class peer {
                                        void *ud);
 
     public:
-        vlg::RetCode await_for_status_reached_or_outdated(PeerStatus test,
-                                                          PeerStatus &current,
-                                                          time_t sec = -1,
-                                                          long nsec = 0);
+        RetCode await_for_status_reached_or_outdated(PeerStatus test,
+                                                     PeerStatus &current,
+                                                     time_t sec = -1,
+                                                     long nsec = 0);
 
-        vlg::RetCode await_for_status_change(PeerStatus &peer_status,
-                                             time_t sec = -1,
-                                             long nsec = 0);
+        RetCode await_for_status_change(PeerStatus &peer_status,
+                                        time_t sec = -1,
+                                        long nsec = 0);
         // SERVER-CONNECTIVITY
     public:
-        connection_factory *get_connection_factory();
-        void set_connection_factory(connection_factory &conn_factory);
+        connection_factory &get_connection_factory();
+        void set_connection_factory(connection_factory &c_factory);
 
         // ACTIONS
     public:
-        vlg::RetCode start(int argc,
-                           char *argv[],
-                           bool spawn_new_thread_for_peer_automa);
+        RetCode start(int argc,
+                      char *argv[],
+                      bool spawn_new_thread_for_peer_automa);
 
-        vlg::RetCode stop(bool force_disconnect = false);
+        RetCode stop(bool force_disconnect = false);
 
         // PERSISTENCE
     public:
-        vlg::RetCode create_persistent_schema(PersistenceAlteringMode mode);
+        RetCode create_persistent_schema(PersistenceAlteringMode mode);
 
-        vlg::RetCode nclass_create_persistent_schema(PersistenceAlteringMode mode,
-                                                     unsigned int nclass_id);
+        RetCode nclass_create_persistent_schema(PersistenceAlteringMode mode,
+                                                unsigned int nclass_id);
 
-        vlg::RetCode obj_load(unsigned short nclass_key,
-                              unsigned int &ts_0_out,
-                              unsigned int &ts_1_out,
-                              nclass &in_out_obj);
+        RetCode obj_load(unsigned short nclass_key,
+                         unsigned int &ts_0_out,
+                         unsigned int &ts_1_out,
+                         nclass &in_out_obj);
 
-        vlg::RetCode obj_save(const nclass &in_obj);
+        RetCode obj_save(const nclass &in_obj);
 
-        vlg::RetCode obj_update(unsigned short nclass_key,
-                                const nclass &in_obj);
+        RetCode obj_update(unsigned short nclass_key,
+                           const nclass &in_obj);
 
-        vlg::RetCode obj_update_or_save(unsigned short nclass_key,
-                                        const nclass &in_obj);
+        RetCode obj_update_or_save(unsigned short nclass_key,
+                                   const nclass &in_obj);
 
-        vlg::RetCode obj_remove(unsigned short nclass_key,
-                                PersistenceDeletionMode mode,
-                                const nclass &in_obj);
+        RetCode obj_remove(unsigned short nclass_key,
+                           PersistenceDeletionMode mode,
+                           const nclass &in_obj);
 
         // DISTRIBUTION
     public:
-        vlg::RetCode obj_distribute(SubscriptionEventType event_type,
-                                    Action action,
-                                    const nclass &in_obj);
+        RetCode obj_distribute(SubscriptionEventType event_type,
+                               Action action,
+                               const nclass &in_obj);
 
         // PERSISTENCE + DISTRIBUTION
     public:
-        vlg::RetCode obj_save_and_distribute(const nclass &in_obj);
+        RetCode obj_save_and_distribute(const nclass &in_obj);
 
-        vlg::RetCode obj_update_and_distribute(unsigned short nclass_key,
-                                               const nclass &in_obj);
+        RetCode obj_update_and_distribute(unsigned short nclass_key,
+                                          const nclass &in_obj);
 
-        vlg::RetCode obj_update_or_save_and_distribute(
-            unsigned short class_key,
-            const nclass &in_obj);
+        RetCode obj_update_or_save_and_distribute(unsigned short class_key,
+                                                  const nclass &in_obj);
 
-        vlg::RetCode obj_remove_and_distribute(unsigned short nclass_key,
-                                               PersistenceDeletionMode mode,
-                                               const nclass &in_obj);
+        RetCode obj_remove_and_distribute(unsigned short nclass_key,
+                                          PersistenceDeletionMode mode,
+                                          const nclass &in_obj);
 
     public:
         /**
@@ -197,7 +196,7 @@ class peer {
         @return default implementation always returns RetCode_OK,
                 so all incoming will be accepted.
         */
-        virtual vlg::RetCode on_new_incoming_connection(connection &incoming_connection);
+        virtual RetCode on_incoming_connection(shared_pointer<connection> &incoming_connection);
 
     public:
         peer_impl *get_opaque();

@@ -28,9 +28,7 @@
 
 namespace vlg {
 
-//-----------------------------
 // CLASS connection_impl_pub
-//-----------------------------
 class connection_impl_pub {
     private:
         class cimpl_conn_impl : public connection_impl {
@@ -39,7 +37,11 @@ class connection_impl_pub {
                                 peer_impl &peer,
                                 ConnectionType con_type,
                                 unsigned int connid) :
-                    connection_impl(peer, con_type, connid), publ_(publ) {
+                    connection_impl(publ,
+                                    peer,
+                                    con_type,
+                                    connid),
+                    publ_(publ) {
                 }
 
                 virtual void on_connect(ConnectivityEventResult con_evt_res,
@@ -75,12 +77,12 @@ class connection_impl_pub {
     public:
         connection_impl_pub(connection &publ) :
             publ_(publ),
-            peer_(NULL),
-            impl_(NULL),
-            csh_(NULL),
-            csh_ud_(NULL),
-            tx_factory_(transaction_factory::default_factory()),
-            sbs_factory_(subscription_factory::default_factory()) {}
+            peer_(nullptr),
+            impl_(nullptr),
+            csh_(nullptr),
+            csh_ud_(nullptr),
+            tx_factory_(&transaction_factory::default_factory()),
+            sbs_factory_(&subscription_factory::default_factory()) {}
         ~connection_impl_pub() {
             if(impl_) {
                 //destroy of underling object must be done only for outgoing-client connections
@@ -113,10 +115,10 @@ class connection_impl_pub {
             impl_ = val;
         }
 
-        connection::connection_status_change get_csh() const {
+        connection::status_change get_csh() const {
             return csh_;
         }
-        void set_csh(connection::connection_status_change val) {
+        void set_csh(connection::status_change val) {
             csh_ = val;
         }
 
@@ -127,30 +129,30 @@ class connection_impl_pub {
             csh_ud_ = val;
         }
 
-        transaction_factory *tx_factory() {
-            return tx_factory_;
+        transaction_factory &tx_factory() {
+            return *tx_factory_;
         }
 
         void tx_factory(transaction_factory &val) {
             tx_factory_ = &val;
-            impl_->set_tx_factory(transaction_factory::tx_factory_impl_f);
+            impl_->set_tx_factory(transaction_factory::transaction_impl_factory_f);
             impl_->set_tx_factory_ud(tx_factory_);
         }
 
-        subscription_factory *sbs_factory() const {
-            return sbs_factory_;
+        subscription_factory &sbs_factory() const {
+            return *sbs_factory_;
         }
 
         void sbs_factory(subscription_factory &val) {
             sbs_factory_ = &val;
-            impl_->set_sbs_factory(subscription_factory::sbs_factory_impl_f);
+            impl_->set_sbs_factory(subscription_factory::subscription_impl_factory_f);
             impl_->set_sbs_factory_ud(sbs_factory_);
         }
 
-        vlg::RetCode bind_internal(peer &p) {
-            vlg::RetCode rcode = vlg::RetCode_OK;
+        RetCode bind_internal(peer &p) {
+            RetCode rcode = vlg::RetCode_OK;
             if(!impl_) { //ugly test to detect outgoing/ingoing connection type..
-                connection_impl *c_impl = NULL;
+                connection_impl *c_impl = nullptr;
                 if((rcode = p.get_opaque()->new_connection(&c_impl,
                                                            vlg_conn_factory_cimpl,
                                                            ConnectionType_OUTGOING,
@@ -162,8 +164,7 @@ class connection_impl_pub {
                 }
             } else {
             }
-            impl_->set_connection_status_change_handler(
-                connection_impl_status_change_hndlr_cimpl, this);
+            impl_->set_connection_status_change_handler(connection_impl_status_change_hndlr_cimpl, this);
             return rcode;
         }
 
@@ -171,8 +172,10 @@ class connection_impl_pub {
         connection &publ_;
         peer *peer_;
         connection_impl *impl_;
-        connection::connection_status_change csh_;
+        connection::status_change csh_;
         void *csh_ud_;
+
+        //factories cannot be references
         transaction_factory *tx_factory_;
         subscription_factory *sbs_factory_;
 };
@@ -180,13 +183,12 @@ class connection_impl_pub {
 //*************************************
 //connection MEMORY MNGMENT BEGIN
 //*************************************
-
 class connection_collector : public vlg::collector {
     public:
         connection_collector() : vlg::collector("connection") {}
 };
 
-vlg::collector *inst_connection_collector = NULL;
+vlg::collector *inst_connection_collector = nullptr;
 vlg::collector &get_inst_connection_collector()
 {
     if(inst_connection_collector) {
@@ -203,11 +205,8 @@ vlg::collector &connection::get_collector()
     return get_inst_connection_collector();
 }
 
-//-----------------------------
 // CLASS connection
-//-----------------------------
-
-nclass_logger *connection::log_ = NULL;
+nclass_logger *connection::log_ = nullptr;
 
 connection::connection()
 {
@@ -230,15 +229,15 @@ connection::~connection()
     IFLOG(trc(TH_ID, LS_DTR "%s(ptr:%p)", __func__, this))
 }
 
-vlg::RetCode connection::bind(peer &p)
+RetCode connection::bind(peer &p)
 {
     impl_->set_peer(p);
     return impl_->bind_internal(p);
 }
 
-peer *connection::get_peer()
+peer &connection::get_peer()
 {
-    return impl_->get_peer();
+    return *impl_->get_peer();
 }
 
 ConnectionType connection::get_connection_type() const
@@ -282,7 +281,7 @@ ConnectionStatus connection::get_status()
     return impl_->get_conn()->status();
 }
 
-vlg::RetCode connection::await_for_status_reached_or_outdated(
+RetCode connection::await_for_status_reached_or_outdated(
     ConnectionStatus test, ConnectionStatus &current,
     time_t sec, long nsec)
 {
@@ -292,27 +291,27 @@ vlg::RetCode connection::await_for_status_reached_or_outdated(
                                                                    nsec);
 }
 
-vlg::RetCode connection::await_for_status_change(ConnectionStatus
-                                                 &status,
-                                                 time_t sec,
-                                                 long nsec)
+RetCode connection::await_for_status_change(ConnectionStatus
+                                            &status,
+                                            time_t sec,
+                                            long nsec)
 {
     return impl_->get_conn()->await_for_status_change(status, sec, nsec);
 }
 
-void connection::set_connection_status_change_handler(connection_status_change
+void connection::set_connection_status_change_handler(status_change
                                                       handler, void *ud)
 {
     impl_->set_csh(handler);
     impl_->set_csh_ud(ud);
 }
 
-vlg::RetCode connection::connect(sockaddr_in &connection_params)
+RetCode connection::connect(sockaddr_in &connection_params)
 {
     return impl_->get_conn()->client_connect(connection_params);
 }
 
-vlg::RetCode connection::await_for_connection_result(
+RetCode connection::await_for_connection_result(
     ConnectivityEventResult
     &con_evt_res,
     ConnectivityEventType &connectivity_evt_type,
@@ -323,13 +322,13 @@ vlg::RetCode connection::await_for_connection_result(
                                                           connectivity_evt_type, sec, nsec);
 }
 
-vlg::RetCode connection::disconnect(DisconnectionResultReason
-                                    reason_code)
+RetCode connection::disconnect(DisconnectionResultReason
+                               reason_code)
 {
     return impl_->get_conn()->disconnect(reason_code);
 }
 
-vlg::RetCode connection::await_for_disconnection_result(
+RetCode connection::await_for_disconnection_result(
     ConnectivityEventResult &con_evt_res,
     ConnectivityEventType &connectivity_evt_type,
     time_t sec,
@@ -349,7 +348,7 @@ void connection::on_disconnect(ConnectivityEventResult con_evt_res,
 {
 }
 
-transaction_factory *connection::get_transaction_factory()
+transaction_factory &connection::get_transaction_factory()
 {
     return impl_->tx_factory();
 }
@@ -359,7 +358,7 @@ void connection::set_transaction_factory(transaction_factory &tx_factory)
     impl_->tx_factory(tx_factory);
 }
 
-subscription_factory *connection::get_subscription_factory()
+subscription_factory &connection::get_subscription_factory()
 {
     return impl_->sbs_factory();
 }
@@ -394,40 +393,21 @@ unsigned short connection::get_host_port() const
     return impl_->get_conn()->get_host_port();
 }
 
-//-----------------------------
-// srv conn repo.
-//-----------------------------
-extern vlg::synch_hash_map &impl_publ_peer_map();
-
-vlg::synch_hash_map *impl_publ_srv_conn_map_ = NULL;  //impl --> publ
-vlg::synch_hash_map &impl_publ_srv_conn_map()
-{
-    if(impl_publ_srv_conn_map_) {
-        return *impl_publ_srv_conn_map_;
-    }
-    if(!(impl_publ_srv_conn_map_ = new vlg::synch_hash_map(
-        vlg::sngl_ptr_obj_mng(),
-        vlg::sngl_ptr_obj_mng()))) {
-        EXIT_ACTION
-    }
-    impl_publ_srv_conn_map_->init(HM_SIZE_SMALL);
-    return *impl_publ_srv_conn_map_;
-}
-
-//-----------------------------
 // CLASS cimpl_conn_impl_server
-//-----------------------------
 class cimpl_conn_impl_server : public connection_impl {
     public:
         cimpl_conn_impl_server(connection &publ,
                                peer_impl &peer,
                                ConnectionType con_type,
                                unsigned int connid) :
-            connection_impl(peer, con_type, connid), publ_(publ) {
+            connection_impl(publ,
+                            peer,
+                            con_type,
+                            connid),
+            publ_(publ) {
         }
         virtual ~cimpl_conn_impl_server() {
             void *self = this;
-            impl_publ_srv_conn_map().remove(&self, NULL);
             /************************
             RELEASE_ID: CPB_SRV_01
             ************************/
@@ -447,47 +427,41 @@ class cimpl_conn_impl_server : public connection_impl {
         connection &publ_;
 };
 
-//-----------------------------
 // CLASS connection_factory
-//-----------------------------
-connection_factory *default_conn_factory = NULL;
-connection_factory *connection_factory::default_connection_factory()
+
+connection_factory *default_conn_factory = nullptr;
+connection_factory &connection_factory::default_factory()
 {
-    if(default_conn_factory  == NULL) {
+    if(default_conn_factory  == nullptr) {
         default_conn_factory  = new connection_factory();
         if(!default_conn_factory) {
             EXIT_ACTION
         }
     }
-    return default_conn_factory;
+    return *default_conn_factory;
 }
 
-connection_impl *connection_factory::conn_factory_impl_f(
-    peer_impl &peer_internal,
-    ConnectionType con_type,
-    unsigned int connid,
-    void *ud)
+connection_impl *connection_factory::connection_impl_factory_f(peer_impl &peer_internal,
+                                                               ConnectionType con_type,
+                                                               unsigned int connid,
+                                                               void *ud)
 {
     connection_factory *csf = static_cast<connection_factory *>(ud);
-    peer_impl *peer_internal_ptr = &peer_internal;
-    peer *p_publ = NULL;
-    if(impl_publ_peer_map().get(&peer_internal_ptr, &p_publ)) {
-        EXIT_ACTION
-    }
-    connection *publ = csf->new_connection(*p_publ);
-    vlg::collector &c = publ->get_collector();
+    peer &p_publ = peer_internal.get_public();
+    connection &publ = csf->make_connection(p_publ);
+
+    vlg::collector &c = publ.get_collector();
     /************************
     RETAIN_ID: CPB_SRV_01
     ************************/
-    c.retain(publ);
+    c.retain(&publ);
 
-    connection_impl *impl_conn = new cimpl_conn_impl_server(*publ,
+    connection_impl *impl_conn = new cimpl_conn_impl_server(publ,
                                                             peer_internal,
                                                             con_type,
                                                             connid);
-    publ->set_opaque(impl_conn);
-    publ->bind(*p_publ);
-    impl_publ_srv_conn_map().put(&impl_conn, &publ);
+    publ.set_opaque(impl_conn);
+    publ.bind(p_publ);
     return impl_conn;
 }
 
@@ -497,9 +471,9 @@ connection_factory::connection_factory()
 connection_factory::~connection_factory()
 {}
 
-connection *connection_factory::new_connection(peer &p)
+connection &connection_factory::make_connection(peer &p)
 {
-    return new connection();
+    return *new connection();
 }
 
 }

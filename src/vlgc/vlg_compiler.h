@@ -177,8 +177,8 @@ GLOB DEFS
 ***********************************/
 namespace vlg {
 
-vlg::RetCode str_from_EntityType(NEntityType etype,
-                                 vlg::ascii_string &out);
+RetCode str_from_EntityType(NEntityType etype,
+                            vlg::ascii_string &out);
 
 enum VLG_COMP_ARCH {
     VLG_COMP_ARCH_Undef,
@@ -186,7 +186,7 @@ enum VLG_COMP_ARCH {
 };
 
 VLG_COMP_ARCH   arch_from_str(const char *str);
-vlg::RetCode  str_from_arch(VLG_COMP_ARCH arch, vlg::ascii_string &out);
+RetCode  str_from_arch(VLG_COMP_ARCH arch, vlg::ascii_string &out);
 
 enum VLG_COMP_OS {
     VLG_COMP_OS_Undef,
@@ -204,7 +204,7 @@ enum VLG_COMP_LANG {
 };
 
 VLG_COMP_LANG   lang_from_str(const char *str);
-vlg::RetCode  str_from_lang(VLG_COMP_LANG lang, vlg::ascii_string &out);
+RetCode  str_from_lang(VLG_COMP_LANG lang, vlg::ascii_string &out);
 
 enum VLG_COMP_TCOMP {
     VLG_COMP_TCOMP_Undef,
@@ -213,14 +213,14 @@ enum VLG_COMP_TCOMP {
 };
 
 VLG_COMP_TCOMP  tcomp_from_str(const char *str);
-vlg::RetCode  str_from_tcomp(VLG_COMP_TCOMP tcomp, vlg::ascii_string &out);
+RetCode  str_from_tcomp(VLG_COMP_TCOMP tcomp, vlg::ascii_string &out);
 
 /***********************************
 compiler_config
 ***********************************/
 struct compiler_config {
     compiler_config();
-    vlg::RetCode init();
+    RetCode init();
     int verblvl;
     VLG_COMP_LANG lang;
     vlg::linked_list path_list;
@@ -238,10 +238,10 @@ class compile_unit {
         compile_unit();
         ~compile_unit();
 
-        vlg::RetCode init(const char *fname);
+        RetCode init(const char *fname);
 
-        vlg::RetCode parse();
-        vlg::RetCode compile();
+        RetCode parse();
+        RetCode compile();
 
         const char *get_file_name();
         const char *model_name() const;
@@ -275,7 +275,7 @@ struct member_desc_comp {
                      long enum_value);
 
     //---meths
-    vlg::RetCode  init();
+    RetCode  init();
     /*
     Member section
     */
@@ -368,9 +368,9 @@ class key_desc_comp {
 
     public:
         //---meths
-        vlg::RetCode      init();
-        vlg::RetCode      init(vlg::linked_list *member_set);
-        vlg::RetCode      add_member_desc(const member_desc_comp *member_descriptor);
+        RetCode      init();
+        RetCode      init(vlg::linked_list *member_set);
+        RetCode      add_member_desc(const member_desc_comp *member_descriptor);
 
         unsigned short      get_key_id() const;
         bool                is_primary() const;
@@ -399,10 +399,10 @@ struct entity_desc_comp {
                          unsigned int fild_num,
                          bool persistent);
         //---meths
-        vlg::RetCode  init();
-        vlg::RetCode  extend(vlg::hash_map *mmbrmap,
-                             vlg::hash_map *keymap);
-        vlg::RetCode  add_key_desc(const key_desc_comp *keydesc);
+        RetCode  init();
+        RetCode  extend(vlg::hash_map *mmbrmap,
+                        vlg::hash_map *keymap);
+        RetCode  add_key_desc(const key_desc_comp *keydesc);
 
         unsigned int    get_entityid()  const;
 
@@ -470,18 +470,18 @@ struct entity_desc_comp {
 /***********************************
 GLOB FUNCTIONS
 ***********************************/
-vlg::RetCode    open_input_file(const char *fname,
-                                FILE **fdesc);
+RetCode    open_input_file(const char *fname,
+                           FILE **fdesc);
 
-vlg::RetCode    open_output_file(const char *fname,
-                                 FILE **fdesc);
+RetCode    open_output_file(const char *fname,
+                            FILE **fdesc);
 
-vlg::RetCode    parse_data(const char *fname,
-                           vlg::ascii_string &data,
-                           vlg::hash_map &definemap,
-                           vlg::hash_map &entitymap,
-                           char **modname,
-                           char **modver);
+RetCode    parse_data(const char *fname,
+                      vlg::ascii_string &data,
+                      vlg::hash_map &definemap,
+                      vlg::hash_map &entitymap,
+                      char **modname,
+                      char **modver);
 
 /*
 Returns the potential next valid offset (to be used in next iteration).
@@ -524,30 +524,30 @@ On Network-protocol dependant type size (in bytes)
 */
 size_t  get_network_type_size(Type type);
 
-vlg::RetCode    compile_C(compile_unit &cunit);
-vlg::RetCode    compile_CPP(compile_unit &cunit);
-vlg::RetCode    compile_Java(compile_unit &cunit);
-vlg::RetCode    compile_ObjC(compile_unit &cunit);
+RetCode    compile_C(compile_unit &cunit);
+RetCode    compile_CPP(compile_unit &cunit);
+RetCode    compile_Java(compile_unit &cunit);
+RetCode    compile_ObjC(compile_unit &cunit);
 
-vlg::RetCode    get_zero_val_for_VLG_TYPE(Type type, vlg::ascii_string &out);
+RetCode    get_zero_val_for_VLG_TYPE(Type type, vlg::ascii_string &out);
 
-vlg::RetCode    target_type_from_builtin_VLG_TYPE(member_desc_comp &mdsc,
-                                                  vlg::ascii_string &out);
+RetCode    target_type_from_builtin_VLG_TYPE(member_desc_comp &mdsc,
+                                             vlg::ascii_string &out);
 
-vlg::RetCode    target_type_from_VLG_TYPE(member_desc_comp &mdsc,
-                                          vlg::hash_map &entitymap,
-                                          vlg::ascii_string &out);
+RetCode    target_type_from_VLG_TYPE(member_desc_comp &mdsc,
+                                     vlg::hash_map &entitymap,
+                                     vlg::ascii_string &out);
 
-vlg::RetCode    printf_percent_from_VLG_TYPE(member_desc_comp &mdsc,
-                                             vlg::ascii_string &out,
-                                             bool strict_linux = false);
+RetCode    printf_percent_from_VLG_TYPE(member_desc_comp &mdsc,
+                                        vlg::ascii_string &out,
+                                        bool strict_linux = false);
 
-vlg::RetCode get_local_date(char *out);
-vlg::RetCode put_newline(FILE *file);
+RetCode get_local_date(char *out);
+RetCode put_newline(FILE *file);
 
-vlg::RetCode render_hdr(compile_unit &cunit,
-                        vlg::ascii_string &fname,
-                        FILE *file);
+RetCode render_hdr(compile_unit &cunit,
+                   vlg::ascii_string &fname,
+                   FILE *file);
 
 }
 #endif

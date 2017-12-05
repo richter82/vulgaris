@@ -362,19 +362,18 @@ void vlg_toolkit_Connection::on_new_tx_button_clicked()
     new_tx.set_request_nclass_id(item->edesc()->get_nclass_id());
 
     vlg::nclass *sending_obj = NULL;
-    conn_.get_peer()->get_entity_manager_m().new_nclass_instance(
-        edesc->get_nclass_id(), &sending_obj);
+    conn_.get_peer().get_entity_manager_m().new_nclass_instance(edesc->get_nclass_id(), &sending_obj);
     new_tx.set_request_obj(sending_obj);
 
     vlg_toolkit_tx_vlg_class_model *tx_mdl = new vlg_toolkit_tx_vlg_class_model(
         *edesc,
-        conn_.get_peer()->get_entity_manager(),
+        conn_.get_peer().get_entity_manager(),
         new_tx,
         this);
 
     /*if last param set to 'this' child will be always on TOP*/
     vlg_toolkit_tx_window *new_tx_window = new vlg_toolkit_tx_window(*edesc,
-                                                                     conn_.get_peer()->get_entity_manager(),
+                                                                     conn_.get_peer().get_entity_manager(),
                                                                      new_tx,
                                                                      *tx_mdl,
                                                                      NULL);
@@ -411,12 +410,12 @@ void vlg_toolkit_Connection::on_new_sbs_button_clicked()
 
     vlg_toolkit_sbs_vlg_class_model *sbs_mdl =
         new vlg_toolkit_sbs_vlg_class_model(*edesc,
-                                            conn_.get_peer()->get_entity_manager(),
+                                            conn_.get_peer().get_entity_manager(),
                                             this);
 
     /*if last param set to 'this' child will be always on TOP*/
     vlg_toolkit_sbs_window *new_sbs_window = new vlg_toolkit_sbs_window(*edesc,
-                                                                        conn_.get_peer()->get_entity_manager(),
+                                                                        conn_.get_peer().get_entity_manager(),
                                                                         new_sbs,
                                                                         *sbs_mdl,
                                                                         NULL);

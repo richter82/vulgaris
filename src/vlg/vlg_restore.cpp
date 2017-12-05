@@ -26,7 +26,7 @@
 #ifdef WIN32
 #define SF_GBB_READ_H(bbuf, meth, cmd)\
 {\
-    vlg::RetCode gbb_read_res;\
+    RetCode gbb_read_res;\
     if((gbb_read_res = bbuf->meth)){\
         FILE *ferr = fopen("log.err", "wa+");\
         fprintf(ferr ? ferr : stderr, "GBB OVERFL ERROR (%d): cpcty:%u pos:%u limit:%u mark:%u \n",\
@@ -42,7 +42,7 @@
 #else
 #define SF_GBB_READ_H(bbuf, meth, cmd)\
 {\
-    vlg::RetCode gbb_read_res;\
+    RetCode gbb_read_res;\
     if((gbb_read_res = bbuf->meth)){\
         FILE *ferr = fopen("log.err", "wa+");\
         fprintf(ferr ? ferr : stderr, "GBB OVERFL ERROR (%d): cpcty:%zu pos:%zu limit:%zu mark:%zu \n",\
@@ -59,18 +59,18 @@
 
 namespace vlg {
 
-//-----------------------------
+
 // FldSeqA_Restore
-//-----------------------------
-inline vlg::RetCode FldSeqA_Restore(void *entity_ptr,
-                                    const nentity_manager *nem,
-                                    Encode enctyp,
-                                    const member_desc *mmbrd,
-                                    vlg::grow_byte_buffer *ibb)
+
+inline RetCode FldSeqA_Restore(void *entity_ptr,
+                               const nentity_manager *nem,
+                               Encode enctyp,
+                               const member_desc *mmbrd,
+                               vlg::grow_byte_buffer *ibb)
 {
     size_t array_sz = 0, start_pos = 0;
     unsigned short array_idx = 0;
-    char *elem_cptr = NULL;
+    char *elem_cptr = nullptr;
     //read current array len
     SF_GBB_READ_H(ibb, read_uint_to_sizet(&array_sz), return gbb_read_res)
     if(ibb->available_read() < array_sz) {
@@ -109,16 +109,16 @@ inline vlg::RetCode FldSeqA_Restore(void *entity_ptr,
     return vlg::RetCode_OK;
 }
 
-//-----------------------------
+
 // nclass
-//-----------------------------
-vlg::RetCode nclass::restore(const nentity_manager *nem,
-                             Encode enctyp,
-                             vlg::grow_byte_buffer *ibb)
+
+RetCode nclass::restore(const nentity_manager *nem,
+                        Encode enctyp,
+                        vlg::grow_byte_buffer *ibb)
 {
     size_t obj_sz = 0, fld_sz = 0, start_pos = 0;
     unsigned short fld_idx = 0;
-    char *fld_cptr = NULL;
+    char *fld_cptr = nullptr;
     switch(enctyp) {
         case Encode_INDEXED_NOT_ZERO:
             //read class obj len

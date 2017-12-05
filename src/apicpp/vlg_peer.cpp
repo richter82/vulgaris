@@ -25,84 +25,71 @@
 
 namespace vlg {
 
-vlg::synch_hash_map *impl_publ_peer_map_ = NULL;  //peer_impl --> peer
-vlg::synch_hash_map &impl_publ_peer_map()
-{
-    if(impl_publ_peer_map_) {
-        return *impl_publ_peer_map_;
-    }
-    if(!(impl_publ_peer_map_ = new vlg::synch_hash_map(
-        vlg::sngl_ptr_obj_mng(),
-        vlg::sngl_ptr_obj_mng()))) {
-        EXIT_ACTION
-    }
-    impl_publ_peer_map_->init(HM_SIZE_TINY);
-    return *impl_publ_peer_map_;
-}
-
-//-----------------------------
 // peer_impl_pub
-//-----------------------------
-
 class peer_impl_pub {
     private:
         class pimpl_peer_impl : public peer_impl {
             public:
-                pimpl_peer_impl(peer &publ, unsigned int id) : peer_impl(id), publ_(publ) {
+                pimpl_peer_impl(peer &publ,
+                                unsigned int id) :
+                    peer_impl(publ,
+                              id),
+                    publ_(publ) {
                     early_init();
                 }
 
-                virtual const char *peer_name_usr() {
+                virtual const char *name_handler() override {
                     return publ_.name_handler();
                 }
 
-                virtual const unsigned int *peer_ver_usr() {
+                virtual const unsigned int *version_handler() override {
                     return publ_.version_handler();
                 }
 
-                virtual vlg::RetCode peer_load_cfg_usr(int pnum, const char *param,
-                                                       const char *value) {
-                    vlg::RetCode rcode = peer_impl::peer_load_cfg_usr(pnum, param, value);
+                virtual RetCode load_config_handler(int pnum,
+                                                    const char *param,
+                                                    const char *value) override {
+                    RetCode rcode = peer_impl::load_config_handler(pnum, param, value);
                     if(rcode) {
                         return rcode;
                     }
                     return publ_.on_load_config(pnum, param, value);
                 }
 
-                virtual vlg::RetCode peer_init_usr() {
-                    vlg::RetCode rcode = peer_impl::peer_init_usr();
+                virtual RetCode on_init() override {
+                    RetCode rcode = peer_impl::on_init();
                     if(rcode) {
                         return rcode;
                     }
                     return publ_.on_init();
                 }
 
-                virtual vlg::RetCode peer_start_usr() {
-                    vlg::RetCode rcode = peer_impl::peer_start_usr();
+                virtual RetCode on_start() override {
+                    RetCode rcode = peer_impl::on_start();
                     if(rcode) {
                         return rcode;
                     }
                     return publ_.on_starting();
                 }
 
-                virtual vlg::RetCode peer_stop_usr() {
-                    vlg::RetCode rcode = peer_impl::peer_stop_usr();
+                virtual RetCode on_stop() override {
+                    RetCode rcode = peer_impl::on_stop();
                     if(rcode) {
                         return rcode;
                     }
                     return publ_.on_stopping();
                 }
 
-                virtual vlg::RetCode peer_move_running() {
-                    vlg::RetCode rcode = peer_impl::peer_move_running_usr();
+                virtual RetCode on_move_running() override {
+                    RetCode rcode = peer_impl::on_move_running();
                     if(rcode) {
                         return rcode;
                     }
                     return publ_.on_move_running();
                 }
 
-                virtual vlg::RetCode peer_error_handler() {
-                    vlg::RetCode rcode = peer_impl::peer_error_handler();
+                virtual RetCode on_error() override {
+                    RetCode rcode = peer_impl::on_error();
                     if(rcode) {
                         return rcode;
                     }
@@ -110,19 +97,15 @@ class peer_impl_pub {
                     return rcode;
                 }
 
-                virtual vlg::RetCode peer_dying_breath_handler() {
+                virtual RetCode on_dying_breath() override {
                     publ_.on_dying_breath();
-                    return peer_impl::peer_dying_breath_handler();
+                    return peer_impl::on_dying_breath();
                 }
 
-                virtual vlg::RetCode new_incoming_connection_accept(connection_impl
-                                                                    &incoming_connection) {
-                    connection *conn_publ = new connection();
-                    vlg::collector &c = conn_publ->get_collector();
-                    c.retain(conn_publ);
-                    conn_publ->set_opaque(&incoming_connection);
-                    vlg::RetCode accept_res = publ_.on_new_incoming_connection(*conn_publ);
-                    c.release(conn_publ);
+                virtual RetCode on_incoming_connection(connection_impl &incoming_connection) override {
+                    shared_pointer<connection> scp(new connection());
+                    scp.ptr()->set_opaque(&incoming_connection);
+                    RetCode accept_res = publ_.on_incoming_connection(scp);
                     return accept_res;
                 }
 
@@ -130,9 +113,9 @@ class peer_impl_pub {
                 peer &publ_;
         };
 
-        static void peer_lfcyc_status_change_hndlr_pimpl(peer_automa &peer,
-                                                         PeerStatus status,
-                                                         void *ud) {
+        static void status_change_pimpl(peer_automa &peer,
+                                        PeerStatus status,
+                                        void *ud) {
             peer_impl_pub *pimpl = static_cast<peer_impl_pub *>(ud);
             if(pimpl->psh_) {
                 pimpl->psh_(pimpl->publ_, status, pimpl->psh_ud_);
@@ -140,23 +123,24 @@ class peer_impl_pub {
         }
 
     public:
-        peer_impl_pub(peer &publ) : publ_(publ), impl_(NULL), psh_(NULL), psh_ud_(NULL),
-            conn_factory_(connection_factory::default_connection_factory()) {
+        peer_impl_pub(peer &publ) :
+            publ_(publ),
+            impl_(nullptr),
+            psh_(nullptr),
+            psh_ud_(nullptr),
+            conn_factory_(&connection_factory::default_factory()) {
             impl_ = new pimpl_peer_impl(publ_, 0);
-            peer *publ_ptr = &publ;
-            impl_publ_peer_map().put(&impl_, &publ_ptr);
-            impl_->set_peer_status_change_hndlr(peer_lfcyc_status_change_hndlr_pimpl, this);
+            impl_->set_status_change_handler(status_change_pimpl, this);
         }
 
         ~peer_impl_pub() {
             if(impl_) {
-                if(impl_->peer_status() > PeerStatus_INITIALIZED) {
-                    impl_->stop_peer(true);
+                if(impl_->get_status() > PeerStatus_INITIALIZED) {
+                    impl_->stop(true);
                     PeerStatus current = PeerStatus_ZERO;
-                    impl_->await_for_peer_status_reached_or_outdated(PeerStatus_STOPPED,
-                                                                     current);
+                    impl_->await_for_status_reached_or_outdated(PeerStatus_STOPPED,
+                                                                current);
                 }
-                impl_publ_peer_map().remove(&impl_, NULL);
                 delete impl_;
             }
         }
@@ -182,13 +166,13 @@ class peer_impl_pub {
             psh_ud_ = val;
         }
 
-        connection_factory *get_conn_factory() const {
-            return conn_factory_;
+        connection_factory &get_connection_factory() const {
+            return *conn_factory_;
         }
-        void set_conn_factory(connection_factory *val) {
-            conn_factory_ = val;
-            impl_->set_conn_factory(connection_factory::conn_factory_impl_f);
-            impl_->set_conn_factory_ud(conn_factory_);
+        void set_connection_factory(connection_factory &val) {
+            conn_factory_ = &val;
+            impl_->set_connection_impl_factory(connection_factory::connection_impl_factory_f);
+            impl_->set_connection_impl_factory_ud(conn_factory_);
         }
 
     private:
@@ -196,13 +180,12 @@ class peer_impl_pub {
         peer_impl *impl_;
         peer::status_change psh_;
         void *psh_ud_;
+
+        //factories cannot be references
         connection_factory *conn_factory_;
 };
 
-//-----------------------------
 // peer
-//-----------------------------
-
 peer::peer()
 {
     impl_ = new peer_impl_pub(*this);
@@ -215,44 +198,44 @@ peer::~peer()
     }
 }
 
-vlg::RetCode peer::set_params_file_dir(const char *dir)
+RetCode peer::set_params_file_dir(const char *dir)
 {
     return impl_->get_peer_impl()->set_params_file_dir(dir);
 }
 
-vlg::RetCode peer::set_params_file_path_name(const char *file_path)
+RetCode peer::set_params_file_path_name(const char *file_path)
 {
     return impl_->get_peer_impl()->set_params_file_path_name(file_path);
 }
 
 const char *peer::get_name()
 {
-    return impl_->get_peer_impl()->peer_name();
+    return impl_->get_peer_impl()->get_name();
 }
 
 const unsigned int *peer::get_version()
 {
-    return impl_->get_peer_impl()->peer_ver();
+    return impl_->get_peer_impl()->get_version();
 }
 
 unsigned int peer::get_version_major()
 {
-    return impl_->get_peer_impl()->peer_ver_major();
+    return impl_->get_peer_impl()->get_ver_major();
 }
 
 unsigned int peer::get_version_minor()
 {
-    return impl_->get_peer_impl()->peer_ver_minor();
+    return impl_->get_peer_impl()->get_ver_minor();
 }
 
 unsigned int peer::get_version_maintenance()
 {
-    return impl_->get_peer_impl()->peer_ver_mant();
+    return impl_->get_peer_impl()->get_ver_mant();
 }
 
 unsigned int peer::get_version_architecture()
 {
-    return impl_->get_peer_impl()->peer_ver_arch();
+    return impl_->get_peer_impl()->get_ver_arch();
 }
 
 bool peer::is_configured()
@@ -262,22 +245,22 @@ bool peer::is_configured()
 
 const nentity_manager &peer::get_entity_manager() const
 {
-    return impl_->get_peer_impl()->get_em();
+    return impl_->get_peer_impl()->get_nem();
 }
 
 nentity_manager &peer::get_entity_manager_m()
 {
-    return impl_->get_peer_impl()->get_em_m();
+    return impl_->get_peer_impl()->get_nem_not_const();
 }
 
 bool peer::is_persistent()
 {
-    return impl_->get_peer_impl()->persistent();
+    return impl_->get_peer_impl()->get_cfg_pers_enabled();
 }
 
 bool peer::is_create_persistent_schema()
 {
-    return impl_->get_peer_impl()->pers_schema_create();
+    return impl_->get_peer_impl()->get_cfg_pers_schema_create();
 }
 
 bool peer::is_drop_existing_persistent_schema()
@@ -365,38 +348,38 @@ void peer::add_load_persistent_driver(const char *driver)
     impl_->get_peer_impl()->set_cfg_load_pers_driv(driver);
 }
 
-vlg::RetCode peer::extend_model(nentity_manager *nem)
+RetCode peer::extend_model(nentity_manager *nem)
 {
     return impl_->get_peer_impl()->extend_model(nem);
 }
 
-vlg::RetCode peer::extend_model(const char *model_name)
+RetCode peer::extend_model(const char *model_name)
 {
     return impl_->get_peer_impl()->extend_model(model_name);
 }
 
-vlg::RetCode peer::on_load_config(int pnum, const char *param,
-                                  const char *value)
+RetCode peer::on_load_config(int pnum, const char *param,
+                             const char *value)
 {
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode peer::on_init()
+RetCode peer::on_init()
 {
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode peer::on_starting()
+RetCode peer::on_starting()
 {
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode peer::on_stopping()
+RetCode peer::on_stopping()
 {
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode peer::on_move_running()
+RetCode peer::on_move_running()
 {
     return vlg::RetCode_OK;
 }
@@ -416,7 +399,7 @@ void peer::set_configured(bool configured)
 
 PeerStatus peer::get_status()
 {
-    return impl_->get_peer_impl()->peer_status();
+    return impl_->get_peer_impl()->get_status();
 }
 
 void peer::set_status_change_handler(status_change handler, void *ud)
@@ -425,140 +408,134 @@ void peer::set_status_change_handler(status_change handler, void *ud)
     impl_->set_psh_ud(ud);
 }
 
-vlg::RetCode peer::await_for_status_reached_or_outdated(PeerStatus test,
-                                                        PeerStatus &current,
-                                                        time_t sec,
-                                                        long nsec)
+RetCode peer::await_for_status_reached_or_outdated(PeerStatus test,
+                                                   PeerStatus &current,
+                                                   time_t sec,
+                                                   long nsec)
 {
-    return impl_->get_peer_impl()->await_for_peer_status_reached_or_outdated(test,
-                                                                             current,
-                                                                             sec,
-                                                                             nsec);
+    return impl_->get_peer_impl()->await_for_status_reached_or_outdated(test,
+                                                                        current,
+                                                                        sec,
+                                                                        nsec);
 }
 
-vlg::RetCode peer::await_for_status_change(PeerStatus &peer_status,
-                                           time_t sec,
-                                           long nsec)
+RetCode peer::await_for_status_change(PeerStatus &peer_status,
+                                      time_t sec,
+                                      long nsec)
 {
-    return impl_->get_peer_impl()->await_for_peer_status_change(peer_status,
-                                                                sec,
-                                                                nsec);
+    return impl_->get_peer_impl()->await_for_status_change(peer_status,
+                                                           sec,
+                                                           nsec);
 }
 
-connection_factory *peer::get_connection_factory()
+connection_factory &peer::get_connection_factory()
 {
-    return impl_->get_conn_factory();
+    return impl_->get_connection_factory();
 }
 
 void peer::set_connection_factory(connection_factory &conn_factory)
 {
-    impl_->set_conn_factory(&conn_factory);
+    impl_->set_connection_factory(conn_factory);
 }
 
-vlg::RetCode peer::start(int argc,
-                         char *argv[],
-                         bool spawn_new_thread)
+RetCode peer::start(int argc,
+                    char *argv[],
+                    bool spawn_new_thread)
 {
-    return impl_->get_peer_impl()->start_peer(argc, argv, spawn_new_thread);
+    return impl_->get_peer_impl()->start(argc, argv, spawn_new_thread);
 }
 
-vlg::RetCode peer::stop(bool force_disconnect /*= false*/)
+RetCode peer::stop(bool force_disconnect /*= false*/)
 {
-    return impl_->get_peer_impl()->stop_peer(force_disconnect);
+    return impl_->get_peer_impl()->stop(force_disconnect);
 }
 
-vlg::RetCode peer::create_persistent_schema(PersistenceAlteringMode
-                                            mode)
+RetCode peer::create_persistent_schema(PersistenceAlteringMode mode)
 {
-    return impl_->get_peer_impl()->pers_schema_create(mode);
+    return impl_->get_peer_impl()->create_persistent_schema(mode);
 }
 
-vlg::RetCode peer::nclass_create_persistent_schema(
-    PersistenceAlteringMode
-    mode,
-    unsigned int nclass_id)
+RetCode peer::nclass_create_persistent_schema(PersistenceAlteringMode mode,
+                                              unsigned int nclass_id)
 {
-    return impl_->get_peer_impl()->class_pers_schema_create(mode, nclass_id);
+    return impl_->get_peer_impl()->nclass_create_persistent_schema(mode, nclass_id);
 }
 
-vlg::RetCode peer::obj_load(unsigned short nclass_key,
-                            unsigned int &ts_0_out,
-                            unsigned int &ts_1_out,
-                            nclass &in_out_obj)
+RetCode peer::obj_load(unsigned short nclass_key,
+                       unsigned int &ts_0_out,
+                       unsigned int &ts_1_out,
+                       nclass &in_out_obj)
 {
-    return impl_->get_peer_impl()->class_pers_load(nclass_key,
-                                                   ts_0_out,
-                                                   ts_1_out,
-                                                   in_out_obj);
+    return impl_->get_peer_impl()->obj_load(nclass_key,
+                                            ts_0_out,
+                                            ts_1_out,
+                                            in_out_obj);
 }
 
-vlg::RetCode peer::obj_save(const nclass &in_obj)
+RetCode peer::obj_save(const nclass &in_obj)
 {
-    return impl_->get_peer_impl()->class_pers_save(in_obj);
+    return impl_->get_peer_impl()->obj_save(in_obj);
 }
 
-vlg::RetCode peer::obj_update(unsigned short nclass_key,
-                              const nclass &in_obj)
+RetCode peer::obj_update(unsigned short nclass_key,
+                         const nclass &in_obj)
 {
-    return impl_->get_peer_impl()->class_pers_update(nclass_key, in_obj);
+    return impl_->get_peer_impl()->obj_update(nclass_key, in_obj);
 }
 
-vlg::RetCode peer::obj_update_or_save(unsigned short nclass_key,
-                                      const nclass &in_obj)
+RetCode peer::obj_update_or_save(unsigned short nclass_key,
+                                 const nclass &in_obj)
 {
-    return impl_->get_peer_impl()->class_pers_update_or_save(nclass_key, in_obj);
+    return impl_->get_peer_impl()->obj_update_or_save(nclass_key, in_obj);
 }
 
-vlg::RetCode peer::obj_remove(unsigned short nclass_key,
-                              PersistenceDeletionMode mode,
-                              const nclass &in_obj)
+RetCode peer::obj_remove(unsigned short nclass_key,
+                         PersistenceDeletionMode mode,
+                         const nclass &in_obj)
 {
-    return impl_->get_peer_impl()->class_pers_remove(nclass_key, mode, in_obj);
+    return impl_->get_peer_impl()->obj_remove(nclass_key, mode, in_obj);
 }
 
-vlg::RetCode peer::obj_distribute(SubscriptionEventType event_type,
-                                  Action action,
-                                  const nclass &in_obj)
+RetCode peer::obj_distribute(SubscriptionEventType event_type,
+                             Action action,
+                             const nclass &in_obj)
 {
-    return impl_->get_peer_impl()->class_distribute(event_type,
-                                                    ProtocolCode_SUCCESS,
-                                                    action,
-                                                    in_obj);
+    return impl_->get_peer_impl()->obj_distribute(event_type,
+                                                  ProtocolCode_SUCCESS,
+                                                  action,
+                                                  in_obj);
 }
 
-vlg::RetCode peer::obj_save_and_distribute(const nclass
-                                           &in_obj)
+RetCode peer::obj_save_and_distribute(const nclass
+                                      &in_obj)
 {
-    return impl_->get_peer_impl()->class_pers_save_and_distribute(in_obj);
+    return impl_->get_peer_impl()->obj_save_and_distribute(in_obj);
 }
 
-vlg::RetCode peer::obj_update_and_distribute(
-    unsigned short nclass_key,
-    const nclass &in_obj)
+RetCode peer::obj_update_and_distribute(unsigned short nclass_key,
+                                        const nclass &in_obj)
 {
-    return impl_->get_peer_impl()->class_pers_update_and_distribute(nclass_key,
-                                                                    in_obj);
+    return impl_->get_peer_impl()->obj_update_and_distribute(nclass_key,
+                                                             in_obj);
 }
 
-vlg::RetCode peer::obj_update_or_save_and_distribute(
-    unsigned short nclass_key,
-    const nclass &in_obj)
+RetCode peer::obj_update_or_save_and_distribute(unsigned short nclass_key,
+                                                const nclass &in_obj)
 {
-    return impl_->get_peer_impl()->class_pers_update_or_save_and_distribute(
-               nclass_key, in_obj);
+    return impl_->get_peer_impl()->obj_update_or_save_and_distribute(nclass_key,
+                                                                     in_obj);
 }
 
-vlg::RetCode peer::obj_remove_and_distribute(
-    unsigned short nclass_key,
-    PersistenceDeletionMode mode,
-    const nclass &in_obj)
+RetCode peer::obj_remove_and_distribute(unsigned short nclass_key,
+                                        PersistenceDeletionMode mode,
+                                        const nclass &in_obj)
 {
-    return impl_->get_peer_impl()->class_pers_remove_and_distribute(nclass_key,
-                                                                    mode,
-                                                                    in_obj);
+    return impl_->get_peer_impl()->obj_remove_and_distribute(nclass_key,
+                                                             mode,
+                                                             in_obj);
 }
 
-vlg::RetCode peer::on_new_incoming_connection(connection &incoming_connection)
+RetCode peer::on_incoming_connection(shared_pointer<connection> &incoming_connection)
 {
     return vlg::RetCode_OK;
 }

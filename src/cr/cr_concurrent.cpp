@@ -28,9 +28,9 @@
 
 namespace vlg {
 
-//-----------------------------
+
 // synch_mon_impl
-//-----------------------------
+
 class synch_mon_impl {
     public:
         synch_mon_impl(int pshared) {
@@ -102,10 +102,10 @@ class synch_mon_impl {
         pthread_cond_t          cv_;
 };
 
-//-----------------------------
+
 // synch_monitor
-//-----------------------------
-synch_monitor::synch_monitor(int pshared) : impl_(NULL)
+
+synch_monitor::synch_monitor(int pshared) : impl_(nullptr)
 {
     impl_ = new synch_mon_impl(pshared);
 }
@@ -147,25 +147,25 @@ int synch_monitor::notify_all()
     return impl_->notify_all();
 }
 
-//-----------------------------
+
 // runnable
-//-----------------------------
+
 runnable::~runnable() {}
 
-//-----------------------------
+
 // p_thread_impl
-//-----------------------------
+
 class p_thread_impl {
     public:
         p_thread_impl(p_thread *target) :
             th_id_(-1),
-            attr_(NULL),
+            attr_(nullptr),
             target_(target) {
         }
 
         p_thread_impl(runnable *target) :
             th_id_(-1),
-            attr_(NULL),
+            attr_(nullptr),
             target_(target) {
         }
 
@@ -201,9 +201,9 @@ class p_thread_impl {
         pthread_t       thread_;
 };
 
-//-----------------------------
+
 // p_thread
-//-----------------------------
+
 p_thread::p_thread()
 {
     impl_ = new p_thread_impl(this);
@@ -256,9 +256,9 @@ void *p_thread::run()
     return 0;
 }
 
-//-----------------------------
+
 // p_task_impl
-//-----------------------------
+
 class p_task_impl {
     public:
         p_task_impl() :
@@ -370,9 +370,9 @@ class p_task_impl {
 };
 
 
-//-----------------------------
+
 // p_task
-//-----------------------------
+
 p_task::p_task()
 {
     impl_ = new p_task_impl();
@@ -432,14 +432,14 @@ RetCode p_task::await_for_status(PTASK_STATUS target_status,
     return impl_->await_for_status(target_status, sec, nsec);
 }
 
-//-----------------------------
+
 // p_executor_impl
-//-----------------------------
+
 class p_executor_impl {
     public:
         p_executor_impl() :
             status_(PEXECUTOR_STATUS_TOINIT),
-            eserv_(NULL) {
+            eserv_(nullptr) {
             log_ = logger::get_logger("p_executor_impl");
             IFLOG(trc(TH_ID, LS_CTR "%s(ptr:%p)", __func__, this))
         }
@@ -478,7 +478,7 @@ class p_executor_impl {
             PEXEC_SERVICE_STATUS eserv_status = PEXEC_SERVICE_STATUS_ZERO;
             PEXECUTOR_STATUS exec_status = PEXECUTOR_STATUS_ZERO;
             uint32_t tq_size = 0;
-            p_task *task = NULL;
+            p_task *task = nullptr;
             RetCode pres = RetCode_KO;
             bool go_term = true;
             if(status_ != PEXECUTOR_STATUS_INIT && status_ != PEXECUTOR_STATUS_STOPPED) {
@@ -564,11 +564,11 @@ class p_executor_impl {
         static logger           *log_;
 };
 
-logger *p_executor_impl::log_ = NULL;
+logger *p_executor_impl::log_ = nullptr;
 
-//-----------------------------
+
 // p_executor
-//-----------------------------
+
 p_executor::p_executor()
 {
     impl_ = new p_executor_impl();
@@ -610,9 +610,9 @@ void *p_executor::run()
     return res;
 }
 
-//-----------------------------
+
 // p_executor_service_impl
-//-----------------------------
+
 class p_executor_service_impl {
         friend class p_executor_service;
 
@@ -624,7 +624,7 @@ class p_executor_service_impl {
             status_(PEXEC_SERVICE_STATUS_TOINIT),
             executor_num_(0),
             dispose_task_(dispose_task),
-            exec_pool_(NULL),
+            exec_pool_(nullptr),
             task_queue_(sngl_ptr_obj_mng()),
             idle_exctrs_(0) {
             log_ = logger::get_logger("p_executor_service_impl");
@@ -852,11 +852,11 @@ class p_executor_service_impl {
     static logger           *log_;
 };
 
-logger *p_executor_service_impl::log_ = NULL;
+logger *p_executor_service_impl::log_ = nullptr;
 
-//-----------------------------
+
 // p_executor_service
-//-----------------------------
+
 p_executor_service::p_executor_service(unsigned int id,
                                        bool dispose_task)
 {

@@ -26,9 +26,9 @@
 
 namespace vlg {
 
-//-----------------------------
+
 // selector_event
-//-----------------------------
+
 class connection_impl;
 struct selector_event {
     selector_event(VLG_SELECTOR_Evt evt, connection_impl *conn);
@@ -50,9 +50,9 @@ struct selector_event {
 #define VLG_ADDR_LEN            100
 #define BUFF_SIZE               1024
 
-//-----------------------------
+
 // VLG_ASYNCH_SELECTOR_STATUS
-//-----------------------------
+
 enum VLG_ASYNCH_SELECTOR_STATUS {
     VLG_ASYNCH_SELECTOR_STATUS_UNDEF,
     VLG_ASYNCH_SELECTOR_STATUS_TO_INIT,
@@ -67,9 +67,9 @@ enum VLG_ASYNCH_SELECTOR_STATUS {
     VLG_ASYNCH_SELECTOR_STATUS_ERROR = 500,
 };
 
-//-----------------------------
+
 // selector
-//-----------------------------
+
 class selector : public vlg::p_thread {
     public:
         //---ctors
@@ -77,17 +77,17 @@ class selector : public vlg::p_thread {
         ~selector();
 
     public:
-        vlg::RetCode    init(unsigned int srv_executors,
-                             unsigned int srv_pkt_q_len,
-                             unsigned int cli_executors,
-                             unsigned int cli_pkt_q_len);
+        RetCode    init(unsigned int srv_executors,
+                        unsigned int srv_pkt_q_len,
+                        unsigned int cli_executors,
+                        unsigned int cli_pkt_q_len);
 
 
-        vlg::RetCode    on_peer_start_actions();
-        vlg::RetCode    on_peer_move_running_actions();
+        RetCode    on_peer_start_actions();
+        RetCode    on_peer_move_running_actions();
 
     public:
-        vlg::RetCode
+        RetCode
         await_for_status_reached_or_outdated(
             VLG_ASYNCH_SELECTOR_STATUS
             test,
@@ -95,12 +95,12 @@ class selector : public vlg::p_thread {
             time_t sec = -1,
             long nsec = 0);
 
-        vlg::RetCode    evt_enqueue_and_notify(const selector_event *evt);
-        vlg::RetCode    interrupt();
+        RetCode    evt_enqueue_and_notify(const selector_event *evt);
+        RetCode    interrupt();
 
     public:
         VLG_ASYNCH_SELECTOR_STATUS  status() const;
-        vlg::RetCode              set_status(VLG_ASYNCH_SELECTOR_STATUS status);
+        RetCode              set_status(VLG_ASYNCH_SELECTOR_STATUS status);
 
     public:
         peer_impl        &peer();
@@ -119,35 +119,35 @@ class selector : public vlg::p_thread {
         virtual void   *run();
 
     private:
-        vlg::RetCode  create_UDP_notify_srv_sock();
-        vlg::RetCode  connect_UDP_notify_cli_sock();
+        RetCode  create_UDP_notify_srv_sock();
+        RetCode  connect_UDP_notify_cli_sock();
         bool            is_still_valid_connection(const selector_event *evt);
-        vlg::RetCode  asynch_notify(const selector_event *evt);
-        vlg::RetCode  consume_asynch_events();
+        RetCode  asynch_notify(const selector_event *evt);
+        RetCode  consume_asynch_events();
 
-        vlg::RetCode  start_exec_services();
-        vlg::RetCode  process_inco_sock_inco_events();
-        vlg::RetCode  process_outg_sock_inco_events();
-        vlg::RetCode  process_sock_outg_events();
+        RetCode  start_exec_services();
+        RetCode  process_inco_sock_inco_events();
+        RetCode  process_outg_sock_inco_events();
+        RetCode  process_sock_outg_events();
 
-        vlg::RetCode  start_conn_objs();
+        RetCode  start_conn_objs();
 
-        vlg::RetCode  FDSET_sockets();
-        vlg::RetCode  FDSET_incoming_sockets();   //for server side sockets
-        vlg::RetCode  FDSET_outgoing_sockets();   //for client side sockets
-        vlg::RetCode  FDSET_write_pending_sockets();
-        vlg::RetCode  server_socket_shutdown();
+        RetCode  FDSET_sockets();
+        RetCode  FDSET_incoming_sockets();   //for server side sockets
+        RetCode  FDSET_outgoing_sockets();   //for client side sockets
+        RetCode  FDSET_write_pending_sockets();
+        RetCode  server_socket_shutdown();
 
-        vlg::RetCode  consume_events();
-        vlg::RetCode  consume_inco_sock_events();
+        RetCode  consume_events();
+        RetCode  consume_inco_sock_events();
 
-        vlg::RetCode  add_early_outg_conn(selector_event *conn_evt);
-        vlg::RetCode  promote_early_outg_conn(connection_impl *conn);
-        vlg::RetCode  delete_early_outg_conn(connection_impl *conn);
+        RetCode  add_early_outg_conn(selector_event *conn_evt);
+        RetCode  promote_early_outg_conn(connection_impl *conn);
+        RetCode  delete_early_outg_conn(connection_impl *conn);
 
-        vlg::RetCode  manage_disconnect_conn(selector_event *conn_evt);
+        RetCode  manage_disconnect_conn(selector_event *conn_evt);
 
-        vlg::RetCode  stop_and_clean();
+        RetCode  stop_and_clean();
 
     private:
         //---gen_rep
@@ -159,7 +159,7 @@ class selector : public vlg::p_thread {
                                     excep_FDs_;
 
         int                         nfds_;      //used in select
-        vlg::RetCode              last_err_;  //last generic error
+        RetCode              last_err_;  //last generic error
         int                         sel_res_;   //last select() result
         timeval                     sel_timeout_;
         sockaddr_in                 udp_ntfy_sa_in_;

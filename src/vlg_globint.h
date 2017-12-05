@@ -129,7 +129,7 @@ bbuf->init(bsz);
 
 #define RETURN_IF_NOT_OK(fun)\
 {\
-    vlg::RetCode res;\
+    RetCode res;\
     if((res = fun)){\
         return res;\
     }\

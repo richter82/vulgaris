@@ -39,31 +39,32 @@ namespace vlg {
 */
 class connection_factory {
     public:
-        static connection_impl       *conn_factory_impl_f(peer_impl &peer,
-                                                          ConnectionType con_type,
-                                                          unsigned int connid,
-                                                          void *ud);
+        static connection_impl       *connection_impl_factory_f(peer_impl &peer,
+                                                                ConnectionType con_type,
+                                                                unsigned int connid,
+                                                                void *ud);
     public:
         connection_factory();
         virtual ~connection_factory();
 
     public:
-        virtual connection          *new_connection(peer &p);
+        virtual connection          &make_connection(peer &p);
 
     public:
-        static connection_factory   *default_connection_factory();
+        static connection_factory   &default_factory();
 };
 
 /** @brief class connection.
 */
 class connection_impl_pub;
 class connection : public vlg::collectable {
-    public:
-        typedef void (*connection_status_change)(connection &conn,
-                                                 ConnectionStatus status,
-                                                 void *ud);
+        friend class connection_factory;
 
-        //---ctors
+    public:
+        typedef void (*status_change)(connection &conn,
+                                      ConnectionStatus status,
+                                      void *ud);
+
     public:
         explicit connection();
         virtual ~connection();
@@ -71,10 +72,10 @@ class connection : public vlg::collectable {
         virtual vlg::collector &get_collector();
 
     public:
-        vlg::RetCode          bind(peer &p);
+        RetCode          bind(peer &p);
 
     public:
-        peer                        *get_peer();
+        peer                        &get_peer();
         ConnectionType              get_connection_type()           const;
         unsigned int                get_connection_id()             const;
         ConnectionResult            get_connection_response()       const;
@@ -85,43 +86,39 @@ class connection : public vlg::collectable {
         ConnectionStatus            get_status();
 
     public:
-        vlg::RetCode
-        await_for_status_reached_or_outdated(ConnectionStatus test,
-                                             ConnectionStatus &current,
-                                             time_t sec = -1,
-                                             long nsec = 0);
+        RetCode await_for_status_reached_or_outdated(ConnectionStatus test,
+                                                     ConnectionStatus &current,
+                                                     time_t sec = -1,
+                                                     long nsec = 0);
 
-        vlg::RetCode
-        await_for_status_change(ConnectionStatus &status,
-                                time_t sec = -1,
-                                long nsec = 0);
-        void
-        set_connection_status_change_handler(connection_status_change handler,
-                                             void *ud);
+        RetCode await_for_status_change(ConnectionStatus &status,
+                                        time_t sec = -1,
+                                        long nsec = 0);
+
+        void set_connection_status_change_handler(status_change handler,
+                                                  void *ud);
 
     public:
-        vlg::RetCode    connect(sockaddr_in &connection_params);
+        RetCode    connect(sockaddr_in &connection_params);
 
         /* this function must be called from same thread that
         called connect()*/
-        vlg::RetCode
-        await_for_connection_result(ConnectivityEventResult
-                                    &con_evt_res,
-                                    ConnectivityEventType &c_evt_type,
-                                    time_t sec = -1,
-                                    long nsec = 0);
+        RetCode await_for_connection_result(ConnectivityEventResult
+                                            &con_evt_res,
+                                            ConnectivityEventType &c_evt_type,
+                                            time_t sec = -1,
+                                            long nsec = 0);
 
     public:
-        vlg::RetCode    disconnect(DisconnectionResultReason reason_code);
+        RetCode    disconnect(DisconnectionResultReason reason_code);
 
         /* this function must be called from same thread that
         called disconnect()*/
-        vlg::RetCode
-        await_for_disconnection_result(ConnectivityEventResult
-                                       &con_evt_res,
-                                       ConnectivityEventType &c_evt_type,
-                                       time_t sec = -1,
-                                       long nsec = 0);
+        RetCode await_for_disconnection_result(ConnectivityEventResult
+                                               &con_evt_res,
+                                               ConnectivityEventType &c_evt_type,
+                                               time_t sec = -1,
+                                               long nsec = 0);
 
     public:
         virtual void on_connect(ConnectivityEventResult con_evt_res,
@@ -131,11 +128,11 @@ class connection : public vlg::collectable {
                                    ConnectivityEventType c_evt_type);
 
     public:
-        transaction_factory *get_transaction_factory();
+        transaction_factory &get_transaction_factory();
         void set_transaction_factory(transaction_factory &tx_factory);
 
     public:
-        subscription_factory *get_subscription_factory();
+        subscription_factory &get_subscription_factory();
         void set_subscription_factory(subscription_factory &sbs_factory);
 
     public:

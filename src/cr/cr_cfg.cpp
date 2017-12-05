@@ -67,7 +67,7 @@ RetCode read_arg(ascii_string_tok &tknz, param_arg_pair &pap)
     return RetCode_OK;
 }
 
-//-----------------------------
+
 // config_loader_rep
 class config_loader_rep {
     public:
@@ -167,9 +167,9 @@ class config_loader_rep {
         ascii_string data_;
 };
 
-//-----------------------------
+
 // config_loader
-config_loader::config_loader() : impl_(NULL)
+config_loader::config_loader() : impl_(nullptr)
 {}
 
 RetCode config_loader::init()

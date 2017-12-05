@@ -23,21 +23,18 @@
 #include "vlg_connection_impl.h"
 #include "vlg_subscription_impl.h"
 
-//-----------------------------
 // INTERNAL TIMEOUT VALUE FOR AWAIT OPERATIONS (SECONDS)
-//-----------------------------
 #define VLG_INT_AWT_TIMEOUT 1
 
 namespace vlg {
 
 bool status_running_superseeded(peer_automa *peer)
 {
-    return peer->peer_status() > PeerStatus_RUNNING;
+    return peer->get_status() > PeerStatus_RUNNING;
 }
 
-//-----------------------------
 // VLG_PEER_RECV_TASK
-//-----------------------------
+
 class peer_recv_task : public vlg::p_task {
     public:
         //---ctor
@@ -45,7 +42,7 @@ class peer_recv_task : public vlg::p_task {
                        peer_impl &rcvn_peer,
                        connection_impl &conn,
                        vlg::grow_byte_buffer *pkt_body,
-                       vlg_hdr_rec *pkt_hdr = NULL) :
+                       vlg_hdr_rec *pkt_hdr = nullptr) :
             vlg::p_task(id),
             rcvn_peer_(rcvn_peer),
             conn_(conn),
@@ -67,8 +64,8 @@ class peer_recv_task : public vlg::p_task {
         }
 
         /*this method will be called when this task will be run by an executor*/
-        virtual vlg::RetCode execute() {
-            vlg::RetCode rcode = vlg::RetCode_OK;
+        virtual RetCode execute() {
+            RetCode rcode = vlg::RetCode_OK;
             if((rcode = rcvn_peer_.recv_and_route_pkt(conn_, pkt_hdr_, pkt_body_))) {
                 IFLOG(dbg(TH_ID, LS_EXE "[recv task:%d - execution failed - res:%d]", get_id(),
                           rcode))
@@ -99,20 +96,19 @@ class peer_recv_task : public vlg::p_task {
         static vlg::logger    *log_;
 };
 
-vlg::logger *peer_recv_task::log_ = NULL;
+vlg::logger *peer_recv_task::log_ = nullptr;
 
-//-----------------------------
 // VLG_PEER
-//-----------------------------
 
-nclass_logger *peer_impl::log_ = NULL;
+nclass_logger *peer_impl::log_ = nullptr;
 
 nclass_logger *peer_impl::logger()
 {
     return log_;
 }
 
-peer_impl::peer_impl(unsigned int id) :
+peer_impl::peer_impl(peer &publ,
+                     unsigned int id) :
     peer_automa(id),
     personality_(PeerPersonality_BOTH),
     srv_pkt_q_len_(VLG_DEF_SRV_EXEC_Q_LEN),
@@ -132,8 +128,9 @@ peer_impl::peer_impl(unsigned int id) :
     drop_existing_schema_(false),
     srv_sbs_exec_serv_(id*4, true),
     srv_sbs_nclassid_condesc_set_(vlg::sngl_ptr_obj_mng(), sizeof(unsigned int)),
-    conn_factory_(NULL),
-    conn_factory_ud_(NULL)
+    conn_impl_factory_(nullptr),
+    conn_impl_factory_ud_(nullptr),
+    publ_(publ)
 {
     log_ = get_nclass_logger("peer");
     IFLOG(trc(TH_ID, LS_CTR "%s(peerid:%d)", __func__, id))
@@ -144,15 +141,20 @@ peer_impl::~peer_impl()
     IFLOG(trc(TH_ID, LS_DTR "%s(peerid:%d)", __func__, peer_id_))
 }
 
-vlg::RetCode peer_impl::set_params_file_dir(const char *dir)
+peer &peer_impl::get_public()
+{
+    return publ_;
+}
+
+RetCode peer_impl::set_params_file_dir(const char *dir)
 {
     return peer_conf_ldr_.set_params_file_dir(dir);
 }
 
-vlg::RetCode peer_impl::init_peer()
+RetCode peer_impl::init()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(peer_id_:%d)", __func__, peer_id_))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     RETURN_IF_NOT_OK(selector_.init(srv_exectrs_,
                                     srv_pkt_q_len_,
                                     cli_exectrs_,
@@ -165,11 +167,11 @@ vlg::RetCode peer_impl::init_peer()
 #elif TARGET_OS_IPHONE
     //dynamic linking not allowed
 #elif TARGET_OS_MAC
-    rcode = init_peer_dyna();
+    rcode = init_dyna();
 #else
 #endif
 #else
-    rcode = init_peer_dyna();
+    rcode = init_dyna();
 #endif
     if(pers_enabled_) {
         IFLOG(dbg(TH_ID, LS_TRL "%s() - loading persistence-configuration..", __func__))
@@ -192,15 +194,15 @@ vlg::RetCode peer_impl::init_peer()
     return rcode;
 }
 
-vlg::RetCode peer_impl::init_peer_dyna()
+RetCode peer_impl::init_dyna()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(peer_id_:%d)", __func__, peer_id_))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     IFLOG(dbg(TH_ID, LS_TRL "%s() - extending model..", __func__))
     char model_name[VLG_MDL_NAME_LEN] = {0};
     if(model_map_.size() > 0) {
         model_map_.start_iteration();
-        while(!model_map_.next(model_name, NULL)) {
+        while(!model_map_.next(model_name, nullptr)) {
             RETURN_IF_NOT_OK(extend_model(model_name))
         }
         IFLOG(inf(TH_ID, LS_TRL "%s() - model extended.", __func__))
@@ -220,39 +222,27 @@ selector &peer_impl::get_selector()
     return selector_;
 }
 
-const nentity_manager &peer_impl::get_em() const
+const nentity_manager &peer_impl::get_nem() const
 {
     return nem_;
 }
 
-nentity_manager &peer_impl::get_em_m()
+nentity_manager &peer_impl::get_nem_not_const()
 {
     return nem_;
 }
 
-persistence_manager_impl &peer_impl::get_pers_mng()
+persistence_manager_impl &peer_impl::get_persistence_manager()
 {
     return pers_mng_;
 }
 
-bool peer_impl::persistent()
-{
-    return pers_enabled_;
-}
-
-bool peer_impl::pers_schema_create()
-{
-    return pers_schema_create_;
-}
-
-vlg::synch_hash_map &peer_impl::get_srv_classid_condesc_set()
+vlg::synch_hash_map &peer_impl::get_srv_nclassid_condesc_set()
 {
     return srv_sbs_nclassid_condesc_set_;
 }
 
-//-----------------------------
 // CONFIG GETTERS
-//-----------------------------
 
 PeerPersonality peer_impl::get_cfg_personality()
 {
@@ -309,9 +299,7 @@ bool peer_impl::get_cfg_drop_existing_schema()
     return drop_existing_schema_;
 }
 
-//-----------------------------
 // CONFIG SETTERS
-//-----------------------------
 
 void peer_impl::set_cfg_personality(PeerPersonality personality)
 {
@@ -414,7 +402,7 @@ vlg::p_task *peer_impl::new_peer_recv_task(connection_impl &conn,
     return nbtsk;
 }
 
-vlg::RetCode peer_impl::next_connid(unsigned int &connid)
+RetCode peer_impl::next_connid(unsigned int &connid)
 {
     CHK_MON_ERR_0(lock)
     connid = ++prgr_conn_id_;
@@ -422,10 +410,10 @@ vlg::RetCode peer_impl::next_connid(unsigned int &connid)
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode peer_impl::extend_model(nentity_manager *nem)
+RetCode peer_impl::extend_model(nentity_manager *nem)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(nem:%p)", __func__, nem))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     if((rcode = nem_.extend(nem))) {
         IFLOG(cri(TH_ID, LS_MDL "%s(res:%d) - [failed to extend nem]", __func__,
                   rcode))
@@ -434,10 +422,10 @@ vlg::RetCode peer_impl::extend_model(nentity_manager *nem)
     return rcode;
 }
 
-vlg::RetCode peer_impl::extend_model(const char *model_name)
+RetCode peer_impl::extend_model(const char *model_name)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(model:%s)", __func__, model_name))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     if((rcode = nem_.extend(model_name))) {
         IFLOG(cri(TH_ID, LS_MDL "%s(model:%s, res:%d) - [failed to extend nem]",
                   __func__, model_name, rcode))
@@ -446,22 +434,11 @@ vlg::RetCode peer_impl::extend_model(const char *model_name)
     return rcode;
 }
 
-connection_impl *peer_impl::vlg_conn_factory_default(peer_impl &peer,
-                                                     ConnectionType con_type,
-                                                     unsigned int connid,
-                                                     void *ud)
-{
-    connection_impl *new_connection = new connection_impl(peer,
-                                                          con_type,
-                                                          connid);
-    return new_connection;
-}
-
-vlg::RetCode peer_impl::new_connection(connection_impl **new_connection,
-                                       vlg_conn_factory vlg_conn_factory_f,
-                                       ConnectionType con_type,
-                                       unsigned int connid,
-                                       void *ud)
+RetCode peer_impl::new_connection(connection_impl **new_connection,
+                                  connection_impl_factory vlg_conn_factory_f,
+                                  ConnectionType con_type,
+                                  unsigned int connid,
+                                  void *ud)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(new_connection:%p, con_type:%d, connid:%d)",
               __func__,
@@ -473,11 +450,10 @@ vlg::RetCode peer_impl::new_connection(connection_impl **new_connection,
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_BADARG;
     }
-    if(!vlg_conn_factory_f) {
-        *new_connection = vlg_conn_factory_default(*this, con_type, connid, NULL);
-    } else {
-        *new_connection = vlg_conn_factory_f(*this, con_type, connid, ud);
-    }
+    *new_connection = vlg_conn_factory_f(*this,
+                                         con_type,
+                                         connid,
+                                         ud);
     if((*new_connection)) {
         (*new_connection)->init();
     } else {
@@ -488,10 +464,10 @@ vlg::RetCode peer_impl::new_connection(connection_impl **new_connection,
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode peer_impl::release_connection(connection_impl *connection)
+RetCode peer_impl::release_connection(connection_impl *connection)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     if(!connection) {
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_BADARG;
@@ -519,38 +495,36 @@ vlg::RetCode peer_impl::release_connection(connection_impl *connection)
     return rcode;
 }
 
-vlg::RetCode peer_impl::new_incoming_connection_accept(connection_impl
-                                                       &incoming_connection)
+RetCode peer_impl::on_incoming_connection(connection_impl &incoming_connection)
 {
     return vlg::RetCode_OK;
 }
 
-vlg_conn_factory peer_impl::conn_factory() const
+connection_impl_factory peer_impl::get_connection_impl_factory() const
 {
-    return conn_factory_;
+    return conn_impl_factory_;
 }
 
-void peer_impl::set_conn_factory(vlg_conn_factory val)
+void peer_impl::set_connection_impl_factory(connection_impl_factory val)
 {
-    conn_factory_ = val;
+    conn_impl_factory_ = val;
 }
 
-void *peer_impl::conn_factory_ud() const
+void *peer_impl::get_connection_impl_factory_ud() const
 {
-    return conn_factory_ud_;
+    return conn_impl_factory_ud_;
 }
 
-void peer_impl::set_conn_factory_ud(void *val)
+void peer_impl::set_connection_impl_factory_ud(void *val)
 {
-    conn_factory_ud_ = val;
+    conn_impl_factory_ud_ = val;
 }
 
-//-----------------------------
 // VLG_PEER_LFCYC HANDLERS
-//-----------------------------
 
-vlg::RetCode peer_impl::peer_load_cfg_usr(int pnum, const char *param,
-                                          const char *value)
+RetCode peer_impl::load_config_handler(int pnum,
+                                       const char *param,
+                                       const char *value)
 {
     if(!strcmp(param, "pure_server")) {
         if(personality_ != PeerPersonality_BOTH) {
@@ -671,9 +645,8 @@ vlg::RetCode peer_impl::peer_load_cfg_usr(int pnum, const char *param,
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode peer_impl::peer_early_init_usr()
+RetCode peer_impl::on_early_init()
 {
-    IFLOG(trc(TH_ID, LS_APL"[CALLED VLG_PEER EARLYINIT HNDL]"))
     vlg::rt_init_timers();
     IFLOG(inf(TH_ID, LS_RTM "[RT-Timers initialized]"))
 #ifdef WIN32
@@ -685,21 +658,18 @@ vlg::RetCode peer_impl::peer_early_init_usr()
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode peer_impl::peer_init_usr()
+RetCode peer_impl::on_init()
 {
-    IFLOG(inf(TH_ID, LS_APL"[CALLED VLG_PEER PEERINIT HNDL]"))
-    return init_peer();
+    return init();
 }
 
-vlg::RetCode peer_impl::peer_start_usr()
+RetCode peer_impl::on_start()
 {
     VLG_ASYNCH_SELECTOR_STATUS current = VLG_ASYNCH_SELECTOR_STATUS_UNDEF;
-    vlg::RetCode rcode = vlg::RetCode_OK;
-    IFLOG(inf(TH_ID, LS_APL"[CALLED VLG_PEER PEERSTART HNDL]"))
-    IFLOG(inf(TH_ID, LS_APL"[PEER PERSONALITY: << %s >>]",
-              (personality_ == PeerPersonality_BOTH) ? "BOTH" :
-              (personality_ == PeerPersonality_PURE_SERVER) ? "PURE-SERVER" :
-              "PURE-CLIENT"))
+    RetCode rcode = vlg::RetCode_OK;
+    IFLOG(inf(TH_ID, LS_APL"[peer personality: << %s >>]",
+              (personality_ == PeerPersonality_BOTH) ? "both" :
+              (personality_ == PeerPersonality_PURE_SERVER) ? "pure-server" : "pure-client"))
     if(personality_ == PeerPersonality_PURE_SERVER ||
             personality_ == PeerPersonality_BOTH) {
         vlg::PEXEC_SERVICE_STATUS current_exc_srv = vlg::PEXEC_SERVICE_STATUS_ZERO;
@@ -708,8 +678,7 @@ vlg::RetCode peer_impl::peer_start_usr()
                       __func__, rcode))
             return rcode;
         }
-        srv_sbs_exec_serv_.await_for_status_reached_or_outdated(
-            vlg::PEXEC_SERVICE_STATUS_STARTED, current_exc_srv);
+        srv_sbs_exec_serv_.await_for_status_reached_or_outdated(vlg::PEXEC_SERVICE_STATUS_STARTED, current_exc_srv);
     }
     //persitence driv. bgn
     if(pers_enabled_) {
@@ -717,11 +686,11 @@ vlg::RetCode peer_impl::peer_start_usr()
         RETURN_IF_NOT_OK(pers_mng_.start_all_drivers())
         IFLOG(inf(TH_ID, LS_TRL "%s() - persistence drivers started.", __func__))
         if(pers_schema_create_) {
-            vlg::RetCode db_res = vlg::RetCode_OK;
+            RetCode db_res = vlg::RetCode_OK;
             IFLOG(dbg(TH_ID, LS_TRL "%s() - creating persistence schema..", __func__))
-            db_res = pers_schema_create(drop_existing_schema_ ?
-                                        PersistenceAlteringMode_DROP_IF_EXIST :
-                                        PersistenceAlteringMode_CREATE_ONLY);
+            db_res = create_persistent_schema(drop_existing_schema_ ?
+                                              PersistenceAlteringMode_DROP_IF_EXIST :
+                                              PersistenceAlteringMode_CREATE_ONLY);
             if(db_res) {
                 if(db_res != vlg::RetCode_DBOPFAIL) {
                     IFLOG(cri(TH_ID, LS_TRL "%s() - bad error creating pers schema, res:%d",
@@ -752,15 +721,12 @@ vlg::RetCode peer_impl::peer_start_usr()
     return rcode;
 }
 
-vlg::RetCode peer_impl::peer_move_running_usr()
+RetCode peer_impl::on_move_running()
 {
     VLG_ASYNCH_SELECTOR_STATUS current = VLG_ASYNCH_SELECTOR_STATUS_UNDEF;
-    IFLOG2(peer_log_, inf(TH_ID, LS_APL"[CALLED VLG_PEER MOVE RUNNING HNDL]"))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     if((rcode = selector_.on_peer_move_running_actions())) {
-        IFLOG(err(TH_ID, LS_CLO "%s(res:%d) - selector failed to move running",
-                  __func__,
-                  rcode))
+        IFLOG(err(TH_ID, LS_CLO "%s(res:%d) - selector failed to move running", __func__, rcode))
         return rcode;
     }
     IFLOG(dbg(TH_ID, LS_TRL "%s() - request selector go ready.", __func__))
@@ -775,14 +741,12 @@ vlg::RetCode peer_impl::peer_move_running_usr()
     return rcode;
 }
 
-vlg::RetCode peer_impl::peer_stop_usr()
+RetCode peer_impl::on_stop()
 {
-    IFLOG(inf(TH_ID, LS_APL"[CALLED VLG_PEER PEERSTOP HNDL]"))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     if(selector_.inco_conn_count() || selector_.outg_conn_count()) {
         if(!force_disconnect_on_stop_) {
-            IFLOG(err(TH_ID, LS_CLO "%s() - active connections detected. cannot stop peer.",
-                      __func__))
+            IFLOG(err(TH_ID, LS_CLO "%s() - active connections detected. cannot stop peer.", __func__))
             return vlg::RetCode_KO;
         }
     }
@@ -790,8 +754,7 @@ vlg::RetCode peer_impl::peer_stop_usr()
     selector_.set_status(VLG_ASYNCH_SELECTOR_STATUS_REQUEST_STOP);
     selector_.interrupt();
     VLG_ASYNCH_SELECTOR_STATUS current = VLG_ASYNCH_SELECTOR_STATUS_UNDEF;
-    selector_.await_for_status_reached_or_outdated(
-        VLG_ASYNCH_SELECTOR_STATUS_STOPPED, current);
+    selector_.await_for_status_reached_or_outdated(VLG_ASYNCH_SELECTOR_STATUS_STOPPED, current);
     IFLOG(dbg(TH_ID, LS_TRL "%s() - selector stopped.", __func__))
     selector_.set_status(VLG_ASYNCH_SELECTOR_STATUS_INIT);
     srv_sbs_exec_serv_.shutdown();
@@ -801,23 +764,24 @@ vlg::RetCode peer_impl::peer_stop_usr()
     return rcode;
 }
 
-vlg::RetCode peer_impl::peer_dying_breath_handler()
+RetCode peer_impl::on_error()
 {
-    IFLOG(inf(TH_ID,
-              LS_APL"[CALLED VLG_PEER DYINGBRTH HNDL - DOING NO ACTIONS - (OVERRIDE IF NEEDED)]"))
     return vlg::RetCode_OK;
 }
 
-//-----------------------------
+RetCode peer_impl::on_dying_breath()
+{
+    return vlg::RetCode_OK;
+}
+
 // PROTOCOL INTERFACE
-//-----------------------------
-vlg::RetCode peer_impl::recv_and_route_pkt(connection_impl &conn,
-                                           vlg_hdr_rec *hdr,
-                                           vlg::grow_byte_buffer *body)
+RetCode peer_impl::recv_and_route_pkt(connection_impl &conn,
+                                      vlg_hdr_rec *hdr,
+                                      vlg::grow_byte_buffer *body)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(sockid:%d, hdr:%p, body:%p)", __func__,
               conn.get_socket(), hdr, body))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     switch(hdr->phdr.pkttyp) {
         case VLG_PKT_TSTREQ_ID:
             /*TEST REQUEST******************************************************************/
@@ -874,9 +838,7 @@ vlg::RetCode peer_impl::recv_and_route_pkt(connection_impl &conn,
     return rcode;
 }
 
-//-----------------------------
 // MODEL MNG ************
-//-----------------------------
 
 per_nclassid_helper_rec::per_nclassid_helper_rec() :
     sbsevtid_(0),
@@ -888,7 +850,7 @@ per_nclassid_helper_rec::per_nclassid_helper_rec() :
 per_nclassid_helper_rec::~per_nclassid_helper_rec()
 {}
 
-vlg::RetCode per_nclassid_helper_rec::init()
+RetCode per_nclassid_helper_rec::init()
 {
     RETURN_IF_NOT_OK(srv_connid_condesc_set_.init(HM_SIZE_SMALL))
     return vlg::RetCode_OK;
@@ -911,7 +873,7 @@ void per_nclassid_helper_rec::next_time_stamp(unsigned int &ts0,
                                               unsigned int &ts1)
 {
     mon_.lock();
-    ts0 = (unsigned int)time(NULL);
+    ts0 = (unsigned int)time(nullptr);
     if(ts0 == ts0_) {
         ts1 = ++ts1_;
     } else {
@@ -921,12 +883,12 @@ void per_nclassid_helper_rec::next_time_stamp(unsigned int &ts0,
     mon_.unlock();
 }
 
-vlg::RetCode peer_impl::add_subscriber(subscription_impl *sbsdesc)
+RetCode peer_impl::add_subscriber(subscription_impl *sbsdesc)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     unsigned int nclsid = sbsdesc->nclass_id();
-    per_nclassid_helper_rec *sdrec = NULL;
+    per_nclassid_helper_rec *sdrec = nullptr;
     if((rcode = srv_sbs_nclassid_condesc_set_.get(&nclsid, &sdrec))) {
         if(!(sdrec = new per_nclassid_helper_rec())) {
             IFLOG(cri(TH_ID, LS_CLO "%s - memory", __func__))
@@ -947,12 +909,12 @@ vlg::RetCode peer_impl::add_subscriber(subscription_impl *sbsdesc)
     return rcode;
 }
 
-vlg::RetCode peer_impl::remove_subscriber(subscription_impl *sbsdesc)
+RetCode peer_impl::remove_subscriber(subscription_impl *sbsdesc)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     unsigned int nclsid = sbsdesc->nclass_id();
-    per_nclassid_helper_rec *sdrec = NULL;
+    per_nclassid_helper_rec *sdrec = nullptr;
     if((rcode = srv_sbs_nclassid_condesc_set_.get(&nclsid, &sdrec))) {
         IFLOG(cri(TH_ID, LS_CLO
                   "%s() - [subscriber: connid:%d not found for nclass_id:%d, hash srv_sbs_clssid_condesc_set_]",
@@ -961,7 +923,7 @@ vlg::RetCode peer_impl::remove_subscriber(subscription_impl *sbsdesc)
         return vlg::RetCode_GENERR;
     }
     if((rcode = sdrec->get_srv_connid_condesc_set().remove(
-                    &sbsdesc->conn_.connid_, NULL))) {
+                    &sbsdesc->conn_.connid_, nullptr))) {
         IFLOG(cri(TH_ID, LS_CLO
                   "%s() - [subscriber: connid:%d not found for nclass_id:%d, hash srv_connid_condesc_set]",
                   __func__,
@@ -972,7 +934,7 @@ vlg::RetCode peer_impl::remove_subscriber(subscription_impl *sbsdesc)
     return rcode;
 }
 
-//-----------------------------
+
 // VLG_PEER_SBS_TASK
 /*
 This task is used in srv_sbs_exec_serv_ executor service, and it is used
@@ -980,13 +942,13 @@ to perform a server-side subscription task, tipically this means that
 a subscription event has been triggered and it must be delivered to all
 subscriptors.
 */
-//-----------------------------
+
 class peer_sbs_task;
 
 struct srv_connid_condesc_set_ashsnd_rud {
     unsigned int    nclass_id;
     peer_sbs_task   *tsk;
-    vlg::RetCode            rcode;
+    RetCode            rcode;
 };
 
 class peer_sbs_task : public vlg::p_task {
@@ -1013,11 +975,11 @@ class peer_sbs_task : public vlg::p_task {
                                                           const void      *key,
                                                           const void      *ptr,
                                                           void            *ud) {
-            vlg::RetCode rcode = vlg::RetCode_OK;
+            RetCode rcode = vlg::RetCode_OK;
             srv_connid_condesc_set_ashsnd_rud *rud =
                 static_cast<srv_connid_condesc_set_ashsnd_rud *>(ud);
             connection_impl *conn = *(connection_impl **)ptr;
-            subscription_impl *sbs_desc = NULL;
+            subscription_impl *sbs_desc = nullptr;
             if(conn->class_id_sbs_map().get(&rud->nclass_id, &sbs_desc)) {
                 IFLOG(wrn(TH_ID, LS_EXE "%s() - [no more active sbs on connection:%u]",
                           __func__, conn->connid()))
@@ -1038,8 +1000,8 @@ class peer_sbs_task : public vlg::p_task {
         }
 
         /*this method will be called when this task will be run by an executor*/
-        virtual vlg::RetCode execute() {
-            vlg::RetCode rcode = vlg::RetCode_OK;
+        virtual RetCode execute() {
+            RetCode rcode = vlg::RetCode_OK;
             vlg::collector &c = sbs_evt_.get_collector();
             /*
             External Event Adoption.
@@ -1085,7 +1047,7 @@ class peer_sbs_task : public vlg::p_task {
         static vlg::logger   *log_;
 };
 
-vlg::logger *peer_sbs_task::log_ = NULL;
+vlg::logger *peer_sbs_task::log_ = nullptr;
 
 vlg::p_task *peer_impl::new_sbs_evt_task(
     subscription_event_impl &sbs_evt,
@@ -1100,12 +1062,12 @@ vlg::p_task *peer_impl::new_sbs_evt_task(
     return nbtsk;
 }
 
-vlg::RetCode peer_impl::get_per_classid_helper_class(unsigned int nclass_id,
-                                                     per_nclassid_helper_rec **out)
+RetCode peer_impl::get_per_nclassid_helper_rec(unsigned int nclass_id,
+                                               per_nclassid_helper_rec **out)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode rcode = vlg::RetCode_OK;
-    per_nclassid_helper_rec *sdrec = NULL;
+    RetCode rcode = vlg::RetCode_OK;
+    per_nclassid_helper_rec *sdrec = nullptr;
     if((rcode = srv_sbs_nclassid_condesc_set_.get(&nclass_id, &sdrec))) {
         if(!(sdrec = new per_nclassid_helper_rec())) {
             IFLOG(cri(TH_ID, LS_CLO "%s - memory", __func__))
@@ -1125,17 +1087,17 @@ vlg::RetCode peer_impl::get_per_classid_helper_class(unsigned int nclass_id,
     return rcode;
 }
 
-vlg::RetCode peer_impl::build_sbs_event(unsigned int evt_id,
-                                        SubscriptionEventType sbs_evttype,
-                                        ProtocolCode sbs_protocode,
-                                        unsigned int sbs_tmstp0,
-                                        unsigned int sbs_tmstp1,
-                                        Action sbs_act,
-                                        const nclass *sbs_data,
-                                        subscription_event_impl **new_sbs_event)
+RetCode peer_impl::build_sbs_event(unsigned int evt_id,
+                                   SubscriptionEventType sbs_evttype,
+                                   ProtocolCode sbs_protocode,
+                                   unsigned int sbs_tmstp0,
+                                   unsigned int sbs_tmstp1,
+                                   Action sbs_act,
+                                   const nclass *sbs_data,
+                                   subscription_event_impl **new_sbs_event)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     if((subscription_event_impl::new_instance(new_sbs_event))) {
         IFLOG(cri(TH_ID, LS_CLO "%s - memory", __func__))
         return vlg::RetCode_MEMERR;
@@ -1151,11 +1113,11 @@ vlg::RetCode peer_impl::build_sbs_event(unsigned int evt_id,
     return rcode;
 }
 
-vlg::RetCode peer_impl::submit_sbs_evt_task(subscription_event_impl &sbs_evt,
-                                            vlg::synch_hash_map &srv_connid_condesc_set)
+RetCode peer_impl::submit_sbs_evt_task(subscription_event_impl &sbs_evt,
+                                       vlg::synch_hash_map &srv_connid_condesc_set)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     vlg::p_task *sbs_tsk = new_sbs_evt_task(sbs_evt, srv_connid_condesc_set);
     if(!sbs_tsk) {
         IFLOG(cri(TH_ID, LS_CLO "%s - memory", __func__))
@@ -1170,9 +1132,9 @@ vlg::RetCode peer_impl::submit_sbs_evt_task(subscription_event_impl &sbs_evt,
     return rcode;
 }
 
-//-----------------------------
+
 // #VER#
-//-----------------------------
+
 const char *PEERLIB_VER(void)
 {
     static char str[] = "lib.vlg.ver.0.0.0.date:" __DATE__;

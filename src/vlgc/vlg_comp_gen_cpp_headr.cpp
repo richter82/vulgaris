@@ -26,10 +26,10 @@ namespace vlg {
 /***********************************
 GEN- VLG_COMP_Gen__CPP_
 ***********************************/
-extern vlg::RetCode VLG_COMP_Gen__CPP_(compile_unit &cunit);
+extern RetCode VLG_COMP_Gen__CPP_(compile_unit &cunit);
 
-vlg::RetCode VLG_COMP_CPP_Calc_NMspc(entity_desc_comp &edesc,
-                                     vlg::ascii_string &out)
+RetCode VLG_COMP_CPP_Calc_NMspc(entity_desc_comp &edesc,
+                                vlg::ascii_string &out)
 {
     vlg::ascii_string_tok nmtknz;
     vlg::ascii_string nmtkn, ent_nmspace;
@@ -51,7 +51,7 @@ vlg::RetCode VLG_COMP_CPP_Calc_NMspc(entity_desc_comp &edesc,
 /***********************************
 GEN- VLG_COMP_Gen_Define
 ***********************************/
-vlg::RetCode VLG_COMP_Gen_Define(compile_unit &cunit, FILE *file)
+RetCode VLG_COMP_Gen_Define(compile_unit &cunit, FILE *file)
 {
     vlg::hash_map &definemap = cunit.get_define_map();
     definemap.start_iteration();
@@ -65,8 +65,8 @@ vlg::RetCode VLG_COMP_Gen_Define(compile_unit &cunit, FILE *file)
 /***********************************
 GEN- VLG_COMP_Gen_ModelVersion_decl__H_
 ***********************************/
-vlg::RetCode VLG_COMP_Gen_ModelVersion_decl__H_(compile_unit &cunit,
-                                                FILE *file)
+RetCode VLG_COMP_Gen_ModelVersion_decl__H_(compile_unit &cunit,
+                                           FILE *file)
 {
     vlg::ascii_string name;
     vlg::ascii_string_tok tknz;
@@ -85,8 +85,8 @@ vlg::RetCode VLG_COMP_Gen_ModelVersion_decl__H_(compile_unit &cunit,
 /***********************************
 GEN- VLG_COMP_Gen_EntryPoint_decl__H_
 ***********************************/
-vlg::RetCode VLG_COMP_Gen_EntryPoint_decl__H_(compile_unit &cunit,
-                                              FILE *file)
+RetCode VLG_COMP_Gen_EntryPoint_decl__H_(compile_unit &cunit,
+                                         FILE *file)
 {
     vlg::ascii_string name;
     vlg::ascii_string_tok tknz;
@@ -105,8 +105,8 @@ vlg::RetCode VLG_COMP_Gen_EntryPoint_decl__H_(compile_unit &cunit,
 /***********************************
 GEN- VLG_COMP_Gen_EntryPoint_C_decl__H_
 ***********************************/
-vlg::RetCode VLG_COMP_Gen_EntryPoint_C_decl__H_(compile_unit &cunit,
-                                                FILE *file)
+RetCode VLG_COMP_Gen_EntryPoint_C_decl__H_(compile_unit &cunit,
+                                           FILE *file)
 {
     vlg::ascii_string name;
     vlg::ascii_string_tok tknz;
@@ -124,9 +124,9 @@ vlg::RetCode VLG_COMP_Gen_EntryPoint_C_decl__H_(compile_unit &cunit,
 /***********************************
 GEN- VLG_COMP_Gen_Rep__H_
 ***********************************/
-vlg::RetCode VLG_COMP_Gen_Rep__H_(vlg::hash_map &entitymap,
-                                  entity_desc_comp &edesc,
-                                  FILE *file)
+RetCode VLG_COMP_Gen_Rep__H_(vlg::hash_map &entitymap,
+                             entity_desc_comp &edesc,
+                             FILE *file)
 {
     //render rep
     fprintf(file, OPN_CMMNT_LN
@@ -135,8 +135,8 @@ vlg::RetCode VLG_COMP_Gen_Rep__H_(vlg::hash_map &entitymap,
     fprintf(file, "protected:\n");
     vlg::hash_map &mmbr_map = edesc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
-    member_desc_comp *mdsc = NULL;
-    while(!mmbr_map.next(NULL, &mdsc)) {
+    member_desc_comp *mdsc = nullptr;
+    while(!mmbr_map.next(nullptr, &mdsc)) {
         vlg::ascii_string type_str;
         RETURN_IF_NOT_OK(target_type_from_VLG_TYPE(*mdsc, entitymap, type_str))
         fprintf(file,  "%s %s", type_str.internal_buff(), mdsc->get_member_name());
@@ -152,9 +152,9 @@ vlg::RetCode VLG_COMP_Gen_Rep__H_(vlg::hash_map &entitymap,
 /***********************************
 GEN- VLG_COMP_Gen_ClassVirtualMeths__H_
 ***********************************/
-vlg::RetCode VLG_COMP_Gen_ClassVirtualMeths__H_(vlg::hash_map &entitymap,
-                                                entity_desc_comp &class_desc,
-                                                FILE *file)
+RetCode VLG_COMP_Gen_ClassVirtualMeths__H_(vlg::hash_map &entitymap,
+                                           entity_desc_comp &class_desc,
+                                           FILE *file)
 {
     fprintf(file, OPN_CMMNT_LN "virtual methods\n" CLS_CMMNT_LN);
     fprintf(file, EXPORT_SYMBOL"virtual unsigned int get_nclass_id() const;");
@@ -198,9 +198,9 @@ vlg::RetCode VLG_COMP_Gen_ClassVirtualMeths__H_(vlg::hash_map &entitymap,
 /***********************************
 GEN- VLG_COMP_Gen_GenMeths__H_
 ***********************************/
-vlg::RetCode VLG_COMP_Gen_GenMeths__H_(compile_unit &cunit,
-                                       entity_desc_comp &edsc,
-                                       FILE *file)
+RetCode VLG_COMP_Gen_GenMeths__H_(compile_unit &cunit,
+                                  entity_desc_comp &edsc,
+                                  FILE *file)
 {
     fprintf(file,  OPN_CMMNT_LN
             "getter(s) / setter(s) / is_zero(s)\n"
@@ -208,8 +208,8 @@ vlg::RetCode VLG_COMP_Gen_GenMeths__H_(compile_unit &cunit,
     vlg::hash_map &entitymap = cunit.get_entity_map();
     vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
-    member_desc_comp *mdsc = NULL;
-    while(!mmbr_map.next(NULL, &mdsc)) {
+    member_desc_comp *mdsc = nullptr;
+    while(!mmbr_map.next(nullptr, &mdsc)) {
         if(mdsc->get_member_type() != MemberType_FIELD) {
             continue;
         }
@@ -225,7 +225,7 @@ vlg::RetCode VLG_COMP_Gen_GenMeths__H_(compile_unit &cunit,
         //fld_name.first_char_uppercase();
         RETURN_IF_NOT_OK(meth_name.append(fld_name))
         if(mdsc->get_field_type() == Type_ENTITY) {
-            entity_desc_comp *inner_edsc = NULL;
+            entity_desc_comp *inner_edsc = nullptr;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &inner_edsc)) {
                 if(inner_edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
@@ -259,7 +259,7 @@ vlg::RetCode VLG_COMP_Gen_GenMeths__H_(compile_unit &cunit,
         if(mdsc->get_nmemb() > 1) {
             RETURN_IF_NOT_OK(meth_name.append("_idx"))
             if(mdsc->get_field_type() == Type_ENTITY) {
-                entity_desc_comp *edsc = NULL;
+                entity_desc_comp *edsc = nullptr;
                 if(!entitymap.get(mdsc->get_field_usr_str_type(), &edsc)) {
                     if(edsc->get_nentity_type() == NEntityType_NENUM) {
                         //enum
@@ -281,7 +281,7 @@ vlg::RetCode VLG_COMP_Gen_GenMeths__H_(compile_unit &cunit,
         RETURN_IF_NOT_OK(meth_name.assign(VLG_COMP_CPP_SETTER_PFX"_"))
         RETURN_IF_NOT_OK(meth_name.append(fld_name))
         if(mdsc->get_field_type() == Type_ENTITY) {
-            entity_desc_comp *edsc = NULL;
+            entity_desc_comp *edsc = nullptr;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &edsc)) {
                 if(edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
@@ -320,7 +320,7 @@ vlg::RetCode VLG_COMP_Gen_GenMeths__H_(compile_unit &cunit,
         if(mdsc->get_nmemb() > 1) {
             RETURN_IF_NOT_OK(meth_name.append("_idx"))
             if(mdsc->get_field_type() == Type_ENTITY) {
-                entity_desc_comp *edsc = NULL;
+                entity_desc_comp *edsc = nullptr;
                 if(!entitymap.get(mdsc->get_field_usr_str_type(), &edsc)) {
                     if(edsc->get_nentity_type() == NEntityType_NENUM) {
                         //enum
@@ -358,12 +358,12 @@ vlg::RetCode VLG_COMP_Gen_GenMeths__H_(compile_unit &cunit,
 /***********************************
 GEN- VLG_COMP_Gen_Enum__H_
 ***********************************/
-vlg::RetCode VLG_COMP_Gen_Enum__H_(compile_unit &cunit, FILE *file)
+RetCode VLG_COMP_Gen_Enum__H_(compile_unit &cunit, FILE *file)
 {
     vlg::hash_map &entitymap = cunit.get_entity_map();
     entitymap.start_iteration();
-    entity_desc_comp *edsc = NULL;
-    while(!entitymap.next(NULL, &edsc)) {
+    entity_desc_comp *edsc = nullptr;
+    while(!entitymap.next(nullptr, &edsc)) {
         if(edsc->get_nentity_type() == NEntityType_NENUM) {
             fprintf(file,   OPN_CMMNT_LN
                     "vlg_enum: %s\n"
@@ -372,9 +372,9 @@ vlg::RetCode VLG_COMP_Gen_Enum__H_(compile_unit &cunit, FILE *file)
             RETURN_IF_NOT_OK(put_newline(file))
             vlg::hash_map &mmbr_map = edsc->get_map_id_MMBRDSC();
             mmbr_map.start_iteration();
-            member_desc_comp *mdsc = NULL;
+            member_desc_comp *mdsc = nullptr;
             long expected_val = 0;
-            while(!mmbr_map.next(NULL, &mdsc)) {
+            while(!mmbr_map.next(nullptr, &mdsc)) {
                 if(expected_val == mdsc->get_enum_value()) {
                     fprintf(file, CR_1IND"%s,", mdsc->get_member_name());
                 } else {
@@ -397,12 +397,12 @@ vlg::RetCode VLG_COMP_Gen_Enum__H_(compile_unit &cunit, FILE *file)
 /***********************************
 GEN- VLG_COMP_Gen_Class__H_
 ***********************************/
-vlg::RetCode VLG_COMP_Gen_Class__H_(compile_unit &cunit, FILE *file)
+RetCode VLG_COMP_Gen_Class__H_(compile_unit &cunit, FILE *file)
 {
     vlg::hash_map &entitymap = cunit.get_entity_map();
     entitymap.start_iteration();
-    entity_desc_comp *edsc = NULL;
-    while(!entitymap.next(NULL, &edsc)) {
+    entity_desc_comp *edsc = nullptr;
+    while(!entitymap.next(nullptr, &edsc)) {
         if(edsc->get_nentity_type() == NEntityType_NCLASS) {
             fprintf(file,   OPN_CMMNT_LN
                     "nclass: %s - ID: %u\n"
@@ -446,7 +446,7 @@ vlg::RetCode VLG_COMP_Gen_Class__H_(compile_unit &cunit, FILE *file)
 /***********************************
 GEN- VLG_COMP_Gen__H_
 ***********************************/
-vlg::RetCode VLG_COMP_Gen__H_(compile_unit &cunit)
+RetCode VLG_COMP_Gen__H_(compile_unit &cunit)
 {
     vlg::ascii_string fname;
     vlg::ascii_string_tok tknz;
@@ -454,7 +454,7 @@ vlg::RetCode VLG_COMP_Gen__H_(compile_unit &cunit)
     RETURN_IF_NOT_OK(tknz.next_token(fname, VLG_COMP_DOT))
     RETURN_IF_NOT_OK(fname.append(VLG_COMP_DOT))
     RETURN_IF_NOT_OK(fname.append("h"))
-    FILE *file = NULL;
+    FILE *file = nullptr;
     COMMAND_IF_NOT_OK(open_output_file(fname.internal_buff(), &file), exit(1))
     //ifdef open
     vlg::ascii_string name;
@@ -497,7 +497,7 @@ vlg::RetCode VLG_COMP_Gen__H_(compile_unit &cunit)
 /***********************************
 ENTRYPOINT- VLG_COMP_Compile_CPP
 ***********************************/
-vlg::RetCode compile_CPP(compile_unit &cunit)
+RetCode compile_CPP(compile_unit &cunit)
 {
     RETURN_IF_NOT_OK(VLG_COMP_Gen__H_(cunit))
     RETURN_IF_NOT_OK(VLG_COMP_Gen__CPP_(cunit))

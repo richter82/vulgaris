@@ -93,7 +93,7 @@ class key_desc {
         ~key_desc();
 
     public:
-        vlg::RetCode  add_member_desc(const member_desc *member_descriptor);
+        RetCode  add_member_desc(const member_desc *member_descriptor);
 
         unsigned short  get_key_id()        const;
         bool            is_primary()        const;
@@ -128,8 +128,8 @@ class nentity_desc {
         ~nentity_desc();
 
     public:
-        vlg::RetCode      add_member_desc(const member_desc *member_descriptor);
-        vlg::RetCode      add_key_desc(const key_desc *key_descriptor);
+        RetCode      add_member_desc(const member_desc *member_descriptor);
+        RetCode      add_key_desc(const key_desc *key_descriptor);
 
         unsigned int        get_nclass_id()                     const;
         size_t              get_nclass_size()                   const;
@@ -195,50 +195,50 @@ class nclass : public vlg::collectable {
         void            *get_field_by_name_index(const char *field_name,
                                                  unsigned int index);
 
-        vlg::RetCode  set_field_by_id(unsigned int field_id,
-                                      const void *ptr,
-                                      size_t maxlen = 0);
+        RetCode  set_field_by_id(unsigned int field_id,
+                                 const void *ptr,
+                                 size_t maxlen = 0);
 
-        vlg::RetCode  set_field_by_name(const char *field_name,
-                                        const void *ptr,
-                                        size_t maxlen = 0);
+        RetCode  set_field_by_name(const char *field_name,
+                                   const void *ptr,
+                                   size_t maxlen = 0);
 
-        vlg::RetCode  set_field_by_id_index(unsigned int field_id,
-                                            const void *ptr,
+        RetCode  set_field_by_id_index(unsigned int field_id,
+                                       const void *ptr,
+                                       unsigned int index,
+                                       size_t maxlen = 0);
+
+        RetCode  set_field_by_name_index(const char *field_name,
+                                         const void *ptr,
+                                         unsigned int index,
+                                         size_t maxlen = 0);
+
+        RetCode  is_field_zero_by_id(unsigned int field_id,
+                                     bool &res) const;
+
+        RetCode  is_field_zero_by_name(const char *field_name,
+                                       bool &res) const;
+
+        RetCode  is_field_zero_by_id_index(unsigned int field_id,
+                                           unsigned int index,
+                                           unsigned int nmenb,
+                                           bool &res) const;
+
+        RetCode  is_field_zero_by_name_index(const char *field_name,
+                                             unsigned int index,
+                                             unsigned int nmenb,
+                                             bool &res) const;
+
+        RetCode  set_field_zero_by_id(unsigned int field_id);
+        RetCode  set_field_zero_by_name(const char *field_name);
+
+        RetCode  set_field_zero_by_id_index(unsigned int field_id,
                                             unsigned int index,
-                                            size_t maxlen = 0);
+                                            unsigned int nmenb);
 
-        vlg::RetCode  set_field_by_name_index(const char *field_name,
-                                              const void *ptr,
+        RetCode  set_field_zero_by_name_index(const char *field_name,
                                               unsigned int index,
-                                              size_t maxlen = 0);
-
-        vlg::RetCode  is_field_zero_by_id(unsigned int field_id,
-                                          bool &res) const;
-
-        vlg::RetCode  is_field_zero_by_name(const char *field_name,
-                                            bool &res) const;
-
-        vlg::RetCode  is_field_zero_by_id_index(unsigned int field_id,
-                                                unsigned int index,
-                                                unsigned int nmenb,
-                                                bool &res) const;
-
-        vlg::RetCode  is_field_zero_by_name_index(const char *field_name,
-                                                  unsigned int index,
-                                                  unsigned int nmenb,
-                                                  bool &res) const;
-
-        vlg::RetCode  set_field_zero_by_id(unsigned int field_id);
-        vlg::RetCode  set_field_zero_by_name(const char *field_name);
-
-        vlg::RetCode  set_field_zero_by_id_index(unsigned int field_id,
-                                                 unsigned int index,
-                                                 unsigned int nmenb);
-
-        vlg::RetCode  set_field_zero_by_name_index(const char *field_name,
-                                                   unsigned int index,
-                                                   unsigned int nmenb);
+                                              unsigned int nmenb);
 
         char *get_field_by_column_number(unsigned int column_number,
                                          const nentity_manager &nem,
@@ -261,15 +261,15 @@ class nclass : public vlg::collectable {
                               const nclass *previous_image,
                               vlg::grow_byte_buffer *obb) const = 0;
 
-        vlg::RetCode restore(const nentity_manager *nem,
-                             Encode encode,
-                             vlg::grow_byte_buffer *ibb);
+        RetCode restore(const nentity_manager *nem,
+                        Encode encode,
+                        vlg::grow_byte_buffer *ibb);
 
         /*
         persistence related
         */
     public:
-        virtual vlg::RetCode get_primary_key_value_as_string(vlg::shared_pointer<char> &out_str);
+        virtual RetCode get_primary_key_value_as_string(vlg::shared_pointer<char> &out_str);
 
     protected:
         static nclass_logger *log_;
@@ -291,11 +291,11 @@ class nentity_manager {
         explicit nentity_manager();
         ~nentity_manager();
 
-        vlg::RetCode get_nentity_descriptor(unsigned int nclass_id,
-                                            nentity_desc const **entity_descriptor) const;
+        RetCode get_nentity_descriptor(unsigned int nclass_id,
+                                       nentity_desc const **entity_descriptor) const;
 
-        vlg::RetCode get_nentity_descriptor(const char *entity_name,
-                                            nentity_desc const **entity_descriptor) const;
+        RetCode get_nentity_descriptor(const char *entity_name,
+                                       nentity_desc const **entity_descriptor) const;
 
         void enum_nentity_descriptors(enum_nentity_desc eedf,
                                       void *ud) const;
@@ -306,8 +306,8 @@ class nentity_manager {
         void enum_nclass_descriptors(enum_nentity_desc eedf,
                                      void *ud)  const;
 
-        vlg::RetCode new_nclass_instance(unsigned int nclass_id,
-                                         nclass **new_nclass_obj) const;
+        RetCode new_nclass_instance(unsigned int nclass_id,
+                                    nclass **new_nclass_obj) const;
 
         unsigned int    nentity_count() const;
         unsigned int    nenum_count()   const;
@@ -315,9 +315,9 @@ class nentity_manager {
 
         const char      *get_nclass_name(unsigned int nclass_id) const;
 
-        vlg::RetCode  extend(const nentity_desc *nentity_descriptor);
-        vlg::RetCode  extend(nentity_manager *nem);
-        vlg::RetCode  extend(const char *model_name);
+        RetCode  extend(const nentity_desc *nentity_descriptor);
+        RetCode  extend(nentity_manager *nem);
+        RetCode  extend(const char *model_name);
 
     public:
         const nentity_manager_impl *get_opaque() const;

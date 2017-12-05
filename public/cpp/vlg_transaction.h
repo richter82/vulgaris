@@ -29,18 +29,18 @@ namespace vlg {
 */
 class transaction_factory {
     public:
-        static transaction_impl  *tx_factory_impl_f(connection_impl &conn,
-                                                    void *ud);
+        static transaction_impl  *transaction_impl_factory_f(connection_impl &conn,
+                                                             void *ud);
 
     public:
-        transaction_factory();
+        explicit transaction_factory();
         virtual ~transaction_factory();
 
     public:
-        virtual transaction     *new_transaction(connection &conn);
+        virtual transaction     &make_transaction(connection &conn);
 
     public:
-        static transaction_factory *default_factory();
+        static transaction_factory &default_factory();
 };
 
 /** @brief transaction class.
@@ -62,10 +62,10 @@ class transaction : public vlg::collectable {
 
         virtual vlg::collector &get_collector();
 
-        vlg::RetCode bind(connection &conn);
+        RetCode bind(connection &conn);
 
     public:
-        connection                  *get_connection();
+        connection                  &get_connection();
         TransactionResult           get_close_result();
         ProtocolCode                get_close_result_code();
         TransactionRequestType      get_request_type();
@@ -98,14 +98,13 @@ class transaction : public vlg::collectable {
         TransactionStatus get_status();
 
     public:
-        vlg::RetCode
-        await_for_status_reached_or_outdated(TransactionStatus  test,
-                                             TransactionStatus  &current,
-                                             time_t             sec = -1,
-                                             long               nsec = 0);
+        RetCode await_for_status_reached_or_outdated(TransactionStatus  test,
+                                                     TransactionStatus  &current,
+                                                     time_t             sec = -1,
+                                                     long               nsec = 0);
 
-        vlg::RetCode await_for_close(time_t sec = -1,
-                                     long nsec = 0);
+        RetCode await_for_close(time_t sec = -1,
+                                long nsec = 0);
 
     public:
         void set_status_change_handler(status_change handler,
@@ -128,17 +127,17 @@ class transaction : public vlg::collectable {
         void            set_tx_id_PRID(unsigned int prid);
 
     public:
-        vlg::RetCode  renew();
+        RetCode  renew();
 
-        vlg::RetCode  prepare();
+        RetCode  prepare();
 
-        vlg::RetCode  prepare(TransactionRequestType    tx_request_type,
-                              Action                    tx_action,
-                              const nclass              *sending_obj = NULL,
-                              const nclass              *current_obj = NULL);
+        RetCode  prepare(TransactionRequestType    tx_request_type,
+                         Action                    tx_action,
+                         const nclass              *sending_obj = nullptr,
+                         const nclass              *current_obj = nullptr);
 
     public:
-        vlg::RetCode  send();
+        RetCode  send();
 
     public:
         virtual void    on_request();

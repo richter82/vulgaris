@@ -29,128 +29,101 @@
 
 namespace vlg {
 
-//-----------------------------
-// peer_automa
-//-----------------------------
+/** @brief peer_automa class.
+*/
 class peer_automa {
         friend class peer_automa_th;
 
-        typedef void (*peer_lfcyc_status_change_hndlr)(peer_automa &peer,
-                                                       PeerStatus status,
-                                                       void *ud);
+        typedef void (*status_change)(peer_automa &peer,
+                                      PeerStatus status,
+                                      void *ud);
 
-        typedef bool (*peer_lfcyc_eval_condition)(peer_automa *peer);
+        typedef bool (*eval_condition)(peer_automa *peer);
 
     public:
-        //---ctors
         peer_automa(unsigned int peer_id);
         virtual ~peer_automa();
 
-        vlg::RetCode set_params_file_path_name(const char *file_path);
+        RetCode set_params_file_path_name(const char *file_path);
 
-        //-----------------------------
         // GETTERS
-        //-----------------------------
     public:
-        const char         *peer_name();
-        const unsigned int *peer_ver();
-        unsigned int        peer_ver_major();
-        unsigned int        peer_ver_minor();
-        unsigned int        peer_ver_mant();
-        unsigned int        peer_ver_arch();
+        const char         *get_name();
+        const unsigned int *get_version();
+        unsigned int        get_ver_major();
+        unsigned int        get_ver_minor();
+        unsigned int        get_ver_mant();
+        unsigned int        get_ver_arch();
         bool                is_configured();
 
-        //-----------------------------
         // SETTERS
-        //-----------------------------
     public:
         void                set_configured(bool configured);
 
-        //-----------------------------
         // ACTIONS
-        //-----------------------------
     public:
-        vlg::RetCode    early_init();
+        RetCode    early_init();
 
-        vlg::RetCode    start_peer(int argc,
-                                   char *argv[],
-                                   bool spawn_new_thread);
+        RetCode    start(int argc,
+                         char *argv[],
+                         bool spawn_new_thread);
 
-        vlg::RetCode    stop_peer(bool force_disconnect = false);
+        RetCode    stop(bool force_disconnect = false);
 
-        //-----------------------------
         // ASYNCHRO HNDLRS
-        //-----------------------------
     public:
-        void set_peer_status_change_hndlr(peer_lfcyc_status_change_hndlr hndlr,
-                                          void *ud);
+        void set_status_change_handler(status_change hndlr,
+                                       void *ud);
 
-        //-----------------------------
         // SYNCHRO
-        //-----------------------------
     public:
-        vlg::RetCode await_for_peer_status_reached_or_outdated(PeerStatus test,
-                                                               PeerStatus &current,
-                                                               time_t sec = -1,
-                                                               long nsec = 0);
-
-        vlg::RetCode await_for_peer_status_condition(peer_lfcyc_eval_condition
-                                                     cond_cllbk,
+        RetCode await_for_status_reached_or_outdated(PeerStatus test,
+                                                     PeerStatus &current,
                                                      time_t sec = -1,
                                                      long nsec = 0);
 
-        vlg::RetCode await_for_peer_status_change(PeerStatus &peer_status,
-                                                  time_t sec = -1,
-                                                  long nsec = 0);
+        RetCode await_for_condition(eval_condition cond_cllbk,
+                                    time_t sec = -1,
+                                    long nsec = 0);
 
-        //-----------------------------
+        RetCode await_for_status_change(PeerStatus &peer_status,
+                                        time_t sec = -1,
+                                        long nsec = 0);
+
         // STATUS
-        //-----------------------------
     public:
-        PeerStatus   peer_status();
+        PeerStatus  get_status();
     protected:
-        vlg::RetCode    set_peer_status(PeerStatus peer_status);
+        RetCode     set_status(PeerStatus peer_status);
+        RetCode     set_running();
+        RetCode     set_stop_request();
+        RetCode     set_error();
 
-        vlg::RetCode    set_peer_running();
-        vlg::RetCode    set_peer_stop_request();
-        vlg::RetCode    set_peer_error();
-
-        //-----------------------------
         // LIFECYCLE
-        //-----------------------------
     private:
-        vlg::RetCode    peer_life_cycle();
-        vlg::RetCode    peer_welcome();
-        vlg::RetCode    peer_init();
-        vlg::RetCode    peer_start();
-        vlg::RetCode    peer_stop();
-        vlg::RetCode    peer_move_running();
-        vlg::RetCode    peer_dying_breath();
+        RetCode    running_cycle();
+        RetCode    step_welcome();
+        RetCode    step_init();
+        RetCode    step_start();
+        RetCode    step_stop();
+        RetCode    step_move_running();
+        RetCode    step_dying_breath();
 
-        //-----------------------------
-        // LIFECYCLE - Usr subclass entrypoints
-        //-----------------------------
-        virtual const char             *peer_name_usr();
-        virtual const unsigned int     *peer_ver_usr();
-        virtual vlg::RetCode          peer_load_cfg_usr(int pnum,
+        // LIFECYCLE handlers
+        virtual const char          *name_handler()      = 0;
+        virtual const unsigned int  *version_handler()   = 0;
+
+        virtual RetCode             load_config_handler(int pnum,
                                                         const char *param,
-                                                        const char *value);
-
-        //-----------------------------
-        // LIFECYCLE - Usr opt. subclass entrypoints
-        //-----------------------------
+                                                        const char *value)  = 0;
     public:
-        virtual vlg::RetCode    peer_early_init_usr();
-        virtual vlg::RetCode    peer_init_usr();
-        virtual vlg::RetCode    peer_start_usr();
-        virtual vlg::RetCode    peer_stop_usr();
-        virtual vlg::RetCode    peer_move_running_usr();
-
-        //-----------------------------
-        // LIFECYCLE - Usr opt. subclass handlers
-        //-----------------------------
-        virtual vlg::RetCode    peer_error_handler();
-        virtual vlg::RetCode    peer_dying_breath_handler();
+        virtual RetCode    on_early_init()      = 0;
+        virtual RetCode    on_init()            = 0;
+        virtual RetCode    on_start()           = 0;
+        virtual RetCode    on_stop()            = 0;
+        virtual RetCode    on_move_running()    = 0;
+        virtual RetCode    on_error()           = 0;
+        virtual RetCode    on_dying_breath()    = 0;
 
     protected:
         unsigned int    peer_id_;
@@ -159,26 +132,28 @@ class peer_automa {
         PeerStatus      peer_status_;
         char            peer_name_[VLG_PEER_NAME_LEN];
         unsigned int    peer_ver_[4];
-        int         peer_argc_;
-        char        **peer_argv_;
-        char        peer_cfg_file_path_name_[VLG_PEER_CFG_FILE_PATH_NAME_LEN];
+        int             peer_argc_;
+        char            **peer_argv_;
+        char            peer_cfg_file_path_name_[VLG_PEER_CFG_FILE_PATH_NAME_LEN];
 
-        vlg::config_loader    peer_conf_ldr_;
-        bool                    configured_;
-        vlg::RetCode          peer_last_error_;
-        bool                    peer_exit_required_;
+        vlg::config_loader  peer_conf_ldr_;
+        bool                configured_;
+        RetCode             peer_last_error_;
+        bool                peer_exit_required_;
 
-        //--synch status
-        peer_lfcyc_status_change_hndlr  psc_hndl_;
-        void                            *psc_hndl_ud_;
+        //--asynch status
+        status_change   psc_hndl_;
+        void            *psc_hndl_ud_;
 
         // stop / dispose
-        bool                            force_disconnect_on_stop_;
-        mutable vlg::synch_monitor    peer_mon_;
+        bool                        force_disconnect_on_stop_;
+        mutable vlg::synch_monitor  peer_mon_;
 
     private:
-        static void vlg_peer_param_clbk_ud(int pnum, const char *param,
-                                           const char *value, void *ud);
+        static void vlg_peer_param_clbk_ud(int pnum,
+                                           const char *param,
+                                           const char *value,
+                                           void *ud);
     public:
         static vlg::logger     *peer_log_;
 };

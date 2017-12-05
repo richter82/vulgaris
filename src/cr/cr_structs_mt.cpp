@@ -24,23 +24,23 @@
 
 namespace vlg {
 
-//-----------------------------
+
 // synch_hash_map
-//-----------------------------
+
 synch_hash_map::synch_hash_map(size_t elem_size, size_t key_size)
-    : elem_manager_(elem_size), key_manager_(key_size), impl_(NULL)
+    : elem_manager_(elem_size), key_manager_(key_size), impl_(nullptr)
 {}
 
 synch_hash_map::synch_hash_map(obj_mng &elem_manager, obj_mng &key_manager)
-    : elem_manager_(elem_manager), key_manager_(key_manager), impl_(NULL)
+    : elem_manager_(elem_manager), key_manager_(key_manager), impl_(nullptr)
 {}
 
 synch_hash_map::synch_hash_map(size_t elem_size, obj_mng &key_manager)
-    : elem_manager_(elem_size), key_manager_(key_manager), impl_(NULL)
+    : elem_manager_(elem_size), key_manager_(key_manager), impl_(nullptr)
 {}
 
 synch_hash_map::synch_hash_map(obj_mng &elem_manager, size_t key_size)
-    : elem_manager_(elem_manager), key_manager_(key_size), impl_(NULL)
+    : elem_manager_(elem_manager), key_manager_(key_size), impl_(nullptr)
 {}
 
 synch_hash_map::~synch_hash_map()
@@ -213,11 +213,11 @@ RetCode synch_hash_map::unlock() const
     return RetCode_OK;
 }
 
-//-----------------------------
+
 // blocking_queue
 blocking_queue::blocking_queue(size_t elemsize) :
     manager_(elemsize),
-    impl_(NULL),
+    impl_(nullptr),
     wt_prod_(0),
     wt_cons_(0),
     mon_()
@@ -225,7 +225,7 @@ blocking_queue::blocking_queue(size_t elemsize) :
 
 blocking_queue::blocking_queue(obj_mng &elem_manager) :
     manager_(elem_manager),
-    impl_(NULL),
+    impl_(nullptr),
     wt_prod_(0),
     wt_cons_(0),
     mon_()

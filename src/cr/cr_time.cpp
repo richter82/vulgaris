@@ -273,7 +273,7 @@ int gettimeofday(struct timeval *tv, struct timezone *tz)
 {
     static int tzflag = 0;
     FILETIME ft;
-    if(NULL != tv) {
+    if(nullptr != tv) {
         unsigned _int64 tmpres = 0;
         GetSystemTimeAsFileTime(&ft);
         tmpres |= ft.dwHighDateTime;
@@ -285,7 +285,7 @@ int gettimeofday(struct timeval *tv, struct timezone *tz)
         tv->tv_sec = (long)(tmpres / 1000000UL);
         tv->tv_usec = (long)(tmpres % 1000000UL);
     }
-    if(NULL != tz) {
+    if(nullptr != tz) {
         if(!tzflag) {
             _tzset();
             tzflag++;

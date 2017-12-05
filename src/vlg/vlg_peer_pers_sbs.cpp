@@ -27,14 +27,14 @@ namespace vlg {
 
 #define NOT_PERS_ENBL_PEER " peer is not persistence enabled."
 
-//-----------------------------
+
 // PERSISTENCE
-//-----------------------------
+
 
 struct SPC_REC {
     peer_impl *peer;
     PersistenceAlteringMode mode;
-    vlg::RetCode res;
+    RetCode res;
 };
 
 void peer_enum_em_classes_create_schema(const nentity_desc &nentity_desc,
@@ -42,12 +42,12 @@ void peer_enum_em_classes_create_schema(const nentity_desc &nentity_desc,
 {
     SPC_REC *pud = static_cast<SPC_REC *>(ud);
     if(nentity_desc.is_persistent()) {
-        persistence_driver_impl *driv = NULL;
-        if((driv = pud->peer->get_pers_mng().available_driver(
+        persistence_driver_impl *driv = nullptr;
+        if((driv = pud->peer->get_persistence_manager().available_driver(
                        nentity_desc.get_nclass_id()))) {
-            persistence_connection_impl *conn = NULL;
+            persistence_connection_impl *conn = nullptr;
             if((conn = driv->available_connection(nentity_desc.get_nclass_id()))) {
-                pud->res = conn->create_entity_schema(pud->mode, pud->peer->get_em(),
+                pud->res = conn->create_entity_schema(pud->mode, pud->peer->get_nem(),
                                                       nentity_desc);
             } else {
                 IFLOG2(pud->peer->logger(), wrn(TH_ID,
@@ -75,7 +75,7 @@ void peer_enum_em_classes_create_schema(const nentity_desc &nentity_desc,
     }
 }
 
-vlg::RetCode peer_impl::pers_schema_create(PersistenceAlteringMode mode)
+RetCode peer_impl::create_persistent_schema(PersistenceAlteringMode mode)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     if(!pers_enabled_) {
@@ -91,22 +91,22 @@ vlg::RetCode peer_impl::pers_schema_create(PersistenceAlteringMode mode)
     return ud.res;
 }
 
-vlg::RetCode peer_impl::class_pers_schema_create(PersistenceAlteringMode
-                                                 mode,
-                                                 unsigned int nclass_id)
+RetCode peer_impl::nclass_create_persistent_schema(PersistenceAlteringMode
+                                                   mode,
+                                                   unsigned int nclass_id)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(mode:%d, nclass_id:%d)", __func__, nclass_id))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
         return vlg::RetCode_KO;
     }
-    vlg::RetCode rcode = vlg::RetCode_OK;
-    const nentity_desc *class_desc = NULL;
+    RetCode rcode = vlg::RetCode_OK;
+    const nentity_desc *class_desc = nullptr;
     if(!(rcode = nem_.get_nentity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
-            persistence_driver_impl *driv = NULL;
+            persistence_driver_impl *driv = nullptr;
             if((driv = pers_mng_.available_driver(nclass_id))) {
-                persistence_connection_impl *conn = NULL;
+                persistence_connection_impl *conn = nullptr;
                 if((conn = driv->available_connection(nclass_id))) {
                     if((rcode = conn->create_entity_schema(mode, nem_, *class_desc))) {
                         IFLOG(err(TH_ID, LS_TRL "%s() - create-schema failed for nclass_id:%d [res:%d]",
@@ -136,24 +136,24 @@ vlg::RetCode peer_impl::class_pers_schema_create(PersistenceAlteringMode
     return rcode;
 }
 
-vlg::RetCode peer_impl::class_pers_load(unsigned short key,
-                                        unsigned int  &ts0_out,
-                                        unsigned int  &ts1_out,
-                                        nclass &in_out_obj)
+RetCode peer_impl::obj_load(unsigned short key,
+                            unsigned int  &ts0_out,
+                            unsigned int  &ts1_out,
+                            nclass &in_out_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%u)", __func__, key))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
         return vlg::RetCode_KO;
     }
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     unsigned int nclass_id = in_out_obj.get_nclass_id();
-    const nentity_desc *class_desc = NULL;
+    const nentity_desc *class_desc = nullptr;
     if(!(rcode = nem_.get_nentity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
-            persistence_driver_impl *driv = NULL;
+            persistence_driver_impl *driv = nullptr;
             if((driv = pers_mng_.available_driver(nclass_id))) {
-                persistence_connection_impl *conn = NULL;
+                persistence_connection_impl *conn = nullptr;
                 if((conn = driv->available_connection(nclass_id))) {
                     rcode = conn->load_entity(key, nem_, ts0_out, ts1_out, in_out_obj);
                 } else {
@@ -180,25 +180,25 @@ vlg::RetCode peer_impl::class_pers_load(unsigned short key,
     return rcode;
 }
 
-vlg::RetCode peer_impl::class_pers_save(const nclass &in_obj)
+RetCode peer_impl::obj_save(const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
         return vlg::RetCode_KO;
     }
-    vlg::RetCode rcode = vlg::RetCode_OK;
-    per_nclassid_helper_rec *sdr = NULL;
+    RetCode rcode = vlg::RetCode_OK;
+    per_nclassid_helper_rec *sdr = nullptr;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in_obj.get_nclass_id();
-    const nentity_desc *class_desc = NULL;
+    const nentity_desc *class_desc = nullptr;
     if(!(rcode = nem_.get_nentity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
-            persistence_driver_impl *driv = NULL;
+            persistence_driver_impl *driv = nullptr;
             if((driv = pers_mng_.available_driver(nclass_id))) {
-                persistence_connection_impl *conn = NULL;
+                persistence_connection_impl *conn = nullptr;
                 if((conn = driv->available_connection(nclass_id))) {
-                    if((rcode = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
+                    if((rcode = get_per_nclassid_helper_rec(in_obj.get_nclass_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_CLO "%s() - failed get per-nclass_id helper class [res:%d]",
                                   __func__, rcode))
                     } else {
@@ -229,26 +229,26 @@ vlg::RetCode peer_impl::class_pers_save(const nclass &in_obj)
     return rcode;
 }
 
-vlg::RetCode peer_impl::class_pers_update(unsigned short key,
-                                          const nclass &in_obj)
+RetCode peer_impl::obj_update(unsigned short key,
+                              const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%u)", __func__, key))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
         return vlg::RetCode_KO;
     }
-    vlg::RetCode rcode = vlg::RetCode_OK;
-    per_nclassid_helper_rec *sdr = NULL;
+    RetCode rcode = vlg::RetCode_OK;
+    per_nclassid_helper_rec *sdr = nullptr;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in_obj.get_nclass_id();
-    const nentity_desc *class_desc = NULL;
+    const nentity_desc *class_desc = nullptr;
     if(!(rcode = nem_.get_nentity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
-            persistence_driver_impl *driv = NULL;
+            persistence_driver_impl *driv = nullptr;
             if((driv = pers_mng_.available_driver(nclass_id))) {
-                persistence_connection_impl *conn = NULL;
+                persistence_connection_impl *conn = nullptr;
                 if((conn = driv->available_connection(nclass_id))) {
-                    if((rcode = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
+                    if((rcode = get_per_nclassid_helper_rec(in_obj.get_nclass_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_CLO
                                   "%s() - failed get per-nclass_id helper class [res:%d]",
                                   __func__, rcode))
@@ -280,26 +280,26 @@ vlg::RetCode peer_impl::class_pers_update(unsigned short key,
     return rcode;
 }
 
-vlg::RetCode peer_impl::class_pers_update_or_save(unsigned short key,
-                                                  const nclass &in_obj)
+RetCode peer_impl::obj_update_or_save(unsigned short key,
+                                      const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%u)", __func__, key))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
         return vlg::RetCode_KO;
     }
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     unsigned int ts0 = 0, ts1 = 0;
-    per_nclassid_helper_rec *sdr = NULL;
+    per_nclassid_helper_rec *sdr = nullptr;
     unsigned int nclass_id = in_obj.get_nclass_id();
-    const nentity_desc *class_desc = NULL;
+    const nentity_desc *class_desc = nullptr;
     if(!(rcode = nem_.get_nentity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
-            persistence_driver_impl *driv = NULL;
+            persistence_driver_impl *driv = nullptr;
             if((driv = pers_mng_.available_driver(nclass_id))) {
-                persistence_connection_impl *conn = NULL;
+                persistence_connection_impl *conn = nullptr;
                 if((conn = driv->available_connection(nclass_id))) {
-                    if((rcode = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
+                    if((rcode = get_per_nclassid_helper_rec(in_obj.get_nclass_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_TRL "%s() - failed get per-nclass_id helper class [res:%d]",
                                   __func__, rcode))
                     } else {
@@ -330,27 +330,27 @@ vlg::RetCode peer_impl::class_pers_update_or_save(unsigned short key,
     return rcode;
 }
 
-vlg::RetCode peer_impl::class_pers_remove(unsigned short key,
-                                          PersistenceDeletionMode mode,
-                                          const nclass &in_obj)
+RetCode peer_impl::obj_remove(unsigned short key,
+                              PersistenceDeletionMode mode,
+                              const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%u)", __func__, key))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
         return vlg::RetCode_KO;
     }
-    vlg::RetCode rcode = vlg::RetCode_OK;
-    per_nclassid_helper_rec *sdr = NULL;
+    RetCode rcode = vlg::RetCode_OK;
+    per_nclassid_helper_rec *sdr = nullptr;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in_obj.get_nclass_id();
-    const nentity_desc *class_desc = NULL;
+    const nentity_desc *class_desc = nullptr;
     if(!(rcode = nem_.get_nentity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
-            persistence_driver_impl *driv = NULL;
+            persistence_driver_impl *driv = nullptr;
             if((driv = pers_mng_.available_driver(nclass_id))) {
-                persistence_connection_impl *conn = NULL;
+                persistence_connection_impl *conn = nullptr;
                 if((conn = driv->available_connection(nclass_id))) {
-                    if((rcode = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
+                    if((rcode = get_per_nclassid_helper_rec(in_obj.get_nclass_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_TRL "%s() - failed get per-nclass_id helper class [res:%d]",
                                   __func__, rcode))
                     } else {
@@ -381,26 +381,26 @@ vlg::RetCode peer_impl::class_pers_remove(unsigned short key,
     return rcode;
 }
 
-//-----------------------------
-// DISTRIBUTION
-//-----------------------------
 
-vlg::RetCode peer_impl::class_distribute(SubscriptionEventType evt_type,
-                                         ProtocolCode proto_code,
-                                         Action act,
-                                         const nclass &obj)
+// DISTRIBUTION
+
+
+RetCode peer_impl::obj_distribute(SubscriptionEventType evt_type,
+                                  ProtocolCode proto_code,
+                                  Action act,
+                                  const nclass &obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode rcode = vlg::RetCode_OK;
-    per_nclassid_helper_rec *sdr = NULL;
+    RetCode rcode = vlg::RetCode_OK;
+    per_nclassid_helper_rec *sdr = nullptr;
     unsigned int ts0 = 0, ts1 = 0;
-    if((rcode = get_per_classid_helper_class(obj.get_nclass_id(), &sdr))) {
+    if((rcode = get_per_nclassid_helper_rec(obj.get_nclass_id(), &sdr))) {
         IFLOG(cri(TH_ID, LS_TRL "%s() - failed get per-nclass_id helper class [res:%d]",
                   __func__, rcode))
     } else {
         sdr->next_time_stamp(ts0, ts1);
         if(sdr->get_srv_connid_condesc_set().size()) {
-            subscription_event_impl *new_sbs_event = NULL;
+            subscription_event_impl *new_sbs_event = nullptr;
             if(!(rcode = build_sbs_event(sdr->next_sbs_evt_id(),
                                          evt_type,
                                          proto_code,
@@ -424,11 +424,11 @@ vlg::RetCode peer_impl::class_distribute(SubscriptionEventType evt_type,
     return rcode;
 }
 
-//-----------------------------
-// PERSISTENCE + DISTRIBUTION
-//-----------------------------
 
-vlg::RetCode peer_impl::class_pers_save_and_distribute(
+// PERSISTENCE + DISTRIBUTION
+
+
+RetCode peer_impl::obj_save_and_distribute(
     const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
@@ -436,18 +436,18 @@ vlg::RetCode peer_impl::class_pers_save_and_distribute(
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
         return vlg::RetCode_KO;
     }
-    vlg::RetCode rcode = vlg::RetCode_OK;
-    per_nclassid_helper_rec *sdr = NULL;
+    RetCode rcode = vlg::RetCode_OK;
+    per_nclassid_helper_rec *sdr = nullptr;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in_obj.get_nclass_id();
-    const nentity_desc *class_desc = NULL;
+    const nentity_desc *class_desc = nullptr;
     if(!(rcode = nem_.get_nentity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
-            persistence_driver_impl *driv = NULL;
+            persistence_driver_impl *driv = nullptr;
             if((driv = pers_mng_.available_driver(nclass_id))) {
-                persistence_connection_impl *conn = NULL;
+                persistence_connection_impl *conn = nullptr;
                 if((conn = driv->available_connection(nclass_id))) {
-                    if((rcode = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
+                    if((rcode = get_per_nclassid_helper_rec(in_obj.get_nclass_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_CLO "%s() - failed get per-nclass_id helper class [res:%d]",
                                   __func__, rcode))
                     } else {
@@ -478,7 +478,7 @@ vlg::RetCode peer_impl::class_pers_save_and_distribute(
     if(!rcode) {
         if(sdr->get_srv_connid_condesc_set().size()) {
             unsigned int ts1 = 0;
-            subscription_event_impl *new_sbs_event = NULL;
+            subscription_event_impl *new_sbs_event = nullptr;
             RETURN_IF_NOT_OK(build_sbs_event(sdr->next_sbs_evt_id(),
                                              SubscriptionEventType_LIVE,
                                              ProtocolCode_SUCCESS,
@@ -496,26 +496,26 @@ vlg::RetCode peer_impl::class_pers_save_and_distribute(
     return rcode;
 }
 
-vlg::RetCode peer_impl::class_pers_update_and_distribute(unsigned short key,
-                                                         const nclass &in_obj)
+RetCode peer_impl::obj_update_and_distribute(unsigned short key,
+                                             const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%u)", __func__, key))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
         return vlg::RetCode_KO;
     }
-    vlg::RetCode rcode = vlg::RetCode_OK;
-    per_nclassid_helper_rec *sdr = NULL;
+    RetCode rcode = vlg::RetCode_OK;
+    per_nclassid_helper_rec *sdr = nullptr;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in_obj.get_nclass_id();
-    const nentity_desc *class_desc = NULL;
+    const nentity_desc *class_desc = nullptr;
     if(!(rcode = nem_.get_nentity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
-            persistence_driver_impl *driv = NULL;
+            persistence_driver_impl *driv = nullptr;
             if((driv = pers_mng_.available_driver(nclass_id))) {
-                persistence_connection_impl *conn = NULL;
+                persistence_connection_impl *conn = nullptr;
                 if((conn = driv->available_connection(nclass_id))) {
-                    if((rcode = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
+                    if((rcode = get_per_nclassid_helper_rec(in_obj.get_nclass_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_CLO "%s() - failed get per-nclass_id helper class [res:%d]",
                                   __func__, rcode))
                     } else {
@@ -545,7 +545,7 @@ vlg::RetCode peer_impl::class_pers_update_and_distribute(unsigned short key,
     //**** SBS MNG BG
     if(!rcode) {
         if(sdr->get_srv_connid_condesc_set().size()) {
-            subscription_event_impl *new_sbs_event = NULL;
+            subscription_event_impl *new_sbs_event = nullptr;
             RETURN_IF_NOT_OK(build_sbs_event(sdr->next_sbs_evt_id(),
                                              SubscriptionEventType_LIVE,
                                              ProtocolCode_SUCCESS,
@@ -563,7 +563,7 @@ vlg::RetCode peer_impl::class_pers_update_and_distribute(unsigned short key,
     return rcode;
 }
 
-vlg::RetCode peer_impl::class_pers_update_or_save_and_distribute(
+RetCode peer_impl::obj_update_or_save_and_distribute(
     unsigned short key,
     const nclass &in_obj)
 {
@@ -572,18 +572,18 @@ vlg::RetCode peer_impl::class_pers_update_or_save_and_distribute(
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
         return vlg::RetCode_KO;
     }
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     unsigned int ts0 = 0, ts1 = 0;
-    per_nclassid_helper_rec *sdr = NULL;
+    per_nclassid_helper_rec *sdr = nullptr;
     unsigned int nclass_id = in_obj.get_nclass_id();
-    const nentity_desc *class_desc = NULL;
+    const nentity_desc *class_desc = nullptr;
     if(!(rcode = nem_.get_nentity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
-            persistence_driver_impl *driv = NULL;
+            persistence_driver_impl *driv = nullptr;
             if((driv = pers_mng_.available_driver(nclass_id))) {
-                persistence_connection_impl *conn = NULL;
+                persistence_connection_impl *conn = nullptr;
                 if((conn = driv->available_connection(nclass_id))) {
-                    if((rcode = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
+                    if((rcode = get_per_nclassid_helper_rec(in_obj.get_nclass_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_TRL "%s() - failed get per-nclass_id helper class [res:%d]",
                                   __func__, rcode))
                     } else {
@@ -613,7 +613,7 @@ vlg::RetCode peer_impl::class_pers_update_or_save_and_distribute(
     //**** SBS MNG BG
     if(!rcode) {
         if(sdr->get_srv_connid_condesc_set().size()) {
-            subscription_event_impl *new_sbs_event = NULL;
+            subscription_event_impl *new_sbs_event = nullptr;
             RETURN_IF_NOT_OK(build_sbs_event(sdr->next_sbs_evt_id(),
                                              SubscriptionEventType_LIVE,
                                              ProtocolCode_SUCCESS,
@@ -631,27 +631,27 @@ vlg::RetCode peer_impl::class_pers_update_or_save_and_distribute(
     return rcode;
 }
 
-vlg::RetCode peer_impl::class_pers_remove_and_distribute(unsigned short key,
-                                                         PersistenceDeletionMode mode,
-                                                         const nclass &in_obj)
+RetCode peer_impl::obj_remove_and_distribute(unsigned short key,
+                                             PersistenceDeletionMode mode,
+                                             const nclass &in_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(key:%u)", __func__, key))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO "%s() -" NOT_PERS_ENBL_PEER, __func__))
         return vlg::RetCode_KO;
     }
-    vlg::RetCode rcode = vlg::RetCode_OK;
-    per_nclassid_helper_rec *sdr = NULL;
+    RetCode rcode = vlg::RetCode_OK;
+    per_nclassid_helper_rec *sdr = nullptr;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in_obj.get_nclass_id();
-    const nentity_desc *class_desc = NULL;
+    const nentity_desc *class_desc = nullptr;
     if(!(rcode = nem_.get_nentity_descriptor(nclass_id, &class_desc))) {
         if(class_desc->is_persistent()) {
-            persistence_driver_impl *driv = NULL;
+            persistence_driver_impl *driv = nullptr;
             if((driv = pers_mng_.available_driver(nclass_id))) {
-                persistence_connection_impl *conn = NULL;
+                persistence_connection_impl *conn = nullptr;
                 if((conn = driv->available_connection(nclass_id))) {
-                    if((rcode = get_per_classid_helper_class(in_obj.get_nclass_id(), &sdr))) {
+                    if((rcode = get_per_nclassid_helper_rec(in_obj.get_nclass_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_TRL "%s() - failed get per-nclass_id helper class [res:%d]",
                                   __func__, rcode))
                     } else {
@@ -681,7 +681,7 @@ vlg::RetCode peer_impl::class_pers_remove_and_distribute(unsigned short key,
     //**** SBS MNG BG
     if(!rcode) {
         if(sdr->get_srv_connid_condesc_set().size()) {
-            subscription_event_impl *new_sbs_event = NULL;
+            subscription_event_impl *new_sbs_event = nullptr;
             RETURN_IF_NOT_OK(build_sbs_event(sdr->next_sbs_evt_id(),
                                              SubscriptionEventType_LIVE,
                                              ProtocolCode_SUCCESS,
