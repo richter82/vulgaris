@@ -6,6 +6,23 @@
 	objectVersion = 46;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		E357C6921FCDB3C2009CD894 /* vlg_selector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C6841FCDB3C1009CD894 /* vlg_selector.cpp */; };
+		E357C6931FCDB3C2009CD894 /* vlg_acceptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C6851FCDB3C1009CD894 /* vlg_acceptor.cpp */; };
+		E357C6941FCDB3C2009CD894 /* vlg_connection_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C6861FCDB3C1009CD894 /* vlg_connection_impl.cpp */; };
+		E357C6951FCDB3C2009CD894 /* vlg_pers_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C6871FCDB3C1009CD894 /* vlg_pers_impl.cpp */; };
+		E357C6961FCDB3C2009CD894 /* vlg_connection_proto.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C6881FCDB3C1009CD894 /* vlg_connection_proto.cpp */; };
+		E357C6971FCDB3C2009CD894 /* vlg_peer_automa.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C6891FCDB3C1009CD894 /* vlg_peer_automa.cpp */; };
+		E357C6981FCDB3C2009CD894 /* vlg_transaction_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C68A1FCDB3C1009CD894 /* vlg_transaction_impl.cpp */; };
+		E357C6991FCDB3C2009CD894 /* vlg_model_utl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C68B1FCDB3C1009CD894 /* vlg_model_utl.cpp */; };
+		E357C69A1FCDB3C2009CD894 /* vlg_model.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C68C1FCDB3C1009CD894 /* vlg_model.cpp */; };
+		E357C69B1FCDB3C2009CD894 /* vlg_peer_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C68D1FCDB3C1009CD894 /* vlg_peer_impl.cpp */; };
+		E357C69C1FCDB3C2009CD894 /* vlg_subscription_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C68E1FCDB3C1009CD894 /* vlg_subscription_impl.cpp */; };
+		E357C69D1FCDB3C2009CD894 /* vlg_pers_mng.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C68F1FCDB3C1009CD894 /* vlg_pers_mng.cpp */; };
+		E357C69E1FCDB3C2009CD894 /* vlg_restore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C6901FCDB3C1009CD894 /* vlg_restore.cpp */; };
+		E357C69F1FCDB3C2009CD894 /* vlg_peer_pers_sbs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C6911FCDB3C2009CD894 /* vlg_peer_pers_sbs.cpp */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXCopyFilesBuildPhase section */
 		E357C6471FC819A6009CD894 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -20,6 +37,20 @@
 
 /* Begin PBXFileReference section */
 		E357C6491FC819A6009CD894 /* libvlg.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libvlg.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		E357C6841FCDB3C1009CD894 /* vlg_selector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_selector.cpp; path = ../../src/vlg/vlg_selector.cpp; sourceTree = "<group>"; };
+		E357C6851FCDB3C1009CD894 /* vlg_acceptor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_acceptor.cpp; path = ../../src/vlg/vlg_acceptor.cpp; sourceTree = "<group>"; };
+		E357C6861FCDB3C1009CD894 /* vlg_connection_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_connection_impl.cpp; path = ../../src/vlg/vlg_connection_impl.cpp; sourceTree = "<group>"; };
+		E357C6871FCDB3C1009CD894 /* vlg_pers_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_pers_impl.cpp; path = ../../src/vlg/vlg_pers_impl.cpp; sourceTree = "<group>"; };
+		E357C6881FCDB3C1009CD894 /* vlg_connection_proto.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_connection_proto.cpp; path = ../../src/vlg/vlg_connection_proto.cpp; sourceTree = "<group>"; };
+		E357C6891FCDB3C1009CD894 /* vlg_peer_automa.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_peer_automa.cpp; path = ../../src/vlg/vlg_peer_automa.cpp; sourceTree = "<group>"; };
+		E357C68A1FCDB3C1009CD894 /* vlg_transaction_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_transaction_impl.cpp; path = ../../src/vlg/vlg_transaction_impl.cpp; sourceTree = "<group>"; };
+		E357C68B1FCDB3C1009CD894 /* vlg_model_utl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_model_utl.cpp; path = ../../src/vlg/vlg_model_utl.cpp; sourceTree = "<group>"; };
+		E357C68C1FCDB3C1009CD894 /* vlg_model.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_model.cpp; path = ../../src/vlg/vlg_model.cpp; sourceTree = "<group>"; };
+		E357C68D1FCDB3C1009CD894 /* vlg_peer_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_peer_impl.cpp; path = ../../src/vlg/vlg_peer_impl.cpp; sourceTree = "<group>"; };
+		E357C68E1FCDB3C1009CD894 /* vlg_subscription_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_subscription_impl.cpp; path = ../../src/vlg/vlg_subscription_impl.cpp; sourceTree = "<group>"; };
+		E357C68F1FCDB3C1009CD894 /* vlg_pers_mng.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_pers_mng.cpp; path = ../../src/vlg/vlg_pers_mng.cpp; sourceTree = "<group>"; };
+		E357C6901FCDB3C1009CD894 /* vlg_restore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_restore.cpp; path = ../../src/vlg/vlg_restore.cpp; sourceTree = "<group>"; };
+		E357C6911FCDB3C2009CD894 /* vlg_peer_pers_sbs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_peer_pers_sbs.cpp; path = ../../src/vlg/vlg_peer_pers_sbs.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,7 +68,6 @@
 			isa = PBXGroup;
 			children = (
 				E38785781A8523D3005A753E /* src */,
-				E38785771A8523C5005A753E /* hdr */,
 				E387856A1A852398005A753E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -50,16 +80,23 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		E38785771A8523C5005A753E /* hdr */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = hdr;
-			sourceTree = "<group>";
-		};
 		E38785781A8523D3005A753E /* src */ = {
 			isa = PBXGroup;
 			children = (
+				E357C6851FCDB3C1009CD894 /* vlg_acceptor.cpp */,
+				E357C6861FCDB3C1009CD894 /* vlg_connection_impl.cpp */,
+				E357C6881FCDB3C1009CD894 /* vlg_connection_proto.cpp */,
+				E357C68B1FCDB3C1009CD894 /* vlg_model_utl.cpp */,
+				E357C68C1FCDB3C1009CD894 /* vlg_model.cpp */,
+				E357C6891FCDB3C1009CD894 /* vlg_peer_automa.cpp */,
+				E357C68D1FCDB3C1009CD894 /* vlg_peer_impl.cpp */,
+				E357C6911FCDB3C2009CD894 /* vlg_peer_pers_sbs.cpp */,
+				E357C6871FCDB3C1009CD894 /* vlg_pers_impl.cpp */,
+				E357C68F1FCDB3C1009CD894 /* vlg_pers_mng.cpp */,
+				E357C6901FCDB3C1009CD894 /* vlg_restore.cpp */,
+				E357C6841FCDB3C1009CD894 /* vlg_selector.cpp */,
+				E357C68E1FCDB3C1009CD894 /* vlg_subscription_impl.cpp */,
+				E357C68A1FCDB3C1009CD894 /* vlg_transaction_impl.cpp */,
 			);
 			name = src;
 			sourceTree = "<group>";
@@ -122,6 +159,20 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E357C6941FCDB3C2009CD894 /* vlg_connection_impl.cpp in Sources */,
+				E357C6951FCDB3C2009CD894 /* vlg_pers_impl.cpp in Sources */,
+				E357C6931FCDB3C2009CD894 /* vlg_acceptor.cpp in Sources */,
+				E357C69B1FCDB3C2009CD894 /* vlg_peer_impl.cpp in Sources */,
+				E357C6921FCDB3C2009CD894 /* vlg_selector.cpp in Sources */,
+				E357C69C1FCDB3C2009CD894 /* vlg_subscription_impl.cpp in Sources */,
+				E357C6971FCDB3C2009CD894 /* vlg_peer_automa.cpp in Sources */,
+				E357C6961FCDB3C2009CD894 /* vlg_connection_proto.cpp in Sources */,
+				E357C69D1FCDB3C2009CD894 /* vlg_pers_mng.cpp in Sources */,
+				E357C69E1FCDB3C2009CD894 /* vlg_restore.cpp in Sources */,
+				E357C6981FCDB3C2009CD894 /* vlg_transaction_impl.cpp in Sources */,
+				E357C6991FCDB3C2009CD894 /* vlg_model_utl.cpp in Sources */,
+				E357C69F1FCDB3C2009CD894 /* vlg_peer_pers_sbs.cpp in Sources */,
+				E357C69A1FCDB3C2009CD894 /* vlg_model.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
