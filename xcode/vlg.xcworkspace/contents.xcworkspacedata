@@ -2,21 +2,24 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:test_smplmdl/test_smplmdl.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:drvsqlite/drvsqlite.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:apicpp/apicpp.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:apiobjc/apiobjc.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:apic/apic.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:cr/cr.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:vlg/vlg.xcodeproj">
-   </FileRef>
-   <FileRef
-      location = "group:blz_os_support/blz_os_support.xcodeproj">
-   </FileRef>
-   <FileRef
-      location = "group:blz_cpp_interface/blz_cpp_interface.xcodeproj">
-   </FileRef>
-   <FileRef
-      location = "group:blz_c_interface/blz_c_interface.xcodeproj">
-   </FileRef>
-   <FileRef
-      location = "group:blzdrisqlite/blzdrisqlite.xcodeproj">
    </FileRef>
 </Workspace>
