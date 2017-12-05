@@ -30,7 +30,7 @@ namespace vlg {
 
 #ifdef WIN32
 static bool init_WSA = false;
-vlg::RetCode WSA_init(vlg::logger *log_)
+RetCode WSA_init(vlg::logger *log_)
 {
     if(init_WSA) {
         return vlg::RetCode_OK;
@@ -46,7 +46,7 @@ vlg::RetCode WSA_init(vlg::logger *log_)
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode WSA_destroy(vlg::logger *log_)
+RetCode WSA_destroy(vlg::logger *log_)
 {
     if(!init_WSA) {
         return vlg::RetCode_OK;
@@ -62,7 +62,7 @@ vlg::RetCode WSA_destroy(vlg::logger *log_)
  VLG_ACCEPTOR
 ******************************************/
 
-vlg::logger *acceptor::log_ = NULL;
+vlg::logger *acceptor::log_ = nullptr;
 
 acceptor::acceptor(peer_impl &peer) :
     peer_(peer),
@@ -96,12 +96,12 @@ peer_impl &acceptor::peer() {
     return peer_;
 }
 
-vlg::RetCode acceptor::set_sockaddr_in(sockaddr_in &serv_sockaddr_in) {
+RetCode acceptor::set_sockaddr_in(sockaddr_in &serv_sockaddr_in) {
     serv_sockaddr_in_ = serv_sockaddr_in;
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode acceptor::create_server_socket(SOCKET &serv_socket) {
+RetCode acceptor::create_server_socket(SOCKET &serv_socket) {
     IFLOG(trc(TH_ID, LS_OPN "%s(srv_interf:%s, srv_port:%d)", __func__,
               inet_ntoa(serv_sockaddr_in_.sin_addr),
               ntohs(serv_sockaddr_in_.sin_port)))
@@ -144,8 +144,8 @@ vlg::RetCode acceptor::create_server_socket(SOCKET &serv_socket) {
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode acceptor::accept(unsigned int new_connid,
-                              connection_impl **new_conn) {
+RetCode acceptor::accept(unsigned int new_connid,
+                         connection_impl **new_conn) {
     IFLOG(trc(TH_ID, LS_OPN "%s(newconnid:%d, new_conn:%p)", __func__, new_connid,
               new_conn))
     SOCKET socket = INVALID_SOCKET;
@@ -175,16 +175,16 @@ vlg::RetCode acceptor::accept(unsigned int new_connid,
                   ntohs(addr.sin_port),
                   new_connid))
     }
-    peer_.new_connection(new_conn, peer_.conn_factory(),
+    peer_.new_connection(new_conn, peer_.get_connection_impl_factory(),
                          ConnectionType_INGOING, new_connid,
-                         peer_.conn_factory_ud());
+                         peer_.get_connection_impl_factory_ud());
     //server side adoption for autorelease.
     /************************
      RETAIN_ID: CONN_SRV_01
     ************************/
     vlg::collector &c = (*new_conn)->get_collector();
     c.retain(*new_conn);
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     if((rcode = (*new_conn)->set_connection_established(socket))) {
         IFLOG(err(TH_ID, LS_CLO
                   "%s(new_conn:%p) - setting connection established fail with res:%d", __func__,

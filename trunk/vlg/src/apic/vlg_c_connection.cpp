@@ -35,12 +35,12 @@ class c_connection : public connection {
 
     public:
         c_connection() :
-            och_wr_(NULL),
-            odh_wr_(NULL),
-            csc_wr_(NULL),
-            och_ud_(NULL),
-            odh_ud_(NULL),
-            csc_ud_(NULL) {
+            och_wr_(nullptr),
+            odh_wr_(nullptr),
+            csc_wr_(nullptr),
+            och_ud_(nullptr),
+            odh_ud_(nullptr),
+            csc_ud_(nullptr) {
         }
 
         // CONNECTIVITY APPLICATIVE HANDLERS
@@ -134,7 +134,7 @@ extern "C" {
 
     peer_wr connection_get_peer(connection_wr conn)
     {
-        return static_cast<connection *>(conn)->get_peer();
+        return &(static_cast<connection *>(conn)->get_peer());
     }
 
     ConnectionType connection_get_connection_type(connection_wr conn)

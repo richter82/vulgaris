@@ -30,7 +30,7 @@ class sbs_event_inst_collector : public vlg::collector {
         sbs_event_inst_collector() : vlg::collector("subscription_event_impl") {}
 };
 
-vlg::collector *sbs_event_impl_inst_coll_ = NULL;
+vlg::collector *sbs_event_impl_inst_coll_ = nullptr;
 vlg::collector &sbs_event_impl_inst_collector()
 {
     if(sbs_event_impl_inst_coll_) {
@@ -49,8 +49,8 @@ vlg::collector &subscription_event_impl::get_collector()
 
 // VLG_SBS_EVENT CTORS - INIT - DESTROY
 
-vlg::RetCode subscription_event_impl::new_instance(subscription_event_impl
-                                                   **ptr)
+RetCode subscription_event_impl::new_instance(subscription_event_impl
+                                              **ptr)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, ptr))
     if(!((*ptr) = new subscription_event_impl())) {
@@ -62,7 +62,7 @@ vlg::RetCode subscription_event_impl::new_instance(subscription_event_impl
     }
 }
 
-nclass_logger *subscription_event_impl::log_ = NULL;
+nclass_logger *subscription_event_impl::log_ = nullptr;
 
 subscription_event_impl::subscription_event_impl() :
     sbs_sbsid_(0),
@@ -72,7 +72,7 @@ subscription_event_impl::subscription_event_impl() :
     sbs_tmstp0_(0),
     sbs_tmstp1_(0),
     sbs_act_(Action_NONE),
-    sbs_data_(NULL)
+    sbs_data_(nullptr)
 {
     log_ = get_nclass_logger("subscription_event_impl");
     IFLOG(trc(TH_ID, LS_CTR "%s(ptr:%p)", __func__, this))
@@ -175,7 +175,7 @@ void subscription_event_impl::set_obj(const nclass *obj)
         ************************/
         vlg::collector &c = sbs_data_->get_collector();
         c.release(sbs_data_);
-        sbs_data_ = NULL;
+        sbs_data_ = nullptr;
     }
     if(obj) {
         if((sbs_data_ = obj->clone())) {
@@ -196,7 +196,7 @@ void subscription_event_impl::set_obj_on_event_receive(nclass *val)
         ************************/
         vlg::collector &c = sbs_data_->get_collector();
         c.release(sbs_data_);
-        sbs_data_ = NULL;
+        sbs_data_ = nullptr;
     }
     if((sbs_data_ = val)) {
         vlg::collector &c = sbs_data_->get_collector();
@@ -240,7 +240,7 @@ void sbs_event_wrapper::set_evt(subscription_event_impl *evt)
         RELEASE_ID: SEW_SBE_01
         ************************/
         c.release(evt_);
-        evt_ = NULL;
+        evt_ = nullptr;
     }
     if((evt_ = evt)) {
         vlg::collector &c = evt_->get_collector();
@@ -266,7 +266,7 @@ class subscription_inst_collector : public vlg::collector {
 
 };
 
-vlg::collector *sbs_inst_coll_ = NULL;
+vlg::collector *sbs_inst_coll_ = nullptr;
 vlg::collector &sbs_inst_collector()
 {
     if(sbs_inst_coll_) {
@@ -283,17 +283,18 @@ vlg::collector &subscription_impl::get_collector()
     return sbs_inst_collector();
 }
 
-nclass_logger *subscription_impl::log_ = NULL;
+nclass_logger *subscription_impl::log_ = nullptr;
 
-subscription_impl::subscription_impl(connection_impl &conn) :
+subscription_impl::subscription_impl(subscription &publ,
+                                     connection_impl &conn) :
     peer_(conn.peer()),
     conn_(conn),
-    nem_(conn.peer().get_em()),
+    nem_(conn.peer().get_nem()),
     sbsid_(0),
     reqid_(0),
     status_(SubscriptionStatus_EARLY),
-    ssc_hndl_(NULL),
-    ssc_hndl_ud_(NULL),
+    ssc_hndl_(nullptr),
+    ssc_hndl_ud_(nullptr),
     start_stop_evt_occur_(false),
     sbstyp_(SubscriptionType_UNDEFINED),
     sbsmod_(SubscriptionMode_UNDEFINED),
@@ -305,9 +306,9 @@ subscription_impl::subscription_impl(connection_impl &conn) :
     open_tmstp1_(0),
     sbresl_(SubscriptionResponse_UNDEFINED),
     last_vlgcod_(ProtocolCode_SUCCESS),
-    sen_hndl_(NULL),
-    sen_hndl_ud_(NULL),
-    cli_evt_sts_(VLG_SBS_Evt_Undef),
+    sen_hndl_(nullptr),
+    sen_hndl_ud_(nullptr),
+    cli_evt_sts_(SBSEvt_Undef),
     cli_evt_q_(vlg::sngl_ptr_obj_mng()),
     srv_sbs_last_evt_ack_(true), //at the beginning we consider true this.
     srv_sbs_to_ack_evtid_(0),
@@ -315,8 +316,9 @@ subscription_impl::subscription_impl(connection_impl &conn) :
     srv_sbs_evt_glob_q_(vlg::sngl_ptr_obj_mng()),
     srv_sbs_classkey_evt_q_hm_(vlg::sngl_ptr_obj_mng(),
                                vlg::sngl_cstr_obj_mng()),
-    initial_query_(NULL),
-    initial_query_ended_(true)
+    initial_query_(nullptr),
+    initial_query_ended_(true),
+    publ_(publ)
 {
     log_ = get_nclass_logger("subscription_impl");
     IFLOG(trc(TH_ID, LS_CTR "%s(ptr:%p)", __func__, this))
@@ -336,11 +338,11 @@ subscription_impl::~subscription_impl()
     IFLOG(trc(TH_ID, LS_DTR "%s(ptr:%p)", __func__, this))
 }
 
-vlg::RetCode subscription_impl::init()
+RetCode subscription_impl::init()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     RETURN_IF_NOT_OK(cli_evt_q_.init(1))
-    CHK_PTH_ERR_2(pthread_rwlock_init, &lock_srv_sbs_rep_asynch_, NULL)
+    CHK_PTH_ERR_2(pthread_rwlock_init, &lock_srv_sbs_rep_asynch_, nullptr)
     RETURN_IF_NOT_OK(srv_sbs_evt_glob_q_.init())
     RETURN_IF_NOT_OK(srv_sbs_classkey_evt_q_hm_.init(HM_SIZE_SMALL))
     set_status(SubscriptionStatus_INITIALIZED);
@@ -354,7 +356,7 @@ void subscription_impl::release_initial_query()
         if(initial_query_) {
             initial_query_->release();
         }
-        initial_query_ = NULL;
+        initial_query_ = nullptr;
         initial_query_ended_ = true;
     }
 }
@@ -484,15 +486,15 @@ void subscription_impl::set_open_tmstp1(unsigned int val)
     open_tmstp1_ = val;
 }
 
-void subscription_impl::set_subscription_status_change_handler(
-    subscription_status_change_hndlr hndlr, void *ud)
+void subscription_impl::set_status_change_handler(
+    status_change hndlr, void *ud)
 {
     ssc_hndl_ = hndlr;
     ssc_hndl_ud_ = ud;
 }
 
-void subscription_impl::set_subscription_event_notify_handler(
-    subscription_evt_notify_hndlr hndlr, void *ud)
+void subscription_impl::set_event_notify_handler(
+    event_notify hndlr, void *ud)
 {
     sen_hndl_ = hndlr;
     sen_hndl_ud_ = ud;
@@ -510,7 +512,7 @@ void subscription_impl::set_initial_query_ended(bool val)
 
 // VLG_SUBSCRIPTION STATUS
 
-vlg::RetCode subscription_impl::set_req_sent()
+RetCode subscription_impl::set_req_sent()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     IFLOG(inf(TH_ID,
@@ -530,7 +532,7 @@ vlg::RetCode subscription_impl::set_req_sent()
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode subscription_impl::set_started()
+RetCode subscription_impl::set_started()
 {
     IFLOG(inf(TH_ID, LS_SBS"[CONNID:%010u-SBSID:%010u][STARTED]", conn_.connid(),
               sbsid_))
@@ -539,7 +541,7 @@ vlg::RetCode subscription_impl::set_started()
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode subscription_impl::set_stopped()
+RetCode subscription_impl::set_stopped()
 {
     IFLOG(inf(TH_ID, LS_SBS"[CONNID:%010u-SBSID:%010u][STOPPED]", conn_.connid(),
               sbsid_))
@@ -548,7 +550,7 @@ vlg::RetCode subscription_impl::set_stopped()
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode subscription_impl::set_released()
+RetCode subscription_impl::set_released()
 {
     IFLOG(dbg(TH_ID, LS_SBS"[CONNID:%010u-SBSID:%010u][RELEASED]", conn_.connid(),
               sbsid_))
@@ -556,7 +558,7 @@ vlg::RetCode subscription_impl::set_released()
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode subscription_impl::set_error()
+RetCode subscription_impl::set_error()
 {
     IFLOG(err(TH_ID, LS_SBS"[CONNID:%010u-SBSID:%010u][ERROR]", conn_.connid(),
               sbsid_))
@@ -565,7 +567,7 @@ vlg::RetCode subscription_impl::set_error()
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode subscription_impl::set_status(SubscriptionStatus status)
+RetCode subscription_impl::set_status(SubscriptionStatus status)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, status:%d)", __func__, this, status))
     CHK_MON_ERR_0(lock)
@@ -579,7 +581,7 @@ vlg::RetCode subscription_impl::set_status(SubscriptionStatus status)
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode subscription_impl::await_for_status_reached_or_outdated(
+RetCode subscription_impl::await_for_status_reached_or_outdated(
     SubscriptionStatus test,
     SubscriptionStatus &current,
     time_t sec,
@@ -592,7 +594,7 @@ vlg::RetCode subscription_impl::await_for_status_reached_or_outdated(
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_BADSTTS;
     }
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     while(status_ < test) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
@@ -611,7 +613,7 @@ vlg::RetCode subscription_impl::await_for_status_reached_or_outdated(
     return rcode;
 }
 
-vlg::RetCode subscription_impl::await_for_start_result(
+RetCode subscription_impl::await_for_start_result(
     SubscriptionResponse
     &sbs_start_result,
     ProtocolCode &sbs_start_protocode,
@@ -625,7 +627,7 @@ vlg::RetCode subscription_impl::await_for_start_result(
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_BADSTTS;
     }
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     while(!start_stop_evt_occur_) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
@@ -650,11 +652,11 @@ vlg::RetCode subscription_impl::await_for_start_result(
     return rcode;
 }
 
-vlg::RetCode subscription_impl::await_for_stop_result(SubscriptionResponse
-                                                      &sbs_stop_result,
-                                                      ProtocolCode &sbs_stop_protocode,
-                                                      time_t sec,
-                                                      long nsec)
+RetCode subscription_impl::await_for_stop_result(SubscriptionResponse
+                                                 &sbs_stop_result,
+                                                 ProtocolCode &sbs_stop_protocode,
+                                                 time_t sec,
+                                                 long nsec)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     CHK_MON_ERR_0(lock)
@@ -663,7 +665,7 @@ vlg::RetCode subscription_impl::await_for_stop_result(SubscriptionResponse
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_BADSTTS;
     }
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     while(!start_stop_evt_occur_) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
@@ -688,7 +690,7 @@ vlg::RetCode subscription_impl::await_for_stop_result(SubscriptionResponse
     return rcode;
 }
 
-vlg::RetCode subscription_impl::notify_for_start_stop_result()
+RetCode subscription_impl::notify_for_start_stop_result()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     mon_.lock();
@@ -701,7 +703,7 @@ vlg::RetCode subscription_impl::notify_for_start_stop_result()
 
 // VLG_SUBSCRIPTION ACTIONS
 
-vlg::RetCode subscription_impl::start()
+RetCode subscription_impl::start()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ != SubscriptionStatus_INITIALIZED &&
@@ -716,7 +718,7 @@ vlg::RetCode subscription_impl::start()
     vlg::collector &c = get_collector();
     c.retain(this);
 
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     reqid_ = conn_.next_reqid();
     vlg::synch_hash_map &reqid_sbs_map = conn_.reqid_sbs_map();
     subscription_impl *self = this;
@@ -732,14 +734,14 @@ vlg::RetCode subscription_impl::start()
     return rcode;
 }
 
-vlg::RetCode subscription_impl::start(SubscriptionType sbscr_type,
-                                      SubscriptionMode sbscr_mode,
-                                      SubscriptionFlowType sbscr_flow_type,
-                                      SubscriptionDownloadType  sbscr_dwnld_type,
-                                      Encode sbscr_class_encode,
-                                      unsigned int nclass_id,
-                                      unsigned int start_timestamp_0,
-                                      unsigned int start_timestamp_1)
+RetCode subscription_impl::start(SubscriptionType sbscr_type,
+                                 SubscriptionMode sbscr_mode,
+                                 SubscriptionFlowType sbscr_flow_type,
+                                 SubscriptionDownloadType  sbscr_dwnld_type,
+                                 Encode sbscr_class_encode,
+                                 unsigned int nclass_id,
+                                 unsigned int start_timestamp_0,
+                                 unsigned int start_timestamp_1)
 {
     IFLOG(trc(TH_ID, LS_OPN
               "%s(ptr:%p, sbscr_type:%d, sbscr_mode:%d, sbscr_flow_type:%d, sbscr_dwnld_type:%d, sbscr_class_encode:%d, nclass_id:%u, ts0:%u, ts1:%u)",
@@ -753,7 +755,7 @@ vlg::RetCode subscription_impl::start(SubscriptionType sbscr_type,
               nclass_id,
               start_timestamp_0,
               start_timestamp_1))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     if(status_ != SubscriptionStatus_INITIALIZED &&
             status_ != SubscriptionStatus_STOPPED) {
         IFLOG(err(TH_ID, LS_CLO "%s() - [status:%d]", __func__, status_))
@@ -772,19 +774,19 @@ vlg::RetCode subscription_impl::start(SubscriptionType sbscr_type,
     return rcode;
 }
 
-vlg::RetCode subscription_impl::stop()
+RetCode subscription_impl::stop()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ != SubscriptionStatus_STARTED) {
         IFLOG(err(TH_ID, LS_CLO "%s() - [status:%d]", __func__, status_))
         return vlg::RetCode_BADSTTS;
     }
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     if(!initial_query_ended_) {
         if(initial_query_) {
             initial_query_->release();
         }
-        initial_query_ = NULL;
+        initial_query_ = nullptr;
         initial_query_ended_ = true;
     }
     start_stop_evt_occur_ = false;
@@ -805,10 +807,10 @@ vlg::RetCode subscription_impl::stop()
 
 // VLG_SUBSCRIPTION SENDING METHS
 
-vlg::RetCode subscription_impl::send_start_request()
+RetCode subscription_impl::send_start_request()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     set_req_sent();
     start_stop_evt_occur_ = false;
     DECLINITH_GBB(gbb, VLG_BUFF_DEF_SZ)
@@ -834,10 +836,10 @@ vlg::RetCode subscription_impl::send_start_request()
     return rcode;
 }
 
-vlg::RetCode subscription_impl::send_start_response()
+RetCode subscription_impl::send_start_response()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     DECLINITH_GBB(gbb, VLG_BUFF_DEF_SZ)
     build_PKT_SBSRES(sbresl_,
                      last_vlgcod_,
@@ -856,11 +858,11 @@ vlg::RetCode subscription_impl::send_start_response()
     return rcode;
 }
 
-vlg::RetCode subscription_impl::send_event(const subscription_event_impl
-                                           *sbs_evt)
+RetCode subscription_impl::send_event(const subscription_event_impl
+                                      *sbs_evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, sbs_evt:%p)", __func__, this, sbs_evt))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     DECLINITH_GBB(gbb, VLG_BUFF_DEF_SZ)
     build_PKT_SBSEVT(sbsid_,
                      sbs_evt->sbs_evttype_,
@@ -872,7 +874,7 @@ vlg::RetCode subscription_impl::send_event(const subscription_event_impl
                      gbb);
 
     long totbytes = sbs_evt->sbs_data_ ?
-                    sbs_evt->sbs_data_->serialize(enctyp_, NULL, gbb) :
+                    sbs_evt->sbs_data_->serialize(enctyp_, nullptr, gbb) :
                     (long)gbb->position();
 
     totbytes = htonl(totbytes);
@@ -894,10 +896,10 @@ vlg::RetCode subscription_impl::send_event(const subscription_event_impl
     return rcode;
 }
 
-vlg::RetCode subscription_impl::send_event_ack()
+RetCode subscription_impl::send_event_ack()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     DECLINITH_GBB(gbb, VLG_BUFF_DEF_SZ)
     build_PKT_SBSACK(sbsid_,
                      cli_last_evt_->sbs_evtid_,
@@ -916,13 +918,13 @@ vlg::RetCode subscription_impl::send_event_ack()
 
 // VLG_SUBSCRIPTION ASYNCH SENDING
 
-vlg::RetCode subscription_impl::store_sbs_evt_srv_asynch(subscription_event_impl *evt)
+RetCode subscription_impl::store_sbs_evt_srv_asynch(subscription_event_impl *evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, evt:%p)", __func__, this, evt))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     vlg::shared_pointer<char> pkey;
-    vlg::blocking_queue *classkeyvalue_inst_evt_q = NULL;
-    sbs_event_wrapper *sev_wrpr = NULL;
+    vlg::blocking_queue *classkeyvalue_inst_evt_q = nullptr;
+    sbs_event_wrapper *sev_wrpr = nullptr;
     if(evt->get_evttype() == SubscriptionEventType_LIVE) {
         //class instance.
         evt->get_obj()->get_primary_key_value_as_string(pkey);
@@ -1044,11 +1046,11 @@ vlg::RetCode subscription_impl::store_sbs_evt_srv_asynch(subscription_event_impl
     return rcode;
 }
 
-vlg::RetCode subscription_impl::consume_sbs_evt_srv_asynch(subscription_event_impl **evt_out)
+RetCode subscription_impl::consume_sbs_evt_srv_asynch(subscription_event_impl **evt_out)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, evt_out:%p)", __func__, this, evt_out))
-    vlg::RetCode rcode = vlg::RetCode_OK;
-    sbs_event_wrapper *sev_wrpr_1 = NULL, *sev_wrpr_2 = NULL;
+    RetCode rcode = vlg::RetCode_OK;
+    sbs_event_wrapper *sev_wrpr_1 = nullptr, *sev_wrpr_2 = nullptr;
     if(!(rcode = srv_sbs_evt_glob_q_.get(0, 0, &sev_wrpr_1))) {
         vlg::shared_pointer<char> pkey;
         sev_wrpr_1->get_evt()->get_obj()->get_primary_key_value_as_string(pkey);
@@ -1057,7 +1059,7 @@ vlg::RetCode subscription_impl::consume_sbs_evt_srv_asynch(subscription_event_im
                   sev_wrpr_1->get_evt()->get_evtid(),
                   pkey.ptr()))
         if(sev_wrpr_1->get_evt()->get_evttype() == SubscriptionEventType_LIVE) {
-            vlg::blocking_queue *classkeyvalue_inst_evt_q = NULL;
+            vlg::blocking_queue *classkeyvalue_inst_evt_q = nullptr;
             if(!(rcode = srv_sbs_classkey_evt_q_hm_.get(pkey.ptr(), &classkeyvalue_inst_evt_q))) {
                 if(!(rcode = classkeyvalue_inst_evt_q->get(0, 0, &sev_wrpr_2))) {
                     if(sev_wrpr_1 != sev_wrpr_2) { //check for same obj.
@@ -1099,19 +1101,19 @@ vlg::RetCode subscription_impl::consume_sbs_evt_srv_asynch(subscription_event_im
     return rcode;
 }
 
-vlg::RetCode subscription_impl::accept_event(subscription_event_impl *sbs_evt)
+RetCode subscription_impl::accept_event(subscription_event_impl *sbs_evt)
 {
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode subscription_impl::submit_live_event(subscription_event_impl
-                                                  *sbs_evt)
+RetCode subscription_impl::submit_live_event(subscription_event_impl
+                                             *sbs_evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, sbs_evt:%p)",
               __func__,
               this,
               sbs_evt))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     if((rcode = accept_event(sbs_evt))) {
         IFLOG(trc(TH_ID, LS_TRL
                   "%s() - unauthorized event:[%d] skipped for subscriber[%d].",
@@ -1150,9 +1152,9 @@ vlg::RetCode subscription_impl::submit_live_event(subscription_event_impl
 // VLG_SUBSCRIPTION RECVING METHS
 
 /*Client only*/
-vlg::RetCode subscription_impl::receive_event(const vlg_hdr_rec *pkt_hdr,
-                                              vlg::grow_byte_buffer *pkt_body,
-                                              subscription_event_impl *sbs_evt)
+RetCode subscription_impl::receive_event(const vlg_hdr_rec *pkt_hdr,
+                                         vlg::grow_byte_buffer *pkt_body,
+                                         subscription_event_impl *sbs_evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(pkt_hdr:%p, pkt_body:%p, sbs_evt:%p)",
               __func__,
@@ -1160,9 +1162,9 @@ vlg::RetCode subscription_impl::receive_event(const vlg_hdr_rec *pkt_hdr,
               pkt_body,
               sbs_evt))
 
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     if(sbs_evt->get_evttype() != SubscriptionEventType_DOWNLOAD_END) {
-        nclass *nobj = NULL;
+        nclass *nobj = nullptr;
         if((rcode = nem_.new_nclass_instance(nclass_id(), &nobj))) {
             IFLOG(cri(TH_ID,
                       LS_SBS"[sbs event receive failed - new class fail:%d, nclass_id:%d, aborting]",
@@ -1215,15 +1217,15 @@ vlg::RetCode subscription_impl::receive_event(const vlg_hdr_rec *pkt_hdr,
 }
 
 /*Server only*/
-vlg::RetCode subscription_impl::receive_event_ack(const vlg_hdr_rec *hdr)
+RetCode subscription_impl::receive_event_ack(const vlg_hdr_rec *hdr)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
     IFLOG(dbg(TH_ID, LS_SBS"[sbsid:[%d] - sbs event[%u] ack received]", sbsid_,
               srv_sbs_to_ack_evtid_))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     pthread_rwlock_wrlock(&lock_srv_sbs_rep_asynch_);
     set_sbs_last_ack_evt_id();
-    subscription_event_impl *sbs_evt = NULL;
+    subscription_event_impl *sbs_evt = nullptr;
     if(!initial_query_ended_) {
         rcode = submit_dwnl_event();
     }
@@ -1265,16 +1267,16 @@ vlg::RetCode subscription_impl::receive_event_ack(const vlg_hdr_rec *hdr)
 }
 
 /*Server only*/
-vlg::RetCode subscription_impl::submit_dwnl_event()
+RetCode subscription_impl::submit_dwnl_event()
 {
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    per_nclassid_helper_rec *sdr = NULL;
-    subscription_event_impl *new_dwnl_sbs_event = NULL;
-    const nentity_manager &nem = peer_.get_em();
-    nclass *dwnl_obj = NULL;
+    per_nclassid_helper_rec *sdr = nullptr;
+    subscription_event_impl *new_dwnl_sbs_event = nullptr;
+    const nentity_manager &nem = peer_.get_nem();
+    nclass *dwnl_obj = nullptr;
     unsigned int ts0 = 0, ts1 = 0;
-    if((rcode = peer_.get_per_classid_helper_class(nclassid_, &sdr))) {
+    if((rcode = peer_.get_per_nclassid_helper_rec(nclassid_, &sdr))) {
         IFLOG(cri(TH_ID, LS_CLO "%s() - failed get per-nclass_id helper class [res:%d]",
                   __func__, rcode))
         return rcode;
@@ -1331,7 +1333,7 @@ vlg::RetCode subscription_impl::submit_dwnl_event()
                                                0,
                                                0,
                                                Action_NONE,
-                                               NULL,
+                                               nullptr,
                                                &new_dwnl_sbs_event))
         /************************
         RETAIN_ID: SBE_SRV_03b
@@ -1356,7 +1358,7 @@ vlg::RetCode subscription_impl::submit_dwnl_event()
             IFLOG(cri(TH_ID, LS_TRL "%s(res:%d) - initial query releasing failed.",
                       __func__, rcode))
         }
-        initial_query_ = NULL;
+        initial_query_ = nullptr;
         initial_query_ended_ = true;
     } else {
         IFLOG(cri(TH_ID, LS_TRL "%s(res:%d) - initial query failed.", __func__,
@@ -1367,16 +1369,16 @@ vlg::RetCode subscription_impl::submit_dwnl_event()
     return rcode;
 }
 
-vlg::RetCode subscription_impl::execute_initial_query()
+RetCode subscription_impl::execute_initial_query()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode rcode = vlg::RetCode_OK;
-    const nentity_desc *class_desc = NULL;
+    RetCode rcode = vlg::RetCode_OK;
+    const nentity_desc *class_desc = nullptr;
     if(!(rcode = nem_.get_nentity_descriptor(nclassid_, &class_desc))) {
         if(class_desc->is_persistent()) {
-            persistence_driver_impl *driv = NULL;
-            if((driv = peer_.get_pers_mng().available_driver(nclassid_))) {
-                persistence_connection_impl *conn = NULL;
+            persistence_driver_impl *driv = nullptr;
+            if((driv = peer_.get_persistence_manager().available_driver(nclassid_))) {
+                persistence_connection_impl *conn = nullptr;
                 if((conn = driv->available_connection(nclassid_))) {
                     vlg::ascii_string qry_s;
                     qry_s.assign("select * from ");
@@ -1396,7 +1398,7 @@ vlg::RetCode subscription_impl::execute_initial_query()
                         qry_s.append(")");
                     }
                     qry_s.append(';');
-                    rcode = conn->execute_query(qry_s.internal_buff(), peer_.get_em(),
+                    rcode = conn->execute_query(qry_s.internal_buff(), peer_.get_nem(),
                                                 &initial_query_);
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "%s() - no available pers-connection for nclass_id:%u",
@@ -1422,7 +1424,7 @@ vlg::RetCode subscription_impl::execute_initial_query()
         if(initial_query_) {
             initial_query_->release();
         }
-        initial_query_ = NULL;
+        initial_query_ = nullptr;
         IFLOG(err(TH_ID, LS_CLO "%s() - sbsid:[%d] - Initial Query FAILED [res:%d].",
                   __func__, sbsid_, rcode))
     }
@@ -1431,30 +1433,30 @@ vlg::RetCode subscription_impl::execute_initial_query()
 }
 
 
-vlg::RetCode subscription_impl::safe_submit_dwnl_event()
+RetCode subscription_impl::safe_submit_dwnl_event()
 {
     pthread_rwlock_wrlock(&lock_srv_sbs_rep_asynch_);
-    vlg::RetCode rcode = submit_dwnl_event();
+    RetCode rcode = submit_dwnl_event();
     pthread_rwlock_unlock(&lock_srv_sbs_rep_asynch_);
     return rcode;
 }
 
 // VLG_SUBSCRIPTION EVENT MNGMNT
 
-vlg::RetCode subscription_impl::await_for_next_event(
+RetCode subscription_impl::await_for_next_event(
     subscription_event_impl **sbs_evt,
     time_t sec,
     long nsec)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     CHK_MON_ERR_0(lock)
     if(status_ < SubscriptionStatus_STARTED) {
         CHK_MON_ERR_0(unlock)
         IFLOG(err(TH_ID, LS_CLO "%s", __func__))
         return vlg::RetCode_BADSTTS;
     }
-    while(cli_evt_sts_ != VLG_SBS_Evt_Rdy) {
+    while(cli_evt_sts_ != SBSEvt_Ready) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
@@ -1476,10 +1478,10 @@ vlg::RetCode subscription_impl::await_for_next_event(
     return rcode;
 }
 
-vlg::RetCode subscription_impl::ack_event()
+RetCode subscription_impl::ack_event()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     CHK_MON_ERR_0(lock)
     if(status_ < SubscriptionStatus_STARTED) {
         CHK_MON_ERR_0(unlock)
@@ -1493,10 +1495,10 @@ vlg::RetCode subscription_impl::ack_event()
     return rcode;
 }
 
-vlg::RetCode subscription_impl::consume_event(subscription_event_impl **sbs_evt)
+RetCode subscription_impl::consume_event(subscription_event_impl **sbs_evt)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     if((rcode = cli_evt_q_.get(sbs_evt))) {
         switch(rcode) {
             case vlg::RetCode_EMPTY:
@@ -1519,11 +1521,11 @@ vlg::RetCode subscription_impl::consume_event(subscription_event_impl **sbs_evt)
     return rcode;
 }
 
-vlg::RetCode subscription_impl::ack_event_priv()
+RetCode subscription_impl::ack_event_priv()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
-    vlg::RetCode rcode = vlg::RetCode_OK;
-    if(cli_evt_sts_ != VLG_SBS_Evt_ToAck || !cli_last_evt_) {
+    RetCode rcode = vlg::RetCode_OK;
+    if(cli_evt_sts_ != SBSEvt_ToAck || !cli_last_evt_) {
         IFLOG(wrn(TH_ID, LS_CLO "%s() - cli_last_evt_[%p] evt_status[%d]",
                   __func__,
                   &cli_last_evt_,
@@ -1540,7 +1542,7 @@ vlg::RetCode subscription_impl::ack_event_priv()
         RELEASE_ID: SBE_CLI_01
         ************************/
         c.release(cli_last_evt_);
-        cli_last_evt_ = NULL;
+        cli_last_evt_ = nullptr;
         if(!rcode) {
             evt_reset();
         }
@@ -1550,28 +1552,28 @@ vlg::RetCode subscription_impl::ack_event_priv()
     return rcode;
 }
 
-vlg::RetCode subscription_impl::evt_reset()
+RetCode subscription_impl::evt_reset()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    cli_evt_sts_ = VLG_SBS_Evt_Rst;
+    cli_evt_sts_ = SBSEvt_Reset;
     CHK_MON_ERR_0(notify_all)
     IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode subscription_impl::evt_ready()
+RetCode subscription_impl::evt_ready()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    cli_evt_sts_ = VLG_SBS_Evt_Rdy;
+    cli_evt_sts_ = SBSEvt_Ready;
     CHK_MON_ERR_0(notify_all)
     IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode subscription_impl::evt_to_ack()
+RetCode subscription_impl::evt_to_ack()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    cli_evt_sts_ = VLG_SBS_Evt_ToAck;
+    cli_evt_sts_ = SBSEvt_ToAck;
     CHK_MON_ERR_0(notify_all)
     IFLOG(trc(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
     return vlg::RetCode_OK;

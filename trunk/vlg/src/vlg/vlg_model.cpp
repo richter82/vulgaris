@@ -84,9 +84,9 @@ const char *string_from_MemberType(MemberType bmt)
     }
 }
 
-//-----------------------------
+
 // key_desc_impl
-//-----------------------------
+
 class key_desc_impl {
     public:
         key_desc_impl(unsigned short keyid, bool primary) :
@@ -95,14 +95,14 @@ class key_desc_impl {
             fieldset_(vlg::sngl_ptr_obj_mng()) {
         }
 
-        vlg::RetCode init() {
+        RetCode init() {
             RETURN_IF_NOT_OK(fieldset_.init())
             return vlg::RetCode_OK;
         }
 
-        vlg::RetCode init(vlg::linked_list *fldset) {
+        RetCode init(vlg::linked_list *fldset) {
             RETURN_IF_NOT_OK(fieldset_.init())
-            member_desc *mmbrdesc = NULL;
+            member_desc *mmbrdesc = nullptr;
             fldset->start_iteration();
             while(!fldset->next(&mmbrdesc)) {
                 RETURN_IF_NOT_OK(fieldset_.push_back(&mmbrdesc))
@@ -110,7 +110,7 @@ class key_desc_impl {
             return vlg::RetCode_OK;
         }
 
-        vlg::RetCode add_member_desc(const member_desc  *mmbrdesc) {
+        RetCode add_member_desc(const member_desc  *mmbrdesc) {
             RETURN_IF_NOT_OK(fieldset_.push_back(&mmbrdesc))
             return vlg::RetCode_OK;
         }
@@ -139,10 +139,10 @@ class key_desc_impl {
         vlg::linked_list  fieldset_;
 };
 
-//-----------------------------
+
 // key_desc
-//-----------------------------
-key_desc::key_desc(unsigned short keyid, bool primary) : impl_(NULL)
+
+key_desc::key_desc(unsigned short keyid, bool primary) : impl_(nullptr)
 {
     impl_ = new key_desc_impl(keyid, primary);
     impl_->init();
@@ -155,7 +155,7 @@ key_desc::~key_desc()
     }
 }
 
-vlg::RetCode key_desc::add_member_desc(const member_desc  *mmbrdesc)
+RetCode key_desc::add_member_desc(const member_desc  *mmbrdesc)
 {
     return impl_->add_member_desc(mmbrdesc);
 }
@@ -175,9 +175,9 @@ const key_desc_impl *key_desc::get_opaque() const
     return impl_;
 }
 
-//-----------------------------
+
 // member_desc_impl
-//-----------------------------
+
 class member_desc_impl {
     public:
         member_desc_impl(unsigned short mmbrid,
@@ -220,9 +220,9 @@ class member_desc_impl {
         long            enum_value_;
 };
 
-//-----------------------------
+
 // member_desc
-//-----------------------------
+
 member_desc::member_desc(unsigned short mmbrid,
                          MemberType     mmbr_type,
                          const char     *mmbr_name,
@@ -234,7 +234,7 @@ member_desc::member_desc(unsigned short mmbrid,
                          unsigned int   fild_entityid,
                          const char     *fild_usr_str_type,
                          NEntityType    fild_entitytype,
-                         long           enum_value) : impl_(NULL)
+                         long           enum_value) : impl_(nullptr)
 {
     impl_ = new member_desc_impl(mmbrid,
                                  mmbr_type,
@@ -327,9 +327,9 @@ void member_desc::set_field_type_size(size_t val)
     impl_->fild_type_size_ = val;
 }
 
-//-----------------------------
+
 // entity_desc_impl
-//-----------------------------
+
 struct ent_enum_mdesc_rec {
     enum_member_desc cllbk;
     void *ud;
@@ -371,7 +371,7 @@ class nentity_desc_impl {
             keyid_kdesc_(vlg::sngl_ptr_obj_mng(), sizeof(unsigned short)) {
         }
 
-        vlg::RetCode init() {
+        RetCode init() {
             RETURN_IF_NOT_OK(mmbrid_mdesc_.init(HM_SIZE_MINI))
             RETURN_IF_NOT_OK(mmbrnm_mdesc_.init(HM_SIZE_MINI))
             RETURN_IF_NOT_OK(mmbrof_mdesc_.init(HM_SIZE_MINI))
@@ -381,13 +381,13 @@ class nentity_desc_impl {
             return vlg::RetCode_OK;
         }
 
-        vlg::RetCode init(vlg::hash_map *mmbrmap, vlg::hash_map *keymap) {
+        RetCode init(vlg::hash_map *mmbrmap, vlg::hash_map *keymap) {
             RETURN_IF_NOT_OK(init())
-            member_desc *mdesc = NULL;
+            member_desc *mdesc = nullptr;
             unsigned long mmbrid = 0;
             unsigned long fldofst = 0;
             mmbrmap->start_iteration();
-            while(!mmbrmap->next(NULL, &mdesc)) {
+            while(!mmbrmap->next(nullptr, &mdesc)) {
                 mmbrid = mdesc->get_member_id();
                 RETURN_IF_NOT_OK(mmbrid_mdesc_.put(&mmbrid, &mdesc))
                 const char *mmbrnm = mdesc->get_member_name();
@@ -398,7 +398,7 @@ class nentity_desc_impl {
                 }
             }
             if(persistent_) {
-                key_desc *keydesc = NULL;
+                key_desc *keydesc = nullptr;
                 unsigned short keyid = 0;
                 keymap->start_iteration();
                 while(!keymap->next(&keyid, &keydesc)) {
@@ -408,7 +408,7 @@ class nentity_desc_impl {
             return vlg::RetCode_OK;
         }
 
-        vlg::RetCode add_member_desc(const member_desc *mmbrdesc) {
+        RetCode add_member_desc(const member_desc *mmbrdesc) {
             unsigned long mmbrid = mmbrdesc->get_member_id();
             const char *mmbrnm = mmbrdesc->get_member_name();
             unsigned long fldofst = (unsigned long)mmbrdesc->get_field_offset();
@@ -418,7 +418,7 @@ class nentity_desc_impl {
             return vlg::RetCode_OK;
         }
 
-        vlg::RetCode add_key_desc(const key_desc *keydesc) {
+        RetCode add_key_desc(const key_desc *keydesc) {
             unsigned short keyid = keydesc->get_key_id();
             RETURN_IF_NOT_OK(keyid_kdesc_.put(&keyid, &keydesc))
             return vlg::RetCode_OK;
@@ -474,17 +474,17 @@ class nentity_desc_impl {
 
         const member_desc *GetMemberDescById(unsigned int mmbrid) const {
             const void *ptr = mmbrid_mdesc_.get(&mmbrid);
-            return ptr ? *(const member_desc **)ptr : NULL;
+            return ptr ? *(const member_desc **)ptr : nullptr;
         }
 
         const member_desc *GetMemberDescByName(const char *name) const {
             const void *ptr = mmbrnm_mdesc_.get(name);
-            return ptr ? *(const member_desc **)ptr : NULL;
+            return ptr ? *(const member_desc **)ptr : nullptr;
         }
 
         const member_desc *GetMemberDescByOffset(size_t fldoffst) const {
             const void *ptr = mmbrof_mdesc_.get(&fldoffst);
-            return ptr ? *(const member_desc **)ptr : NULL;
+            return ptr ? *(const member_desc **)ptr : nullptr;
         }
 
         void EnumMemberDesc(enum_member_desc emdf, void *ud) const {
@@ -511,9 +511,9 @@ class nentity_desc_impl {
         vlg::hash_map   keyid_kdesc_;
 };
 
-//-----------------------------
+
 // nentity_desc
-//-----------------------------
+
 nentity_desc::nentity_desc(unsigned int nentity_id,
                            size_t nclass_size,
                            size_t nclass_max_align,
@@ -522,7 +522,7 @@ nentity_desc::nentity_desc(unsigned int nentity_id,
                            const char *nentity_name,
                            vlg::alloc_func afun,
                            unsigned int field_num,
-                           bool persistent) : impl_(NULL)
+                           bool persistent) : impl_(nullptr)
 {
     impl_ = new nentity_desc_impl(nentity_id,
                                   nclass_size,
@@ -543,12 +543,12 @@ nentity_desc::~nentity_desc()
     }
 }
 
-vlg::RetCode nentity_desc::add_member_desc(const member_desc *mmbrdesc)
+RetCode nentity_desc::add_member_desc(const member_desc *mmbrdesc)
 {
     return impl_->add_member_desc(mmbrdesc);
 }
 
-vlg::RetCode nentity_desc::add_key_desc(const key_desc *keydesc)
+RetCode nentity_desc::add_key_desc(const key_desc *keydesc)
 {
     return impl_->add_key_desc(keydesc);
 }
@@ -625,9 +625,9 @@ void nentity_desc::enum_member_descriptors(enum_member_desc emdf, void *ud) cons
     impl_->EnumMemberDesc(emdf, ud);
 }
 
-//-----------------------------
+
 // entity_manager_impl
-//-----------------------------
+
 struct nem_enum_nedesc_rec {
     enum_nentity_desc cllbk;
     void *ud;
@@ -691,7 +691,7 @@ class nentity_manager_impl {
             IFLOG(trc(TH_ID, LS_DTR "%s", __func__))
         }
 
-        vlg::RetCode init() {
+        RetCode init() {
             IFLOG(trc(TH_ID, LS_OPN "%s", __func__))
             RETURN_IF_NOT_OK(fakeid_edesc_.init(HM_SIZE_SMALL))
             RETURN_IF_NOT_OK(entnm_edesc_.init(HM_SIZE_SMALL))
@@ -716,8 +716,8 @@ class nentity_manager_impl {
             return entid_edesc_;
         }
 
-        vlg::RetCode get_entity_desc(unsigned int nclass_id,
-                                     nentity_desc const **edesc) const {
+        RetCode get_entity_desc(unsigned int nclass_id,
+                                nentity_desc const **edesc) const {
             const nentity_desc **ptr = (const nentity_desc **)entid_edesc_.get(&nclass_id);
             if(ptr) {
                 *edesc = *ptr;
@@ -728,8 +728,8 @@ class nentity_manager_impl {
             return vlg::RetCode_KO;
         }
 
-        vlg::RetCode get_entity_desc(const char *entityname,
-                                     nentity_desc const **edesc) const {
+        RetCode get_entity_desc(const char *entityname,
+                                nentity_desc const **edesc) const {
             const nentity_desc **ptr = (const nentity_desc **)entnm_edesc_.get(entityname);
             if(ptr) {
                 *edesc = *ptr;
@@ -781,10 +781,10 @@ class nentity_manager_impl {
 
         const char *get_class_name(unsigned int nclass_id) const {
             const nentity_desc **ptr = (const nentity_desc **)entid_edesc_.get(&nclass_id);
-            return ptr ? (*ptr)->get_nentity_name() : NULL;
+            return ptr ? (*ptr)->get_nentity_name() : nullptr;
         }
 
-        vlg::RetCode extend(const nentity_desc *nentity_desc) {
+        RetCode extend(const nentity_desc *nentity_desc) {
             IFLOG(trc(TH_ID, LS_OPN "%s(edsc:%p)", __func__, nentity_desc))
             unsigned int eid = 0;
             switch(nentity_desc->get_nentity_type()) {
@@ -820,11 +820,11 @@ class nentity_manager_impl {
             return vlg::RetCode_OK;
         }
 
-        vlg::RetCode extend(nentity_manager_impl *nem) {
+        RetCode extend(nentity_manager_impl *nem) {
             IFLOG(trc(TH_ID, LS_OPN "%s(nem:%p)", __func__, nem))
             nem->entnm_edesc_.start_iteration();
-            nentity_desc *nentity_desc = NULL;
-            while(!nem->entnm_edesc_.next(NULL, &nentity_desc)) {
+            nentity_desc *nentity_desc = nullptr;
+            while(!nem->entnm_edesc_.next(nullptr, &nentity_desc)) {
                 int fake_id = next_fake_id();
                 const char *enm = nentity_desc->get_nentity_name();
                 if(fakeid_edesc_.put(&fake_id, &nentity_desc)) {
@@ -852,7 +852,7 @@ class nentity_manager_impl {
             return vlg::RetCode_OK;
         }
 
-        vlg::RetCode extend(const char *model_name) {
+        RetCode extend(const char *model_name) {
             IFLOG(trc(TH_ID, LS_OPN "%s(model_name:%s)", __func__, model_name))
             if(!model_name || !strlen(model_name)) {
                 IFLOG(err(TH_ID, LS_CLO "%s", __func__))
@@ -888,7 +888,7 @@ class nentity_manager_impl {
                           model_name))
                 return vlg::RetCode_KO;
             }
-            vlg::RetCode rcode = vlg::RetCode_OK;
+            RetCode rcode = vlg::RetCode_OK;
             if((rcode = extend(nem_f()->impl_))) {
                 IFLOG(err(TH_ID, LS_CLO "%s() - failed to extend nem for model:%s, res:%d",
                           __func__, model_name, rcode))
@@ -903,7 +903,7 @@ class nentity_manager_impl {
             }
         }
 
-        vlg::RetCode new_nclass_instance(unsigned int nclass_id, nclass **ptr) const {
+        RetCode new_nclass_instance(unsigned int nclass_id, nclass **ptr) const {
             IFLOG(trc(TH_ID, LS_OPN "%s(nclass_id:%u, ptr:%p)", __func__, nclass_id, ptr))
             const nentity_desc **edptr = (const nentity_desc **)entid_edesc_.get(&nclass_id);
             if(edptr) {
@@ -939,13 +939,13 @@ class nentity_manager_impl {
         static nclass_logger *log_;
 };
 
-nclass_logger *nentity_manager_impl::log_ = NULL;
+nclass_logger *nentity_manager_impl::log_ = nullptr;
 unsigned int nentity_manager_impl::sid_ = 0;
 
-//-----------------------------
+
 // nentity_manager
-//-----------------------------
-nentity_manager::nentity_manager() : impl_(NULL)
+
+nentity_manager::nentity_manager() : impl_(nullptr)
 {
     impl_ = new nentity_manager_impl();
     impl_->init();
@@ -958,14 +958,14 @@ nentity_manager::~nentity_manager()
     }
 }
 
-vlg::RetCode nentity_manager::get_nentity_descriptor(unsigned int nclass_id,
-                                                     nentity_desc const **edesc) const
+RetCode nentity_manager::get_nentity_descriptor(unsigned int nclass_id,
+                                                nentity_desc const **edesc) const
 {
     return impl_->get_entity_desc(nclass_id, edesc);
 }
 
-vlg::RetCode nentity_manager::get_nentity_descriptor(const char *entityname,
-                                                     nentity_desc const **edesc) const
+RetCode nentity_manager::get_nentity_descriptor(const char *entityname,
+                                                nentity_desc const **edesc) const
 {
     return impl_->get_entity_desc(entityname, edesc);
 }
@@ -1008,23 +1008,23 @@ const char *nentity_manager::get_nclass_name(unsigned int nclass_id) const
     return impl_->get_class_name(nclass_id);
 }
 
-vlg::RetCode nentity_manager::extend(const nentity_desc *nentity_desc)
+RetCode nentity_manager::extend(const nentity_desc *nentity_desc)
 {
     return impl_->extend(nentity_desc);
 }
 
-vlg::RetCode nentity_manager::extend(nentity_manager *nem)
+RetCode nentity_manager::extend(nentity_manager *nem)
 {
     return impl_->extend(nem->impl_);
 }
 
-vlg::RetCode nentity_manager::extend(const char *model_name)
+RetCode nentity_manager::extend(const char *model_name)
 {
     return impl_->extend(model_name);
 }
 
-vlg::RetCode nentity_manager::new_nclass_instance(unsigned int entityid,
-                                                  nclass **ptr) const
+RetCode nentity_manager::new_nclass_instance(unsigned int entityid,
+                                             nclass **ptr) const
 {
     return impl_->new_nclass_instance(entityid, ptr);
 }
@@ -1036,7 +1036,7 @@ class nclass_inst_collector : public vlg::collector {
         nclass_inst_collector() : vlg::collector("nclass") {}
 };
 
-vlg::collector *nclass_inst_coll_ = NULL;
+vlg::collector *nclass_inst_coll_ = nullptr;
 vlg::collector &nclass_get_instance_collector()
 {
     if(nclass_inst_coll_) {
@@ -1053,10 +1053,10 @@ vlg::collector &nclass::get_collector()
     return nclass_get_instance_collector();
 }
 
-//-----------------------------
+
 // nclass
-//-----------------------------
-nclass_logger *nclass::log_ = NULL;
+
+nclass_logger *nclass::log_ = nullptr;
 
 nclass::nclass()
 {
@@ -1100,7 +1100,7 @@ void *nclass::get_field_by_id(unsigned int fldid)
         char *cptr = reinterpret_cast<char *>(this);
         return cptr + md->get_field_offset();
     }
-    return NULL;
+    return nullptr;
 }
 
 void *nclass::get_field_by_name(const char *fldname)
@@ -1111,7 +1111,7 @@ void *nclass::get_field_by_name(const char *fldname)
         char *cptr = reinterpret_cast<char *>(this);
         return cptr + md->get_field_offset();
     }
-    return NULL;
+    return nullptr;
 }
 
 void *nclass::get_field_by_id_index(unsigned int fldid,
@@ -1123,7 +1123,7 @@ void *nclass::get_field_by_id_index(unsigned int fldid,
                      md->get_field_type_size()*index;
         return cptr;
     }
-    return NULL;
+    return nullptr;
 }
 
 void *nclass::get_field_by_name_index(const char *fldname,
@@ -1136,12 +1136,12 @@ void *nclass::get_field_by_name_index(const char *fldname,
                      md->get_field_type_size()*index;
         return cptr;
     }
-    return NULL;
+    return nullptr;
 }
 
-vlg::RetCode nclass::set_field_by_id(unsigned int fldid,
-                                     const void *ptr,
-                                     size_t maxlen)
+RetCode nclass::set_field_by_id(unsigned int fldid,
+                                const void *ptr,
+                                size_t maxlen)
 {
     const nentity_desc *ed = get_nentity_descriptor();
     const member_desc *md = ed->get_member_desc_by_id(fldid);
@@ -1156,9 +1156,9 @@ vlg::RetCode nclass::set_field_by_id(unsigned int fldid,
     return vlg::RetCode_NOTFOUND;
 }
 
-vlg::RetCode nclass::set_field_by_name(const char *fldname,
-                                       const void *ptr,
-                                       size_t maxlen)
+RetCode nclass::set_field_by_name(const char *fldname,
+                                  const void *ptr,
+                                  size_t maxlen)
 {
     const nentity_desc *ed = get_nentity_descriptor();
     const member_desc *md = ed->get_member_desc_by_name(fldname);
@@ -1173,10 +1173,10 @@ vlg::RetCode nclass::set_field_by_name(const char *fldname,
     return vlg::RetCode_NOTFOUND;
 }
 
-vlg::RetCode nclass::set_field_by_id_index(unsigned int fldid,
-                                           const void *ptr,
-                                           unsigned int index,
-                                           size_t maxlen)
+RetCode nclass::set_field_by_id_index(unsigned int fldid,
+                                      const void *ptr,
+                                      unsigned int index,
+                                      size_t maxlen)
 {
     const nentity_desc *ed = get_nentity_descriptor();
     const member_desc *md = ed->get_member_desc_by_id(fldid);
@@ -1191,127 +1191,127 @@ vlg::RetCode nclass::set_field_by_id_index(unsigned int fldid,
     return vlg::RetCode_NOTFOUND;
 }
 
-vlg::RetCode nclass::set_field_by_name_index(const char *fldname,
-                                             const void *ptr,
+RetCode nclass::set_field_by_name_index(const char *fldname,
+                                        const void *ptr,
+                                        unsigned int index,
+                                        size_t maxlen)
+{
+    const nentity_desc *ed = get_nentity_descriptor();
+    const member_desc *md = ed->get_member_desc_by_name(fldname);
+    if(md) {
+        char *cptr = reinterpret_cast<char *>(this);
+        cptr += (md->get_field_offset() + md->get_field_type_size()*index);
+        memcpy(cptr, ptr, maxlen ? min(maxlen,
+                                       (md->get_field_type_size()*md->get_field_nmemb())) :
+               (md->get_field_type_size()*md->get_field_nmemb()));
+        return vlg::RetCode_OK;
+    }
+    return vlg::RetCode_NOTFOUND;
+}
+
+RetCode nclass::is_field_zero_by_id(unsigned int fldid,
+                                    bool &res) const
+{
+    const nentity_desc *ed = get_nentity_descriptor();
+    const member_desc *md = ed->get_member_desc_by_id(fldid);
+    if(md) {
+        const char *cptr = reinterpret_cast<const char *>(this);
+        cptr += md->get_field_offset();
+        const char *zcptr = reinterpret_cast<const char *>(get_zero_object());
+        zcptr += md->get_field_offset();
+        res = (memcmp(cptr, zcptr,
+                      (md->get_field_type_size()*md->get_field_nmemb())) == 0);
+        return vlg::RetCode_OK;
+    }
+    return vlg::RetCode_NOTFOUND;
+}
+
+RetCode nclass::is_field_zero_by_name(const char *fldname,
+                                      bool &res) const
+{
+    const nentity_desc *ed = get_nentity_descriptor();
+    const member_desc *md = ed->get_member_desc_by_name(fldname);
+    if(md) {
+        const char *cptr = reinterpret_cast<const char *>(this);
+        cptr += md->get_field_offset();
+        const char *zcptr = reinterpret_cast<const char *>(get_zero_object());
+        zcptr += md->get_field_offset();
+        res = (memcmp(cptr, zcptr,
+                      (md->get_field_type_size()*md->get_field_nmemb())) == 0);
+        return vlg::RetCode_OK;
+    }
+    return vlg::RetCode_NOTFOUND;
+}
+
+RetCode nclass::is_field_zero_by_id_index(unsigned int fldid,
+                                          unsigned int index,
+                                          unsigned int nmenb,
+                                          bool &res) const
+{
+    const nentity_desc *ed = get_nentity_descriptor();
+    const member_desc *md = ed->get_member_desc_by_id(fldid);
+    if(md) {
+        const char *cptr = reinterpret_cast<const char *>(this);
+        cptr += (md->get_field_offset() + md->get_field_type_size()*index);
+        const char *zcptr = reinterpret_cast<const char *>(get_zero_object());
+        zcptr += (md->get_field_offset() + md->get_field_type_size()*index);
+        res = (memcmp(cptr, zcptr, (md->get_field_type_size()*nmenb)) == 0);
+        return vlg::RetCode_OK;
+    }
+    return vlg::RetCode_NOTFOUND;
+}
+
+RetCode nclass::is_field_zero_by_name_index(const char *fldname,
+                                            unsigned int index,
+                                            unsigned int nmenb,
+                                            bool &res) const
+{
+    const nentity_desc *ed = get_nentity_descriptor();
+    const member_desc *md = ed->get_member_desc_by_name(fldname);
+    if(md) {
+        const char *cptr = reinterpret_cast<const char *>(this);
+        cptr += (md->get_field_offset() + md->get_field_type_size()*index);
+        const char *zcptr = reinterpret_cast<const char *>(get_zero_object());
+        zcptr += (md->get_field_offset() + md->get_field_type_size()*index);
+        res = (memcmp(cptr, zcptr, (md->get_field_type_size()*nmenb)) == 0);
+        return vlg::RetCode_OK;
+    }
+    return vlg::RetCode_NOTFOUND;
+}
+
+RetCode nclass::set_field_zero_by_id(unsigned int fldid)
+{
+    const nentity_desc *ed = get_nentity_descriptor();
+    const member_desc *md = ed->get_member_desc_by_id(fldid);
+    if(md) {
+        char *cptr = reinterpret_cast<char *>(this);
+        cptr += md->get_field_offset();
+        const char *zcptr = reinterpret_cast<const char *>(get_zero_object());
+        zcptr += md->get_field_offset();
+        memcpy(cptr, zcptr, md->get_field_type_size()*md->get_field_nmemb());
+        return vlg::RetCode_OK;
+    }
+    return vlg::RetCode_NOTFOUND;
+}
+
+RetCode nclass::set_field_zero_by_name(const char *fldname)
+{
+    const nentity_desc *ed = get_nentity_descriptor();
+    const member_desc *md = ed->get_member_desc_by_name(fldname);
+    if(md) {
+        char *cptr = reinterpret_cast<char *>(this);
+        cptr += md->get_field_offset();
+        const char *zcptr = reinterpret_cast<const char *>(get_zero_object());
+        zcptr += md->get_field_offset();
+        memcpy(cptr, zcptr, md->get_field_type_size()*md->get_field_nmemb());
+        return vlg::RetCode_OK;
+    }
+    return vlg::RetCode_NOTFOUND;
+}
+
+RetCode nclass::set_field_zero_by_name_index(const char *fldname,
                                              unsigned int index,
-                                             size_t maxlen)
-{
-    const nentity_desc *ed = get_nentity_descriptor();
-    const member_desc *md = ed->get_member_desc_by_name(fldname);
-    if(md) {
-        char *cptr = reinterpret_cast<char *>(this);
-        cptr += (md->get_field_offset() + md->get_field_type_size()*index);
-        memcpy(cptr, ptr, maxlen ? min(maxlen,
-                                       (md->get_field_type_size()*md->get_field_nmemb())) :
-               (md->get_field_type_size()*md->get_field_nmemb()));
-        return vlg::RetCode_OK;
-    }
-    return vlg::RetCode_NOTFOUND;
-}
-
-vlg::RetCode nclass::is_field_zero_by_id(unsigned int fldid,
-                                         bool &res) const
-{
-    const nentity_desc *ed = get_nentity_descriptor();
-    const member_desc *md = ed->get_member_desc_by_id(fldid);
-    if(md) {
-        const char *cptr = reinterpret_cast<const char *>(this);
-        cptr += md->get_field_offset();
-        const char *zcptr = reinterpret_cast<const char *>(get_zero_object());
-        zcptr += md->get_field_offset();
-        res = (memcmp(cptr, zcptr,
-                      (md->get_field_type_size()*md->get_field_nmemb())) == 0);
-        return vlg::RetCode_OK;
-    }
-    return vlg::RetCode_NOTFOUND;
-}
-
-vlg::RetCode nclass::is_field_zero_by_name(const char *fldname,
-                                           bool &res) const
-{
-    const nentity_desc *ed = get_nentity_descriptor();
-    const member_desc *md = ed->get_member_desc_by_name(fldname);
-    if(md) {
-        const char *cptr = reinterpret_cast<const char *>(this);
-        cptr += md->get_field_offset();
-        const char *zcptr = reinterpret_cast<const char *>(get_zero_object());
-        zcptr += md->get_field_offset();
-        res = (memcmp(cptr, zcptr,
-                      (md->get_field_type_size()*md->get_field_nmemb())) == 0);
-        return vlg::RetCode_OK;
-    }
-    return vlg::RetCode_NOTFOUND;
-}
-
-vlg::RetCode nclass::is_field_zero_by_id_index(unsigned int fldid,
-                                               unsigned int index,
-                                               unsigned int nmenb,
-                                               bool &res) const
-{
-    const nentity_desc *ed = get_nentity_descriptor();
-    const member_desc *md = ed->get_member_desc_by_id(fldid);
-    if(md) {
-        const char *cptr = reinterpret_cast<const char *>(this);
-        cptr += (md->get_field_offset() + md->get_field_type_size()*index);
-        const char *zcptr = reinterpret_cast<const char *>(get_zero_object());
-        zcptr += (md->get_field_offset() + md->get_field_type_size()*index);
-        res = (memcmp(cptr, zcptr, (md->get_field_type_size()*nmenb)) == 0);
-        return vlg::RetCode_OK;
-    }
-    return vlg::RetCode_NOTFOUND;
-}
-
-vlg::RetCode nclass::is_field_zero_by_name_index(const char *fldname,
-                                                 unsigned int index,
-                                                 unsigned int nmenb,
-                                                 bool &res) const
-{
-    const nentity_desc *ed = get_nentity_descriptor();
-    const member_desc *md = ed->get_member_desc_by_name(fldname);
-    if(md) {
-        const char *cptr = reinterpret_cast<const char *>(this);
-        cptr += (md->get_field_offset() + md->get_field_type_size()*index);
-        const char *zcptr = reinterpret_cast<const char *>(get_zero_object());
-        zcptr += (md->get_field_offset() + md->get_field_type_size()*index);
-        res = (memcmp(cptr, zcptr, (md->get_field_type_size()*nmenb)) == 0);
-        return vlg::RetCode_OK;
-    }
-    return vlg::RetCode_NOTFOUND;
-}
-
-vlg::RetCode nclass::set_field_zero_by_id(unsigned int fldid)
-{
-    const nentity_desc *ed = get_nentity_descriptor();
-    const member_desc *md = ed->get_member_desc_by_id(fldid);
-    if(md) {
-        char *cptr = reinterpret_cast<char *>(this);
-        cptr += md->get_field_offset();
-        const char *zcptr = reinterpret_cast<const char *>(get_zero_object());
-        zcptr += md->get_field_offset();
-        memcpy(cptr, zcptr, md->get_field_type_size()*md->get_field_nmemb());
-        return vlg::RetCode_OK;
-    }
-    return vlg::RetCode_NOTFOUND;
-}
-
-vlg::RetCode nclass::set_field_zero_by_name(const char *fldname)
-{
-    const nentity_desc *ed = get_nentity_descriptor();
-    const member_desc *md = ed->get_member_desc_by_name(fldname);
-    if(md) {
-        char *cptr = reinterpret_cast<char *>(this);
-        cptr += md->get_field_offset();
-        const char *zcptr = reinterpret_cast<const char *>(get_zero_object());
-        zcptr += md->get_field_offset();
-        memcpy(cptr, zcptr, md->get_field_type_size()*md->get_field_nmemb());
-        return vlg::RetCode_OK;
-    }
-    return vlg::RetCode_NOTFOUND;
-}
-
-vlg::RetCode nclass::set_field_zero_by_name_index(const char *fldname,
-                                                  unsigned int index,
-                                                  unsigned int nmenb)
+                                             unsigned int nmenb)
 {
     const nentity_desc *ed = get_nentity_descriptor();
     const member_desc *md = ed->get_member_desc_by_name(fldname);
@@ -1326,9 +1326,9 @@ vlg::RetCode nclass::set_field_zero_by_name_index(const char *fldname,
     return vlg::RetCode_NOTFOUND;
 }
 
-vlg::RetCode nclass::set_field_zero_by_id_index(unsigned int fldid,
-                                                unsigned int index,
-                                                unsigned int nmenb)
+RetCode nclass::set_field_zero_by_id_index(unsigned int fldid,
+                                           unsigned int index,
+                                           unsigned int nmenb)
 {
     const nentity_desc *ed = get_nentity_descriptor();
     const member_desc *md = ed->get_member_desc_by_id(fldid);
@@ -1356,7 +1356,7 @@ struct ENM_FND_IDX_REC_UD {
                        bool *res_valid) :
         nem_(nem),
         obj_ptr_(obj_ptr),
-        fld_mmbrd_(NULL),
+        fld_mmbrd_(nullptr),
         col_num_(col_num),
         current_col_num_(current_col_num),
         obj_fld_ptr_(obj_fld_ptr),
@@ -1411,7 +1411,7 @@ void enum_edesc_fnd_idx(const vlg::hash_map &map,
         } else {
             //class, struct is a recursive step.
             ENM_FND_IDX_REC_UD rrud = *rud;
-            const nentity_desc *edsc = NULL;
+            const nentity_desc *edsc = nullptr;
             if(!rud->nem_.get_nentity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
                 const vlg::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
                 if(mmbrd->get_field_nmemb() > 1) {
@@ -1478,13 +1478,13 @@ char *nclass::get_field_by_column_number(unsigned int col_num,
                                          const member_desc **mdesc)
 {
     if(!mdesc) {
-        return NULL;
+        return nullptr;
     }
     const vlg::hash_map &nm_mmdesc =
         get_nentity_descriptor()->get_opaque()->GetMap_NM_MMBRDSC();
     bool res_valid = false;
     unsigned int current_plain_idx = 0;
-    char *obj_fld_ptr = NULL;
+    char *obj_fld_ptr = nullptr;
     ENM_FND_IDX_REC_UD fnd_idx_rud((char *)this,
                                    nem,
                                    col_num,
@@ -1496,7 +1496,7 @@ char *nclass::get_field_by_column_number(unsigned int col_num,
         *mdesc = fnd_idx_rud.fld_mmbrd_;
         return obj_fld_ptr;
     } else {
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -1561,7 +1561,7 @@ struct prim_key_buff_value_rec_ud {
     unsigned int max_out_len_;
     int cur_idx_;
     char *out_;
-    vlg::RetCode res;
+    RetCode res;
 };
 
 void enum_keyset_prim_key_buff_value(const vlg::linked_list &list,
@@ -1570,7 +1570,7 @@ void enum_keyset_prim_key_buff_value(const vlg::linked_list &list,
 {
     prim_key_buff_value_rec_ud *rud = static_cast<prim_key_buff_value_rec_ud *>(ud);
     const member_desc *mmbrd = *(const member_desc **)ptr;
-    const char *obj_f_ptr = NULL;
+    const char *obj_f_ptr = nullptr;
     obj_f_ptr = rud->obj_ptr_ + mmbrd->get_field_offset();
     int sout = FillBuff_FldValue(obj_f_ptr, mmbrd->get_field_vlg_type(),
                                  mmbrd->get_field_nmemb(),
@@ -1666,7 +1666,7 @@ struct prim_key_str_value_rec_ud {
 
     const char *obj_ptr_;
     vlg::ascii_string *out_;
-    vlg::RetCode res;
+    RetCode res;
 };
 
 void enum_keyset_prim_key_str_value(const vlg::linked_list &list,
@@ -1675,7 +1675,7 @@ void enum_keyset_prim_key_str_value(const vlg::linked_list &list,
 {
     prim_key_str_value_rec_ud *rud = static_cast<prim_key_str_value_rec_ud *>(ud);
     const member_desc *mmbrd = *(const member_desc **)ptr;
-    const char *obj_f_ptr = NULL;
+    const char *obj_f_ptr = nullptr;
     obj_f_ptr = rud->obj_ptr_ + mmbrd->get_field_offset();
     FillStr_FldValue(obj_f_ptr, mmbrd->get_field_vlg_type(),
                      mmbrd->get_field_nmemb(), rud->out_);
@@ -1696,7 +1696,7 @@ void enum_prim_key_str_value(const vlg::hash_map &map,
     }
 }
 
-vlg::RetCode nclass::get_primary_key_value_as_string(vlg::shared_pointer<char> &out_str)
+RetCode nclass::get_primary_key_value_as_string(vlg::shared_pointer<char> &out_str)
 {
     vlg::ascii_string str;
     const vlg::hash_map &idk_desc = get_nentity_descriptor()->get_opaque()->GetMap_KEYID_KDESC();

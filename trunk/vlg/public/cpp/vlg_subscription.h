@@ -37,7 +37,7 @@ class subscription_event : public vlg::collectable {
         virtual vlg::collector &get_collector();
 
     public:
-        subscription            *get_subscription();
+        subscription            &get_subscription();
         unsigned int            get_id();
         SubscriptionEventType   get_event_type();
         ProtocolCode            get_proto_code();
@@ -57,18 +57,18 @@ class subscription_event : public vlg::collectable {
 */
 class subscription_factory {
     public:
-        static subscription_impl     *sbs_factory_impl_f(connection_impl &conn,
-                                                         void *ud);
+        static subscription_impl    *subscription_impl_factory_f(connection_impl &conn,
+                                                                 void *ud);
 
     public:
         subscription_factory();
         virtual ~subscription_factory();
 
     public:
-        virtual subscription        *new_subscription(connection &conn);
+        virtual subscription    &make_subscription(connection &conn);
 
     public:
-        static subscription_factory *default_factory();
+        static subscription_factory &default_factory();
 };
 
 /** @brief subscription class.
@@ -91,16 +91,16 @@ class subscription : public vlg::collectable {
         virtual vlg::collector &get_collector();
 
     public:
-        vlg::RetCode bind(connection &conn);
+        RetCode bind(connection &conn);
 
     public:
-        connection                  *get_connection();
+        connection                  &get_connection();
         unsigned int                get_id();
         unsigned int                get_nclass_id();
-        SubscriptionType            get_type()             const;
-        SubscriptionMode            get_mode()             const;
-        SubscriptionFlowType        get_flow_type()        const;
-        SubscriptionDownloadType    get_download_type()    const;
+        SubscriptionType            get_type()              const;
+        SubscriptionMode            get_mode()              const;
+        SubscriptionFlowType        get_flow_type()         const;
+        SubscriptionDownloadType    get_download_type()     const;
         Encode                      get_nclass_encode()     const;
         unsigned int                get_open_timestamp_0()  const;
         unsigned int                get_open_timestamp_1()  const;
@@ -120,7 +120,7 @@ class subscription : public vlg::collectable {
         SubscriptionStatus get_status() const;
 
     public:
-        vlg::RetCode
+        RetCode
         await_for_status_reached_or_outdated(SubscriptionStatus test,
                                              SubscriptionStatus &current,
                                              time_t sec = -1,
@@ -135,32 +135,29 @@ class subscription : public vlg::collectable {
                                       void *ud);
 
     public:
-        vlg::RetCode start();
+        RetCode start();
 
-        vlg::RetCode start(SubscriptionType           sbs_type,
-                           SubscriptionMode           sbs_mode,
-                           SubscriptionFlowType       sbs_flow_type,
-                           SubscriptionDownloadType   sbs_dwnl_type,
-                           Encode                     class_encode,
-                           unsigned int               nclass_id,
-                           unsigned int               open_timestamp_0 = 0,
-                           unsigned int               open_timestamp_1 = 0);
+        RetCode start(SubscriptionType           sbs_type,
+                      SubscriptionMode           sbs_mode,
+                      SubscriptionFlowType       sbs_flow_type,
+                      SubscriptionDownloadType   sbs_dwnl_type,
+                      Encode                     class_encode,
+                      unsigned int               nclass_id,
+                      unsigned int               open_timestamp_0 = 0,
+                      unsigned int               open_timestamp_1 = 0);
 
-        /* this function must be called from same thread that called start()*/
-        vlg::RetCode
-        await_for_start_result(SubscriptionResponse     &start_result,
-                               ProtocolCode             &start_protocode,
-                               time_t                   sec = -1,
-                               long                     nsec = 0);
+        RetCode await_for_start_result(SubscriptionResponse     &start_result,
+                                       ProtocolCode             &start_protocode,
+                                       time_t                   sec = -1,
+                                       long                     nsec = 0);
 
-        vlg::RetCode stop();
+        RetCode stop();
 
         /* this function must be called from same thread that called stop()*/
-        vlg::RetCode
-        await_for_stop_result(SubscriptionResponse      &stop_result,
-                              ProtocolCode              &stop_protocode,
-                              time_t                    sec = -1,
-                              long                      nsec = 0);
+        RetCode await_for_stop_result(SubscriptionResponse      &stop_result,
+                                      ProtocolCode              &stop_protocode,
+                                      time_t                    sec = -1,
+                                      long                      nsec = 0);
 
     public:
         virtual void on_start();
@@ -168,12 +165,11 @@ class subscription : public vlg::collectable {
         virtual void on_event(subscription_event &sbs_evt);
 
     public:
-        virtual vlg::RetCode
-        on_event_accept(const subscription_event &sbs_evt);
+        virtual RetCode on_event_accept(const subscription_event &sbs_evt);
 
     public:
-        subscription_impl *get_opaque();
-        void              set_opaque(subscription_impl *sbs);
+        subscription_impl   *get_opaque();
+        void                set_opaque(subscription_impl *sbs);
 
     private:
         subscription_impl_pub *impl_;

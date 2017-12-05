@@ -34,26 +34,26 @@ class c_peer : public peer {
 
     public:
         c_peer() :
-            pnh_wr_(NULL),
-            pvh_wr_(NULL),
-            plch_wr_(NULL),
-            pih_wr_(NULL),
-            pstarth_wr_(NULL),
-            pstoph_wr_(NULL),
-            ptoah_wr_(NULL),
-            peh_wr_(NULL),
-            pdbh_wr_(NULL),
-            psc_wr_(NULL),
-            psc_ud_(NULL),
-            pnh_wr_ud_(NULL),
-            pvh_wr_ud_(NULL),
-            plch_wr_ud_(NULL),
-            pih_wr_ud_(NULL),
-            pstarth_wr_ud_(NULL),
-            pstoph_wr_ud_(NULL),
-            ptoah_wr_ud_(NULL),
-            peh_wr_ud_(NULL),
-            pdbh_wr_ud_(NULL) {}
+            pnh_wr_(nullptr),
+            pvh_wr_(nullptr),
+            plch_wr_(nullptr),
+            pih_wr_(nullptr),
+            pstarth_wr_(nullptr),
+            pstoph_wr_(nullptr),
+            ptoah_wr_(nullptr),
+            peh_wr_(nullptr),
+            pdbh_wr_(nullptr),
+            psc_wr_(nullptr),
+            psc_ud_(nullptr),
+            pnh_wr_ud_(nullptr),
+            pvh_wr_ud_(nullptr),
+            plch_wr_ud_(nullptr),
+            pih_wr_ud_(nullptr),
+            pstarth_wr_ud_(nullptr),
+            pstoph_wr_ud_(nullptr),
+            ptoah_wr_ud_(nullptr),
+            peh_wr_ud_(nullptr),
+            pdbh_wr_ud_(nullptr) {}
 
     public:
         // LIFECYCLE - User mandatory entrypoints
@@ -61,14 +61,14 @@ class c_peer : public peer {
             if(pnh_wr_) {
                 return pnh_wr_((peer_wr)this, pnh_wr_ud_);
             }
-            return NULL;
+            return nullptr;
         }
 
         virtual const unsigned int *version_handler() {
             if(pvh_wr_) {
                 return pvh_wr_((peer_wr)this, pvh_wr_ud_);
             }
-            return NULL;
+            return nullptr;
         }
 
         // LIFECYCLE - User opt. entrypoints

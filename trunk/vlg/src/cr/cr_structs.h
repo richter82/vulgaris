@@ -512,7 +512,7 @@ class hash_map {
         @param copy
         @return RetCode_OK if the specified key is mapped,
         RetCode_KO if this map contains no mapping for the key, or
-        RetCode_BDARG if key is NULL.
+        RetCode_BDARG if key is nullptr.
         */
         RetCode     contains_key(const void *key)        const;
 
@@ -535,7 +535,7 @@ class hash_map {
         @param copy
         @return RetCode_OK if the specified key is mapped,
         RetCode_KO if this map contains no mapping for the key, or
-        RetCode_BDARG if key is NULL.
+        RetCode_BDARG if key is nullptr.
         */
         RetCode     get(const void *key,
                         void *copy)          const;
@@ -543,7 +543,7 @@ class hash_map {
         /**
         @param key
         @return a pointer to the element or
-        NULL if this map contains no mapping for the key
+        nullptr if this map contains no mapping for the key
         */
         const void  *get(const void *key)       const;
 

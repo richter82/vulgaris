@@ -83,7 +83,7 @@ class synch_linked_list {
         @param attr
         @return
         */
-        RetCode init(pthread_rwlockattr_t *attr = NULL);
+        RetCode init(pthread_rwlockattr_t *attr = nullptr);
 
         /**
         @param idx
@@ -324,7 +324,7 @@ class synch_hash_map {
         @return
         */
         RetCode init(uint32_t hash_size,
-                     pthread_rwlockattr_t *attr = NULL);
+                     pthread_rwlockattr_t *attr = nullptr);
 
         /**
         @return
@@ -336,7 +336,7 @@ class synch_hash_map {
         @param copy
         @return RetCode_OK if the specified key is mapped,
         RetCode_KO if this map contains no mapping for the key or
-        RetCode_BDARG if key is NULL.
+        RetCode_BDARG if key is nullptr.
         */
         RetCode contains_key(const void *key) const;
 
@@ -377,7 +377,7 @@ class synch_hash_map {
         @param copy
         @return RetCode_OK if the specified key is mapped,
         RetCode_KO if this map contains no mapping for the key, or
-        RetCode_BDARG if key is NULL.
+        RetCode_BDARG if key is nullptr.
         */
         RetCode get(const void *key,
                     void *copy) const;

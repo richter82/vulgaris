@@ -31,9 +31,9 @@ vlg::ascii_string unit_nmspace;
 /***********************************
 HMAP: tcomp_packing_map
 ***********************************/
-static vlg::hash_map *tcomp_packing_map = NULL;
+static vlg::hash_map *tcomp_packing_map = nullptr;
 
-vlg::RetCode LoadTCompPackingMap(vlg::hash_map &map)
+RetCode LoadTCompPackingMap(vlg::hash_map &map)
 {
     size_t packing_value = 8;
     unsigned int key = 0;
@@ -73,9 +73,9 @@ vlg::hash_map &GetTCompPackingMap()
 HMAP: rword_map
 ***********************************/
 
-static vlg::hash_map *rword_map = NULL;
+static vlg::hash_map *rword_map = nullptr;
 
-vlg::RetCode LoadResWordsMap(vlg::hash_map &map)
+RetCode LoadResWordsMap(vlg::hash_map &map)
 {
     RETURN_IF_NOT_OK(map.put(VLG_RWRD_PFX VLG_RWRD_ENUM, ""))
     RETURN_IF_NOT_OK(map.put(VLG_RWRD_PFX VLG_RWRD_NCLASS, ""))
@@ -110,9 +110,9 @@ vlg::hash_map &GetResWordsMap()
 HMAP: types_map
 ***********************************/
 
-static vlg::hash_map *types_map = NULL;
+static vlg::hash_map *types_map = nullptr;
 
-vlg::RetCode LoadTypesMap(vlg::hash_map &map)
+RetCode LoadTypesMap(vlg::hash_map &map)
 {
     RETURN_IF_NOT_OK(map.put(VLG_RWORD_T_BOOL, ""))
     RETURN_IF_NOT_OK(map.put(VLG_RWORD_T_INT_16, ""))
@@ -249,14 +249,14 @@ CONSISTENCY- VLG_COMP_CheckSymbol
 ***********************************/
 
 //@fixme: add separator check (,)
-vlg::RetCode VLG_COMP_CheckSymbol(unsigned long &lnum,
-                                  vlg::ascii_string &tkn,
-                                  vlg::hash_map *definemap,
-                                  vlg::hash_map *entitymap,
-                                  vlg::hash_map *mmbrmap,
-                                  const char *FND_CGT,    //found category
-                                  const char *EXP_CTG     //expected category
-                                 )
+RetCode VLG_COMP_CheckSymbol(unsigned long &lnum,
+                             vlg::ascii_string &tkn,
+                             vlg::hash_map *definemap,
+                             vlg::hash_map *entitymap,
+                             vlg::hash_map *mmbrmap,
+                             const char *FND_CGT,    //found category
+                             const char *EXP_CTG     //expected category
+                            )
 {
     //we expect symb name, so we return with error if newline found.
     if(is_new_line(tkn)) {
@@ -295,12 +295,12 @@ vlg::RetCode VLG_COMP_CheckSymbol(unsigned long &lnum,
 CONSISTENCY- VLG_COMP_CheckKeySymbol
 ***********************************/
 //@fixme: add separator check (,)
-vlg::RetCode VLG_COMP_CheckKeySymbol(unsigned long &lnum,
-                                     vlg::ascii_string &tkn,
-                                     vlg::hash_map *mmbrmap,
-                                     const char *FND_CGT,    //found category
-                                     const char *EXP_CTG     //expected category
-                                    )
+RetCode VLG_COMP_CheckKeySymbol(unsigned long &lnum,
+                                vlg::ascii_string &tkn,
+                                vlg::hash_map *mmbrmap,
+                                const char *FND_CGT,    //found category
+                                const char *EXP_CTG     //expected category
+                               )
 {
     vlg::ascii_string hint;
     COMMAND_IF_NOT_OK(hint.assign(FND_CGT), exit(1))
@@ -332,8 +332,8 @@ vlg::RetCode VLG_COMP_CheckKeySymbol(unsigned long &lnum,
 /***********************************
 READ- VLG_COMP_ReadOpeningCurlyBrace
 ***********************************/
-vlg::RetCode VLG_COMP_ReadOpeningCurlyBrace(unsigned long &lnum,
-                                            vlg::ascii_string_tok &tknz)
+RetCode VLG_COMP_ReadOpeningCurlyBrace(unsigned long &lnum,
+                                       vlg::ascii_string_tok &tknz)
 {
     vlg::ascii_string tkn;
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_TK_CBL, true)) {
@@ -351,9 +351,9 @@ vlg::RetCode VLG_COMP_ReadOpeningCurlyBrace(unsigned long &lnum,
 /***********************************
 READ- VLG_COMP_ReadInteger
 ***********************************/
-vlg::RetCode VLG_COMP_ReadInteger(unsigned long &lnum,
-                                  vlg::ascii_string_tok &tknz,
-                                  long &along)
+RetCode VLG_COMP_ReadInteger(unsigned long &lnum,
+                             vlg::ascii_string_tok &tknz,
+                             long &along)
 {
     vlg::ascii_string tkn;
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_TK_COMA, true)) {
@@ -376,10 +376,10 @@ vlg::RetCode VLG_COMP_ReadInteger(unsigned long &lnum,
 /***********************************
 READ- VLG_COMP_ReadString
 ***********************************/
-vlg::RetCode VLG_COMP_ReadString(unsigned long &lnum,
-                                 vlg::ascii_string_tok &tknz,
-                                 char **newstr, bool begin_quote_read = false,
-                                 bool opt = false)
+RetCode VLG_COMP_ReadString(unsigned long &lnum,
+                            vlg::ascii_string_tok &tknz,
+                            char **newstr, bool begin_quote_read = false,
+                            bool opt = false)
 {
     vlg::ascii_string tkn;
     if(!begin_quote_read) {
@@ -423,14 +423,14 @@ vlg::RetCode VLG_COMP_ReadString(unsigned long &lnum,
 /***********************************
 PARSE- VLG_COMP_ParseVal
 ***********************************/
-vlg::RetCode VLG_COMP_ParseVal(unsigned long &lnum,
-                               unsigned short &mmbrid,
-                               vlg::ascii_string &symb_name,
-                               long &last_enum_val,
-                               vlg::ascii_string_tok &tknz,
-                               vlg::hash_map &definemap,
-                               vlg::hash_map &entitymap,
-                               vlg::hash_map &mmbrmap)
+RetCode VLG_COMP_ParseVal(unsigned long &lnum,
+                          unsigned short &mmbrid,
+                          vlg::ascii_string &symb_name,
+                          long &last_enum_val,
+                          vlg::ascii_string_tok &tknz,
+                          vlg::hash_map &definemap,
+                          vlg::hash_map &entitymap,
+                          vlg::hash_map &mmbrmap)
 {
     RETURN_IF_NOT_OK(VLG_COMP_CheckSymbol(lnum,
                                           symb_name,
@@ -444,7 +444,7 @@ vlg::RetCode VLG_COMP_ParseVal(unsigned long &lnum,
     vlg::ascii_string tkn;
     long enum_val = last_enum_val + 1;
     bool enum_val_read = false;
-    char *desc = NULL;
+    char *desc = nullptr;
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_TK_EQUAL CR_TK_QT, true)) {
         CR_SKIP_SP_TABS(tkn)
         if(tkn == CR_TK_EQUAL) {
@@ -471,7 +471,7 @@ vlg::RetCode VLG_COMP_ParseVal(unsigned long &lnum,
     }
     last_enum_val = enum_val;
     //at this point we can create a VLG_MEMBER_DESC_COMP for this enum member
-    member_desc_comp *mmbrdesc = NULL;
+    member_desc_comp *mmbrdesc = nullptr;
     COMMAND_IF_NULL(
         mmbrdesc = new member_desc_comp(mmbrid,
                                         MemberType_NENUM_VALUE,
@@ -480,7 +480,7 @@ vlg::RetCode VLG_COMP_ParseVal(unsigned long &lnum,
                                         Type_INT32,
                                         1,
                                         0,
-                                        NULL,
+                                        nullptr,
                                         NEntityType_NENUM,
                                         last_enum_val), exit(1))
     COMMAND_IF_NOT_OK(mmbrdesc->init(), exit(1))
@@ -515,13 +515,13 @@ PARSE- VLG_COMP_ParseNMemb
 we expect an integer value or an expression (a + b + c ..)
 or a combination of (a + DEFINE_0 + b + DEFINE_1...)
 ***********************************/
-vlg::RetCode VLG_COMP_ParseNMemb(unsigned long &lnum,
-                                 vlg::ascii_string_tok &tknz,
-                                 vlg::hash_map &definemap,
-                                 size_t &nmemb)
+RetCode VLG_COMP_ParseNMemb(unsigned long &lnum,
+                            vlg::ascii_string_tok &tknz,
+                            vlg::hash_map &definemap,
+                            size_t &nmemb)
 {
     vlg::ascii_string tkn;
-    const char *define_val = NULL;
+    const char *define_val = nullptr;
     bool exp_valid = false, plus_allwd = false;
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_TK_PLUS CR_TK_RBR, true)) {
         CR_SKIP_SP_TABS(tkn)
@@ -567,17 +567,17 @@ vlg::RetCode VLG_COMP_ParseNMemb(unsigned long &lnum,
 /***********************************
 PARSE- VLG_COMP_ParseType
 ***********************************/
-vlg::RetCode VLG_COMP_ParseType(unsigned long &lnum,
-                                vlg::ascii_string &str_vlg_type,
-                                vlg::ascii_string_tok &tknz,
-                                vlg::hash_map &definemap,
-                                vlg::hash_map &entitymap,
-                                Type &vlg_type,
-                                size_t &nmemb,
-                                entity_desc_comp **desc,
-                                vlg::ascii_string &symb_name)
+RetCode VLG_COMP_ParseType(unsigned long &lnum,
+                           vlg::ascii_string &str_vlg_type,
+                           vlg::ascii_string_tok &tknz,
+                           vlg::hash_map &definemap,
+                           vlg::hash_map &entitymap,
+                           Type &vlg_type,
+                           size_t &nmemb,
+                           entity_desc_comp **desc,
+                           vlg::ascii_string &symb_name)
 {
-    entity_desc_comp *tmpdesc = NULL;
+    entity_desc_comp *tmpdesc = nullptr;
     if(!GetTypesMap().contains_key(str_vlg_type.internal_buff())) {
         //build-in type
         vlg_type = VLG_COMP_StrToTYPE(str_vlg_type);
@@ -613,14 +613,14 @@ vlg::RetCode VLG_COMP_ParseType(unsigned long &lnum,
 /***********************************
 CALC- VLG_COMP_CalcFieldOffset
 ***********************************/
-vlg::RetCode VLG_COMP_CalcFieldOffset(size_t max_align,
-                                      size_t &mmbr_offset,
-                                      vlg::hash_map &entitymap,
-                                      vlg::hash_map &mmbrmap,
-                                      VLG_COMP_ARCH arch,
-                                      VLG_COMP_OS os,
-                                      VLG_COMP_LANG lang,
-                                      VLG_COMP_TCOMP tcomp)
+RetCode VLG_COMP_CalcFieldOffset(size_t max_align,
+                                 size_t &mmbr_offset,
+                                 vlg::hash_map &entitymap,
+                                 vlg::hash_map &mmbrmap,
+                                 VLG_COMP_ARCH arch,
+                                 VLG_COMP_OS os,
+                                 VLG_COMP_LANG lang,
+                                 VLG_COMP_TCOMP tcomp)
 {
     //get cur_offset and compute next
     size_t cur_offst = mmbr_offset;
@@ -634,16 +634,16 @@ vlg::RetCode VLG_COMP_CalcFieldOffset(size_t max_align,
     COMMAND_IF_NOT_OK(GetTCompPackingMap().get(&key, &packing),
                       EXIT_ACTION)
     mmbrmap.start_iteration();
-    member_desc_comp *mdesc = NULL;
+    member_desc_comp *mdesc = nullptr;
     //enumerate all members
-    while(!mmbrmap.next(NULL, &mdesc)) {
+    while(!mmbrmap.next(nullptr, &mdesc)) {
         //it is scalar if it is a primitive type or an enum
         bool scalar = (mdesc->get_field_type() != Type_ENTITY) ||
                       (mdesc->get_field_entity_type() == NEntityType_NENUM);
         if(mdesc->get_field_type() == Type_ENTITY &&
                 mdesc->get_field_entity_type() != NEntityType_NENUM) {
             //we get max align if it is a struct/class
-            entity_desc_comp *edesc = NULL;
+            entity_desc_comp *edesc = nullptr;
             if(entitymap.get(mdesc->get_field_usr_str_type(), &edesc)) {
                 return vlg::RetCode_KO;
             }
@@ -678,22 +678,22 @@ vlg::RetCode VLG_COMP_CalcFieldOffset(size_t max_align,
 /***********************************
 CALC- VLG_COMP_CalcFieldsSizeAndEntityMaxAlign
 ***********************************/
-vlg::RetCode VLG_COMP_CalcFieldsSizeAndEntityMaxAlign(size_t &max_align,
-                                                      vlg::hash_map &entitymap,
-                                                      vlg::hash_map &mmbrmap,
-                                                      VLG_COMP_ARCH arch,
-                                                      VLG_COMP_OS os,
-                                                      VLG_COMP_LANG lang,
-                                                      VLG_COMP_TCOMP tcomp)
+RetCode VLG_COMP_CalcFieldsSizeAndEntityMaxAlign(size_t &max_align,
+                                                 vlg::hash_map &entitymap,
+                                                 vlg::hash_map &mmbrmap,
+                                                 VLG_COMP_ARCH arch,
+                                                 VLG_COMP_OS os,
+                                                 VLG_COMP_LANG lang,
+                                                 VLG_COMP_TCOMP tcomp)
 {
     size_t type_size = 0;
     mmbrmap.start_iteration();
-    member_desc_comp *mdesc = NULL;
+    member_desc_comp *mdesc = nullptr;
     //enumerate all members
-    while(!mmbrmap.next(NULL, &mdesc)) {
+    while(!mmbrmap.next(nullptr, &mdesc)) {
         if(mdesc->get_field_type() == Type_ENTITY) {
             //user-defined type
-            entity_desc_comp *fld_entity_desc = NULL;
+            entity_desc_comp *fld_entity_desc = nullptr;
             if(!entitymap.get(mdesc->get_field_usr_str_type(), &fld_entity_desc)) {
                 type_size = fld_entity_desc->get_size(arch,
                                                       os,
@@ -728,15 +728,15 @@ vlg::RetCode VLG_COMP_CalcFieldsSizeAndEntityMaxAlign(size_t &max_align,
 /***********************************
 CALC- VLG_COMP_CalcTCompDependantValues
 ***********************************/
-vlg::RetCode VLG_COMP_CalcTCompDependantValues(size_t max_align,
-                                               size_t field_offset,
-                                               entity_desc_comp &entitydesc,
-                                               vlg::hash_map &entitymap,
-                                               vlg::hash_map &mmbrmap,
-                                               VLG_COMP_ARCH arch,
-                                               VLG_COMP_OS os,
-                                               VLG_COMP_LANG lang,
-                                               VLG_COMP_TCOMP tcomp)
+RetCode VLG_COMP_CalcTCompDependantValues(size_t max_align,
+                                          size_t field_offset,
+                                          entity_desc_comp &entitydesc,
+                                          vlg::hash_map &entitymap,
+                                          vlg::hash_map &mmbrmap,
+                                          VLG_COMP_ARCH arch,
+                                          VLG_COMP_OS os,
+                                          VLG_COMP_LANG lang,
+                                          VLG_COMP_TCOMP tcomp)
 {
     RETURN_IF_NOT_OK(VLG_COMP_CalcFieldsSizeAndEntityMaxAlign(max_align,
                                                               entitymap,
@@ -786,19 +786,19 @@ vlg::RetCode VLG_COMP_CalcTCompDependantValues(size_t max_align,
 /***********************************
 PARSE- VLG_COMP_ParseFild
 ***********************************/
-vlg::RetCode VLG_COMP_ParseFild(unsigned long &lnum,
-                                unsigned short &mmbrid,
-                                vlg::ascii_string &str_vlg_type,
-                                vlg::ascii_string_tok &tknz,
-                                vlg::hash_map &definemap,
-                                vlg::hash_map &entitymap,
-                                vlg::hash_map &mmbrmap)
+RetCode VLG_COMP_ParseFild(unsigned long &lnum,
+                           unsigned short &mmbrid,
+                           vlg::ascii_string &str_vlg_type,
+                           vlg::ascii_string_tok &tknz,
+                           vlg::hash_map &definemap,
+                           vlg::hash_map &entitymap,
+                           vlg::hash_map &mmbrmap)
 {
     vlg::ascii_string tkn, symb_name;
     Type fld_type = Type_UNDEFINED;
     size_t fld_nmemb = 0;
-    entity_desc_comp *fld_entity_desc = NULL;
-    char *fld_desc = NULL;
+    entity_desc_comp *fld_entity_desc = nullptr;
+    char *fld_desc = nullptr;
 
     RETURN_IF_NOT_OK(VLG_COMP_ParseType(lnum,
                                         str_vlg_type,
@@ -849,7 +849,7 @@ vlg::RetCode VLG_COMP_ParseFild(unsigned long &lnum,
         fld_entityid = fld_entity_desc->get_entityid();
     }
     //at this point we can create a VLG_MEMBER_DESC_COMP for this field
-    member_desc_comp *mmbrdesc = NULL;
+    member_desc_comp *mmbrdesc = nullptr;
     COMMAND_IF_NULL(mmbrdesc = new member_desc_comp(mmbrid,
                                                     MemberType_FIELD,
                                                     symb_name.new_buffer(),
@@ -857,7 +857,7 @@ vlg::RetCode VLG_COMP_ParseFild(unsigned long &lnum,
                                                     fld_type,
                                                     fld_nmemb,
                                                     fld_entityid,
-                                                    (fld_type == Type_ENTITY) ? fld_entity_desc->get_nentity_name() : NULL,
+                                                    (fld_type == Type_ENTITY) ? fld_entity_desc->get_nentity_name() : nullptr,
                                                     etype,
                                                     0   //not sign. for fields
                                                    ), exit(1))
@@ -869,13 +869,13 @@ vlg::RetCode VLG_COMP_ParseFild(unsigned long &lnum,
 /***********************************
 PARSE- VLG_COMP_ParseId
 ***********************************/
-vlg::RetCode VLG_COMP_ParseId(unsigned long &lnum,
-                              vlg::ascii_string_tok &tknz,
-                              vlg::hash_map &definemap,
-                              unsigned int &id)
+RetCode VLG_COMP_ParseId(unsigned long &lnum,
+                         vlg::ascii_string_tok &tknz,
+                         vlg::hash_map &definemap,
+                         unsigned int &id)
 {
     vlg::ascii_string tkn;
-    const char *define_val = NULL;
+    const char *define_val = nullptr;
     while(!tknz.next_token(tkn, CR_DF_DLMT, true)) {
         CR_SKIP_SP_TABS(tkn)
         if(vlg::string_is_number(tkn.internal_buff())) {
@@ -904,19 +904,19 @@ vlg::RetCode VLG_COMP_ParseId(unsigned long &lnum,
 /***********************************
 PARSE- VLG_COMP_ParseFildSet
 ***********************************/
-vlg::RetCode VLG_COMP_ParseFildSet(unsigned long &lnum,
-                                   vlg::ascii_string_tok &tknz,
-                                   vlg::hash_map &definemap,
-                                   vlg::hash_map &entitymap,
-                                   vlg::hash_map &mmbrmap,
-                                   vlg::hash_map &keymap,
-                                   vlg::linked_list  &mmbrset)
+RetCode VLG_COMP_ParseFildSet(unsigned long &lnum,
+                              vlg::ascii_string_tok &tknz,
+                              vlg::hash_map &definemap,
+                              vlg::hash_map &entitymap,
+                              vlg::hash_map &mmbrmap,
+                              vlg::hash_map &keymap,
+                              vlg::linked_list  &mmbrset)
 {
     vlg::ascii_string tkn;
     bool    fildset_valid = false,
             cbl_read = false,
             fild_reading_allwd = false;
-    void *mmbrptr = NULL;
+    void *mmbrptr = nullptr;
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_TK_COMA CR_TK_CBL CR_TK_CBR, true)) {
         CR_SKIP_SP_TABS(tkn)
         if(tkn == CR_TK_CBL) {
@@ -969,12 +969,12 @@ vlg::RetCode VLG_COMP_ParseFildSet(unsigned long &lnum,
 /***********************************
 PARSE- VLG_COMP_ParseKey
 ***********************************/
-vlg::RetCode VLG_COMP_ParseKey(unsigned long &lnum,
-                               vlg::ascii_string_tok &tknz,
-                               vlg::hash_map &definemap,
-                               vlg::hash_map &entitymap,
-                               vlg::hash_map &mmbrmap,
-                               vlg::hash_map &keymap)
+RetCode VLG_COMP_ParseKey(unsigned long &lnum,
+                          vlg::ascii_string_tok &tknz,
+                          vlg::hash_map &definemap,
+                          vlg::hash_map &entitymap,
+                          vlg::hash_map &mmbrmap,
+                          vlg::hash_map &keymap)
 {
     vlg::ascii_string tkn;
     unsigned int k_id = 0;
@@ -1030,7 +1030,7 @@ vlg::RetCode VLG_COMP_ParseKey(unsigned long &lnum,
         }
     }
     //at this point we can create a VLG_KEY_DESC for this key
-    key_desc_comp *keydesc = NULL;
+    key_desc_comp *keydesc = nullptr;
     COMMAND_IF_NULL(keydesc = new key_desc_comp((unsigned short)k_id,
                                                 primary), exit(1))
     COMMAND_IF_NOT_OK(keydesc->init(&mmbrset), exit(1))
@@ -1041,10 +1041,10 @@ vlg::RetCode VLG_COMP_ParseKey(unsigned long &lnum,
 /***********************************
 PARSE- VLG_COMP_ParseEnum
 ***********************************/
-vlg::RetCode VLG_COMP_ParseEnum(unsigned long &lnum,
-                                vlg::ascii_string_tok &tknz,
-                                vlg::hash_map &definemap,
-                                vlg::hash_map &entitymap)
+RetCode VLG_COMP_ParseEnum(unsigned long &lnum,
+                           vlg::ascii_string_tok &tknz,
+                           vlg::hash_map &definemap,
+                           vlg::hash_map &entitymap)
 {
     vlg::ascii_string tkn, symb_name;
     while(!tknz.next_token(tkn, CR_DF_DLMT CR_CB_DLMT, true)) {
@@ -1053,7 +1053,7 @@ vlg::RetCode VLG_COMP_ParseEnum(unsigned long &lnum,
                                               tkn,
                                               &definemap,
                                               &entitymap,
-                                              NULL,
+                                              nullptr,
                                               VLG_COMP_RSRV_WORD,
                                               VLG_COMP_SYMB_NAME)
                         )
@@ -1086,7 +1086,7 @@ vlg::RetCode VLG_COMP_ParseEnum(unsigned long &lnum,
     uint32_t field_num = 0;
     mmbrmap.size(field_num);
     //at this point we can create a VLG_ENTITY_DESC_COMP for this ENUM
-    entity_desc_comp *entitydesc = NULL;
+    entity_desc_comp *entitydesc = nullptr;
     COMMAND_IF_NULL(entitydesc = new entity_desc_comp(0,  //0 for enum
                                                       NEntityType_NENUM,
                                                       unit_nmspace.new_buffer(),
@@ -1095,12 +1095,12 @@ vlg::RetCode VLG_COMP_ParseEnum(unsigned long &lnum,
                                                       field_num, //field num
                                                       false),exit(1))
     COMMAND_IF_NOT_OK(entitydesc->init(), exit(1))
-    //-----------------------------
+
     // VLG_COMP_ARCH: x86_64
     // VLG_COMP_OS: win
     // VLG_COMP_LANG: CPP
     // VLG_COMP_TCOMP: MSVC
-    //-----------------------------
+
     entitydesc->set_entity_size(4,
                                 VLG_COMP_ARCH_x86_64,
                                 VLG_COMP_OS_win,
@@ -1111,12 +1111,12 @@ vlg::RetCode VLG_COMP_ParseEnum(unsigned long &lnum,
                                      VLG_COMP_OS_win,
                                      VLG_COMP_LANG_CPP,
                                      VLG_COMP_TCOMP_MSVC);
-    //-----------------------------
+
     // VLG_COMP_ARCH: x86_64
     // VLG_COMP_OS: unix
     // VLG_COMP_LANG: CPP
     // VLG_COMP_TCOMP: gcc
-    //-----------------------------
+
     entitydesc->set_entity_size(4,
                                 VLG_COMP_ARCH_x86_64,
                                 VLG_COMP_OS_unix,
@@ -1127,7 +1127,7 @@ vlg::RetCode VLG_COMP_ParseEnum(unsigned long &lnum,
                                      VLG_COMP_OS_unix,
                                      VLG_COMP_LANG_CPP,
                                      VLG_COMP_TCOMP_GCC);
-    COMMAND_IF_NOT_OK(entitydesc->extend(&mmbrmap, NULL), exit(1))
+    COMMAND_IF_NOT_OK(entitydesc->extend(&mmbrmap, nullptr), exit(1))
     COMMAND_IF_NOT_OK(entitymap.put(entitydesc->get_nentity_name(), &entitydesc),
                       exit(1))
     return vlg::RetCode_OK;
@@ -1136,10 +1136,10 @@ vlg::RetCode VLG_COMP_ParseEnum(unsigned long &lnum,
 /***********************************
 PARSE- VLG_COMP_ParseClass
 ***********************************/
-vlg::RetCode VLG_COMP_ParseEntity(unsigned long &lnum,
-                                  vlg::ascii_string_tok &tknz,
-                                  vlg::hash_map &definemap,
-                                  vlg::hash_map &entitymap)
+RetCode VLG_COMP_ParseEntity(unsigned long &lnum,
+                             vlg::ascii_string_tok &tknz,
+                             vlg::hash_map &definemap,
+                             vlg::hash_map &entitymap)
 {
     bool id_decl = false;
     vlg::ascii_string tkn, symb_name;
@@ -1149,7 +1149,7 @@ vlg::RetCode VLG_COMP_ParseEntity(unsigned long &lnum,
                                               tkn,
                                               &definemap,
                                               &entitymap,
-                                              NULL,
+                                              nullptr,
                                               VLG_COMP_RSRV_WORD,
                                               VLG_COMP_SYMB_NAME)
                         )
@@ -1227,7 +1227,7 @@ vlg::RetCode VLG_COMP_ParseEntity(unsigned long &lnum,
     uint32_t field_num = 0;
     mmbrmap.size(field_num);
     //at this point we can create a VLG_ENTITY_DESC_COMP for this Class
-    entity_desc_comp *entitydesc = NULL;
+    entity_desc_comp *entitydesc = nullptr;
     COMMAND_IF_NULL(entitydesc = new entity_desc_comp(nclass_id,
                                                       NEntityType_NCLASS,
                                                       unit_nmspace.new_buffer(),
@@ -1238,12 +1238,12 @@ vlg::RetCode VLG_COMP_ParseEntity(unsigned long &lnum,
     COMMAND_IF_NOT_OK(entitydesc->init(), exit(1))
     size_t max_align = 1;
     size_t field_offset = NCLASS_DERREP_STRT_OFFST_x86_64;
-    //-----------------------------
+
     // VLG_COMP_ARCH: x86_64
     // VLG_COMP_OS: win
     // VLG_COMP_LANG: CPP
     // VLG_COMP_TCOMP: MSVC
-    //-----------------------------
+
     RETURN_IF_NOT_OK(VLG_COMP_CalcTCompDependantValues(max_align,
                                                        field_offset,
                                                        *entitydesc,
@@ -1253,12 +1253,12 @@ vlg::RetCode VLG_COMP_ParseEntity(unsigned long &lnum,
                                                        VLG_COMP_OS_win,
                                                        VLG_COMP_LANG_CPP,
                                                        VLG_COMP_TCOMP_MSVC))
-    //-----------------------------
+
     // VLG_COMP_ARCH: x86_64
     // VLG_COMP_OS: unix
     // VLG_COMP_LANG: CPP
     // VLG_COMP_TCOMP: gcc
-    //-----------------------------
+
     max_align = 1;
     field_offset = NCLASS_DERREP_STRT_OFFST_x86_64;
     RETURN_IF_NOT_OK(VLG_COMP_CalcTCompDependantValues(max_align,
@@ -1279,10 +1279,10 @@ vlg::RetCode VLG_COMP_ParseEntity(unsigned long &lnum,
 /***********************************
 PARSE- VLG_COMP_ParseDefine
 ***********************************/
-vlg::RetCode VLG_COMP_ParseDefine(unsigned long &lnum,
-                                  vlg::ascii_string_tok &tknz,
-                                  vlg::hash_map &definemap,
-                                  vlg::hash_map &entitymap)
+RetCode VLG_COMP_ParseDefine(unsigned long &lnum,
+                             vlg::ascii_string_tok &tknz,
+                             vlg::hash_map &definemap,
+                             vlg::hash_map &entitymap)
 {
     vlg::ascii_string tkn, define_name, define_val;
     //@fixme add separators and special chars
@@ -1292,7 +1292,7 @@ vlg::RetCode VLG_COMP_ParseDefine(unsigned long &lnum,
                                               tkn,
                                               &definemap,
                                               &entitymap,
-                                              NULL,
+                                              nullptr,
                                               VLG_COMP_RSRV_WORD,
                                               VLG_COMP_SYMB_NAME)
                         )
@@ -1319,16 +1319,16 @@ vlg::RetCode VLG_COMP_ParseDefine(unsigned long &lnum,
 PARSE- VLG_COMP_ParseInclude
 ***********************************/
 
-vlg::RetCode VLG_COMP_ParseInclude(unsigned long &lnum,
-                                   vlg::ascii_string_tok &tknz,
-                                   vlg::hash_map &definemap,
-                                   vlg::hash_map &entitymap,
-                                   char **modname,
-                                   char **modver)
+RetCode VLG_COMP_ParseInclude(unsigned long &lnum,
+                              vlg::ascii_string_tok &tknz,
+                              vlg::hash_map &definemap,
+                              vlg::hash_map &entitymap,
+                              char **modname,
+                              char **modver)
 {
-    char *incl_fname = NULL;
+    char *incl_fname = nullptr;
     RETURN_IF_NOT_OK(VLG_COMP_ReadString(lnum, tknz, &incl_fname))
-    FILE *fdesc = NULL;
+    FILE *fdesc = nullptr;
     vlg::ascii_string data; //file content loaded on data
     RETURN_IF_NOT_OK(open_input_file(incl_fname, &fdesc))
     RETURN_IF_NOT_OK(load_file(fdesc, data))
@@ -1352,12 +1352,12 @@ vlg::RetCode VLG_COMP_ParseInclude(unsigned long &lnum,
 /***********************************
 PARSE- VLG_COMP_ParseNamespace
 ***********************************/
-vlg::RetCode VLG_COMP_ParseNamespace(unsigned long &lnum,
-                                     vlg::ascii_string_tok &tknz,
-                                     vlg::hash_map &definemap,
-                                     vlg::hash_map &entitymap)
+RetCode VLG_COMP_ParseNamespace(unsigned long &lnum,
+                                vlg::ascii_string_tok &tknz,
+                                vlg::hash_map &definemap,
+                                vlg::hash_map &entitymap)
 {
-    char *n_space = NULL;
+    char *n_space = nullptr;
     RETURN_IF_NOT_OK(VLG_COMP_ReadString(lnum, tknz, &n_space))
     RETURN_IF_NOT_OK(unit_nmspace.assign(n_space))
     return vlg::RetCode_OK;
@@ -1366,10 +1366,10 @@ vlg::RetCode VLG_COMP_ParseNamespace(unsigned long &lnum,
 /***********************************
 PARSE- VLG_COMP_ParseNamespace_end
 ***********************************/
-vlg::RetCode VLG_COMP_ParseNamespace_end(unsigned long &lnum,
-                                         vlg::ascii_string_tok &tknz,
-                                         vlg::hash_map &definemap,
-                                         vlg::hash_map &entitymap)
+RetCode VLG_COMP_ParseNamespace_end(unsigned long &lnum,
+                                    vlg::ascii_string_tok &tknz,
+                                    vlg::hash_map &definemap,
+                                    vlg::hash_map &entitymap)
 {
     RETURN_IF_NOT_OK(unit_nmspace.assign(""))
     return vlg::RetCode_OK;
@@ -1378,11 +1378,11 @@ vlg::RetCode VLG_COMP_ParseNamespace_end(unsigned long &lnum,
 /***********************************
 PARSE- VLG_COMP_ParseModelName
 ***********************************/
-vlg::RetCode VLG_COMP_ParseModelName(unsigned long &lnum,
-                                     vlg::ascii_string_tok &tknz,
-                                     vlg::hash_map &definemap,
-                                     vlg::hash_map &entitymap,
-                                     char **modname)
+RetCode VLG_COMP_ParseModelName(unsigned long &lnum,
+                                vlg::ascii_string_tok &tknz,
+                                vlg::hash_map &definemap,
+                                vlg::hash_map &entitymap,
+                                char **modname)
 {
     RETURN_IF_NOT_OK(VLG_COMP_ReadString(lnum, tknz, modname))
     return vlg::RetCode_OK;
@@ -1391,11 +1391,11 @@ vlg::RetCode VLG_COMP_ParseModelName(unsigned long &lnum,
 /***********************************
 PARSE- VLG_COMP_ParseModelName
 ***********************************/
-vlg::RetCode VLG_COMP_ParseModelVer(unsigned long &lnum,
-                                    vlg::ascii_string_tok &tknz,
-                                    vlg::hash_map &definemap,
-                                    vlg::hash_map &entitymap,
-                                    char **modver)
+RetCode VLG_COMP_ParseModelVer(unsigned long &lnum,
+                               vlg::ascii_string_tok &tknz,
+                               vlg::hash_map &definemap,
+                               vlg::hash_map &entitymap,
+                               char **modver)
 {
     RETURN_IF_NOT_OK(VLG_COMP_ReadString(lnum, tknz, modver))
     return vlg::RetCode_OK;
@@ -1404,12 +1404,12 @@ vlg::RetCode VLG_COMP_ParseModelVer(unsigned long &lnum,
 /***********************************
 PARSE- VLG_COMP_ParseData
 ***********************************/
-vlg::RetCode parse_data(const char *fname,
-                        vlg::ascii_string &data,
-                        vlg::hash_map &definemap,
-                        vlg::hash_map &entitymap,
-                        char **modname,
-                        char **modver)
+RetCode parse_data(const char *fname,
+                   vlg::ascii_string &data,
+                   vlg::hash_map &definemap,
+                   vlg::hash_map &entitymap,
+                   char **modname,
+                   char **modver)
 {
     unsigned long lnum = 1;
     bool parsing_comment = false;

@@ -52,9 +52,9 @@ const char *rec_brackets_cond(member_desc_comp *mdsc)
 /***********************************
 GEN- VLG_COMP_JAVA_VLG_Entity_Ctor
 ***********************************/
-vlg::RetCode VLG_COMP_JAVA_VLG_Entity_Ctor(compile_unit &cunit,
-                                           entity_desc_comp &edsc,
-                                           FILE *file)
+RetCode VLG_COMP_JAVA_VLG_Entity_Ctor(compile_unit &cunit,
+                                      entity_desc_comp &edsc,
+                                      FILE *file)
 {
     fprintf(file,  "/*****************************************************\n"
             "ctor\n"
@@ -63,13 +63,13 @@ vlg::RetCode VLG_COMP_JAVA_VLG_Entity_Ctor(compile_unit &cunit,
     vlg::hash_map &entitymap = cunit.get_entity_map();
     vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
-    member_desc_comp *mdsc = NULL;
-    while(!mmbr_map.next(NULL, &mdsc)) {
+    member_desc_comp *mdsc = nullptr;
+    while(!mmbr_map.next(nullptr, &mdsc)) {
         if(mdsc->get_member_type() != MemberType_FIELD) {
             continue;
         }
         if(mdsc->get_field_type() == Type_ENTITY) {
-            entity_desc_comp *inner_edsc = NULL;
+            entity_desc_comp *inner_edsc = nullptr;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &inner_edsc)) {
                 if(inner_edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
@@ -162,9 +162,9 @@ java NClass abstract meths
 /***********************************
 GEN- ABSR_METH_ENT_COPY__Body_impl
 ***********************************/
-vlg::RetCode ABSR_METH_ENT_COPY__Body_impl(compile_unit &cunit,
-                                           entity_desc_comp &edsc,
-                                           FILE *file)
+RetCode ABSR_METH_ENT_COPY__Body_impl(compile_unit &cunit,
+                                      entity_desc_comp &edsc,
+                                      FILE *file)
 {
     fprintf(file, CR_1IND"if(!(out instanceof %s)){\n"
             CR_2IND"throw new IllegalArgumentException(\"not instanceof %s\");\n"
@@ -174,13 +174,13 @@ vlg::RetCode ABSR_METH_ENT_COPY__Body_impl(compile_unit &cunit,
     vlg::hash_map &entitymap = cunit.get_entity_map();
     vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
-    member_desc_comp *mdsc = NULL;
-    while(!mmbr_map.next(NULL, &mdsc)) {
+    member_desc_comp *mdsc = nullptr;
+    while(!mmbr_map.next(nullptr, &mdsc)) {
         if(mdsc->get_member_type() != MemberType_FIELD) {
             continue;
         }
         if(mdsc->get_field_type() == Type_ENTITY) {
-            entity_desc_comp *inner_edsc = NULL;
+            entity_desc_comp *inner_edsc = nullptr;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &inner_edsc)) {
                 if(inner_edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
@@ -236,9 +236,9 @@ vlg::RetCode ABSR_METH_ENT_COPY__Body_impl(compile_unit &cunit,
 /***********************************
 GEN- ABSR_METH_ENT_CLONE__Body_impl
 ***********************************/
-vlg::RetCode ABSR_METH_ENT_CLONE__Body_impl(compile_unit &cunit,
-                                            entity_desc_comp &edsc,
-                                            FILE *file)
+RetCode ABSR_METH_ENT_CLONE__Body_impl(compile_unit &cunit,
+                                       entity_desc_comp &edsc,
+                                       FILE *file)
 {
     fprintf(file, CR_1IND"NClass ne = new %s();\n", edsc.get_nentity_name());
     fprintf(file, CR_1IND"ne.set(this);\n");
@@ -249,21 +249,21 @@ vlg::RetCode ABSR_METH_ENT_CLONE__Body_impl(compile_unit &cunit,
 /***********************************
 GEN- ABSR_METH_ENT_ISZERO__Body_impl
 ***********************************/
-vlg::RetCode ABSR_METH_ENT_ISZERO__Body_impl(compile_unit &cunit,
-                                             entity_desc_comp &edsc,
-                                             FILE *file)
+RetCode ABSR_METH_ENT_ISZERO__Body_impl(compile_unit &cunit,
+                                        entity_desc_comp &edsc,
+                                        FILE *file)
 {
     vlg::ascii_string zero_val;
     vlg::hash_map &entitymap = cunit.get_entity_map();
     vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
-    member_desc_comp *mdsc = NULL;
-    while(!mmbr_map.next(NULL, &mdsc)) {
+    member_desc_comp *mdsc = nullptr;
+    while(!mmbr_map.next(nullptr, &mdsc)) {
         if(mdsc->get_member_type() != MemberType_FIELD) {
             continue;
         }
         if(mdsc->get_field_type() == Type_ENTITY) {
-            entity_desc_comp *inner_edsc = NULL;
+            entity_desc_comp *inner_edsc = nullptr;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &inner_edsc)) {
                 if(inner_edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
@@ -322,21 +322,21 @@ vlg::RetCode ABSR_METH_ENT_ISZERO__Body_impl(compile_unit &cunit,
 /***********************************
 GEN- ABSR_METH_ENT_SETZERO__Body_impl
 ***********************************/
-vlg::RetCode ABSR_METH_ENT_SETZERO__Body_impl(compile_unit &cunit,
-                                              entity_desc_comp &edsc,
-                                              FILE *file)
+RetCode ABSR_METH_ENT_SETZERO__Body_impl(compile_unit &cunit,
+                                         entity_desc_comp &edsc,
+                                         FILE *file)
 {
     vlg::ascii_string zero_val;
     vlg::hash_map &entitymap = cunit.get_entity_map();
     vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
-    member_desc_comp *mdsc = NULL;
-    while(!mmbr_map.next(NULL, &mdsc)) {
+    member_desc_comp *mdsc = nullptr;
+    while(!mmbr_map.next(nullptr, &mdsc)) {
         if(mdsc->get_member_type() != MemberType_FIELD) {
             continue;
         }
         if(mdsc->get_field_type() == Type_ENTITY) {
-            entity_desc_comp *inner_edsc = NULL;
+            entity_desc_comp *inner_edsc = nullptr;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &inner_edsc)) {
                 if(inner_edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
@@ -389,9 +389,9 @@ vlg::RetCode ABSR_METH_ENT_SETZERO__Body_impl(compile_unit &cunit,
 /***********************************
 GEN- ABSR_METH_ENT_SET__Body_impl
 ***********************************/
-vlg::RetCode ABSR_METH_ENT_SET__Body_impl(compile_unit &cunit,
-                                          entity_desc_comp &edsc,
-                                          FILE *file)
+RetCode ABSR_METH_ENT_SET__Body_impl(compile_unit &cunit,
+                                     entity_desc_comp &edsc,
+                                     FILE *file)
 {
     fprintf(file, CR_1IND"if(!(in instanceof %s)){\n"
             CR_2IND"throw new IllegalArgumentException(\"not instanceof %s\");\n"
@@ -401,13 +401,13 @@ vlg::RetCode ABSR_METH_ENT_SET__Body_impl(compile_unit &cunit,
     vlg::hash_map &entitymap = cunit.get_entity_map();
     vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
-    member_desc_comp *mdsc = NULL;
-    while(!mmbr_map.next(NULL, &mdsc)) {
+    member_desc_comp *mdsc = nullptr;
+    while(!mmbr_map.next(nullptr, &mdsc)) {
         if(mdsc->get_member_type() != MemberType_FIELD) {
             continue;
         }
         if(mdsc->get_field_type() == Type_ENTITY) {
-            entity_desc_comp *inner_edsc = NULL;
+            entity_desc_comp *inner_edsc = nullptr;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &inner_edsc)) {
                 if(inner_edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
@@ -463,9 +463,9 @@ vlg::RetCode ABSR_METH_ENT_SET__Body_impl(compile_unit &cunit,
 /***********************************
 GEN- ABSR_METH_ENT_GCOMPVER__Body_impl
 ***********************************/
-vlg::RetCode ABSR_METH_ENT_GCOMPVER__Body_impl(compile_unit &cunit,
-                                               entity_desc_comp &edsc,
-                                               FILE *file)
+RetCode ABSR_METH_ENT_GCOMPVER__Body_impl(compile_unit &cunit,
+                                          entity_desc_comp &edsc,
+                                          FILE *file)
 {
     fprintf(file, CR_1IND"return 0;\n");
     return vlg::RetCode_OK;
@@ -474,9 +474,9 @@ vlg::RetCode ABSR_METH_ENT_GCOMPVER__Body_impl(compile_unit &cunit,
 /***********************************
 GEN- ABSR_METH_ENT_GENTDSC__Body_impl
 ***********************************/
-vlg::RetCode ABSR_METH_ENT_GENTDSC__Body_impl(compile_unit &cunit,
-                                              entity_desc_comp &edsc,
-                                              FILE *file)
+RetCode ABSR_METH_ENT_GENTDSC__Body_impl(compile_unit &cunit,
+                                         entity_desc_comp &edsc,
+                                         FILE *file)
 {
     vlg::ascii_string ep_nm;
     ep_nm.append(cunit.model_name());
@@ -489,23 +489,23 @@ vlg::RetCode ABSR_METH_ENT_GENTDSC__Body_impl(compile_unit &cunit,
 /***********************************
 GEN- ABSR_METH_ENT_PTOBUF__NotZeroMode
 ***********************************/
-vlg::RetCode ABSR_METH_ENT_PTOBUF__NotZeroMode(compile_unit &cunit,
-                                               entity_desc_comp &edsc,
-                                               FILE *file)
+RetCode ABSR_METH_ENT_PTOBUF__NotZeroMode(compile_unit &cunit,
+                                          entity_desc_comp &edsc,
+                                          FILE *file)
 {
     vlg::ascii_string mb_nm;
     vlg::hash_map &entitymap = cunit.get_entity_map();
     vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
-    member_desc_comp *mdsc = NULL;
-    while(!mmbr_map.next(NULL, &mdsc)) {
+    member_desc_comp *mdsc = nullptr;
+    while(!mmbr_map.next(nullptr, &mdsc)) {
         if(mdsc->get_member_type() != MemberType_FIELD) {
             continue;
         }
         RETURN_IF_NOT_OK(mb_nm.assign(mdsc->get_member_name()))
         mb_nm.first_char_uppercase();
         if(mdsc->get_field_type() == Type_ENTITY) {
-            entity_desc_comp *inner_edsc = NULL;
+            entity_desc_comp *inner_edsc = nullptr;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &inner_edsc)) {
                 if(inner_edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
@@ -597,20 +597,20 @@ vlg::RetCode ABSR_METH_ENT_PTOBUF__NotZeroMode(compile_unit &cunit,
 /***********************************
 GEN- ABSR_METH_ENT_PTOBUF__AllFildMode
 ***********************************/
-vlg::RetCode ABSR_METH_ENT_PTOBUF__AllFildMode(compile_unit &cunit,
-                                               entity_desc_comp &edsc,
-                                               FILE *file)
+RetCode ABSR_METH_ENT_PTOBUF__AllFildMode(compile_unit &cunit,
+                                          entity_desc_comp &edsc,
+                                          FILE *file)
 {
     vlg::hash_map &entitymap = cunit.get_entity_map();
     vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
-    member_desc_comp *mdsc = NULL;
-    while(!mmbr_map.next(NULL, &mdsc)) {
+    member_desc_comp *mdsc = nullptr;
+    while(!mmbr_map.next(nullptr, &mdsc)) {
         if(mdsc->get_member_type() != MemberType_FIELD) {
             continue;
         }
         if(mdsc->get_field_type() == Type_ENTITY) {
-            entity_desc_comp *inner_edsc = NULL;
+            entity_desc_comp *inner_edsc = nullptr;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &inner_edsc)) {
                 if(inner_edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
@@ -684,9 +684,9 @@ vlg::RetCode ABSR_METH_ENT_PTOBUF__AllFildMode(compile_unit &cunit,
 /***********************************
 GEN- ABSR_METH_ENT_PTOBUF__Body_impl
 ***********************************/
-vlg::RetCode ABSR_METH_ENT_PTOBUF__Body_impl(compile_unit &cunit,
-                                             entity_desc_comp &edsc,
-                                             FILE *file)
+RetCode ABSR_METH_ENT_PTOBUF__Body_impl(compile_unit &cunit,
+                                        entity_desc_comp &edsc,
+                                        FILE *file)
 {
     fprintf(file, CR_1IND "boolean frst_test = true;\n");
     fprintf(file, CR_1IND "if(print_cname) buff.append(\"%s\");\n",
@@ -715,9 +715,9 @@ vlg::RetCode ABSR_METH_ENT_PTOBUF__Body_impl(compile_unit &cunit,
 /***********************************
 GEN- ABSR_METH_ENT_SER__IndexedNotZero
 ***********************************/
-vlg::RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
-                                               entity_desc_comp &edsc,
-                                               FILE *file)
+RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
+                                          entity_desc_comp &edsc,
+                                          FILE *file)
 {
     fprintf(file, CR_3IND"ByteBuffer bb = ByteBuffer.allocate(8);\n");
     fprintf(file, CR_3IND"bb.order(ByteOrder.LITTLE_ENDIAN);\n");
@@ -729,8 +729,8 @@ vlg::RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
     vlg::hash_map &entitymap = cunit.get_entity_map();
     vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
-    member_desc_comp *mdsc = NULL;
-    while(!mmbr_map.next(NULL, &mdsc)) {
+    member_desc_comp *mdsc = nullptr;
+    while(!mmbr_map.next(nullptr, &mdsc)) {
         if(mdsc->get_member_type() != MemberType_FIELD) {
             continue;
         }
@@ -741,7 +741,7 @@ vlg::RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
                 CR_4IND"out_buf.apndByteBuffer(bb);\n"
                 CR_4IND"bb.clear();\n", mdsc->get_member_id());
         if(mdsc->get_field_type() == Type_ENTITY) {
-            entity_desc_comp *inner_edsc = NULL;
+            entity_desc_comp *inner_edsc = nullptr;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &inner_edsc)) {
                 if(inner_edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
@@ -940,9 +940,9 @@ vlg::RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
 /***********************************
 GEN- ABSR_METH_ENT_SER__Body_impl -*-SERIALIZE-*-
 ***********************************/
-vlg::RetCode ABSR_METH_ENT_SER__Body_impl(compile_unit &cunit,
-                                          entity_desc_comp &edsc,
-                                          FILE *file)
+RetCode ABSR_METH_ENT_SER__Body_impl(compile_unit &cunit,
+                                     entity_desc_comp &edsc,
+                                     FILE *file)
 {
     fprintf(file, CR_1IND"int tlen = 0;\n");
     fprintf(file, CR_1IND"switch(enctyp){\n");
@@ -959,9 +959,9 @@ vlg::RetCode ABSR_METH_ENT_SER__Body_impl(compile_unit &cunit,
 /***********************************
 GEN- VLG_COMP_JAVA_VLG_Entity_abs_meths
 ***********************************/
-vlg::RetCode VLG_COMP_JAVA_VLG_Entity_abs_meths(compile_unit &cunit,
-                                                entity_desc_comp &edsc,
-                                                FILE *file)
+RetCode VLG_COMP_JAVA_VLG_Entity_abs_meths(compile_unit &cunit,
+                                           entity_desc_comp &edsc,
+                                           FILE *file)
 {
     fprintf(file,  "/*****************************************************\n"
             "NClass methods\n"
@@ -999,9 +999,9 @@ vlg::RetCode VLG_COMP_JAVA_VLG_Entity_abs_meths(compile_unit &cunit,
 /***********************************
 GEN- VLG_COMP_JAVA_VLG_Class_abs_meths
 ***********************************/
-vlg::RetCode VLG_COMP_JAVA_VLG_Class_abs_meths(compile_unit &cunit,
-                                               entity_desc_comp &edsc,
-                                               FILE *file)
+RetCode VLG_COMP_JAVA_VLG_Class_abs_meths(compile_unit &cunit,
+                                          entity_desc_comp &edsc,
+                                          FILE *file)
 {
     fprintf(file,  "/*****************************************************\n"
             "NClass methods\n"
@@ -1015,9 +1015,9 @@ vlg::RetCode VLG_COMP_JAVA_VLG_Class_abs_meths(compile_unit &cunit,
 /***********************************
 GEN- VLG_COMP_JAVA_getter_setter
 ***********************************/
-vlg::RetCode VLG_COMP_JAVA_getter_setter(compile_unit &cunit,
-                                         entity_desc_comp &edsc,
-                                         FILE *file)
+RetCode VLG_COMP_JAVA_getter_setter(compile_unit &cunit,
+                                    entity_desc_comp &edsc,
+                                    FILE *file)
 {
     fprintf(file,  "/*****************************************************\n"
             "getter / setter / iszero\n"
@@ -1025,8 +1025,8 @@ vlg::RetCode VLG_COMP_JAVA_getter_setter(compile_unit &cunit,
     vlg::hash_map &entitymap = cunit.get_entity_map();
     vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
-    member_desc_comp *mdsc = NULL;
-    while(!mmbr_map.next(NULL, &mdsc)) {
+    member_desc_comp *mdsc = nullptr;
+    while(!mmbr_map.next(nullptr, &mdsc)) {
         if(mdsc->get_member_type() != MemberType_FIELD) {
             continue;
         }
@@ -1040,7 +1040,7 @@ vlg::RetCode VLG_COMP_JAVA_getter_setter(compile_unit &cunit,
         cameled_fld_name.first_char_uppercase();
         RETURN_IF_NOT_OK(meth_name.append(cameled_fld_name))
         if(mdsc->get_field_type() == Type_ENTITY) {
-            entity_desc_comp *inner_edsc = NULL;
+            entity_desc_comp *inner_edsc = nullptr;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &inner_edsc)) {
                 if(inner_edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
@@ -1075,7 +1075,7 @@ vlg::RetCode VLG_COMP_JAVA_getter_setter(compile_unit &cunit,
         RETURN_IF_NOT_OK(meth_name.assign(VLG_COMP_JAVA_SETTER_PFX))
         RETURN_IF_NOT_OK(meth_name.append(cameled_fld_name))
         if(mdsc->get_field_type() == Type_ENTITY) {
-            entity_desc_comp *edsc = NULL;
+            entity_desc_comp *edsc = nullptr;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &edsc)) {
                 if(edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
@@ -1141,7 +1141,7 @@ vlg::RetCode VLG_COMP_JAVA_getter_setter(compile_unit &cunit,
         fprintf(file, "public boolean isZero%s(){\n", cameled_fld_name.internal_buff());
         vlg::ascii_string zero_val;
         if(mdsc->get_field_type() == Type_ENTITY) {
-            entity_desc_comp *edsc = NULL;
+            entity_desc_comp *edsc = nullptr;
             if(!entitymap.get(mdsc->get_field_usr_str_type(), &edsc)) {
                 if(edsc->get_nentity_type() == NEntityType_NENUM) {
                     if(mdsc->get_nmemb() == 1) {
@@ -1197,9 +1197,9 @@ vlg::RetCode VLG_COMP_JAVA_getter_setter(compile_unit &cunit,
 /***********************************
 GEN- VLG_COMP_JAVA_rep
 ***********************************/
-vlg::RetCode VLG_COMP_JAVA_rep(compile_unit &cunit,
-                               entity_desc_comp &edsc,
-                               FILE *file)
+RetCode VLG_COMP_JAVA_rep(compile_unit &cunit,
+                          entity_desc_comp &edsc,
+                          FILE *file)
 {
     fprintf(file,  "/*****************************************************\n"
             "rep.\n"
@@ -1208,10 +1208,10 @@ vlg::RetCode VLG_COMP_JAVA_rep(compile_unit &cunit,
             "**USE GETTERS AND SETTERS TO ACCESS REP FIELDS.**\n"
             "*****************************************************/\n");
     vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
-    member_desc_comp *mdsc = NULL;
+    member_desc_comp *mdsc = nullptr;
     mmbr_map.start_iteration();
     //rep
-    while(!mmbr_map.next(NULL, &mdsc)) {
+    while(!mmbr_map.next(nullptr, &mdsc)) {
         if(mdsc->get_member_type() != MemberType_FIELD) {
             continue;
         }
@@ -1235,7 +1235,7 @@ vlg::RetCode VLG_COMP_JAVA_rep(compile_unit &cunit,
 /***********************************
 GEN- VLG_COMP_JAVA_package_decl
 ***********************************/
-vlg::RetCode VLG_COMP_JAVA_package_decl(FILE *file, const char *nmsp)
+RetCode VLG_COMP_JAVA_package_decl(FILE *file, const char *nmsp)
 {
     fprintf(file, "package %s;", nmsp);
     return vlg::RetCode_OK;
@@ -1244,7 +1244,7 @@ vlg::RetCode VLG_COMP_JAVA_package_decl(FILE *file, const char *nmsp)
 /***********************************
 GEN- VLG_COMP_JAVA_vlg_import
 ***********************************/
-vlg::RetCode VLG_COMP_JAVA_vlg_import(FILE *file)
+RetCode VLG_COMP_JAVA_vlg_import(FILE *file)
 {
     fprintf(file, "import java.io.*;\n");
     fprintf(file, "import java.nio.*;\n");
@@ -1255,9 +1255,9 @@ vlg::RetCode VLG_COMP_JAVA_vlg_import(FILE *file)
 /***********************************
 GEN- VLG_COMP_JAVA_VLGEnum
 ***********************************/
-vlg::RetCode VLG_COMP_JAVA_VLGEnum(compile_unit &cunit,
-                                   entity_desc_comp &edsc,
-                                   FILE *efile)
+RetCode VLG_COMP_JAVA_VLGEnum(compile_unit &cunit,
+                              entity_desc_comp &edsc,
+                              FILE *efile)
 {
     fprintf(efile, "public class %s extends NEnum{\n", edsc.get_nentity_name());
     fprintf(efile, "/*****************************************************\n"
@@ -1265,8 +1265,8 @@ vlg::RetCode VLG_COMP_JAVA_VLGEnum(compile_unit &cunit,
             "*****************************************************/\n");
     vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
-    member_desc_comp *mdsc = NULL;
-    while(!mmbr_map.next(NULL, &mdsc)) {
+    member_desc_comp *mdsc = nullptr;
+    while(!mmbr_map.next(nullptr, &mdsc)) {
         fprintf(efile, CR_1IND"public static final int %s = %ld;\n",
                 mdsc->get_member_name(), mdsc->get_enum_value());
     }
@@ -1277,9 +1277,9 @@ vlg::RetCode VLG_COMP_JAVA_VLGEnum(compile_unit &cunit,
 /***********************************
 GEN- VLG_COMP_JAVA_NClass
 ***********************************/
-vlg::RetCode VLG_COMP_JAVA_NClass(compile_unit &cunit,
-                                  entity_desc_comp &edsc,
-                                  FILE *efile)
+RetCode VLG_COMP_JAVA_NClass(compile_unit &cunit,
+                             entity_desc_comp &edsc,
+                             FILE *efile)
 {
     fprintf(efile, "public class %s extends NClass{\n", edsc.get_nentity_name());
     fprintf(efile,  "/*****************************************************\n"
@@ -1304,9 +1304,9 @@ vlg::RetCode VLG_COMP_JAVA_NClass(compile_unit &cunit,
 /***********************************
 GEN- VLG_COMP_JAVA_NEntityDesc
 ***********************************/
-vlg::RetCode VLG_COMP_JAVA_NEntityDesc(compile_unit &cunit,
-                                       entity_desc_comp &edsc,
-                                       FILE *file)
+RetCode VLG_COMP_JAVA_NEntityDesc(compile_unit &cunit,
+                                  entity_desc_comp &edsc,
+                                  FILE *file)
 {
     fprintf(file,   CR_1IND"NEntityDesc %s_edesc = new NEntityDesc\n"
             CR_1IND"(\n"
@@ -1326,8 +1326,8 @@ vlg::RetCode VLG_COMP_JAVA_NEntityDesc(compile_unit &cunit,
             edsc.is_persistent() ? "true" : "false");
     vlg::hash_map &mmbr_map = edsc.get_map_id_MMBRDSC();
     mmbr_map.start_iteration();
-    member_desc_comp *mdsc = NULL;
-    while(!mmbr_map.next(NULL, &mdsc)) {
+    member_desc_comp *mdsc = nullptr;
+    while(!mmbr_map.next(nullptr, &mdsc)) {
         fprintf(file,   CR_1IND"NMemberDesc %s_%s_mdesc = new NMemberDesc\n"
                 CR_1IND"(\n"
                 CR_2IND"(short)%u, // short mmbrid\n"
@@ -1361,15 +1361,15 @@ vlg::RetCode VLG_COMP_JAVA_NEntityDesc(compile_unit &cunit,
     if(edsc.is_persistent()) {
         vlg::hash_map &kdesc_map = edsc.get_map_keyid_KDESC_mod();
         kdesc_map.start_iteration();
-        key_desc_comp *kdesc = NULL;
-        while(!kdesc_map.next(NULL, &kdesc)) {
+        key_desc_comp *kdesc = nullptr;
+        while(!kdesc_map.next(nullptr, &kdesc)) {
             fprintf(file,
                     CR_1IND"NKeyDesc %s_%d_kdesc = new NKeyDesc((short)%d, %s);\n",
                     edsc.get_nentity_name(),
                     kdesc->get_key_id(),
                     kdesc->get_key_id(),
                     kdesc->is_primary() ? "true" : "false");
-            member_desc_comp *k_mdsc = NULL;
+            member_desc_comp *k_mdsc = nullptr;
             vlg::linked_list &kset = kdesc->get_key_member_set_m();
             kset.start_iteration();
             while(!kset.next(&k_mdsc)) {
@@ -1393,8 +1393,8 @@ extern int comp_ver[4];
 /***********************************
 GEN- VLG_COMP_Gen_ModelVersion__Java_
 ***********************************/
-vlg::RetCode VLG_COMP_Gen_ModelVersion__Java_(compile_unit &cunit,
-                                              FILE *file)
+RetCode VLG_COMP_Gen_ModelVersion__Java_(compile_unit &cunit,
+                                         FILE *file)
 {
     fprintf(file,   "/*****************************************************\n"
             "MODEL:%s VERSION\n"
@@ -1417,9 +1417,9 @@ vlg::RetCode VLG_COMP_Gen_ModelVersion__Java_(compile_unit &cunit,
 /***********************************
 GEN- VLG_COMP_JAVA_EntryPoint
 ***********************************/
-vlg::RetCode VLG_COMP_JAVA_EntryPoint(compile_unit &cunit,
-                                      vlg::ascii_string &dfile_nm,
-                                      FILE *file)
+RetCode VLG_COMP_JAVA_EntryPoint(compile_unit &cunit,
+                                 vlg::ascii_string &dfile_nm,
+                                 FILE *file)
 {
     vlg::ascii_string_tok tknz;
     vlg::ascii_string ep_name;
@@ -1439,8 +1439,8 @@ vlg::RetCode VLG_COMP_JAVA_EntryPoint(compile_unit &cunit,
     fprintf(file, CR_1IND"nem = new NEntityManager();\n");
     vlg::hash_map &entitymap = cunit.get_entity_map();
     entitymap.start_iteration();
-    entity_desc_comp *edsc = NULL;
-    while(!entitymap.next(NULL, &edsc)) {
+    entity_desc_comp *edsc = nullptr;
+    while(!entitymap.next(nullptr, &edsc)) {
         RETURN_IF_NOT_OK(VLG_COMP_JAVA_NEntityDesc(cunit, *edsc, file))
         fprintf(file, CR_1IND"nem.extend(%s_edesc);\n", edsc->get_nentity_name());
     }
@@ -1455,15 +1455,15 @@ vlg::RetCode VLG_COMP_JAVA_EntryPoint(compile_unit &cunit,
 /***********************************
 ENTRYPOINT- VLG_COMP_Compile_Java
 ***********************************/
-vlg::RetCode compile_Java(compile_unit &cunit)
+RetCode compile_Java(compile_unit &cunit)
 {
     vlg::hash_map &entitymap = cunit.get_entity_map();
     entitymap.start_iteration();
-    entity_desc_comp *edsc = NULL;
+    entity_desc_comp *edsc = nullptr;
     vlg::ascii_string efile_n;
-    FILE *efile = NULL;
+    FILE *efile = nullptr;
     //render entities
-    while(!entitymap.next(NULL, &edsc)) {
+    while(!entitymap.next(nullptr, &edsc)) {
         RETURN_IF_NOT_OK(efile_n.assign(edsc->get_nentity_name()))
         RETURN_IF_NOT_OK(efile_n.append(".java"))
         COMMAND_IF_NOT_OK(open_output_file(efile_n.internal_buff(), &efile),
@@ -1492,7 +1492,7 @@ vlg::RetCode compile_Java(compile_unit &cunit)
     vlg::ascii_string dfile_nm;
     dfile_nm.append(cunit.model_name());
     RETURN_IF_NOT_OK(dfile_nm.append(".java"));
-    FILE *dfile = NULL;
+    FILE *dfile = nullptr;
     COMMAND_IF_NOT_OK(open_output_file(dfile_nm.internal_buff(), &dfile),
                       EXIT_ACTION)
     RETURN_IF_NOT_OK(render_hdr(cunit, dfile_nm, dfile))

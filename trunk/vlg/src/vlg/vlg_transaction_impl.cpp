@@ -23,6 +23,11 @@
 #include "vlg_connection_impl.h"
 #include "vlg_transaction_impl.h"
 
+#define TX_RES_COMMT    "COMMITTED"
+#define TX_RES_FAIL     "FAILED"
+#define TX_RES_ABORTED  "ABORTED"
+#define TX_NO_OBJ       "NO-OBJ"
+
 namespace vlg {
 
 // VLG_TRANSACTION CTORS - INIT - DESTROY
@@ -34,7 +39,7 @@ class transaction_inst_collector : public vlg::collector {
         transaction_inst_collector() : vlg::collector("transaction_impl") {}
 };
 
-vlg::collector *inst_coll_ = NULL;
+vlg::collector *inst_coll_ = nullptr;
 vlg::collector &tx_inst_collector()
 {
     if(inst_coll_) {
@@ -51,12 +56,13 @@ vlg::collector &transaction_impl::get_collector()
     return tx_inst_collector();
 }
 
-nclass_logger *transaction_impl::log_ = NULL;
+nclass_logger *transaction_impl::log_ = nullptr;
 
-transaction_impl::transaction_impl(connection_impl &conn) :
+transaction_impl::transaction_impl(transaction &publ,
+                                   connection_impl &conn) :
     peer_(conn.peer()),
     conn_(conn),
-    nem_(conn.peer().get_em()),
+    nem_(conn.peer().get_nem()),
     status_(TransactionStatus_EARLY),
     tx_res_(TransactionResult_UNDEFINED),
     result_code_(ProtocolCode_SUCCESS),
@@ -68,14 +74,15 @@ transaction_impl::transaction_impl(connection_impl &conn) :
     res_clsenc_(Encode_UNDEFINED),
     rsclrq_(false),
     rescls_(false),
-    request_obj_(NULL),
-    current_obj_(NULL),
-    result_obj_(NULL),
-    tsc_hndl_(NULL),
-    tsc_hndl_ud_(NULL),
-    tres_hndl_(NULL),
-    tres_hndl_ud_(NULL),
-    start_mark_tim_(0)
+    request_obj_(nullptr),
+    current_obj_(nullptr),
+    result_obj_(nullptr),
+    tsc_hndl_(nullptr),
+    tsc_hndl_ud_(nullptr),
+    tres_hndl_(nullptr),
+    tres_hndl_ud_(nullptr),
+    start_mark_tim_(0),
+    publ_(publ)
 {
     log_ = get_nclass_logger("transaction_impl");
     IFLOG(trc(TH_ID, LS_CTR "%s(ptr:%p)", __func__, this))
@@ -99,7 +106,7 @@ transaction_impl::~transaction_impl()
     IFLOG(trc(TH_ID, LS_DTR "%s(ptr:%p)", __func__, this))
 }
 
-vlg::RetCode transaction_impl::objs_release()
+RetCode transaction_impl::objs_release()
 {
     if(request_obj_) {
         /************************
@@ -107,7 +114,7 @@ vlg::RetCode transaction_impl::objs_release()
         ************************/
         vlg::collector &c = request_obj_->get_collector();
         c.release(request_obj_);
-        request_obj_ = NULL;
+        request_obj_ = nullptr;
     }
     if(current_obj_) {
         /************************
@@ -115,7 +122,7 @@ vlg::RetCode transaction_impl::objs_release()
         ************************/
         vlg::collector &c = current_obj_->get_collector();
         c.release(current_obj_);
-        current_obj_ = NULL;
+        current_obj_ = nullptr;
     }
     if(result_obj_) {
         /************************
@@ -123,12 +130,12 @@ vlg::RetCode transaction_impl::objs_release()
         ************************/
         vlg::collector &c = result_obj_->get_collector();
         c.release(result_obj_);
-        result_obj_ = NULL;
+        result_obj_ = nullptr;
     }
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode transaction_impl::init()
+RetCode transaction_impl::init()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     set_status(TransactionStatus_INITIALIZED);
@@ -136,7 +143,7 @@ vlg::RetCode transaction_impl::init()
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode transaction_impl::re_new()
+RetCode transaction_impl::re_new()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ < TransactionStatus_PREPARED) {
@@ -155,10 +162,8 @@ vlg::RetCode transaction_impl::re_new()
     return vlg::RetCode_OK;
 }
 
-//-----------------------------
 // VLG_TRANSACTION GETTERS / SETTERS
-//
-//-----------------------------
+
 peer_impl &transaction_impl::peer()
 {
     return peer_;
@@ -297,7 +302,7 @@ void transaction_impl::set_request_obj(const nclass *val)
         ************************/
         vlg::collector &c = request_obj_->get_collector();
         c.release(request_obj_);
-        request_obj_ = NULL;
+        request_obj_ = nullptr;
     }
     if(val) {
         if((request_obj_ = val->clone())) {
@@ -323,7 +328,7 @@ void transaction_impl::set_current_obj(const nclass *val)
         ************************/
         vlg::collector &c = current_obj_->get_collector();
         c.release(current_obj_);
-        current_obj_ = NULL;
+        current_obj_ = nullptr;
     }
     if(val) {
         if((current_obj_ = val->clone())) {
@@ -345,7 +350,7 @@ void transaction_impl::set_result_obj(const nclass *val)
         ************************/
         vlg::collector &c = result_obj_->get_collector();
         c.release(result_obj_);
-        result_obj_ = NULL;
+        result_obj_ = nullptr;
     }
     if(val) {
         if((result_obj_ = val->clone())) {
@@ -374,7 +379,7 @@ void transaction_impl::set_request_obj_on_request(nclass *val)
         ************************/
         vlg::collector &c = request_obj_->get_collector();
         c.release(request_obj_);
-        request_obj_ = NULL;
+        request_obj_ = nullptr;
     }
     if((request_obj_ = val)) {
         vlg::collector &c = request_obj_->get_collector();
@@ -393,7 +398,7 @@ void transaction_impl::set_result_obj_on_response(nclass *val)
         ************************/
         vlg::collector &c = result_obj_->get_collector();
         c.release(result_obj_);
-        result_obj_ = NULL;
+        result_obj_ = nullptr;
     }
     if((result_obj_ = val)) {
         vlg::collector &c = result_obj_->get_collector();
@@ -462,26 +467,23 @@ void transaction_impl::set_tx_id_PRID(unsigned int val)
     txid_.txprid = val;
 }
 
-void transaction_impl::set_transaction_status_change_handler(
-    transaction_status_change_hndlr hndlr, void *ud)
+void transaction_impl::set_status_change_handler(
+    status_change hndlr, void *ud)
 {
     tsc_hndl_ = hndlr;
     tsc_hndl_ud_ = ud;
 }
 
-void transaction_impl::set_transaction_closure_handler(transaction_closure_hndlr
-                                                       hndlr, void *ud)
+void transaction_impl::set_close_handler(close
+                                         hndlr, void *ud)
 {
     tres_hndl_ = hndlr;
     tres_hndl_ud_ = ud;
 }
 
-//-----------------------------
 // VLG_TRANSACTION ACTIONS
-//
-//-----------------------------
 
-vlg::RetCode transaction_impl::prepare()
+RetCode transaction_impl::prepare()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ != TransactionStatus_INITIALIZED) {
@@ -493,12 +495,12 @@ vlg::RetCode transaction_impl::prepare()
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode transaction_impl::prepare(TransactionRequestType txtype,
-                                       Action txactn,
-                                       Encode clsenc,
-                                       bool rsclrq,
-                                       const nclass *request_obj,
-                                       const nclass *current_obj)
+RetCode transaction_impl::prepare(TransactionRequestType txtype,
+                                  Action txactn,
+                                  Encode clsenc,
+                                  bool rsclrq,
+                                  const nclass *request_obj,
+                                  const nclass *current_obj)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ != TransactionStatus_INITIALIZED) {
@@ -516,15 +518,12 @@ vlg::RetCode transaction_impl::prepare(TransactionRequestType txtype,
     return vlg::RetCode_OK;
 }
 
-//-----------------------------
 // VLG_TRANSACTION SENDING METHS
-//
-//-----------------------------
 
-vlg::RetCode transaction_impl::send()
+RetCode transaction_impl::send()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     if(status_ != TransactionStatus_PREPARED) {
         IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
         return vlg::RetCode_BADSTTS;
@@ -579,10 +578,10 @@ vlg::RetCode transaction_impl::send()
     return rcode;
 }
 
-vlg::RetCode transaction_impl::send_response()
+RetCode transaction_impl::send_response()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     if(status_ != TransactionStatus_FLYING) {
         IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
         return vlg::RetCode_BADSTTS;
@@ -595,7 +594,7 @@ vlg::RetCode transaction_impl::send_response()
                      res_clsenc_,
                      res_classid_,
                      gbb);
-    int totbytes = result_obj_ ? result_obj_->serialize(res_clsenc_, NULL, gbb) : 0;
+    int totbytes = result_obj_ ? result_obj_->serialize(res_clsenc_, nullptr, gbb) : 0;
     totbytes = htonl(totbytes);
     if(result_obj_) {
         gbb->put(&totbytes, (6*4), 4);
@@ -612,12 +611,9 @@ vlg::RetCode transaction_impl::send_response()
     return rcode;
 }
 
-//-----------------------------
 // VLG_TRANSACTION STATUS
-//
-//-----------------------------
 
-vlg::RetCode transaction_impl::set_flying()
+RetCode transaction_impl::set_flying()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(conn_.conn_type() == ConnectionType_INGOING) {
@@ -740,7 +736,7 @@ inline void transaction_impl::trace_tx_closure(const char *tx_res_str)
               tim_buf))
 }
 
-vlg::RetCode transaction_impl::set_closed()
+RetCode transaction_impl::set_closed()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     if(status_ != TransactionStatus_FLYING) {
@@ -759,7 +755,7 @@ vlg::RetCode transaction_impl::set_closed()
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode transaction_impl::set_aborted()
+RetCode transaction_impl::set_aborted()
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     set_tx_res(TransactionResult_ABORTED);
@@ -774,7 +770,7 @@ vlg::RetCode transaction_impl::set_aborted()
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode transaction_impl::set_status(TransactionStatus status)
+RetCode transaction_impl::set_status(TransactionStatus status)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p, status:%d)", __func__, this, status))
     CHK_MON_ERR_0(lock)
@@ -788,7 +784,7 @@ vlg::RetCode transaction_impl::set_status(TransactionStatus status)
     return vlg::RetCode_OK;
 }
 
-vlg::RetCode transaction_impl::await_for_status_reached_or_outdated(
+RetCode transaction_impl::await_for_status_reached_or_outdated(
     TransactionStatus test,
     TransactionStatus &current,
     time_t sec,
@@ -801,7 +797,7 @@ vlg::RetCode transaction_impl::await_for_status_reached_or_outdated(
         IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
         return vlg::RetCode_BADSTTS;
     }
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     while(status_ < test) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
@@ -820,7 +816,7 @@ vlg::RetCode transaction_impl::await_for_status_reached_or_outdated(
     return rcode;
 }
 
-vlg::RetCode transaction_impl::await_for_closure(time_t sec, long nsec)
+RetCode transaction_impl::await_for_closure(time_t sec, long nsec)
 {
     IFLOG(trc(TH_ID, LS_OPN "%s(ptr:%p)", __func__, this))
     CHK_MON_ERR_0(lock)
@@ -829,7 +825,7 @@ vlg::RetCode transaction_impl::await_for_closure(time_t sec, long nsec)
         IFLOG(err(TH_ID, LS_CLO "%s(ptr:%p)", __func__, this))
         return vlg::RetCode_BADSTTS;
     }
-    vlg::RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = vlg::RetCode_OK;
     while(status_ < TransactionStatus_CLOSED) {
         int pthres;
         if((pthres = mon_.wait(sec, nsec))) {
@@ -846,10 +842,7 @@ vlg::RetCode transaction_impl::await_for_closure(time_t sec, long nsec)
     return rcode;
 }
 
-//-----------------------------
 // VLG_TRANSACTION RECVING METHS
-//
-//-----------------------------
 
 void transaction_impl::on_request()
 {}

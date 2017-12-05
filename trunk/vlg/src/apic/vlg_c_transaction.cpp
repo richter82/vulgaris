@@ -37,7 +37,7 @@ class c_transaction : public transaction {
         }
 
     public:
-        c_transaction() : tc_wr_(NULL), tsc_wr_(NULL), tsc_ud_(NULL), tc_ud_(NULL) {}
+        c_transaction() : tc_wr_(nullptr), tsc_wr_(nullptr), tsc_ud_(nullptr), tc_ud_(nullptr) {}
 
         transaction_closure_wr Tc_wr() const {
             return tc_wr_;
@@ -92,7 +92,7 @@ extern "C" {
 
     connection_wr transaction_get_connection(transaction_wr tx)
     {
-        return (connection_wr)static_cast<transaction *>(tx)->get_connection();
+        return (connection_wr)&(static_cast<transaction *>(tx)->get_connection());
     }
 
     TransactionResult transaction_get_transaction_result(transaction_wr tx)

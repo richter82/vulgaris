@@ -52,7 +52,7 @@ class collector {
     public:
         const char  *get_class_name()    const;
         void        enum_collected_instances(enum_coll_inst clbk,
-                                             void *ud = NULL);
+                                             void *ud = nullptr);
 
         bool        is_instance_collected(collectable *ptr);
         void        retain(collectable *ptr);
@@ -71,7 +71,7 @@ class shared_pointer {
             public:
                 explicit shared_pointer_reference_count(unsigned int reference_count) :
                     reference_count_(reference_count) {
-                    pthread_mutex_init(&mutex_, NULL);
+                    pthread_mutex_init(&mutex_, nullptr);
                 }
 
                 ~shared_pointer_reference_count() {
@@ -105,8 +105,8 @@ class shared_pointer {
         /**
         */
         explicit shared_pointer() :
-            ptr_(NULL),
-            reference_counter_(NULL) {
+            ptr_(nullptr),
+            reference_counter_(nullptr) {
         }
 
         /**
@@ -114,7 +114,7 @@ class shared_pointer {
         */
         explicit shared_pointer(T *ptr) :
             ptr_(ptr),
-            reference_counter_(NULL) {
+            reference_counter_(nullptr) {
             if(ptr_) {
                 reference_counter_ = new shared_pointer_reference_count(1);
             }
@@ -156,7 +156,7 @@ class shared_pointer {
         @return
         */
         bool is_null_pointer() {
-            return ptr_ == NULL;
+            return ptr_ == nullptr;
         }
 
         /**
@@ -168,10 +168,10 @@ class shared_pointer {
                     delete reference_counter_;
                     if(ptr_) {
                         delete ptr_;
-                        ptr_ = NULL;
+                        ptr_ = nullptr;
                     }
                 }
-                reference_counter_ = NULL;
+                reference_counter_ = nullptr;
             }
         }
 

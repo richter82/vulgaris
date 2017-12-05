@@ -34,24 +34,24 @@ class persistence_manager {
         driver loading
         ***************************/
         /*dyna*/
-        static vlg::RetCode load_driver_dynamic(const char *drivers[],
-                                                int drivers_num);
+        static RetCode load_driver_dynamic(const char *drivers[],
+                                           int drivers_num);
 
         /*static*/
-        static vlg::RetCode load_driver(persistence_driver_impl *drivers[],
-                                        int drivers_num);
+        static RetCode load_driver(persistence_driver_impl *drivers[],
+                                   int drivers_num);
 
         /***************************
         persistence config loading
         ***************************/
-        static vlg::RetCode set_config_file_dir(const char *dir);
-        static vlg::RetCode set_config_file_path_name(const char *file_path);
-        static vlg::RetCode load_config(const char *file_name);
+        static RetCode set_config_file_dir(const char *dir);
+        static RetCode set_config_file_path_name(const char *file_path);
+        static RetCode load_config(const char *file_name);
 
         /***************************
         driver usage
         ***************************/
-        static vlg::RetCode start_all_drivers();
+        static RetCode start_all_drivers();
 
         //returns null if no driver is available.
         static persistence_driver_impl *available_driver(unsigned int nclass_id);
@@ -67,8 +67,8 @@ class persistence_connection {
         explicit persistence_connection();
         ~persistence_connection();
 
-        vlg::RetCode bind(unsigned int nclass_id,
-                          persistence_driver_impl &driver);
+        RetCode bind(unsigned int nclass_id,
+                     persistence_driver_impl &driver);
 
         //getters
     public:
@@ -79,45 +79,45 @@ class persistence_connection {
 
         //business meths
     public:
-        vlg::RetCode    create_entity_schema(PersistenceAlteringMode mode,
-                                             const nentity_manager &nem,
-                                             unsigned int nclass_id);
+        RetCode    create_entity_schema(PersistenceAlteringMode mode,
+                                        const nentity_manager &nem,
+                                        unsigned int nclass_id);
 
-        vlg::RetCode    create_entity_schema(PersistenceAlteringMode mode,
-                                             const nentity_manager &nem,
-                                             const nentity_desc &desc);
+        RetCode    create_entity_schema(PersistenceAlteringMode mode,
+                                        const nentity_manager &nem,
+                                        const nentity_desc &desc);
 
-        vlg::RetCode    save_obj(const nentity_manager &nem,
-                                 unsigned int ts0,
-                                 unsigned int ts1,
-                                 const nclass &in_obj);
+        RetCode    save_obj(const nentity_manager &nem,
+                            unsigned int ts0,
+                            unsigned int ts1,
+                            const nclass &in_obj);
 
-        vlg::RetCode    update_obj(unsigned short key,
-                                   const nentity_manager &nem,
-                                   unsigned int ts0,
-                                   unsigned int ts1,
-                                   const nclass &in_obj);
+        RetCode    update_obj(unsigned short key,
+                              const nentity_manager &nem,
+                              unsigned int ts0,
+                              unsigned int ts1,
+                              const nclass &in_obj);
 
-        vlg::RetCode    save_or_update_obj(unsigned short key,
-                                           const nentity_manager &nem,
-                                           unsigned int ts0,
-                                           unsigned int ts1,
-                                           const nclass &in_obj);
+        RetCode    save_or_update_obj(unsigned short key,
+                                      const nentity_manager &nem,
+                                      unsigned int ts0,
+                                      unsigned int ts1,
+                                      const nclass &in_obj);
 
-        vlg::RetCode    remove_obj(unsigned short key,
-                                   const nentity_manager &nem,
-                                   unsigned int ts0,
-                                   unsigned int ts1,
-                                   PersistenceDeletionMode mode,
-                                   const nclass &in_obj);
+        RetCode    remove_obj(unsigned short key,
+                              const nentity_manager &nem,
+                              unsigned int ts0,
+                              unsigned int ts1,
+                              PersistenceDeletionMode mode,
+                              const nclass &in_obj);
 
-        vlg::RetCode    load_obj(unsigned short key,
-                                 const nentity_manager &nem,
-                                 unsigned int &ts0_out,
-                                 unsigned int &ts1_out,
-                                 nclass &in_out_obj);
+        RetCode    load_obj(unsigned short key,
+                            const nentity_manager &nem,
+                            unsigned int &ts0_out,
+                            unsigned int &ts1_out,
+                            nclass &in_out_obj);
 
-        vlg::RetCode    execute_statement(const char *stmt);
+        RetCode    execute_statement(const char *stmt);
 
     private:
         persistence_connection_impl_pub *impl_;
@@ -132,20 +132,20 @@ class persistence_query {
         explicit persistence_query(const nentity_manager &nem);
         ~persistence_query();
 
-        unsigned int    get_id()                        const;
+        unsigned int    get_id()    const;
 
-        vlg::RetCode    bind(unsigned int nclass_id,
-                             const char *sql);
+        RetCode    bind(unsigned int nclass_id,
+                        const char *sql);
 
     public:
         PersistenceQueryStatus  get_status()            const;
-        const nentity_manager    &get_entity_manager()   const;
+        const nentity_manager   &get_entity_manager()   const;
 
-        vlg::RetCode    next_obj(unsigned int &ts0_out,
-                                 unsigned int &ts1_out,
-                                 nclass &out_obj);
+        RetCode    next_obj(unsigned int &ts0_out,
+                            unsigned int &ts1_out,
+                            nclass &out_obj);
 
-        vlg::RetCode    release();
+        RetCode    release();
 
     private:
         persistence_query_impl_pub *impl_;

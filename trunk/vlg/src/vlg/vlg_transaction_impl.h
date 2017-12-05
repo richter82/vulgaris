@@ -25,56 +25,45 @@
 
 namespace vlg {
 
-#define TX_RES_COMMT    "COMMITTED"
-#define TX_RES_FAIL     "FAILED"
-#define TX_RES_ABORTED  "ABORTED"
-#define TX_NO_OBJ       "NO-OBJ"
-
-//-----------------------------
 // VLG_TRANSACTION
-//-----------------------------
-
 class transaction_impl : public vlg::collectable {
         friend class peer_impl;
         friend class connection_impl;
 
-        typedef void (*transaction_status_change_hndlr)(transaction_impl &trans,
-                                                        TransactionStatus status,
-                                                        void *ud);
+        typedef void (*status_change)(transaction_impl &trans,
+                                      TransactionStatus status,
+                                      void *ud);
 
-        typedef void (*transaction_closure_hndlr)(transaction_impl &trans, void *ud);
+        typedef void (*close)(transaction_impl &trans, void *ud);
 
         //---ctors
     protected:
-        transaction_impl(connection_impl &conn);
+        transaction_impl(transaction &publ,
+                         connection_impl &conn);
         virtual ~transaction_impl();
 
     public:
         virtual vlg::collector &get_collector();
 
-        //-----------------------------
         // GETTERS
-        //-----------------------------
     public:
-        peer_impl                    &peer();
-        connection_impl              &get_connection();
-        TransactionResult           tx_res();
-        ProtocolCode                tx_result_code();
-        TransactionRequestType      tx_req_type();
-        Action                      tx_act();
-        unsigned int                tx_req_class_id();
-        Encode                      tx_req_class_encode();
-        unsigned int                tx_res_class_id();
-        Encode                      tx_res_class_encode();
-        bool                        is_result_class_req();
-        bool                        is_result_class_set();
-        const nclass             *request_obj();
-        const nclass             *current_obj();
-        const nclass             *result_obj();
+        peer_impl               &peer();
+        connection_impl         &get_connection();
+        TransactionResult       tx_res();
+        ProtocolCode            tx_result_code();
+        TransactionRequestType  tx_req_type();
+        Action                  tx_act();
+        unsigned int            tx_req_class_id();
+        Encode                  tx_req_class_encode();
+        unsigned int            tx_res_class_id();
+        Encode                  tx_res_class_encode();
+        bool                    is_result_class_req();
+        bool                    is_result_class_set();
+        const nclass            *request_obj();
+        const nclass            *current_obj();
+        const nclass            *result_obj();
 
-        //-----------------------------
         // SETTERS
-        //-----------------------------
     public:
         void    set_tx_res(TransactionResult val);
         void    set_tx_result_code(ProtocolCode val);
@@ -94,43 +83,32 @@ class transaction_impl : public vlg::collectable {
         void    set_request_obj_on_request(nclass *val);
         void    set_result_obj_on_response(nclass *val);
 
-        //-----------------------------
         // INIT
-        //-----------------------------
     private:
-        vlg::RetCode  init();
+        RetCode  init();
 
     public:
-        vlg::RetCode  re_new();
+        RetCode  re_new();
 
-        //-----------------------------
         // STATUS SYNCHRO
-        //-----------------------------
     public:
-        vlg::RetCode await_for_status_reached_or_outdated(TransactionStatus test,
-                                                          TransactionStatus &current,
-                                                          time_t sec = -1,
-                                                          long nsec = 0);
+        RetCode await_for_status_reached_or_outdated(TransactionStatus test,
+                                                     TransactionStatus &current,
+                                                     time_t sec = -1,
+                                                     long nsec = 0);
 
-        vlg::RetCode await_for_closure(time_t sec = -1, long nsec = 0);
+        RetCode await_for_closure(time_t sec = -1, long nsec = 0);
 
-        //-----------------------------
         // STATUS ASYNCHRO HNDLRS
-        //-----------------------------
     public:
-        void
-        set_transaction_status_change_handler(transaction_status_change_hndlr hndlr,
-                                              void *ud);
+        void set_status_change_handler(status_change hndlr,
+                                       void *ud);
 
-        //-----------------------------
         // TX RES ASYNCHRO HNDLRS
-        //-----------------------------
     public:
-        void set_transaction_closure_handler(transaction_closure_hndlr hndlr, void *ud);
+        void set_close_handler(close hndlr, void *ud);
 
-        //-----------------------------
         // TRANSACTION ID
-        //-----------------------------
     public:
         tx_id           &txid();
         tx_id           *tx_id_ptr();
@@ -144,56 +122,42 @@ class transaction_impl : public vlg::collectable {
         void            set_tx_id_CNID(unsigned int val);
         void            set_tx_id_PRID(unsigned int val);
 
-        //-----------------------------
         // TX PREPARE
-        //-----------------------------
     public:
-        vlg::RetCode        prepare();
+        RetCode        prepare();
+        RetCode        prepare(TransactionRequestType txtype,
+                               Action txactn,
+                               Encode clsenc,
+                               bool rsclrq,
+                               const nclass *request_obj = nullptr,
+                               const nclass *current_obj = nullptr);
 
-        vlg::RetCode        prepare(TransactionRequestType    txtype,
-                                    Action  txactn,
-                                    Encode  clsenc,
-                                    bool    rsclrq,
-                                    const nclass *request_obj = NULL,
-                                    const nclass *current_obj = NULL);
-
-        //-----------------------------
         // TX SEND
-        //-----------------------------
     public:
-        vlg::RetCode        send();             //called by client peer
-        vlg::RetCode        send_response();    //called by server peer
+        RetCode        send();             //called by client peer
+        RetCode        send_response();    //called by server peer
 
-
-        //-----------------------------
         // STATUS
-        //-----------------------------
     public:
         TransactionStatus  status();
 
-
     private:
-        vlg::RetCode  set_status(TransactionStatus status);
-        vlg::RetCode  set_flying();
-        vlg::RetCode  set_closed();
-        vlg::RetCode  set_aborted();
-        void            trace_tx_closure(const char *tx_res_str);
+        RetCode set_status(TransactionStatus status);
+        RetCode set_flying();
+        RetCode set_closed();
+        RetCode set_aborted();
+        void    trace_tx_closure(const char *tx_res_str);
 
-        //-----------------------------
         // APPLICATIVE HANDLERS
-        //-----------------------------
     public:
         virtual void on_request();
         virtual void on_close();
 
     private:
-        vlg::RetCode  objs_release();
+        RetCode  objs_release();
 
-        //-----------------------------
         // REP
-        //-----------------------------
     private:
-
         peer_impl                &peer_; // associated peer.
         connection_impl          &conn_; // underlying connection.
         const nentity_manager    &nem_;
@@ -217,12 +181,12 @@ class transaction_impl : public vlg::collectable {
         nclass     *result_obj_;   //(set by server)
 
         //--synch status
-        transaction_status_change_hndlr tsc_hndl_;
-        void                            *tsc_hndl_ud_;
+        status_change   tsc_hndl_;
+        void            *tsc_hndl_ud_;
 
         //resp hndl.
-        transaction_closure_hndlr   tres_hndl_;
-        void                        *tres_hndl_ud_;
+        close   tres_hndl_;
+        void    *tres_hndl_ud_;
 
         //timing, for stat.
     private:
@@ -230,6 +194,9 @@ class transaction_impl : public vlg::collectable {
 
     private:
         mutable vlg::synch_monitor mon_;
+
+    private:
+        transaction &publ_;
 
     protected:
         static nclass_logger *log_;

@@ -27,13 +27,13 @@
 namespace vlg {
 
 #ifdef WIN32
-vlg::RetCode WSA_init(vlg::logger *log_);
-vlg::RetCode WSA_destroy(vlg::logger *log_);
+RetCode WSA_init(vlg::logger *log_);
+RetCode WSA_destroy(vlg::logger *log_);
 #endif
 
-//-----------------------------
+
 // acceptor
-//-----------------------------
+
 class acceptor {
     public:
         //---ctors
@@ -43,12 +43,12 @@ class acceptor {
     public:
         peer_impl   &peer();
 
-        vlg::RetCode  set_sockaddr_in(sockaddr_in &serv_sockaddr_in);
+        RetCode  set_sockaddr_in(sockaddr_in &serv_sockaddr_in);
 
-        vlg::RetCode  create_server_socket(SOCKET &serv_socket);
+        RetCode  create_server_socket(SOCKET &serv_socket);
 
-        vlg::RetCode  accept(unsigned int new_connid,
-                             connection_impl **new_conn_desc);
+        RetCode  accept(unsigned int new_connid,
+                        connection_impl **new_conn_desc);
 
     private:
         peer_impl        &peer_;
