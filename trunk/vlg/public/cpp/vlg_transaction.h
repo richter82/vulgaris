@@ -21,137 +21,85 @@
 
 #ifndef VLG_CPP_TRANSACTION_H_
 #define VLG_CPP_TRANSACTION_H_
-#include "vlg_memory.h"
+#include "vlg.h"
 
 namespace vlg {
 
-/** @brief transaction_factory class.
+/** @brief transaction_factory.
 */
-class transaction_factory {
-    public:
-        static transaction_impl  *transaction_impl_factory_f(connection_impl &conn,
-                                                             void *ud);
+struct incoming_transaction_factory {
+    explicit incoming_transaction_factory();
+    virtual ~incoming_transaction_factory();
+    virtual transaction &make_incoming_transaction(connection &);
 
-    public:
-        explicit transaction_factory();
-        virtual ~transaction_factory();
-
-    public:
-        virtual transaction     &make_transaction(connection &conn);
-
-    public:
-        static transaction_factory &default_factory();
+    static incoming_transaction_factory &default_factory();
 };
 
-/** @brief transaction class.
+/** @brief transaction.
 */
-class transaction_impl_pub;
-class transaction : public vlg::collectable {
-    public:
-        typedef void (*status_change)(transaction &tx,
-                                      TransactionStatus status,
-                                      void *ud);
+struct transaction {
+    explicit transaction();
+    virtual ~transaction();
 
-        typedef void (*close)(transaction &tx,
-                              void *ud);
+    RetCode bind(connection &);
 
-        //---ctors
-    public:
-        explicit transaction();
-        virtual ~transaction();
+    connection &get_connection();
 
-        virtual vlg::collector &get_collector();
+    TransactionResult get_close_result();
+    ProtocolCode get_close_result_code();
 
-        RetCode bind(connection &conn);
+    TransactionRequestType get_request_type();
+    Action get_request_action();
+    unsigned int get_request_nclass_id();
+    Encode get_request_nclass_encode();
 
-    public:
-        connection                  &get_connection();
-        TransactionResult           get_close_result();
-        ProtocolCode                get_close_result_code();
-        TransactionRequestType      get_request_type();
-        Action                      get_request_action();
-        unsigned int                get_request_nclass_id();
-        Encode                      get_request_nclass_encode();
-        unsigned int                get_result_nclass_id();
-        Encode                      get_result_nclass_encode();
-        bool                        is_result_obj_required();
-        bool                        is_result_obj_set();
-        const nclass                *get_request_obj();
-        const nclass                *get_current_obj();
-        const nclass                *get_result_obj();
+    unsigned int get_result_nclass_id();
+    Encode get_result_nclass_encode();
 
-    public:
-        void    set_result(TransactionResult tx_res);
-        void    set_result_code(ProtocolCode tx_res_code);
-        void    set_request_type(TransactionRequestType tx_req_type);
-        void    set_request_action(Action tx_act);
-        void    set_request_nclass_id(unsigned int nclass_id);
-        void    set_request_nclass_encode(Encode class_encode);
-        void    set_result_nclass_id(unsigned int nclass_id);
-        void    set_result_nclass_encode(Encode class_encode);
-        void    set_result_obj_required(bool res_class_req);
-        void    set_request_obj(const nclass *obj);
-        void    set_current_obj(const nclass *obj);
-        void    set_result_obj(const nclass *obj);
+    bool is_result_obj_required();
+    bool is_result_obj_set();
 
-    public:
-        TransactionStatus get_status();
+    const nclass *get_request_obj();
+    const nclass *get_current_obj();
+    const nclass *get_result_obj();
 
-    public:
-        RetCode await_for_status_reached_or_outdated(TransactionStatus  test,
-                                                     TransactionStatus  &current,
-                                                     time_t             sec = -1,
-                                                     long               nsec = 0);
+    void set_result(TransactionResult);
+    void set_result_code(ProtocolCode);
 
-        RetCode await_for_close(time_t sec = -1,
-                                long nsec = 0);
+    void set_request_type(TransactionRequestType);
+    void set_request_action(Action);
+    void set_request_nclass_id(unsigned int);
+    void set_request_nclass_encode(Encode);
 
-    public:
-        void set_status_change_handler(status_change handler,
-                                       void *ud);
+    void set_result_nclass_id(unsigned int);
+    void set_result_nclass_encode(Encode);
+    void set_result_obj_required(bool);
 
-    public:
-        void set_close_handler(close handler,
-                               void *ud);
+    void set_request_obj(const nclass &);
+    void set_current_obj(const nclass &);
+    void set_result_obj(const nclass &);
 
-    public:
-        tx_id           &get_tx_id();
-        void            set_tx_id(tx_id &txid);
-        unsigned int    get_tx_id_PLID();
-        unsigned int    get_tx_id_SVID();
-        unsigned int    get_tx_id_CNID();
-        unsigned int    get_tx_id_PRID();
-        void            set_tx_id_PLID(unsigned int plid);
-        void            set_tx_id_SVID(unsigned int svid);
-        void            set_tx_id_CNID(unsigned int cnid);
-        void            set_tx_id_PRID(unsigned int prid);
+    TransactionStatus get_status();
 
-    public:
-        RetCode  renew();
+    RetCode await_for_status_reached_or_outdated(TransactionStatus test,
+                                                 TransactionStatus &current,
+                                                 time_t sec = -1,
+                                                 long nsec = 0);
 
-        RetCode  prepare();
+    RetCode await_for_close(time_t sec = -1,
+                            long nsec = 0);
 
-        RetCode  prepare(TransactionRequestType    tx_request_type,
-                         Action                    tx_action,
-                         const nclass              *sending_obj = nullptr,
-                         const nclass              *current_obj = nullptr);
+    tx_id &get_id();
+    void set_id(tx_id &);
 
-    public:
-        RetCode  send();
+    RetCode send();
+    RetCode renew();
 
-    public:
-        virtual void    on_request();
-        virtual void    on_close();
+    virtual void on_status_change(TransactionStatus);
+    virtual void on_request();
+    virtual void on_close();
 
-    public:
-        transaction_impl *get_opaque();
-        void             set_opaque(transaction_impl *tx);
-
-    private:
-        transaction_impl_pub *impl_;
-
-    protected:
-        static nclass_logger *log_;
+    std::unique_ptr<vlg::transaction_impl> impl_;
 };
 
 }

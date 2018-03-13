@@ -22,6 +22,8 @@
 #ifndef VLG_TOOLKIT_GLOB_H
 #define VLG_TOOLKIT_GLOB_H
 
+#pragma warning (disable: 4100)
+
 #include <QtCore>
 #include <QVector>
 
@@ -31,8 +33,6 @@
 #include "vlg_connection.h"
 #include "vlg_transaction.h"
 #include "vlg_subscription.h"
-#include "cr_structs_mt.h"
-#include "cr_ascii_string.h"
 
 #include <QMainWindow>
 #include <QtGui>
@@ -53,23 +53,12 @@
 #define VLG_TKT_INT_SINGL_SHOT_TIMER_CAPTMSG_RST_MSEC 4000
 
 void FillQstring_FldValue(const char *fld_ptr,
-                          const vlg::member_desc *mdesc,
+                          const vlg::member_desc &mdesc,
                           QString &out);
 
 void FillFldValue_Qstring(const QVariant &value,
-                          const vlg::member_desc *mdesc,
+                          const vlg::member_desc &mdesc,
                           char *fld_ptr);
-
-//-----------------------------------------------------------------------------
-// entity_desc_impl, partial
-//-----------------------------------------------------------------------------
-namespace vlg {
-class nentity_desc_impl {
-    public:
-        const vlg::hash_map &GetMap_NM_MMBRDSC() const;
-        const vlg::hash_map &GetMap_KEYID_KDESC() const;
-};
-}
 
 struct VLG_SBS_COL_DATA_ENTRY;
 

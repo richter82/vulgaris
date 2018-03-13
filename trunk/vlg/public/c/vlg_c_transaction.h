@@ -48,8 +48,7 @@ TransactionResult transaction_get_transaction_result(transaction_wr tx);
 
 ProtocolCode transaction_get_transaction_result_code(transaction_wr tx);
 
-TransactionRequestType
-transaction_get_transaction_request_type(transaction_wr tx);
+TransactionRequestType transaction_get_transaction_request_type(transaction_wr tx);
 
 Action transaction_get_transaction_action(transaction_wr tx);
 
@@ -87,13 +86,13 @@ void transaction_set_transaction_request_class_id(transaction_wr tx,
                                                   unsigned int nclass_id);
 
 void transaction_set_transaction_request_class_encode(transaction_wr tx,
-                                                      Encode class_encode);
+                                                      Encode nclass_encode);
 
 void transaction_set_transaction_result_class_id(transaction_wr tx,
                                                  unsigned int nclass_id);
 
 void transaction_set_transaction_result_class_encode(transaction_wr tx,
-                                                     Encode class_encode);
+                                                     Encode nclass_encode);
 
 void transaction_set_transaction_result_class_required(transaction_wr tx,
                                                        int res_class_req);
@@ -129,35 +128,7 @@ tx_id_wr *transaction_get_transaction_id(transaction_wr tx);
 void transaction_set_transaction_id(transaction_wr tx,
                                     tx_id_wr *txid);
 
-unsigned int transaction_get_transaction_id_PLID(transaction_wr tx);
-
-unsigned int transaction_get_transaction_id_SVID(transaction_wr tx);
-
-unsigned int transaction_get_transaction_id_CNID(transaction_wr tx);
-
-unsigned int transaction_get_transaction_id_PRID(transaction_wr tx);
-
-void transaction_set_transaction_id_PLID(transaction_wr tx,
-                                         unsigned int plid);
-
-void transaction_set_transaction_id_SVID(transaction_wr tx,
-                                         unsigned int svid);
-
-void transaction_set_transaction_id_CNID(transaction_wr tx,
-                                         unsigned int cnid);
-
-void transaction_set_transaction_id_PRID(transaction_wr tx,
-                                         unsigned int prid);
-
 RetCode transaction_renew(transaction_wr tx);
-
-RetCode transaction_prepare(transaction_wr tx);
-
-RetCode transaction_prepare_full(transaction_wr tx,
-                                 TransactionRequestType tx_request_type,
-                                 Action tx_action,
-                                 nclass_wr sending_obj,
-                                 nclass_wr current_obj);
 
 RetCode transaction_send(transaction_wr tx);
 

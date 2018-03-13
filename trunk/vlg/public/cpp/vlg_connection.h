@@ -21,134 +21,99 @@
 
 #ifndef VLG_CPP_CONNECTION_H_
 #define VLG_CPP_CONNECTION_H_
-#include "vlg_memory.h"
-#ifdef WIN32
-#include <winsock2.h>
-#else
-#include <arpa/inet.h>
-#endif
-#ifdef __GNUG__
-#define SOCKET int
-#define INVALID_SOCKET (~0)
-#define SOCKET_ERROR   (-1)
-#endif
+#include "vlg.h"
 
 namespace vlg {
 
-/** @brief class connection_factory.
+/** @brief connection_factory.
 */
-class connection_factory {
-    public:
-        static connection_impl       *connection_impl_factory_f(peer_impl &peer,
-                                                                ConnectionType con_type,
-                                                                unsigned int connid,
-                                                                void *ud);
-    public:
-        connection_factory();
-        virtual ~connection_factory();
+struct incoming_connection_factory {
+    explicit incoming_connection_factory();
+    virtual ~incoming_connection_factory();
+    virtual connection *make_incoming_connection(peer &p);
 
-    public:
-        virtual connection          &make_connection(peer &p);
-
-    public:
-        static connection_factory   &default_factory();
+    static incoming_connection_factory  &default_factory();
 };
 
 /** @brief class connection.
 */
-class connection_impl_pub;
-class connection : public vlg::collectable {
-        friend class connection_factory;
+struct connection {
+    /*client connection ownership is exclusively of user*/
+    explicit connection();
+    virtual ~connection();
 
-    public:
-        typedef void (*status_change)(connection &conn,
-                                      ConnectionStatus status,
-                                      void *ud);
+    RetCode                     bind(peer &);
 
-    public:
-        explicit connection();
-        virtual ~connection();
+    peer                        &get_peer();
+    ConnectionType              get_connection_type()           const;
+    unsigned int                get_id()                        const;
+    ConnectionResult            get_connection_response()       const;
+    ProtocolCode                get_connection_result_code()    const;
+    unsigned short              get_client_heartbeat()          const;
+    unsigned short              get_server_agreed_heartbeat()   const;
+    ProtocolCode                get_disconnection_reason_code() const;
+    ConnectionStatus            get_status();
 
-        virtual vlg::collector &get_collector();
+    RetCode await_for_status_reached_or_outdated(ConnectionStatus test,
+                                                 ConnectionStatus &current,
+                                                 time_t sec = -1,
+                                                 long nsec = 0);
 
-    public:
-        RetCode          bind(peer &p);
+    RetCode await_for_status_change(ConnectionStatus &status,
+                                    time_t sec = -1,
+                                    long nsec = 0);
 
-    public:
-        peer                        &get_peer();
-        ConnectionType              get_connection_type()           const;
-        unsigned int                get_connection_id()             const;
-        ConnectionResult            get_connection_response()       const;
-        ConnectionResultReason      get_connection_result_code()    const;
-        unsigned short              get_client_heartbeat()          const;
-        unsigned short              get_server_agreed_heartbeat()   const;
-        DisconnectionResultReason   get_disconnection_reason_code() const;
-        ConnectionStatus            get_status();
+    RetCode connect(sockaddr_in &);
 
-    public:
-        RetCode await_for_status_reached_or_outdated(ConnectionStatus test,
-                                                     ConnectionStatus &current,
-                                                     time_t sec = -1,
-                                                     long nsec = 0);
-
-        RetCode await_for_status_change(ConnectionStatus &status,
+    /** this function must be called from same thread that called connect()
+    */
+    RetCode await_for_connection_result(ConnectivityEventResult &con_evt_res,
+                                        ConnectivityEventType &c_evt_type,
                                         time_t sec = -1,
                                         long nsec = 0);
 
-        void set_connection_status_change_handler(status_change handler,
-                                                  void *ud);
+    RetCode disconnect(ProtocolCode reason_code);
 
-    public:
-        RetCode    connect(sockaddr_in &connection_params);
+    /** this function must be called from same thread that called disconnect()
+    */
+    RetCode await_for_disconnection_result(ConnectivityEventResult &con_evt_res,
+                                           ConnectivityEventType &c_evt_type,
+                                           time_t sec = -1,
+                                           long nsec = 0);
 
-        /* this function must be called from same thread that
-        called connect()*/
-        RetCode await_for_connection_result(ConnectivityEventResult
-                                            &con_evt_res,
-                                            ConnectivityEventType &c_evt_type,
-                                            time_t sec = -1,
-                                            long nsec = 0);
+    virtual void on_status_change(ConnectionStatus current);
 
-    public:
-        RetCode    disconnect(DisconnectionResultReason reason_code);
+    virtual void on_connect(ConnectivityEventResult con_evt_res,
+                            ConnectivityEventType c_evt_type);
 
-        /* this function must be called from same thread that
-        called disconnect()*/
-        RetCode await_for_disconnection_result(ConnectivityEventResult
-                                               &con_evt_res,
-                                               ConnectivityEventType &c_evt_type,
-                                               time_t sec = -1,
-                                               long nsec = 0);
+    virtual void on_disconnect(ConnectivityEventResult con_evt_res,
+                               ConnectivityEventType c_evt_type);
 
-    public:
-        virtual void on_connect(ConnectivityEventResult con_evt_res,
-                                ConnectivityEventType c_evt_type);
+    /**
+    @param incoming_transaction the brand new incoming transaction.
+    @return default implementation always returns RetCode_OK,
+            so all incoming transactions will be accepted.
+    */
+    virtual RetCode on_incoming_transaction(std::shared_ptr<vlg::transaction> &);
 
-        virtual void on_disconnect(ConnectivityEventResult con_evt_res,
-                                   ConnectivityEventType c_evt_type);
+    /**
+    @param incoming_subscription the brand new incoming subscription.
+    @return default implementation always returns RetCode_OK,
+            so all incoming subscriptions will be accepted.
+    */
+    virtual RetCode on_incoming_subscription(std::shared_ptr<vlg::subscription> &);
 
-    public:
-        transaction_factory &get_transaction_factory();
-        void set_transaction_factory(transaction_factory &tx_factory);
+    incoming_transaction_factory &get_incoming_transaction_factory();
+    void set_incoming_transaction_factory(incoming_transaction_factory &);
 
-    public:
-        subscription_factory &get_subscription_factory();
-        void set_subscription_factory(subscription_factory &sbs_factory);
+    incoming_subscription_factory &get_incoming_subscription_factory();
+    void set_incoming_subscription_factory(incoming_subscription_factory &);
 
-    public:
-        SOCKET              get_socket()    const;
-        const char         *get_host_ip()   const;
-        unsigned short      get_host_port() const;
+    SOCKET              get_socket()    const;
+    const char          *get_host_ip()  const;
+    unsigned short      get_host_port() const;
 
-    public:
-        connection_impl *get_opaque();
-        void            set_opaque(connection_impl *conn);
-
-    private:
-        connection_impl_pub *impl_;
-
-    protected:
-        static nclass_logger *log_;
+    std::unique_ptr<vlg::connection_impl> impl_;
 };
 
 }

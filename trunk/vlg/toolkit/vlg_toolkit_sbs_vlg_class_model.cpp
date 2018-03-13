@@ -27,10 +27,10 @@ VLG_CLASS_ROW_IDX_PAIR::VLG_CLASS_ROW_IDX_PAIR(int rowidx,
     obj_(obj)
 {}
 
-VLG_CLASS_ROW_IDX_PAIR &VLG_CLASS_ROW_IDX_PAIR::operator =
-(const VLG_CLASS_ROW_IDX_PAIR &src)
+VLG_CLASS_ROW_IDX_PAIR &VLG_CLASS_ROW_IDX_PAIR::operator =(const VLG_CLASS_ROW_IDX_PAIR &src)
 {
-    memcpy(this, &src, sizeof(VLG_CLASS_ROW_IDX_PAIR));
+    rowidx_ = src.rowidx_;
+    obj_ = src.obj_;
     return *this;
 }
 
@@ -60,7 +60,7 @@ VLG_SBS_COL_DATA_ENTRY::~VLG_SBS_COL_DATA_ENTRY()
     delete color_timer_;
 }
 
-VLG_SBS_DATA_ENTRY::VLG_SBS_DATA_ENTRY(vlg::nclass *entry,
+VLG_SBS_DATA_ENTRY::VLG_SBS_DATA_ENTRY(std::shared_ptr<vlg::nclass> &entry,
                                        int row_idx,
                                        int col_num) :
     entry_(entry),
@@ -85,10 +85,9 @@ void vlg_toolkit_sbs_vlg_class_model::OnCellResetColor(VLG_SBS_COL_DATA_ENTRY
 // GENERATE REP SECTION BGN
 //------------------------------------------------------------------------------
 
-ENM_GEN_SBS_REP_REC_UD::ENM_GEN_SBS_REP_REC_UD(vlg_toolkit_sbs_vlg_class_model
-                                               &mdl,
+ENM_GEN_SBS_REP_REC_UD::ENM_GEN_SBS_REP_REC_UD(vlg_toolkit_sbs_vlg_class_model &mdl,
                                                const vlg::nentity_manager &bem,
-                                               vlg::ascii_string *prfx,
+                                               std::string *prfx,
                                                bool array_fld,
                                                unsigned int fld_idx) :
     mdl_(mdl),
@@ -101,39 +100,35 @@ ENM_GEN_SBS_REP_REC_UD::ENM_GEN_SBS_REP_REC_UD(vlg_toolkit_sbs_vlg_class_model
 ENM_GEN_SBS_REP_REC_UD::~ENM_GEN_SBS_REP_REC_UD()
 {}
 
-void enum_generate_sbs_model_rep(const vlg::hash_map &map,
-                                 const void *key,
-                                 const void *ptr,
+bool enum_generate_sbs_model_rep(const vlg::member_desc &mmbrd,
                                  void *ud)
 {
     ENM_GEN_SBS_REP_REC_UD *rud = (ENM_GEN_SBS_REP_REC_UD *)ud;
-    const vlg::member_desc *mmbrd = *(const vlg::member_desc **)ptr;
-    vlg::ascii_string hdr_col_nm;
+    std::string hdr_col_nm;
     hdr_col_nm.assign("");
-    vlg::ascii_string idx_prfx;
+    std::string idx_prfx;
     idx_prfx.assign(*(rud->prfx_));
     char idx_b[GEN_HDR_FIDX_BUFF] = {0};
     int sprintf_dbg = 0;
 
     if(rud->array_fld_) {
-        sprintf_dbg = sprintf(idx_b, "%s%d", idx_prfx.length() ? "_" : "",
-                              rud->fld_idx_);
+        sprintf_dbg = sprintf(idx_b, "%s%d", idx_prfx.length() ? "_" : "", rud->fld_idx_);
         idx_prfx.append(idx_b);
     }
 
-    if(mmbrd->get_field_vlg_type() == vlg::Type_ENTITY) {
-        if(mmbrd->get_field_nentity_type() == vlg::NEntityType_NENUM) {
+    if(mmbrd.get_field_vlg_type() == vlg::Type_ENTITY) {
+        if(mmbrd.get_field_nentity_type() == vlg::NEntityType_NENUM) {
             //treat enum as number
-            if(mmbrd->get_field_nmemb() > 1) {
-                for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
+            if(mmbrd.get_field_nmemb() > 1) {
+                for(unsigned int i = 0; i<mmbrd.get_field_nmemb(); i++) {
                     if(rud->prfx_->length()) {
                         hdr_col_nm.append(idx_prfx);
                         hdr_col_nm.append("_");
                     }
                     sprintf_dbg = sprintf(idx_b, "_%d", i);
-                    hdr_col_nm.append(mmbrd->get_member_name());
+                    hdr_col_nm.append(mmbrd.get_member_name());
                     hdr_col_nm.append(idx_b);
-                    rud->mdl_.AppendHdrColumn(hdr_col_nm.internal_buff());
+                    rud->mdl_.AppendHdrColumn(hdr_col_nm.c_str());
                     rud->mdl_.IncrColnum();
                     hdr_col_nm.assign("");
                 }
@@ -142,31 +137,30 @@ void enum_generate_sbs_model_rep(const vlg::hash_map &map,
                     hdr_col_nm.append(idx_prfx);
                     hdr_col_nm.append("_");
                 }
-                hdr_col_nm.append(mmbrd->get_member_name());
-                rud->mdl_.AppendHdrColumn(hdr_col_nm.internal_buff());
+                hdr_col_nm.append(mmbrd.get_member_name());
+                rud->mdl_.AppendHdrColumn(hdr_col_nm.c_str());
                 rud->mdl_.IncrColnum();
             }
         } else {
             //class, struct is a recursive step.
             ENM_GEN_SBS_REP_REC_UD rrud = *rud;
-            vlg::ascii_string rprfx;
+            std::string rprfx;
             rprfx.assign(idx_prfx);
             if(rprfx.length()) {
                 rprfx.append("_");
             }
-            rprfx.append(mmbrd->get_member_name());
+            rprfx.append(mmbrd.get_member_name());
             rrud.prfx_ = &rprfx;
-            const vlg::nentity_desc *edsc = NULL;
-            if(!rud->bem_.get_nentity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
-                const vlg::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
-                if(mmbrd->get_field_nmemb() > 1) {
+            const vlg::nentity_desc *edsc = rud->bem_.get_nentity_descriptor(mmbrd.get_field_user_type());
+            if(edsc) {
+                if(mmbrd.get_field_nmemb() > 1) {
                     rrud.array_fld_ = true;
-                    for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
+                    for(unsigned int i = 0; i<mmbrd.get_field_nmemb(); i++) {
                         rrud.fld_idx_ = i;
-                        nm_desc.enum_elements(enum_generate_sbs_model_rep, &rrud);
+                        edsc->enum_member_descriptors(enum_generate_sbs_model_rep, &rrud);
                     }
                 } else {
-                    nm_desc.enum_elements(enum_generate_sbs_model_rep, &rrud);
+                    edsc->enum_member_descriptors(enum_generate_sbs_model_rep, &rrud);
                 }
             } else {
                 //ERROR
@@ -174,24 +168,24 @@ void enum_generate_sbs_model_rep(const vlg::hash_map &map,
         }
     } else {
         //primitive type
-        if(mmbrd->get_field_vlg_type() == vlg::Type_ASCII) {
+        if(mmbrd.get_field_vlg_type() == vlg::Type_ASCII) {
             if(rud->prfx_->length()) {
                 hdr_col_nm.append(idx_prfx);
                 hdr_col_nm.append("_");
             }
-            hdr_col_nm.append(mmbrd->get_member_name());
-            rud->mdl_.AppendHdrColumn(hdr_col_nm.internal_buff());
+            hdr_col_nm.append(mmbrd.get_member_name());
+            rud->mdl_.AppendHdrColumn(hdr_col_nm.c_str());
             rud->mdl_.IncrColnum();
-        } else if(mmbrd->get_field_nmemb() > 1) {
-            for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
+        } else if(mmbrd.get_field_nmemb() > 1) {
+            for(unsigned int i = 0; i<mmbrd.get_field_nmemb(); i++) {
                 if(rud->prfx_->length()) {
                     hdr_col_nm.append(idx_prfx);
                     hdr_col_nm.append("_");
                 }
                 sprintf_dbg = sprintf(idx_b, "_%d", i);
-                hdr_col_nm.append(mmbrd->get_member_name());
+                hdr_col_nm.append(mmbrd.get_member_name());
                 hdr_col_nm.append(idx_b);
-                rud->mdl_.AppendHdrColumn(hdr_col_nm.internal_buff());
+                rud->mdl_.AppendHdrColumn(hdr_col_nm.c_str());
                 rud->mdl_.IncrColnum();
                 hdr_col_nm.assign("");
             }
@@ -200,11 +194,12 @@ void enum_generate_sbs_model_rep(const vlg::hash_map &map,
                 hdr_col_nm.append(idx_prfx);
                 hdr_col_nm.append("_");
             }
-            hdr_col_nm.append(mmbrd->get_member_name());
-            rud->mdl_.AppendHdrColumn(hdr_col_nm.internal_buff());
+            hdr_col_nm.append(mmbrd.get_member_name());
+            rud->mdl_.AppendHdrColumn(hdr_col_nm.c_str());
             rud->mdl_.IncrColnum();
         }
     }
+    return true;
 }
 
 //------------------------------------------------------------------------------
@@ -236,33 +231,30 @@ ENM_UPD_CLS_ROW_REC_UD::ENM_UPD_CLS_ROW_REC_UD(vlg_toolkit_sbs_vlg_class_model
 ENM_UPD_CLS_ROW_REC_UD::~ENM_UPD_CLS_ROW_REC_UD()
 {}
 
-void enum_update_class_row(const vlg::hash_map &map,
-                           const void *key,
-                           const void *ptr,
+bool enum_update_class_row(const vlg::member_desc &mmbrd,
                            void *ud)
 {
     ENM_UPD_CLS_ROW_REC_UD *rud = (ENM_UPD_CLS_ROW_REC_UD *)ud;
-    const vlg::member_desc *mmbrd = *(const vlg::member_desc **)ptr;
     const char *obj_f_ptr_new = NULL, *obj_f_ptr_prev = NULL;
     QString val;
     QModelIndex qindex;
 
-    if(mmbrd->get_field_vlg_type() == vlg::Type_ENTITY) {
-        if(mmbrd->get_field_nentity_type() == vlg::NEntityType_NENUM) {
+    if(mmbrd.get_field_vlg_type() == vlg::Type_ENTITY) {
+        if(mmbrd.get_field_nentity_type() == vlg::NEntityType_NENUM) {
             //treat enum as number
-            if(mmbrd->get_field_nmemb() > 1) {
-                for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
+            if(mmbrd.get_field_nmemb() > 1) {
+                for(unsigned int i = 0; i<mmbrd.get_field_nmemb(); i++) {
                     //new value ptr
                     obj_f_ptr_new = rud->obj_ptr_ +
-                                    mmbrd->get_field_offset() +
-                                    mmbrd->get_field_type_size()*i;
+                                    mmbrd.get_field_offset() +
+                                    mmbrd.get_field_type_size()*i;
 
                     //old value ptr
                     obj_f_ptr_prev = rud->obj_ptr_prev_ +
-                                     mmbrd->get_field_offset() +
-                                     mmbrd->get_field_type_size()*i;
+                                     mmbrd.get_field_offset() +
+                                     mmbrd.get_field_type_size()*i;
 
-                    if(memcmp(obj_f_ptr_new, obj_f_ptr_prev, mmbrd->get_field_type_size())) {
+                    if(memcmp(obj_f_ptr_new, obj_f_ptr_prev, mmbrd.get_field_type_size())) {
                         FillQstring_FldValue(obj_f_ptr_new, mmbrd, val);
                         qindex = rud->mdl_.index(rud->rowidx_,
                                                  rud->curcolidx_,
@@ -274,12 +266,12 @@ void enum_update_class_row(const vlg::hash_map &map,
                 }
             } else {
                 //new value ptr
-                obj_f_ptr_new = rud->obj_ptr_ + mmbrd->get_field_offset();
+                obj_f_ptr_new = rud->obj_ptr_ + mmbrd.get_field_offset();
 
                 //old value ptr
-                obj_f_ptr_prev = rud->obj_ptr_prev_ + mmbrd->get_field_offset();
+                obj_f_ptr_prev = rud->obj_ptr_prev_ + mmbrd.get_field_offset();
 
-                if(memcmp(obj_f_ptr_new, obj_f_ptr_prev, mmbrd->get_field_type_size())) {
+                if(memcmp(obj_f_ptr_new, obj_f_ptr_prev, mmbrd.get_field_type_size())) {
                     FillQstring_FldValue(obj_f_ptr_new, mmbrd, val);
                     qindex = rud->mdl_.index(rud->rowidx_,
                                              rud->curcolidx_,
@@ -292,17 +284,16 @@ void enum_update_class_row(const vlg::hash_map &map,
         } else {
             //class, struct is a recursive step.
             ENM_UPD_CLS_ROW_REC_UD rrud = *rud;
-            const vlg::nentity_desc *edsc = NULL;
-            if(!rud->bem_.get_nentity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
-                const vlg::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
-                if(mmbrd->get_field_nmemb() > 1) {
+            const vlg::nentity_desc *edsc = rud->bem_.get_nentity_descriptor(mmbrd.get_field_user_type());
+            if(edsc) {
+                if(mmbrd.get_field_nmemb() > 1) {
                     rrud.array_fld_ = true;
-                    for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
+                    for(unsigned int i = 0; i<mmbrd.get_field_nmemb(); i++) {
                         rrud.fld_idx_ = i;
-                        nm_desc.enum_elements(enum_update_class_row, &rrud);
+                        edsc->enum_member_descriptors(enum_update_class_row, &rrud);
                     }
                 } else {
-                    nm_desc.enum_elements(enum_update_class_row, &rrud);
+                    edsc->enum_member_descriptors(enum_update_class_row, &rrud);
                 }
             } else {
                 //ERROR
@@ -311,16 +302,16 @@ void enum_update_class_row(const vlg::hash_map &map,
         }
     } else {
         //primitive type
-        if(mmbrd->get_field_vlg_type() == vlg::Type_ASCII) {
+        if(mmbrd.get_field_vlg_type() == vlg::Type_ASCII) {
             //new value ptr
-            obj_f_ptr_new = rud->obj_ptr_ + mmbrd->get_field_offset();
+            obj_f_ptr_new = rud->obj_ptr_ + mmbrd.get_field_offset();
 
             //old value ptr
-            obj_f_ptr_prev = rud->obj_ptr_prev_ + mmbrd->get_field_offset();
+            obj_f_ptr_prev = rud->obj_ptr_prev_ + mmbrd.get_field_offset();
 
             if(memcmp(obj_f_ptr_new, obj_f_ptr_prev,
-                      mmbrd->get_field_type_size()*mmbrd->get_field_nmemb())) {
-                val = QString::fromLatin1(obj_f_ptr_new, mmbrd->get_field_nmemb());
+                      mmbrd.get_field_type_size()*mmbrd.get_field_nmemb())) {
+                val = QString::fromLatin1(obj_f_ptr_new, (int)mmbrd.get_field_nmemb());
                 qindex = rud->mdl_.index(rud->rowidx_,
                                          rud->curcolidx_,
                                          QModelIndex());
@@ -328,17 +319,17 @@ void enum_update_class_row(const vlg::hash_map &map,
                 rud->mdl_.setData(qindex, val, Qt::EditRole);
             }
             rud->curcolidx_++;
-        } else if(mmbrd->get_field_nmemb() > 1) {
-            for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
+        } else if(mmbrd.get_field_nmemb() > 1) {
+            for(unsigned int i = 0; i<mmbrd.get_field_nmemb(); i++) {
                 //new value ptr
-                obj_f_ptr_new = rud->obj_ptr_ + mmbrd->get_field_offset() +
-                                mmbrd->get_field_type_size()*i;
+                obj_f_ptr_new = rud->obj_ptr_ + mmbrd.get_field_offset() +
+                                mmbrd.get_field_type_size()*i;
 
                 //old value ptr
-                obj_f_ptr_prev = rud->obj_ptr_prev_ + mmbrd->get_field_offset() +
-                                 mmbrd->get_field_type_size()*i;
+                obj_f_ptr_prev = rud->obj_ptr_prev_ + mmbrd.get_field_offset() +
+                                 mmbrd.get_field_type_size()*i;
 
-                if(memcmp(obj_f_ptr_new, obj_f_ptr_prev, mmbrd->get_field_type_size())) {
+                if(memcmp(obj_f_ptr_new, obj_f_ptr_prev, mmbrd.get_field_type_size())) {
                     FillQstring_FldValue(obj_f_ptr_new, mmbrd, val);
                     qindex = rud->mdl_.index(rud->rowidx_,
                                              rud->curcolidx_,
@@ -350,12 +341,12 @@ void enum_update_class_row(const vlg::hash_map &map,
             }
         } else {
             //value
-            obj_f_ptr_new = rud->obj_ptr_ + mmbrd->get_field_offset();
+            obj_f_ptr_new = rud->obj_ptr_ + mmbrd.get_field_offset();
 
             //old value ptr
-            obj_f_ptr_prev = rud->obj_ptr_prev_ + mmbrd->get_field_offset();
+            obj_f_ptr_prev = rud->obj_ptr_prev_ + mmbrd.get_field_offset();
 
-            if(memcmp(obj_f_ptr_new, obj_f_ptr_prev, mmbrd->get_field_type_size())) {
+            if(memcmp(obj_f_ptr_new, obj_f_ptr_prev, mmbrd.get_field_type_size())) {
                 FillQstring_FldValue(obj_f_ptr_new, mmbrd, val);
                 qindex = rud->mdl_.index(rud->rowidx_,
                                          rud->curcolidx_,
@@ -366,6 +357,7 @@ void enum_update_class_row(const vlg::hash_map &map,
             rud->curcolidx_++;
         }
     }
+    return true;
 }
 
 //------------------------------------------------------------------------------
@@ -408,7 +400,7 @@ QModelIndex vlg_toolkit_sbs_vlg_class_model::index(int row,
     if(row < 0 || column < 0 || column >= colnum_ || row >= data_.size()) {
         return QModelIndex();
     }
-    return createIndex(row, column, data_[row].entry_);
+    return createIndex(row, column, data_[row].entry_.get());
 }
 
 QVariant vlg_toolkit_sbs_vlg_class_model::headerData(int section,
@@ -439,19 +431,19 @@ QVariant vlg_toolkit_sbs_vlg_class_model::data(const QModelIndex &index,
         return QVariant();
     }
     if(role == Qt::DisplayRole) {
-        vlg::nclass *obj = data_[index.row()].entry_;
+        vlg::nclass *obj = data_[index.row()].entry_.get();
         if(obj) {
             const vlg::member_desc *obj_fld_mdesc = NULL;
-            char *obj_fld_ptr = NULL;
-            if((obj_fld_ptr = obj->get_field_by_column_number(index.column(),
-                                                              bem_,
-                                                              &obj_fld_mdesc))) {
+            const char *obj_fld_ptr = NULL;
+            if((obj_fld_ptr = obj->get_field_address_by_column_number(index.column(),
+                                                                      bem_,
+                                                                      &obj_fld_mdesc))) {
                 QString out;
                 if((obj_fld_mdesc->get_field_vlg_type() == vlg::Type_ASCII) &&
                         obj_fld_mdesc->get_field_nmemb() > 1) {
-                    out = QString::fromLatin1(obj_fld_ptr, obj_fld_mdesc->get_field_nmemb());
+                    out = QString::fromLatin1(obj_fld_ptr, (int)obj_fld_mdesc->get_field_nmemb());
                 } else {
-                    FillQstring_FldValue(obj_fld_ptr, obj_fld_mdesc, out);
+                    FillQstring_FldValue(obj_fld_ptr, *obj_fld_mdesc, out);
                 }
                 return out;
             } else {
@@ -510,9 +502,8 @@ bool vlg_toolkit_sbs_vlg_class_model::insertRows(int position,
 {
     Q_UNUSED(index);
     beginInsertRows(QModelIndex(), position, position);
-    vlg::nclass *insert_obj = static_cast<vlg::nclass *>
-                              (index.internalPointer());
-    VLG_SBS_DATA_ENTRY sbs_data_entry(insert_obj, position, colnum_);
+    std::shared_ptr<vlg::nclass> *insert_obj = static_cast<std::shared_ptr<vlg::nclass>*>(index.internalPointer());
+    VLG_SBS_DATA_ENTRY sbs_data_entry(*insert_obj, position, colnum_);
     data_.append(sbs_data_entry);
     endInsertRows();
     return true;
@@ -531,18 +522,16 @@ void vlg_toolkit_sbs_vlg_class_model::GenerateModelRep()
 
 void vlg_toolkit_sbs_vlg_class_model::GenerateHeader()
 {
-    vlg::ascii_string prfx;
+    std::string prfx;
     prfx.assign("");
-    const vlg::hash_map &nm_desc = edesc_.get_opaque()->GetMap_NM_MMBRDSC();
     ENM_GEN_SBS_REP_REC_UD gen_rep_rud(*this, bem_, &prfx, false, 0);
-    nm_desc.enum_elements(enum_generate_sbs_model_rep, &gen_rep_rud);
+    edesc_.enum_member_descriptors(enum_generate_sbs_model_rep, &gen_rep_rud);
 }
 
 void vlg_toolkit_sbs_vlg_class_model::updateEntry(int rowidx,
                                                   vlg::nclass *entry,
                                                   vlg::nclass *prev_entry)
 {
-    const vlg::hash_map &nm_desc = edesc_.get_opaque()->GetMap_NM_MMBRDSC();
     ENM_UPD_CLS_ROW_REC_UD upd_cls_row_rud(*this,
                                            bem_,
                                            (const char *)entry,
@@ -551,28 +540,25 @@ void vlg_toolkit_sbs_vlg_class_model::updateEntry(int rowidx,
                                            false,
                                            0);
 
-    nm_desc.enum_elements(enum_update_class_row,
-                          &upd_cls_row_rud);
+    edesc_.enum_member_descriptors(enum_update_class_row, &upd_cls_row_rud);
 }
 
-void vlg_toolkit_sbs_vlg_class_model::offerEntry(vlg::nclass *entry)
+void vlg_toolkit_sbs_vlg_class_model::offerEntry(std::shared_ptr<vlg::subscription_event> &sbs_evt)
 {
     int rowidx = 0;
     VLG_CLASS_ROW_IDX_PAIR crip;
-    vlg::shared_pointer<char> entry_key;
-    entry->get_primary_key_value_as_string(entry_key);
-    QString hkey(entry_key.ptr());
+    std::unique_ptr<char> entry_key;
+    sbs_evt->get_data()->get_primary_key_value_as_string(entry_key);
+    QString hkey(entry_key.get());
     if(data_hlpr_.contains(hkey)) {
         crip = data_hlpr_[hkey];
         rowidx = crip.rowidx_;
-        updateEntry(rowidx, entry, crip.obj_);
-        crip.obj_->set_from(entry);
+        updateEntry(rowidx, sbs_evt->get_data().get(), crip.obj_.get());
+        crip.obj_->set_from(*sbs_evt->get_data());
     } else {
-        vlg::collector &c = entry->get_collector();
-        c.retain(entry);
-        crip.obj_ = entry;
+        crip.obj_ = sbs_evt->get_data()->clone();
         crip.rowidx_ = rowCount();
-        insertRows(rowCount(), 1, createIndex(rowCount(), 0, entry));
+        insertRows(rowCount(), 1, createIndex(rowCount(), 0, &crip.obj_));
         data_hlpr_[hkey] = crip;
     }
 }

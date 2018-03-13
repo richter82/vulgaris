@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="h">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\vlg\cfg.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vlg\concurr.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vlg\dl.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vlg\parse.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vlg\structs.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vlg\timing.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vlg\bbuf.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vlg\acceptor.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vlg\sbs_impl.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vlg\prs_impl.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vlg\proto.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vlg\pr_impl.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vlg\pr_aut.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vlg\conn_impl.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vlg\tx_impl.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vlg\selector.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\glob.h">
+      <Filter>h</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\vlg\bbuf.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vlg\cfg.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vlg\concurr.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vlg\dl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vlg\logger.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vlg\parse.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vlg\structs.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vlg\timing.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vlg\acceptor.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vlg\proto.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vlg\pr_impl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vlg\pr_aut.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vlg\conn_impl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vlg\tx_impl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vlg\selector.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vlg\sbs_impl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vlg\restore.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vlg\prs_sbs.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vlg\prs_mng.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vlg\prs_impl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

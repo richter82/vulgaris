@@ -27,13 +27,23 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <pthread.h>
 #ifdef __GNUG__
 #include <errno.h>
 #include <stdarg.h>
+#define SOCKET int
+#define INVALID_SOCKET (~0)
+#define SOCKET_ERROR   (-1)
+#endif
+#if defined WIN32 && defined _MSC_VER
+#include <winsock2.h>
+#else
+#include <arpa/inet.h>
 #endif
 
 #if defined(__cplusplus)
+#include <string>
+#include <memory>
+
 extern "C" {
 namespace vlg {
 #endif
@@ -138,31 +148,44 @@ namespace vlg {
 vlg PROTOCOL RESULT CODE
 ******************************************/
 typedef enum  {
-    //-- GENERIC ERROR CODES (0-199) (0x0-0xC7)
-    ProtocolCode_SUCCESS,               //- 0   0x0: SUCCESS
-    ProtocolCode_UNKNOWN_ERROR,         //- 1   0x1: UNKNOWN ERROR
-    ProtocolCode_PROTOCOL_ERROR,        //- 2   0x2: PROTOCOL ERROR
-    ProtocolCode_SERVER_ERROR,          //- 3   0x3: SERVER ERROR
-    ProtocolCode_APPLICATIVE_ERROR,     //- 4   0x4: APPLICATIVE ERROR
-    ProtocolCode_MALFORMED_REQUEST,     //- 5   0x5: REQUEST MALFORMED
-    ProtocolCode_UNSUPPORTED_REQUEST,   //- 6   0x6: REQUEST UNSUPPORTED
-    ProtocolCode_REASON_IN_RESULT_OBJ,  //- 7   0x7: REASON IN RESULT OBJ
-    ProtocolCode_SECURITY_ERROR,        //- 8   0x8: SECURITY ERROR
-    ProtocolCode_UNAUTHENTICATED,       //- 9   0x9: UNAUTHENTICATED
-    ProtocolCode_UNAUTHORIZED,          //- 10  0xA: UNAUTHORIZED
+    //-- GENERIC ERROR CODES                            (0-99) (0x0-0x63)
+    ProtocolCode_SUCCESS,                               //- 0   0x0:        SUCCESS
+    ProtocolCode_UNKNOWN_ERROR,                         //- 1   0x1:        UNKNOWN ERROR
+    ProtocolCode_PROTOCOL_ERROR,                        //- 2   0x2:        PROTOCOL ERROR
+    ProtocolCode_SERVER_ERROR,                          //- 3   0x3:        SERVER ERROR
+    ProtocolCode_APPLICATIVE_ERROR,                     //- 4   0x4:        APPLICATIVE ERROR
+    ProtocolCode_MALFORMED_REQUEST,                     //- 5   0x5:        REQUEST MALFORMED
+    ProtocolCode_UNSUPPORTED_REQUEST,                   //- 6   0x6:        REQUEST UNSUPPORTED
+    ProtocolCode_REASON_IN_RESULT_OBJ,                  //- 7   0x7:        REASON IN RESULT OBJ
+    ProtocolCode_SECURITY_ERROR,                        //- 8   0x8:        SECURITY ERROR
+    ProtocolCode_UNAUTHENTICATED,                       //- 9   0x9:        UNAUTHENTICATED
+    ProtocolCode_UNAUTHORIZED,                          //- 10  0xA:        UNAUTHORIZED
+    ProtocolCode_SERVER_STATUS_INVALID,                 //- 11  0xB:        SERVER STATUS INVALID
+    ProtocolCode_SERVER_IS_GOING_DOWN,                  //- 12  0xC:        SERVER IS GOING DOWN
+    ProtocolCode_TOO_MANY_CONNECTIONS,                  //- 13  0xD:        TOO MANY CONNECTIONS
+    ProtocolCode_PROTO_VERSION_TOO_OLD,                 //- 14  0xE:        PROTO VERSION TOO OLD
+    ProtocolCode_APPLICATIVE_REJECT,                    //- 15  0xF         APPLICATIVE REJECT
+    ProtocolCode_UNSPECIFIED,                           //- 16  0x10:       UNSPECIFIED
+    ProtocolCode_UNDEFINED,                             //- 17  0x11:       UNDEFINED
 
-    //-- TRANSACTIONAL ERROR CODES (200-399) (0xC8-0x18F)
-    ProtocolCode_INVALID_TRANSACTION_ID = 200,  //- 200 0xC8: INVALID TX ID
-    ProtocolCode_DUPLICATED_TRANSACTION_ID,     //- 201 0xC9: DUP TX ID
-    ProtocolCode_TRANSACTION_ALREADY_FLYING,    //- 202 0xCA: TX ALRDY FLY
-    ProtocolCode_TRANSACTION_TIMEOUT,           //- 203 0xCB: TX TIMEOUT
-    ProtocolCode_TRANSACTION_LOST,              //- 204 0xCC: TX LOST
-    ProtocolCode_TRANSACTION_CLIENT_ABORT,      //- 205 0xCD: CLI ABORTED
-    ProtocolCode_TRANSACTION_SERVER_ABORT,      //- 206 0xCE: SRV ABORTED
+    //-- CONNECTION ERROR CODES                         (100-199) (0x64-0xC7)
+    ProtocolCode_ALREADY_CONNECTED = 100,               //- 100  0x64:      ALREADY CONNECTED
+    ProtocolCode_SERVER_CHANGED_HEARTBEAT,              //- 101  0x65:      SERVER CHANGED HEARTBEAT
+    ProtocolCode_INVALID_CONNECTION_STATUS,             //- 102  0x66:      INVALID CONNECTION STATUS
+    ProtocolCode_PEER_INACTIVITY,                       //- 103  0x67:      PEER INACTIVITY
 
-    //-- SUBSCRIPTION ERROR CODES (400-599) (0x190-0x257)
-    ProtocolCode_SUBSCRIPTION_ALREADY_STARTED = 400, //- 400 0x190
-    ProtocolCode_SUBSCRIPTION_NOT_FOUND,             //- 401 0x191
+    //-- TRANSACTIONAL ERROR CODES                      (200-299) (0xC8-0x12B)
+    ProtocolCode_INVALID_TRANSACTION_ID = 200,          //- 200 0xC8:       INVALID TX ID
+    ProtocolCode_DUPLICATED_TRANSACTION_ID,             //- 201 0xC9:       DUP TX ID
+    ProtocolCode_TRANSACTION_ALREADY_FLYING,            //- 202 0xCA:       TX ALRDY FLY
+    ProtocolCode_TRANSACTION_TIMEOUT,                   //- 203 0xCB:       TX TIMEOUT
+    ProtocolCode_TRANSACTION_LOST,                      //- 204 0xCC:       TX LOST
+    ProtocolCode_TRANSACTION_CLIENT_ABORT,              //- 205 0xCD:       CLI ABORTED
+    ProtocolCode_TRANSACTION_SERVER_ABORT,              //- 206 0xCE:       SRV ABORTED
+
+    //-- SUBSCRIPTION ERROR CODES                       (300-399) (0x12C-0x18F)
+    ProtocolCode_SUBSCRIPTION_ALREADY_STARTED = 300,    //- 400 0x190       SBS ALREADY STARTED
+    ProtocolCode_SUBSCRIPTION_NOT_FOUND                 //- 401 0x191       SBS NOT FOUND
 } ProtocolCode;
 
 /*****************************************
@@ -277,38 +300,6 @@ typedef enum  {
 } ConnectionResult;
 
 /*****************************************
-CONNECTION RESULT REASON CODE
-******************************************/
-typedef enum  {
-    ConnectionResultReason_NO_ERROR,
-    ConnectionResultReason_UNSPECIFIED,
-    ConnectionResultReason_SERVER_ERROR,
-    ConnectionResultReason_SERVER_STATUS_INVALID,
-    ConnectionResultReason_SERVER_IS_GOING_DOWN,
-    ConnectionResultReason_TOO_MANY_CONNECTIONS,
-    ConnectionResultReason_PROTO_VERSION_TOO_OLD,
-    ConnectionResultReason_ALREADY_CONNECTED,
-    ConnectionResultReason_SERVER_CHANGED_HEARTBEAT,
-    ConnectionResultReason_INVALID_CONNECTION_STATUS,
-    ConnectionResultReason_APPLICATIVE_REFUSAL,
-} ConnectionResultReason;
-
-/*****************************************
-DISCONNECTION REASON CODE
-******************************************/
-typedef enum  {
-    DisconnectionResultReason_UNDEFINED,
-    DisconnectionResultReason_UNSPECIFIED,
-    DisconnectionResultReason_SERVER_ERROR,
-    DisconnectionResultReason_SERVER_STATUS_INVALID,
-    DisconnectionResultReason_SERVER_IS_GOING_DOWN,
-    DisconnectionResultReason_TOO_MANY_CONNECTIONS,
-    DisconnectionResultReason_PEER_INACTIVITY,
-    DisconnectionResultReason_APPLICATIVE,
-    DisconnectionResultReason_INVALID_CONNECTION_STATUS,
-} DisconnectionResultReason;
-
-/*****************************************
 CONNECTION STATUS
 ******************************************/
 typedef enum  {
@@ -352,7 +343,6 @@ typedef enum  {
     TransactionStatus_UNDEFINED,
     TransactionStatus_EARLY,
     TransactionStatus_INITIALIZED,
-    TransactionStatus_PREPARED,
     TransactionStatus_FLYING,
     TransactionStatus_CLOSED,
     TransactionStatus_ERROR = 500,
@@ -507,16 +497,15 @@ typedef enum  {
 /** @brief tx_id represent a transaction-id for transaction objects.
 */
 #if defined(__cplusplus)
-class tx_id {
-    public:
-        explicit        tx_id();
+struct tx_id {
+    explicit        tx_id();
 #else
 typedef struct {
 #endif
-        unsigned int    txplid;
-        unsigned int    txsvid;
-        unsigned int    txcnid;
-        unsigned int    txprid;
+    unsigned int    txplid;
+    unsigned int    txsvid;
+    unsigned int    txcnid;
+    unsigned int    txprid;
 #if defined(__cplusplus)
 };
 typedef tx_id tx_id_wr;
@@ -525,31 +514,29 @@ typedef tx_id tx_id_wr;
 #endif
 
 #if defined(__cplusplus)
-class nclass_logger;
 class nclass;
-class nentity_desc;
-class nentity_manager;
-class peer;
-class peer_impl;
-class connection;
-class connection_impl;
-class connection_factory;
-class transaction;
-class transaction_impl;
-class transaction_factory;
-class subscription;
-class subscription_impl;
-class subscription_event;
-class subscription_event_impl;
-class subscription_factory;
-class persistence_connection_impl;
-class persistence_driver_impl;
-class persistence_query_impl;
-class persistence_manager_impl;
-class persistence_task;
-class persistence_connection_pool;
-class persistence_worker;
-class grow_byte_buffer;
+struct nentity_desc;
+struct nentity_manager;
+struct peer;
+struct peer_impl;
+struct connection;
+struct connection_impl;
+struct incoming_connection_factory;
+struct transaction;
+struct transaction_impl;
+struct incoming_transaction_factory;
+struct subscription;
+struct subscription_impl;
+struct subscription_event;
+struct subscription_event_impl;
+struct incoming_subscription_factory;
+struct persistence_driver;
+struct persistence_query_impl;
+struct persistence_manager_impl;
+struct persistence_task;
+struct persistence_connection_pool;
+struct persistence_worker;
+class g_bbuf;
 #endif
 typedef void *persistence_manager_wr;
 typedef void *persistence_connection_wr;
@@ -583,8 +570,7 @@ namespace vlg {
 @param copy
 @return
 */
-typedef void *(*alloc_func)(size_t type_size,
-                            const void *copy);
+typedef void *(*nclass_alloc)();
 
 #if defined(__cplusplus)
 }

@@ -24,10 +24,32 @@
 
 #include "vlg_toolkit_core_util.h"
 #include "vlg_toolkit_vlg_model.h"
-#include "vlg_toolkit_peer.h"
 #include "vlg_toolkit_newconndlg.h"
 #include "vlg_toolkit_model_tab.h"
 #include "vlg_toolkit_connection.h"
+
+class vlg_toolkit_MainWindow;
+
+namespace vlg_tlkt {
+//------------------------------------------------------------------------------
+// ****VLG_TOOLKIT_PEER****
+//------------------------------------------------------------------------------
+class toolkit_peer : public vlg::peer {
+    public:
+        toolkit_peer(vlg_toolkit_MainWindow &widget);
+
+    private:
+        virtual const char *get_name() override;
+        virtual const unsigned int *get_version() override;
+
+    public:
+        virtual void on_status_change(vlg::PeerStatus current) override;
+
+    private:
+        vlg_toolkit_MainWindow &widget_;
+};
+
+}
 
 namespace Ui {
 class vlg_toolkit_MainWindow;
@@ -91,8 +113,7 @@ class vlg_toolkit_MainWindow : public QMainWindow {
 
     private:
         void AddNewModelTab();
-        void AddNewConnectionTab(vlg::connection &new_conn,
-                                 const QString &host,
+        void AddNewConnectionTab(const QString &host,
                                  const QString &port,
                                  const QString &usr,
                                  const QString &psswd);
@@ -109,11 +130,6 @@ class vlg_toolkit_MainWindow : public QMainWindow {
         vlg::RetCode PeerLoadCfgHndl(int pnum,
                                      const char *param,
                                      const char *value);
-
-        /******
-        REP
-        ****/
-
         //peer
     private:
         vlg_tlkt::toolkit_peer  peer_;

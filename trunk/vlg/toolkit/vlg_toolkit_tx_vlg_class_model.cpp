@@ -25,10 +25,9 @@
 // GENERATE REP SECTION BGN
 //------------------------------------------------------------------------------
 
-ENM_GEN_TX_REP_REC_UD::ENM_GEN_TX_REP_REC_UD(vlg_toolkit_tx_vlg_class_model
-                                             &mdl,
+ENM_GEN_TX_REP_REC_UD::ENM_GEN_TX_REP_REC_UD(vlg_toolkit_tx_vlg_class_model &mdl,
                                              const vlg::nentity_manager &bem,
-                                             vlg::ascii_string *prfx,
+                                             std::string *prfx,
                                              bool array_fld,
                                              unsigned int fld_idx) :
     mdl_(mdl),
@@ -41,14 +40,13 @@ ENM_GEN_TX_REP_REC_UD::ENM_GEN_TX_REP_REC_UD(vlg_toolkit_tx_vlg_class_model
 ENM_GEN_TX_REP_REC_UD::~ENM_GEN_TX_REP_REC_UD()
 {}
 
-void enum_generate_tx_model_rep(const vlg::hash_map &map, const void *key,
-                                const void *ptr, void *ud)
+bool enum_generate_tx_model_rep(const vlg::member_desc &mmbrd,
+                                void *ud)
 {
     ENM_GEN_TX_REP_REC_UD *rud = (ENM_GEN_TX_REP_REC_UD *)ud;
-    const vlg::member_desc *mmbrd = *(const vlg::member_desc **)ptr;
-    vlg::ascii_string hdr_row_nm;
+    std::string hdr_row_nm;
     hdr_row_nm.assign("");
-    vlg::ascii_string idx_prfx;
+    std::string idx_prfx;
     idx_prfx.assign(*(rud->prfx_));
     char idx_b[GEN_HDR_FIDX_BUFF] = {0};
     int sprintf_dbg = 0;
@@ -59,19 +57,19 @@ void enum_generate_tx_model_rep(const vlg::hash_map &map, const void *key,
         idx_prfx.append(idx_b);
     }
 
-    if(mmbrd->get_field_vlg_type() == vlg::Type_ENTITY) {
-        if(mmbrd->get_field_nentity_type() == vlg::NEntityType_NENUM) {
+    if(mmbrd.get_field_vlg_type() == vlg::Type_ENTITY) {
+        if(mmbrd.get_field_nentity_type() == vlg::NEntityType_NENUM) {
             //treat enum as number
-            if(mmbrd->get_field_nmemb() > 1) {
-                for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
+            if(mmbrd.get_field_nmemb() > 1) {
+                for(unsigned int i = 0; i<mmbrd.get_field_nmemb(); i++) {
                     if(rud->prfx_->length()) {
                         hdr_row_nm.append(idx_prfx);
                         hdr_row_nm.append("_");
                     }
                     sprintf_dbg = sprintf(idx_b, "_%d", i);
-                    hdr_row_nm.append(mmbrd->get_member_name());
+                    hdr_row_nm.append(mmbrd.get_member_name());
                     hdr_row_nm.append(idx_b);
-                    rud->mdl_.AppendHdrRow(hdr_row_nm.internal_buff());
+                    rud->mdl_.AppendHdrRow(hdr_row_nm.c_str());
                     rud->mdl_.IncrRownum();
                     hdr_row_nm.assign("");
                 }
@@ -80,31 +78,30 @@ void enum_generate_tx_model_rep(const vlg::hash_map &map, const void *key,
                     hdr_row_nm.append(idx_prfx);
                     hdr_row_nm.append("_");
                 }
-                hdr_row_nm.append(mmbrd->get_member_name());
-                rud->mdl_.AppendHdrRow(hdr_row_nm.internal_buff());
+                hdr_row_nm.append(mmbrd.get_member_name());
+                rud->mdl_.AppendHdrRow(hdr_row_nm.c_str());
                 rud->mdl_.IncrRownum();
             }
         } else {
             //class, struct is a recursive step.
             ENM_GEN_TX_REP_REC_UD rrud = *rud;
-            vlg::ascii_string rprfx;
+            std::string rprfx;
             rprfx.assign(idx_prfx);
             if(rprfx.length()) {
                 rprfx.append("_");
             }
-            rprfx.append(mmbrd->get_member_name());
+            rprfx.append(mmbrd.get_member_name());
             rrud.prfx_ = &rprfx;
-            const vlg::nentity_desc *edsc = NULL;
-            if(!rud->bem_.get_nentity_descriptor(mmbrd->get_field_user_type(), &edsc)) {
-                const vlg::hash_map &nm_desc = edsc->get_opaque()->GetMap_NM_MMBRDSC();
-                if(mmbrd->get_field_nmemb() > 1) {
+            const vlg::nentity_desc *edsc = rud->bem_.get_nentity_descriptor(mmbrd.get_field_user_type());
+            if(edsc) {
+                if(mmbrd.get_field_nmemb() > 1) {
                     rrud.array_fld_ = true;
-                    for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
+                    for(unsigned int i = 0; i<mmbrd.get_field_nmemb(); i++) {
                         rrud.fld_idx_ = i;
-                        nm_desc.enum_elements(enum_generate_tx_model_rep, &rrud);
+                        edsc->enum_member_descriptors(enum_generate_tx_model_rep, &rrud);
                     }
                 } else {
-                    nm_desc.enum_elements(enum_generate_tx_model_rep, &rrud);
+                    edsc->enum_member_descriptors(enum_generate_tx_model_rep, &rrud);
                 }
             } else {
                 //ERROR
@@ -112,24 +109,24 @@ void enum_generate_tx_model_rep(const vlg::hash_map &map, const void *key,
         }
     } else {
         //primitive type
-        if(mmbrd->get_field_vlg_type() == vlg::Type_ASCII) {
+        if(mmbrd.get_field_vlg_type() == vlg::Type_ASCII) {
             if(rud->prfx_->length()) {
                 hdr_row_nm.append(idx_prfx);
                 hdr_row_nm.append("_");
             }
-            hdr_row_nm.append(mmbrd->get_member_name());
-            rud->mdl_.AppendHdrRow(hdr_row_nm.internal_buff());
+            hdr_row_nm.append(mmbrd.get_member_name());
+            rud->mdl_.AppendHdrRow(hdr_row_nm.c_str());
             rud->mdl_.IncrRownum();
-        } else if(mmbrd->get_field_nmemb() > 1) {
-            for(unsigned int i = 0; i<mmbrd->get_field_nmemb(); i++) {
+        } else if(mmbrd.get_field_nmemb() > 1) {
+            for(unsigned int i = 0; i<mmbrd.get_field_nmemb(); i++) {
                 if(rud->prfx_->length()) {
                     hdr_row_nm.append(idx_prfx);
                     hdr_row_nm.append("_");
                 }
                 sprintf_dbg = sprintf(idx_b, "_%d", i);
-                hdr_row_nm.append(mmbrd->get_member_name());
+                hdr_row_nm.append(mmbrd.get_member_name());
                 hdr_row_nm.append(idx_b);
-                rud->mdl_.AppendHdrRow(hdr_row_nm.internal_buff());
+                rud->mdl_.AppendHdrRow(hdr_row_nm.c_str());
                 rud->mdl_.IncrRownum();
                 hdr_row_nm.assign("");
             }
@@ -138,33 +135,28 @@ void enum_generate_tx_model_rep(const vlg::hash_map &map, const void *key,
                 hdr_row_nm.append(idx_prfx);
                 hdr_row_nm.append("_");
             }
-            hdr_row_nm.append(mmbrd->get_member_name());
-            rud->mdl_.AppendHdrRow(hdr_row_nm.internal_buff());
+            hdr_row_nm.append(mmbrd.get_member_name());
+            rud->mdl_.AppendHdrRow(hdr_row_nm.c_str());
             rud->mdl_.IncrRownum();
         }
     }
+    return true;
 }
 
 //------------------------------------------------------------------------------
 // GENERATE REP SECTION END
 //------------------------------------------------------------------------------
 
-vlg_toolkit_tx_vlg_class_model::vlg_toolkit_tx_vlg_class_model(
-    const vlg::nentity_desc &edesc,
-    const vlg::nentity_manager &bem,
-    vlg::transaction &tx,
-    QObject *parent) :
+vlg_toolkit_tx_vlg_class_model::vlg_toolkit_tx_vlg_class_model(const vlg::nentity_desc &edesc,
+                                                               const vlg::nentity_manager &bem,
+                                                               QObject *parent) :
     edesc_(edesc),
     bem_(bem),
-    tx_(tx),
     local_obj_(NULL),
     rownum_(0),
     QAbstractTableModel(parent)
 {
-    bem.new_nclass_instance(tx_.get_request_nclass_id(), &local_obj_);
-    if(tx_.get_request_obj()) {
-        local_obj_->set_from(tx_.get_request_obj());
-    }
+    bem.new_nclass_instance(edesc.get_nclass_id(), &local_obj_);
     GenerateModelRep();
 }
 
@@ -182,12 +174,10 @@ void vlg_toolkit_tx_vlg_class_model::GenerateModelRep()
 
 void vlg_toolkit_tx_vlg_class_model::GenerateHeader()
 {
-    vlg::ascii_string prfx;
+    std::string prfx;
     prfx.assign("");
-    const vlg::hash_map &nm_desc = edesc_.get_opaque()->GetMap_NM_MMBRDSC();
     ENM_GEN_TX_REP_REC_UD gen_rep_rud(*this, bem_, &prfx, false, 0);
-    nm_desc.enum_elements(enum_generate_tx_model_rep, &gen_rep_rud);
-    int test = 0;
+    edesc_.enum_member_descriptors(enum_generate_tx_model_rep, &gen_rep_rud);
 }
 
 void vlg_toolkit_tx_vlg_class_model::IncrRownum()
@@ -211,7 +201,8 @@ int vlg_toolkit_tx_vlg_class_model::rowCount(const QModelIndex &parent) const
 }
 
 QVariant vlg_toolkit_tx_vlg_class_model::headerData(int section,
-                                                    Qt::Orientation orientation, int role) const
+                                                    Qt::Orientation orientation,
+                                                    int role) const
 {
     if(role != Qt::DisplayRole) {
         return QVariant();
@@ -242,15 +233,15 @@ QVariant vlg_toolkit_tx_vlg_class_model::data(const QModelIndex &index,
         if(local_obj_) {
             const vlg::member_desc *obj_fld_mdesc = NULL;
             char *obj_fld_ptr = NULL;
-            if((obj_fld_ptr = local_obj_->get_field_by_column_number(index.row(),
-                                                                     bem_,
-                                                                     &obj_fld_mdesc))) {
+            if((obj_fld_ptr = local_obj_->get_field_address_by_column_number(index.row(),
+                                                                             bem_,
+                                                                             &obj_fld_mdesc))) {
                 QString out;
                 if((obj_fld_mdesc->get_field_vlg_type() == vlg::Type_ASCII) &&
                         obj_fld_mdesc->get_field_nmemb() > 1) {
-                    out = QString::fromLatin1(obj_fld_ptr, obj_fld_mdesc->get_field_nmemb());
+                    out = QString::fromLatin1(obj_fld_ptr, (int)obj_fld_mdesc->get_field_nmemb());
                 } else {
-                    FillQstring_FldValue(obj_fld_ptr, obj_fld_mdesc, out);
+                    FillQstring_FldValue(obj_fld_ptr, *obj_fld_mdesc, out);
                 }
                 return out;
             } else {
@@ -263,8 +254,7 @@ QVariant vlg_toolkit_tx_vlg_class_model::data(const QModelIndex &index,
     return QVariant();
 }
 
-Qt::ItemFlags vlg_toolkit_tx_vlg_class_model::flags(const QModelIndex &index)
-const
+Qt::ItemFlags vlg_toolkit_tx_vlg_class_model::flags(const QModelIndex &index) const
 {
     if(!index.isValid()) {
         return Qt::ItemIsEnabled;
@@ -273,7 +263,8 @@ const
 }
 
 bool vlg_toolkit_tx_vlg_class_model::setData(const QModelIndex &index,
-                                             const QVariant &value, int role)
+                                             const QVariant &value,
+                                             int role)
 {
     if(!index.isValid()) {
         return false;
@@ -288,10 +279,10 @@ bool vlg_toolkit_tx_vlg_class_model::setData(const QModelIndex &index,
         if(local_obj_) {
             const vlg::member_desc *obj_fld_mdesc = NULL;
             char *obj_fld_ptr = NULL;
-            if((obj_fld_ptr = local_obj_->get_field_by_column_number(index.row(),
-                                                                     bem_,
-                                                                     &obj_fld_mdesc))) {
-                FillFldValue_Qstring(value, obj_fld_mdesc, obj_fld_ptr);
+            if((obj_fld_ptr = local_obj_->get_field_address_by_column_number(index.row(),
+                                                                             bem_,
+                                                                             &obj_fld_mdesc))) {
+                FillFldValue_Qstring(value, *obj_fld_mdesc, obj_fld_ptr);
                 emit(dataChanged(index, index));
                 return true;
             } else {
@@ -304,13 +295,15 @@ bool vlg_toolkit_tx_vlg_class_model::setData(const QModelIndex &index,
     return false;
 }
 
-bool vlg_toolkit_tx_vlg_class_model::insertRows(int position, int rows,
+bool vlg_toolkit_tx_vlg_class_model::insertRows(int position,
+                                                int rows,
                                                 const QModelIndex &index)
 {
     return false;
 }
 
-bool vlg_toolkit_tx_vlg_class_model::removeRows(int position, int rows,
+bool vlg_toolkit_tx_vlg_class_model::removeRows(int position,
+                                                int rows,
                                                 const QModelIndex &index)
 {
     return false;

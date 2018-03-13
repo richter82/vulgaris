@@ -8,8 +8,6 @@ SRC =	../src/vlg/vlg_peer_impl.cpp\
 		../src/vlg/vlg_subscription_impl.cpp\
 		../src/vlg/vlg_peer_pers_sbs.cpp\
 		../src/vlg/vlg_restore.cpp\
-		../src/vlg/vlg_model.cpp\
-		../src/vlg/vlg_model_utl.cpp\
 		../src/vlg/vlg_pers_impl.cpp\
 		../src/vlg/vlg_pers_mng.cpp
 		

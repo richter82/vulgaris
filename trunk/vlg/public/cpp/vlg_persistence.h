@@ -25,130 +25,99 @@
 
 namespace vlg {
 
-/** @brief pepersistence_managerer class.
+/** @brief persistence_manager.
 */
-class persistence_manager {
-    public:
+struct persistence_manager {
+    static RetCode set_config_file_dir(const char *dir);
+    static RetCode set_config_file_path_name(const char *file_path);
+    static RetCode load_config(const char *file_name);
+    static RetCode start_all_drivers();
 
-        /***************************
-        driver loading
-        ***************************/
-        /*dyna*/
-        static RetCode load_driver_dynamic(const char *drivers[],
-                                           int drivers_num);
+    //returns null if no driver is available.
+    static persistence_driver *available_driver(unsigned int nclass_id);
 
-        /*static*/
-        static RetCode load_driver(persistence_driver_impl *drivers[],
-                                   int drivers_num);
-
-        /***************************
-        persistence config loading
-        ***************************/
-        static RetCode set_config_file_dir(const char *dir);
-        static RetCode set_config_file_path_name(const char *file_path);
-        static RetCode load_config(const char *file_name);
-
-        /***************************
-        driver usage
-        ***************************/
-        static RetCode start_all_drivers();
-
-        //returns null if no driver is available.
-        static persistence_driver_impl *available_driver(unsigned int nclass_id);
+    /*dyna*/
+    static RetCode load_driver_dynamic(const char *drivers[],
+                                       int drivers_num);
+    /*static*/
+    static RetCode load_driver(persistence_driver *drivers[],
+                               int drivers_num);
 };
 
-/** @brief persistence_connection class.
+/** @brief persistence_connection.
 */
-class persistence_connection_impl_pub;
-class persistence_connection {
+struct persistence_connection {
+    explicit persistence_connection(persistence_driver &driver);
+    ~persistence_connection();
 
-        //---ctors
-    public:
-        explicit persistence_connection();
-        ~persistence_connection();
+    persistence_driver &get_driver();
 
-        RetCode bind(unsigned int nclass_id,
-                     persistence_driver_impl &driver);
+    RetCode create_entity_schema(PersistenceAlteringMode mode,
+                                 const nentity_manager &nem,
+                                 unsigned int nclass_id);
 
-        //getters
-    public:
-        persistence_connection_impl     *get_opaque();
-        unsigned int                    get_id()        const;
-        persistence_driver_impl         *get_driver();
-        PersistenceConnectionStatus     get_status()    const;
+    RetCode create_entity_schema(PersistenceAlteringMode mode,
+                                 const nentity_manager &nem,
+                                 const nentity_desc &desc);
 
-        //business meths
-    public:
-        RetCode    create_entity_schema(PersistenceAlteringMode mode,
-                                        const nentity_manager &nem,
-                                        unsigned int nclass_id);
+    RetCode save_obj(const nentity_manager &nem,
+                     unsigned int ts0,
+                     unsigned int ts1,
+                     const nclass &in);
 
-        RetCode    create_entity_schema(PersistenceAlteringMode mode,
-                                        const nentity_manager &nem,
-                                        const nentity_desc &desc);
+    RetCode update_obj(unsigned short key,
+                       const nentity_manager &nem,
+                       unsigned int ts0,
+                       unsigned int ts1,
+                       const nclass &in);
 
-        RetCode    save_obj(const nentity_manager &nem,
-                            unsigned int ts0,
-                            unsigned int ts1,
-                            const nclass &in_obj);
+    RetCode save_or_update_obj(unsigned short key,
+                               const nentity_manager &nem,
+                               unsigned int ts0,
+                               unsigned int ts1,
+                               const nclass &in);
 
-        RetCode    update_obj(unsigned short key,
-                              const nentity_manager &nem,
-                              unsigned int ts0,
-                              unsigned int ts1,
-                              const nclass &in_obj);
+    RetCode remove_obj(unsigned short key,
+                       const nentity_manager &nem,
+                       unsigned int ts0,
+                       unsigned int ts1,
+                       PersistenceDeletionMode mode,
+                       const nclass &in);
 
-        RetCode    save_or_update_obj(unsigned short key,
-                                      const nentity_manager &nem,
-                                      unsigned int ts0,
-                                      unsigned int ts1,
-                                      const nclass &in_obj);
+    RetCode load_obj(unsigned short key,
+                     const nentity_manager &nem,
+                     unsigned int &ts0_out,
+                     unsigned int &ts1_out,
+                     nclass &in_out);
 
-        RetCode    remove_obj(unsigned short key,
-                              const nentity_manager &nem,
-                              unsigned int ts0,
-                              unsigned int ts1,
-                              PersistenceDeletionMode mode,
-                              const nclass &in_obj);
+    RetCode execute_statement(const char *stmt,
+                              unsigned int nclass_id);
 
-        RetCode    load_obj(unsigned short key,
-                            const nentity_manager &nem,
-                            unsigned int &ts0_out,
-                            unsigned int &ts1_out,
-                            nclass &in_out_obj);
-
-        RetCode    execute_statement(const char *stmt);
-
-    private:
-        persistence_connection_impl_pub *impl_;
+    persistence_driver &driver_;
 };
 
-/** @brief persistence_query class.
+/** @brief persistence_query.
 */
-class persistence_query_impl_pub;
-class persistence_query {
+struct persistence_query {
+    explicit persistence_query(const nentity_manager &);
+    ~persistence_query();
 
-    public:
-        explicit persistence_query(const nentity_manager &nem);
-        ~persistence_query();
+    unsigned int get_id() const;
 
-        unsigned int    get_id()    const;
+    RetCode execute(unsigned int nclass_id,
+                    const char *sql);
 
-        RetCode    bind(unsigned int nclass_id,
-                        const char *sql);
+    PersistenceQueryStatus get_status() const;
+    const nentity_manager &get_nentity_manager() const;
 
-    public:
-        PersistenceQueryStatus  get_status()            const;
-        const nentity_manager   &get_entity_manager()   const;
+    RetCode next_obj(unsigned int &ts0_out,
+                     unsigned int &ts1_out,
+                     nclass &out);
 
-        RetCode    next_obj(unsigned int &ts0_out,
-                            unsigned int &ts1_out,
-                            nclass &out_obj);
+    RetCode release();
 
-        RetCode    release();
-
-    private:
-        persistence_query_impl_pub *impl_;
+    const nentity_manager &nem_;
+    std::unique_ptr<persistence_query_impl> impl_;
 };
 
 }

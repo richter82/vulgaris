@@ -22,7 +22,7 @@
 #ifndef VLG_C_CONNECTION_H_
 #define VLG_C_CONNECTION_H_
 #include "vlg.h"
-#ifdef WIN32
+#if defined WIN32 && defined _MSC_VER
 #include <winsock2.h>
 #else
 #include <arpa/inet.h>
@@ -61,10 +61,10 @@ peer_wr connection_get_peer(connection_wr conn);
 ConnectionType connection_get_connection_type(connection_wr conn);
 unsigned int connection_get_connection_id(connection_wr conn);
 ConnectionResult connection_get_connection_response(connection_wr conn);
-ConnectionResultReason connection_get_connection_result_code(connection_wr conn);
+ProtocolCode connection_get_connection_result_code(connection_wr conn);
 unsigned short connection_get_client_heartbeat(connection_wr conn);
 unsigned short connection_get_server_agreed_heartbeat(connection_wr conn);
-DisconnectionResultReason connection_get_disconnection_reason_code(connection_wr conn);
+ProtocolCode connection_get_disconnection_reason_code(connection_wr conn);
 ConnectionStatus connection_get_status(connection_wr conn);
 
 RetCode connection_await_for_status_reached_or_outdated(connection_wr conn,
@@ -92,7 +92,7 @@ RetCode connection_await_for_connection_result(connection_wr conn,
                                                long nsec);
 
 RetCode connection_disconnect(connection_wr conn,
-                              DisconnectionResultReason reason_code);
+                              ProtocolCode reason_code);
 
 RetCode connection_await_for_disconnection_result(connection_wr conn,
                                                   ConnectivityEventResult *con_evt_res,

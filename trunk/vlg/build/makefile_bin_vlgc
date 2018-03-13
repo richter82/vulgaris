@@ -14,7 +14,7 @@ INCLUDES = 	-I../public\
 			
 CCFLAGS = -std=c++11 -Wall -fPIC $(CC_DBG_REL_OPT)
 CCC = g++
-LDLIBS= -L../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/lib -lvlg -lcr -lpthread $(LD_ARCH_LIB)
+LDLIBS= -L../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/lib -lapicpp -lvlg -lcr -lpthread $(LD_ARCH_LIB)
 
 .cpp.o:
 	$(CCC) $(INCLUDES) $(CCFLAGS) -c $< -o $@
