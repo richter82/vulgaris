@@ -20,7 +20,6 @@ RC_FILE = tkt.rc
 
 SOURCES += main.cpp\
     vlg_toolkit_mainwindow.cpp\
-    vlg_toolkit_peer.cpp\
     vlg_toolkit_core_util.cpp\
     vlg_toolkit_connection.cpp\
     vlg_toolkit_newconndlg.cpp\
@@ -31,8 +30,7 @@ SOURCES += main.cpp\
     vlg_toolkit_tx_window.cpp\
     vlg_toolkit_tx_vlg_class_model.cpp
 
-HEADERS  += vlg_toolkit_mainwindow.h\
-    vlg_toolkit_peer.h\
+HEADERS += vlg_toolkit_mainwindow.h\
     vlg_toolkit_core_util.h\
     vlg_toolkit_glob.h\
     vlg_toolkit_connection.h\
@@ -44,7 +42,7 @@ HEADERS  += vlg_toolkit_mainwindow.h\
     vlg_toolkit_tx_window.h\
     vlg_toolkit_tx_vlg_class_model.h
 
-FORMS    += vlg_toolkit_mainwindow.ui\
+FORMS += vlg_toolkit_mainwindow.ui\
     vlg_toolkit_connection.ui\
     vlg_toolkit_newconndlg.ui\
     vlg_toolkit_model_tab.ui\
@@ -61,7 +59,6 @@ win32 {
 INCLUDEPATH += $$PWD/../src\
                $$PWD/../public\
                $$PWD/../public/cpp\
-               $$PWD/../src/cr\
                $$PWD/../src/vlg
 
 win32 {
@@ -69,15 +66,14 @@ win32 {
             -lwsock32\
             -lshell32
     CONFIG(debug, debug|release) {
-        LIBS += -L$$PWD/../bin/MSVC/x64/Debug/StaticLibrary/v120
+        LIBS += -L$$PWD/../bin/MSVC/x64/Debug/StaticLibrary/v140
     }
     CONFIG(release, debug|release) {
-        LIBS += -L$$PWD/../bin/MSVC/x64/Release/StaticLibrary/v120
+        LIBS += -L$$PWD/../bin/MSVC/x64/Release/StaticLibrary/v140
     }
     LIBS += -lpthreadVC2
 
-    LIBS += -lcr\
-            -lvlg\
+    LIBS += -lvlg\
             -lapicpp
 }
 
@@ -89,8 +85,7 @@ macx {
         LIBS += -L$$PWD/../bin/OSX_64/REL/lib
     }
 
-    LIBS += -lcr\
-            -lvlg\
+    LIBS += -lvlg\
             -lapicpp
 }
 

@@ -22,7 +22,7 @@
 #ifndef VLG_C_PEER_H_
 #define VLG_C_PEER_H_
 
-#ifdef WIN32
+#if defined WIN32 && defined _MSC_VER
 #include <winsock2.h>
 #else
 #include <arpa/inet.h>
@@ -62,8 +62,8 @@ typedef RetCode(*peer_stopping_handler_wr)(peer_wr p,
 typedef RetCode(*peer_transit_on_air_handler_wr)(peer_wr p,
                                                  void *ud);
 
-typedef void(*peer_error_handler_wr)(peer_wr p,
-                                     void *ud);
+typedef RetCode(*peer_error_handler_wr)(peer_wr p,
+                                        void *ud);
 
 typedef void(*peer_dying_breath_handler_wr)(peer_wr p,
                                             void *ud);
@@ -207,47 +207,47 @@ RetCode peer_class_persistence_schema_create(peer_wr p,
                                              unsigned int nclass_id);
 
 RetCode peer_class_persistent_load(peer_wr p,
-                                   unsigned short class_key,
+                                   unsigned short nclass_key,
                                    unsigned int *ts_0_out,
                                    unsigned int *ts_1_out,
-                                   nclass_wr in_out_obj);
+                                   nclass_wr in_out);
 
 RetCode peer_class_persistent_save(peer_wr p,
-                                   nclass_wr in_obj);
+                                   nclass_wr in);
 
 RetCode peer_class_persistent_update(peer_wr p,
-                                     unsigned short class_key,
-                                     nclass_wr in_obj);
+                                     unsigned short nclass_key,
+                                     nclass_wr in);
 
 RetCode peer_class_persistent_update_or_save(peer_wr p,
-                                             unsigned short class_key,
-                                             nclass_wr in_obj);
+                                             unsigned short nclass_key,
+                                             nclass_wr in);
 
 RetCode peer_class_persistent_remove(peer_wr p,
-                                     unsigned short class_key,
+                                     unsigned short nclass_key,
                                      PersistenceDeletionMode mode,
-                                     nclass_wr in_obj);
+                                     nclass_wr in);
 
 RetCode peer_class_distribute(peer_wr p,
                               SubscriptionEventType event_type,
                               Action action,
-                              nclass_wr in_obj);
+                              nclass_wr in);
 
 RetCode peer_class_persistent_save_and_distribute(peer_wr p,
-                                                  nclass_wr in_obj);
+                                                  nclass_wr in);
 
 RetCode peer_class_persistent_update_and_distribute(peer_wr p,
-                                                    unsigned short class_key,
-                                                    nclass_wr in_obj);
+                                                    unsigned short nclass_key,
+                                                    nclass_wr in);
 
 RetCode peer_class_persistent_update_or_save_and_distribute(peer_wr p,
-                                                            unsigned short class_key,
-                                                            nclass_wr in_obj);
+                                                            unsigned short nclass_key,
+                                                            nclass_wr in);
 
 RetCode peer_class_persistent_remove_and_distribute(peer_wr p,
-                                                    unsigned short class_key,
+                                                    unsigned short nclass_key,
                                                     PersistenceDeletionMode mode,
-                                                    nclass_wr in_obj);
+                                                    nclass_wr in);
 
 #if defined(__cplusplus)
 }

@@ -56,18 +56,16 @@ unsigned short  key_desc_get_key_id(key_desc_wr kdesc);
 int             key_desc_is_primary(key_desc_wr kdesc);
 
 
-typedef void(*enum_member_desc_wr)(const member_desc_wr member_descriptor,
-                                   void *ud,
-                                   int *stop);
+typedef int(*enum_member_desc_wr)(const member_desc_wr member_descriptor,
+                                  void *ud);
 
 unsigned int    entity_desc_get_class_id(nentity_desc_wr edesc);
 size_t          entity_desc_get_entity_size(nentity_desc_wr edesc);
-size_t          entity_desc_get_entity_max_align(nentity_desc_wr edesc);
 NEntityType     entity_desc_get_entity_type(nentity_desc_wr edesc);
 const char      *entity_desc_get_entity_namespace(nentity_desc_wr edesc);
 const char      *entity_desc_get_entity_name(nentity_desc_wr edesc);
 
-alloc_func entity_desc_get_entity_allocation_function(nentity_desc_wr edesc);
+nclass_alloc entity_desc_get_entity_allocation_function(nentity_desc_wr edesc);
 
 unsigned int    entity_desc_get_entity_member_num(nentity_desc_wr edesc);
 int             entity_desc_is_persistent(nentity_desc_wr edesc);
@@ -198,45 +196,36 @@ size_t nclass_pretty_dump_to_file(nclass_wr obj,
 RetCode nclass_primary_key_string_value(nclass_wr obj,
                                         char **newly_alloc_out_pkey);
 
-typedef void(*enum_entity_desc_wr)(const nentity_desc_wr edesc,
-                                   void *ud,
-                                   int *stop);
+typedef int(*enum_nentity_desc_wr)(const nentity_desc_wr edesc,
+                                   void *ud);
 
-RetCode    entity_manager_get_entity_descriptor_by_classid(nentity_manager_wr nem,
-                                                           unsigned int nclass_id,
-                                                           nentity_desc_wr const *edesc);
+RetCode    entity_manager_get_nentity_descriptor_by_nclassid(nentity_manager_wr nem,
+                                                             unsigned int nclass_id,
+                                                             nentity_desc_wr const *edesc);
 
-RetCode    entity_manager_get_entity_descriptor_by_name(nentity_manager_wr nem,
-                                                        const char *entity_name,
-                                                        nentity_desc_wr const *edesc);
+RetCode    entity_manager_get_nentity_descriptor_by_name(nentity_manager_wr nem,
+                                                         const char *entity_name,
+                                                         nentity_desc_wr const *edesc);
 
-void    entity_manager_enum_entity_descriptors(nentity_manager_wr nem,
-                                               enum_entity_desc_wr eedf,
-                                               void *ud);
+void    entity_manager_enum_nentity_descriptors(nentity_manager_wr nem,
+                                                enum_nentity_desc_wr eedf,
+                                                void *ud);
 
-void    entity_manager_enum_enum_descriptors(nentity_manager_wr nem,
-                                             enum_entity_desc_wr eedf,
-                                             void *ud);
-
-void    entity_manager_enum_struct_descriptors(nentity_manager_wr nem,
-                                               enum_entity_desc_wr eedf,
-                                               void *ud);
-
-void    entity_manager_enum_class_descriptors(nentity_manager_wr nem,
-                                              enum_entity_desc_wr eedf,
+void    entity_manager_enum_nenum_descriptors(nentity_manager_wr nem,
+                                              enum_nentity_desc_wr eedf,
                                               void *ud);
 
-RetCode    entity_manager_new_class_instance(nentity_manager_wr nem,
-                                             unsigned int nclass_id,
-                                             nclass_wr *new_class_obj);
+void    entity_manager_enum_nclass_descriptors(nentity_manager_wr nem,
+                                               enum_nentity_desc_wr eedf,
+                                               void *ud);
 
-unsigned int     entity_manager_entity_count(nentity_manager_wr nem);
-unsigned int     entity_manager_enum_count(nentity_manager_wr nem);
-unsigned int     entity_manager_struct_count(nentity_manager_wr nem);
-unsigned int     entity_manager_class_count(nentity_manager_wr nem);
+RetCode    entity_manager_new_nclass_instance(nentity_manager_wr nem,
+                                              unsigned int nclass_id,
+                                              nclass_wr *new_class_obj);
 
-const char      *entity_manager_get_class_name(nentity_manager_wr nem,
-                                               unsigned int nclass_id);
+unsigned int     entity_manager_nentity_count(nentity_manager_wr nem);
+unsigned int     entity_manager_nenum_count(nentity_manager_wr nem);
+unsigned int     entity_manager_nclass_count(nentity_manager_wr nem);
 
 RetCode    entity_manager_extend_with_entity_desc(nentity_manager_wr nem,
                                                   const nentity_desc_wr edesc);

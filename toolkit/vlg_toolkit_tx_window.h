@@ -25,6 +25,21 @@
 #include "vlg_toolkit_vlg_model.h"
 #include "vlg_toolkit_tx_vlg_class_model.h"
 
+//------------------------------------------------------------------------------
+// toolkit_transaction
+//------------------------------------------------------------------------------
+class vlg_toolkit_tx_window;
+class toolkit_transaction : public vlg::transaction {
+    public:
+        toolkit_transaction(vlg_toolkit_tx_window &widget);
+
+        virtual void on_status_change(vlg::TransactionStatus current) override;
+        virtual void on_close() override;
+
+    private:
+        vlg_toolkit_tx_window &widget_;
+};
+
 namespace Ui {
 class vlg_toolkit_tx_window;
 }
@@ -56,10 +71,8 @@ class vlg_toolkit_tx_window : public QMainWindow {
         Q_OBJECT
 
     public:
-        explicit vlg_toolkit_tx_window(const vlg::nentity_desc &edesc,
-                                       const vlg::nentity_manager &bem,
-                                       vlg::transaction &tx,
-                                       vlg_toolkit_tx_vlg_class_model &mdl,
+        explicit vlg_toolkit_tx_window(vlg::connection &conn,
+                                       const vlg::nentity_desc &edesc,
                                        QWidget *parent = 0);
         ~vlg_toolkit_tx_window();
 
@@ -88,15 +101,10 @@ class vlg_toolkit_tx_window : public QMainWindow {
         void TxFlyingActions();
         void TxClosedActions();
 
-        /*****
-         REP
-         ****/
-
     private:
-        const vlg::nentity_manager &bem_;
-        vlg::transaction &tx_;
+        toolkit_transaction tx_;
+        vlg_toolkit_tx_vlg_class_model tx_mdl_;
         vlg_toolkit_tx_model tx_mdl_wrp_;
-
 
     private:
         Ui::vlg_toolkit_tx_window *ui;

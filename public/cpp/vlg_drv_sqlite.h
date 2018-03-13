@@ -21,7 +21,7 @@
 
 #include "vlg_persistence.h"
 
-#ifdef WIN32
+#if defined WIN32 && defined _MSC_VER
 #ifdef VLG_PERS_DRIV_EXPORTS
 #define EXP_SYM __declspec(dllexport)
 #else
@@ -56,7 +56,7 @@ extern "C" {
 VLG_PERS_DRIV_SQLITE ENTRY POINT
 *******************************/
 extern "C" {
-    EXP_SYM persistence_driver_impl *get_pers_driv_sqlite();
+    EXP_SYM persistence_driver *get_pers_driv_sqlite();
 }
 
 }

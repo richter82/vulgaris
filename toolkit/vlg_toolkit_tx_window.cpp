@@ -23,6 +23,24 @@
 #include "ui_vlg_toolkit_tx_window.h"
 
 //------------------------------------------------------------------------------
+// toolkit_transaction
+//------------------------------------------------------------------------------
+
+toolkit_transaction::toolkit_transaction(vlg_toolkit_tx_window &widget) : widget_(widget)
+{}
+
+void toolkit_transaction::on_status_change(vlg::TransactionStatus current)
+{
+    qDebug() << "tx status:" << current;
+    widget_.EmitTxStatus(current);
+}
+
+void toolkit_transaction::on_close()
+{
+    widget_.EmitTxClosure();
+}
+
+//------------------------------------------------------------------------------
 // vlg_toolkit_tx_model
 //------------------------------------------------------------------------------
 
@@ -48,36 +66,18 @@ vlg_toolkit_tx_vlg_class_model &vlg_toolkit_tx_model::wrapped_mdl()
 //------------------------------------------------------------------------------
 // vlg_toolkit_tx_window
 //------------------------------------------------------------------------------
-
-void tx_status_change_hndlr(vlg::transaction &trans,
-                            vlg::TransactionStatus status,
-                            void *ud)
-{
-    vlg_toolkit_tx_window *txw = (vlg_toolkit_tx_window *)ud;
-    qDebug() << "tx status:" << status;
-    txw->EmitTxStatus(status);
-}
-
-void tx_closure_hndlr(vlg::transaction &trans, void *ud)
-{
-    vlg_toolkit_tx_window *txw = (vlg_toolkit_tx_window *)ud;
-    txw->EmitTxClosure();
-}
-
-vlg_toolkit_tx_window::vlg_toolkit_tx_window(const vlg::nentity_desc &edesc,
-                                             const vlg::nentity_manager &bem,
-                                             vlg::transaction &tx,
-                                             vlg_toolkit_tx_vlg_class_model &mdl,
+vlg_toolkit_tx_window::vlg_toolkit_tx_window(vlg::connection &conn,
+                                             const vlg::nentity_desc &edesc,
                                              QWidget *parent) :
-    bem_(bem),
-    tx_(tx),
-    tx_mdl_wrp_(mdl),
+    tx_(*this),
+    tx_mdl_(edesc, conn.get_peer().get_entity_manager(), this),
+    tx_mdl_wrp_(tx_mdl_),
     QMainWindow(parent),
     ui(new Ui::vlg_toolkit_tx_window)
 {
     ui->setupUi(this);
     ui->vlg_class_tx_table_view->setModel(&tx_mdl_wrp_);
-    ui->connid_label_disp->setText(QString("%1").arg(tx_.get_connection().get_connection_id()));
+    ui->connid_label_disp->setText(QString("%1").arg(conn.get_id()));
     TxClosedActions();
 
     connect(this,
@@ -90,18 +90,19 @@ vlg_toolkit_tx_window::vlg_toolkit_tx_window(const vlg::nentity_desc &edesc,
             this,
             SLOT(OnTxClosure()));
 
+    tx_.bind(conn);
+    tx_.set_request_nclass_id(edesc.get_nclass_id());
+
+    vlg::nclass *sending_obj = nullptr;
+    conn.get_peer().get_entity_manager_m().new_nclass_instance(edesc.get_nclass_id(), &sending_obj);
+    std::unique_ptr<vlg::nclass> sending_obj_up(sending_obj);
+    tx_.set_request_obj(*sending_obj);
     EmitTxStatus(tx_.get_status());
-    tx_.set_status_change_handler(tx_status_change_hndlr, this);
-    tx_.set_close_handler(tx_closure_hndlr, this);
 }
 
 vlg_toolkit_tx_window::~vlg_toolkit_tx_window()
 {
     qDebug() << "~vlg_toolkit_tx_window()";
-    vlg::TransactionStatus current = vlg::TransactionStatus_UNDEFINED;
-    tx_.set_status_change_handler(NULL, NULL);
-    tx_.set_close_handler(NULL, NULL);
-    delete &tx_;
     delete ui;
 }
 
@@ -127,16 +128,11 @@ void vlg_toolkit_tx_window::OnTxStatusChange(vlg::TransactionStatus
             ui->tx_status_label_disp->setText(QObject::tr("INITIALIZED"));
             ui->tx_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : IndianRed; color : black;"));
-            break;
-        case vlg::TransactionStatus_PREPARED:
-            ui->tx_status_label_disp->setText(QObject::tr("PREPARED"));
-            ui->tx_status_label_disp->setStyleSheet(
-                QObject::tr("background-color : RosyBrown; color : black;"));
             ui->txid_label_disp->setText(tr("[%1][%2][%3][%4]").arg(
-                                             tx_.get_tx_id_PLID()).arg(
-                                             tx_.get_tx_id_SVID()).arg(
-                                             tx_.get_tx_id_CNID()).arg(
-                                             tx_.get_tx_id_PRID()));
+                                             tx_.get_id().txplid).arg(
+                                             tx_.get_id().txsvid).arg(
+                                             tx_.get_id().txcnid).arg(
+                                             tx_.get_id().txprid));
             break;
         case vlg::TransactionStatus_FLYING:
             ui->tx_status_label_disp->setText(QObject::tr("FLYING"));
@@ -238,10 +234,9 @@ void vlg_toolkit_tx_window::on_actionSend_TX_triggered()
             break;
     }
 
-    tx_.set_request_obj(tx_mdl_wrp_.wrapped_mdl().local_obj());
+    tx_.set_request_obj(*tx_mdl_wrp_.wrapped_mdl().local_obj());
     tx_.set_result_obj_required(ui->cfg_res_class_req_cb->isChecked());
 
-    tx_.prepare();
     tx_.send();
 }
 

@@ -21,21 +21,40 @@
 
 #include "vlg_toolkit_mainwindow.h"
 #include "ui_vlg_toolkit_mainwindow.h"
+#include "cfg.h"
 
-#include "cr_cfg.h"
+namespace vlg_tlkt {
 
-void vlg_toolkit_peer_status_change_hndlr(vlg::peer &p,
-                                          vlg::PeerStatus status,
-                                          void *ud)
+unsigned int VLG_TOOLKIT_PEER_VER[] = {0,0,0,0};
+
+//------------------------------------------------------------------------------
+// ****VLG_TOOLKIT_PEER****
+//------------------------------------------------------------------------------
+toolkit_peer::toolkit_peer(vlg_toolkit_MainWindow &widget) : widget_(widget)
+{}
+
+const char *toolkit_peer::get_name()
 {
-    vlg_toolkit_MainWindow *btmw = (vlg_toolkit_MainWindow *)ud;
-    qDebug() << "peer status:" << status;
-    btmw->EmitPeerStatus(status);
+    return "toolkit_peer[" __DATE__ "]";
+}
+
+const unsigned int *toolkit_peer::get_version()
+{
+    return VLG_TOOLKIT_PEER_VER;
+}
+
+void toolkit_peer::on_status_change(vlg::PeerStatus current)
+{
+    qDebug() << "peer status:" << current;
+    widget_.EmitPeerStatus(current);
+}
+
 }
 
 vlg_toolkit_MainWindow::vlg_toolkit_MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::vlg_toolkit_MainWindow),
+    peer_(*this),
     view_model_loaded_(false),
     vlgmodel_load_list_model_(this),
     pers_dri_file_load_list_model_(this),
@@ -66,10 +85,6 @@ vlg_toolkit_MainWindow::vlg_toolkit_MainWindow(QWidget *parent) :
     settings.endGroup();
     //settings end
 
-    //peer_ e_init bgn
-    peer_.set_status_change_handler(vlg_toolkit_peer_status_change_hndlr, this);
-    //peer_ e_init end
-
     LoadDefPeerCfgFile();
 }
 
@@ -87,7 +102,7 @@ void vlg_toolkit_MainWindow::InitGuiConfig()
     qRegisterMetaType<vlg::ConnectionStatus>("vlg::ConnectionStatus");
     qRegisterMetaType<vlg::TransactionStatus>("vlg::TransactionStatus");
     qRegisterMetaType<vlg::SubscriptionStatus>("vlg::SubscriptionStatus");
-    qRegisterMetaType<vlg::subscription_event *>("vlg::subscription_event");
+    qRegisterMetaType<std::shared_ptr<vlg::subscription_event>>("std::shared_ptr<vlg::subscription_event>");
     qRegisterMetaType<VLG_SBS_COL_DATA_ENTRY *>("VLG_SBS_COL_DATA_ENTRY");
 
     ui->action_Start_Peer->setDisabled(true);
@@ -284,7 +299,7 @@ void vlg_toolkit_MainWindow::on_action_Load_Config_triggered()
     }
     QByteArray ba = fileName.toLocal8Bit();
     const char *fileName_cstr = ba.data();
-    vlg::config_loader peer_conf_ldr;
+    vlg::cfg_ldr peer_conf_ldr;
     if((res = peer_conf_ldr.init(fileName_cstr))) {
         qDebug() << "peer_conf_ldr.Init() failed." << res;
         return;
@@ -482,8 +497,7 @@ void vlg_toolkit_MainWindow::on_action_Stop_Peer_triggered()
 void vlg_toolkit_MainWindow::Status_RUNNING_Actions()
 {
     ui->peer_status_label_display->setText(QObject::tr("RUNNING"));
-    ui->peer_status_label_display->setStyleSheet(
-        QObject::tr("background-color : DarkSeaGreen; color : black;"));
+    ui->peer_status_label_display->setStyleSheet(QObject::tr("background-color : DarkSeaGreen; color : black;"));
     ui->action_Start_Peer->setEnabled(false);
     ui->action_Stop_Peer->setEnabled(true);
     ui->actionConnect->setEnabled(true);
@@ -497,8 +511,7 @@ void vlg_toolkit_MainWindow::Status_RUNNING_Actions()
 void vlg_toolkit_MainWindow::Status_STOPPED_Actions()
 {
     ui->peer_status_label_display->setText(QObject::tr("STOPPED"));
-    ui->peer_status_label_display->setStyleSheet(
-        QObject::tr("background-color : Silver; color : black;"));
+    ui->peer_status_label_display->setStyleSheet(QObject::tr("background-color : Silver; color : black;"));
     ui->action_Start_Peer->setEnabled(true);
 }
 
@@ -507,23 +520,20 @@ void vlg_toolkit_MainWindow::AddNewModelTab()
     vlg_toolkit_model_tab *mt = new vlg_toolkit_model_tab(vlg_model_loaded_model_,
                                                           ui->peer_Tab);
     QIcon icon_model;
-    icon_model.addFile(QStringLiteral(":/icon/icons/social-buffer.png"), QSize(),
-                       QIcon::Normal, QIcon::Off);
+    icon_model.addFile(QStringLiteral(":/icon/icons/social-buffer.png"), QSize(), QIcon::Normal, QIcon::Off);
     QString tab_name = QString("Peer Model");
     ui->peer_Tab->addTab(mt, icon_model, tab_name);
-    connect(this, SIGNAL(VLG_MODEL_Update_event()), mt,
-            SLOT(On_VLG_MODEL_Update()));
+    connect(this, SIGNAL(VLG_MODEL_Update_event()), mt, SLOT(On_VLG_MODEL_Update()));
     QSortFilterProxyModel &mt_mod = mt->b_mdl();
     connect(this, SIGNAL(VLG_MODEL_Update_event()), &mt_mod, SLOT(invalidate()));
 }
 
-void vlg_toolkit_MainWindow::AddNewConnectionTab(vlg::connection &new_conn,
-                                                 const QString &host,
+void vlg_toolkit_MainWindow::AddNewConnectionTab(const QString &host,
                                                  const QString &port,
                                                  const QString &usr,
                                                  const QString &psswd)
 {
-    vlg_toolkit_Connection *ct = new vlg_toolkit_Connection(new_conn,
+    vlg_toolkit_Connection *ct = new vlg_toolkit_Connection(peer_,
                                                             host,
                                                             port,
                                                             usr,
@@ -532,14 +542,12 @@ void vlg_toolkit_MainWindow::AddNewConnectionTab(vlg::connection &new_conn,
                                                             *this,
                                                             ui->peer_Tab);
     QIcon icon_flash;
-    vlg::ConnectivityEventResult con_evt_res =
-        vlg::ConnectivityEventResult_UNDEFINED;
-    vlg::ConnectivityEventType connectivity_evt_type =
-        vlg::ConnectivityEventType_UNDEFINED;
-    if(new_conn.await_for_connection_result(con_evt_res,
-                                            connectivity_evt_type,
-                                            VLG_TKT_INT_AWT_TIMEOUT,
-                                            0) == vlg::RetCode_TIMEOUT) {
+    vlg::ConnectivityEventResult con_evt_res = vlg::ConnectivityEventResult_UNDEFINED;
+    vlg::ConnectivityEventType connectivity_evt_type = vlg::ConnectivityEventType_UNDEFINED;
+    if(ct->conn().await_for_connection_result(con_evt_res,
+                                              connectivity_evt_type,
+                                              VLG_TKT_INT_AWT_TIMEOUT,
+                                              0) == vlg::RetCode_TIMEOUT) {
         emit SignalNewConnectionTimeout(QString("establishing new connection"));
     }
     if(con_evt_res == vlg::ConnectivityEventResult_OK) {
@@ -558,7 +566,7 @@ void vlg_toolkit_MainWindow::LoadDefPeerCfgFile()
 {
     vlg::RetCode res = vlg::RetCode_OK;
     const char *fileName_cstr = "params";
-    vlg::config_loader peer_conf_ldr;
+    vlg::cfg_ldr peer_conf_ldr;
     if((res = peer_conf_ldr.init(fileName_cstr))) {
         qDebug() << "peer_conf_ldr.init() failed." << res;
         return;
@@ -570,25 +578,12 @@ void vlg_toolkit_MainWindow::LoadDefPeerCfgFile()
     peer_conf_ldr.enum_params(peer_params_clbk_ud, this);
 }
 
-
 void vlg_toolkit_MainWindow::on_actionConnect_triggered()
 {
     vlg_toolkit_NewConnDlg conn_dlg(this);
     conn_dlg.exec();
     if(conn_dlg.result() == QDialog::Accepted) {
-        sockaddr_in conn_params;
-        memset(&conn_params, 0, sizeof(conn_params));
-        conn_params.sin_family = AF_INET;
-        conn_params.sin_addr.s_addr = inet_addr(
-                                          conn_dlg.ui->ln_edt_host->text().toLatin1().data());
-        conn_params.sin_port = htons(atoi(
-                                         conn_dlg.ui->ln_edt_port->text().toLatin1().data()));
-
-        vlg::connection &new_conn = *new vlg::connection();
-        new_conn.bind(peer_);
-        new_conn.connect(conn_params);
-        AddNewConnectionTab(new_conn,
-                            conn_dlg.ui->ln_edt_host->text(),
+        AddNewConnectionTab(conn_dlg.ui->ln_edt_host->text(),
                             conn_dlg.ui->ln_edt_port->text(),
                             conn_dlg.ui->ln_edt_usr->text(),
                             conn_dlg.ui->ln_edt_psswd->text());

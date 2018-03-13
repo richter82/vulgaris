@@ -2,7 +2,7 @@
 Model:              smplmdl
 Model ver:          0.0.0
 Source:             vlg_model_sample.cpp
-Compiled on:        04-12-2017
+Compiled on:        13-03-2018
 Lang:               C++
 ********************************************************/
 
@@ -33,10 +33,10 @@ Lang:               C++
 /*-----------------------------------------------------------------------------
 Dynamic Byte Buffer
 -----------------------------------------------------------------------------*/
-namespace vlg { class grow_byte_buffer {
+namespace vlg { class g_bbuf {
 public:
-    explicit grow_byte_buffer();
-    ~grow_byte_buffer();
+    explicit g_bbuf();
+    ~g_bbuf();
     RetCode init(size_t initial_capacity);
     void reset();
     void flip();
@@ -73,49 +73,175 @@ public:
 CLASS ALLOCATORS
 -----------------------------------------------------------------------------*/
 namespace smplmdl{
-void* ROLE_alloc_func(size_t type_size, const void *copy)
+void* ROLE_alloc_func()
 {
-    void *new_ptr = new smplmdl::ROLE();
-    if(!new_ptr){
-        return NULL;
-    }
-    return new_ptr;
+    return new smplmdl::ROLE();
 }
 }
 namespace smplmdl{
-void* USER_alloc_func(size_t type_size, const void *copy)
+void* USER_alloc_func()
 {
-    void *new_ptr = new smplmdl::USER();
-    if(!new_ptr){
-        return NULL;
-    }
-    return new_ptr;
+    return new smplmdl::USER();
 }
 }
 
 /*-----------------------------------------------------------------------------
-ENUM SIMPLE_ENUM_MID DESC
+CLASS ROLE DESC
 -----------------------------------------------------------------------------*/
-vlg::nentity_desc SIMPLE_ENUM_MID_EntityDesc
+#if defined WIN32 && defined _MSC_VER
+vlg::nentity_desc ROLE_EntityDesc
+(
+    700,
+    56,
+    8,
+    vlg::NEntityType_NCLASS,
+    "smplmdl",
+    "ROLE",
+    smplmdl::ROLE_alloc_func,
+    3,
+    false
+);
+#endif
+#if !defined WIN32 && defined __GNUG__
+vlg::nentity_desc ROLE_EntityDesc
+(
+    700,
+    56,
+    8,
+    vlg::NEntityType_NCLASS,
+    "smplmdl",
+    "ROLE",
+    smplmdl::ROLE_alloc_func,
+    3,
+    false
+);
+#endif
+
+#if defined WIN32 && defined _MSC_VER
+vlg::member_desc ROLE_role_id
+(
+    1,
+    vlg::MemberType_FIELD,
+    "role_id",
+    "",
+    vlg::Type_UINT64,
+    0x8,
+    8,
+    1,
+    0,
+    "",
+    vlg::NEntityType_UNDEFINED,
+    0
+);
+#endif
+#if !defined WIN32 && defined __GNUG__
+vlg::member_desc ROLE_role_id
+(
+    1,
+    vlg::MemberType_FIELD,
+    "role_id",
+    "",
+    vlg::Type_UINT64,
+    0x8,
+    8,
+    1,
+    0,
+    "",
+    vlg::NEntityType_UNDEFINED,
+    0
+);
+#endif
+#if defined WIN32 && defined _MSC_VER
+vlg::member_desc ROLE_role_name
+(
+    2,
+    vlg::MemberType_FIELD,
+    "role_name",
+    "",
+    vlg::Type_ASCII,
+    0x10,
+    1,
+    34,
+    0,
+    "",
+    vlg::NEntityType_UNDEFINED,
+    0
+);
+#endif
+#if !defined WIN32 && defined __GNUG__
+vlg::member_desc ROLE_role_name
+(
+    2,
+    vlg::MemberType_FIELD,
+    "role_name",
+    "",
+    vlg::Type_ASCII,
+    0x10,
+    1,
+    34,
+    0,
+    "",
+    vlg::NEntityType_UNDEFINED,
+    0
+);
+#endif
+#if defined WIN32 && defined _MSC_VER
+vlg::member_desc ROLE_can_act_as_admin
+(
+    3,
+    vlg::MemberType_FIELD,
+    "can_act_as_admin",
+    "can be admin",
+    vlg::Type_BOOL,
+    0x32,
+    1,
+    1,
+    0,
+    "",
+    vlg::NEntityType_UNDEFINED,
+    0
+);
+#endif
+#if !defined WIN32 && defined __GNUG__
+vlg::member_desc ROLE_can_act_as_admin
+(
+    3,
+    vlg::MemberType_FIELD,
+    "can_act_as_admin",
+    "can be admin",
+    vlg::Type_BOOL,
+    0x32,
+    1,
+    1,
+    0,
+    "",
+    vlg::NEntityType_UNDEFINED,
+    0
+);
+#endif
+/*-----------------------------------------------------------------------------
+ENUM SEX DESC
+-----------------------------------------------------------------------------*/
+vlg::nentity_desc SEX_EntityDesc
 (
     0,
     0,
     0,
     vlg::NEntityType_NENUM,
-    "",
-    "SIMPLE_ENUM_MID",
+    "smplmdl",
+    "SEX",
     0,
     0,
     false
 );
 
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
-vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_Zero
+#if defined WIN32 && defined _MSC_VER
+vlg::member_desc SEX_SEX_Undef
 (
     1,
     vlg::MemberType_NENUM_VALUE,
-    "SIMPLE_ENUM_MID_Zero",
-    "Zero",
+    "SEX_Undef",
+    "Undef",
     vlg::Type_INT32,
     0x0,
     4,
@@ -126,13 +252,13 @@ vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_Zero
     0
 );
 #endif
-#if  !defined(WIN32)
-vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_Zero
+#if !defined WIN32 && defined __GNUG__
+vlg::member_desc SEX_SEX_Undef
 (
     1,
     vlg::MemberType_NENUM_VALUE,
-    "SIMPLE_ENUM_MID_Zero",
-    "Zero",
+    "SEX_Undef",
+    "Undef",
     vlg::Type_INT32,
     0x0,
     4,
@@ -143,13 +269,13 @@ vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_Zero
     0
 );
 #endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
-vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_One
+#if defined WIN32 && defined _MSC_VER
+vlg::member_desc SEX_SEX_Male
 (
     2,
     vlg::MemberType_NENUM_VALUE,
-    "SIMPLE_ENUM_MID_One",
-    "One",
+    "SEX_Male",
+    "Male",
     vlg::Type_INT32,
     0x0,
     4,
@@ -160,13 +286,13 @@ vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_One
     1
 );
 #endif
-#if  !defined(WIN32)
-vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_One
+#if !defined WIN32 && defined __GNUG__
+vlg::member_desc SEX_SEX_Male
 (
     2,
     vlg::MemberType_NENUM_VALUE,
-    "SIMPLE_ENUM_MID_One",
-    "One",
+    "SEX_Male",
+    "Male",
     vlg::Type_INT32,
     0x0,
     4,
@@ -177,13 +303,13 @@ vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_One
     1
 );
 #endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
-vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_Two
+#if defined WIN32 && defined _MSC_VER
+vlg::member_desc SEX_SEX_Female
 (
     3,
     vlg::MemberType_NENUM_VALUE,
-    "SIMPLE_ENUM_MID_Two",
-    "",
+    "SEX_Female",
+    "Female",
     vlg::Type_INT32,
     0x0,
     4,
@@ -194,13 +320,13 @@ vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_Two
     2
 );
 #endif
-#if  !defined(WIN32)
-vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_Two
+#if !defined WIN32 && defined __GNUG__
+vlg::member_desc SEX_SEX_Female
 (
     3,
     vlg::MemberType_NENUM_VALUE,
-    "SIMPLE_ENUM_MID_Two",
-    "",
+    "SEX_Female",
+    "Female",
     vlg::Type_INT32,
     0x0,
     4,
@@ -209,74 +335,6 @@ vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_Two
     "",
     vlg::NEntityType_NENUM,
     2
-);
-#endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
-vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_OneHundred
-(
-    4,
-    vlg::MemberType_NENUM_VALUE,
-    "SIMPLE_ENUM_MID_OneHundred",
-    "OneHundred",
-    vlg::Type_INT32,
-    0x0,
-    4,
-    1,
-    0,
-    "",
-    vlg::NEntityType_NENUM,
-    100
-);
-#endif
-#if  !defined(WIN32)
-vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_OneHundred
-(
-    4,
-    vlg::MemberType_NENUM_VALUE,
-    "SIMPLE_ENUM_MID_OneHundred",
-    "OneHundred",
-    vlg::Type_INT32,
-    0x0,
-    4,
-    1,
-    0,
-    "",
-    vlg::NEntityType_NENUM,
-    100
-);
-#endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
-vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_TwoHundredAndOne
-(
-    5,
-    vlg::MemberType_NENUM_VALUE,
-    "SIMPLE_ENUM_MID_TwoHundredAndOne",
-    "",
-    vlg::Type_INT32,
-    0x0,
-    4,
-    1,
-    0,
-    "",
-    vlg::NEntityType_NENUM,
-    201
-);
-#endif
-#if  !defined(WIN32)
-vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_TwoHundredAndOne
-(
-    5,
-    vlg::MemberType_NENUM_VALUE,
-    "SIMPLE_ENUM_MID_TwoHundredAndOne",
-    "",
-    vlg::Type_INT32,
-    0x0,
-    4,
-    1,
-    0,
-    "",
-    vlg::NEntityType_NENUM,
-    201
 );
 #endif
 /*-----------------------------------------------------------------------------
@@ -295,7 +353,7 @@ vlg::nentity_desc SIMPLE_ENUM_A_EntityDesc
     false
 );
 
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
+#if defined WIN32 && defined _MSC_VER
 vlg::member_desc SIMPLE_ENUM_A_SIMPLE_ENUM_A_Zero
 (
     1,
@@ -312,7 +370,7 @@ vlg::member_desc SIMPLE_ENUM_A_SIMPLE_ENUM_A_Zero
     0
 );
 #endif
-#if  !defined(WIN32)
+#if !defined WIN32 && defined __GNUG__
 vlg::member_desc SIMPLE_ENUM_A_SIMPLE_ENUM_A_Zero
 (
     1,
@@ -329,7 +387,7 @@ vlg::member_desc SIMPLE_ENUM_A_SIMPLE_ENUM_A_Zero
     0
 );
 #endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
+#if defined WIN32 && defined _MSC_VER
 vlg::member_desc SIMPLE_ENUM_A_SIMPLE_ENUM_A_One
 (
     2,
@@ -346,7 +404,7 @@ vlg::member_desc SIMPLE_ENUM_A_SIMPLE_ENUM_A_One
     1
 );
 #endif
-#if  !defined(WIN32)
+#if !defined WIN32 && defined __GNUG__
 vlg::member_desc SIMPLE_ENUM_A_SIMPLE_ENUM_A_One
 (
     2,
@@ -363,7 +421,7 @@ vlg::member_desc SIMPLE_ENUM_A_SIMPLE_ENUM_A_One
     1
 );
 #endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
+#if defined WIN32 && defined _MSC_VER
 vlg::member_desc SIMPLE_ENUM_A_SIMPLE_ENUM_A_Two
 (
     3,
@@ -380,7 +438,7 @@ vlg::member_desc SIMPLE_ENUM_A_SIMPLE_ENUM_A_Two
     2
 );
 #endif
-#if  !defined(WIN32)
+#if !defined WIN32 && defined __GNUG__
 vlg::member_desc SIMPLE_ENUM_A_SIMPLE_ENUM_A_Two
 (
     3,
@@ -397,7 +455,7 @@ vlg::member_desc SIMPLE_ENUM_A_SIMPLE_ENUM_A_Two
     2
 );
 #endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
+#if defined WIN32 && defined _MSC_VER
 vlg::member_desc SIMPLE_ENUM_A_SIMPLE_ENUM_A_OneHundred
 (
     4,
@@ -414,7 +472,7 @@ vlg::member_desc SIMPLE_ENUM_A_SIMPLE_ENUM_A_OneHundred
     100
 );
 #endif
-#if  !defined(WIN32)
+#if !defined WIN32 && defined __GNUG__
 vlg::member_desc SIMPLE_ENUM_A_SIMPLE_ENUM_A_OneHundred
 (
     4,
@@ -431,7 +489,7 @@ vlg::member_desc SIMPLE_ENUM_A_SIMPLE_ENUM_A_OneHundred
     100
 );
 #endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
+#if defined WIN32 && defined _MSC_VER
 vlg::member_desc SIMPLE_ENUM_A_SIMPLE_ENUM_A_TwoHundredAndOne
 (
     5,
@@ -448,7 +506,7 @@ vlg::member_desc SIMPLE_ENUM_A_SIMPLE_ENUM_A_TwoHundredAndOne
     201
 );
 #endif
-#if  !defined(WIN32)
+#if !defined WIN32 && defined __GNUG__
 vlg::member_desc SIMPLE_ENUM_A_SIMPLE_ENUM_A_TwoHundredAndOne
 (
     5,
@@ -481,7 +539,7 @@ vlg::nentity_desc SIMPLE_ENUM_B_EntityDesc
     false
 );
 
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
+#if defined WIN32 && defined _MSC_VER
 vlg::member_desc SIMPLE_ENUM_B_SIMPLE_ENUM_B_ONE
 (
     1,
@@ -498,7 +556,7 @@ vlg::member_desc SIMPLE_ENUM_B_SIMPLE_ENUM_B_ONE
     -12
 );
 #endif
-#if  !defined(WIN32)
+#if !defined WIN32 && defined __GNUG__
 vlg::member_desc SIMPLE_ENUM_B_SIMPLE_ENUM_B_ONE
 (
     1,
@@ -515,7 +573,7 @@ vlg::member_desc SIMPLE_ENUM_B_SIMPLE_ENUM_B_ONE
     -12
 );
 #endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
+#if defined WIN32 && defined _MSC_VER
 vlg::member_desc SIMPLE_ENUM_B_SIMPLE_ENUM_B_TWO
 (
     2,
@@ -532,7 +590,7 @@ vlg::member_desc SIMPLE_ENUM_B_SIMPLE_ENUM_B_TWO
     -11
 );
 #endif
-#if  !defined(WIN32)
+#if !defined WIN32 && defined __GNUG__
 vlg::member_desc SIMPLE_ENUM_B_SIMPLE_ENUM_B_TWO
 (
     2,
@@ -549,7 +607,7 @@ vlg::member_desc SIMPLE_ENUM_B_SIMPLE_ENUM_B_TWO
     -11
 );
 #endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
+#if defined WIN32 && defined _MSC_VER
 vlg::member_desc SIMPLE_ENUM_B_SIMPLE_ENUM_B_THREE
 (
     3,
@@ -566,7 +624,7 @@ vlg::member_desc SIMPLE_ENUM_B_SIMPLE_ENUM_B_THREE
     43
 );
 #endif
-#if  !defined(WIN32)
+#if !defined WIN32 && defined __GNUG__
 vlg::member_desc SIMPLE_ENUM_B_SIMPLE_ENUM_B_THREE
 (
     3,
@@ -583,7 +641,7 @@ vlg::member_desc SIMPLE_ENUM_B_SIMPLE_ENUM_B_THREE
     43
 );
 #endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
+#if defined WIN32 && defined _MSC_VER
 vlg::member_desc SIMPLE_ENUM_B_SIMPLE_ENUM_B_FOUR
 (
     4,
@@ -600,7 +658,7 @@ vlg::member_desc SIMPLE_ENUM_B_SIMPLE_ENUM_B_FOUR
     44
 );
 #endif
-#if  !defined(WIN32)
+#if !defined WIN32 && defined __GNUG__
 vlg::member_desc SIMPLE_ENUM_B_SIMPLE_ENUM_B_FOUR
 (
     4,
@@ -617,7 +675,7 @@ vlg::member_desc SIMPLE_ENUM_B_SIMPLE_ENUM_B_FOUR
     44
 );
 #endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
+#if defined WIN32 && defined _MSC_VER
 vlg::member_desc SIMPLE_ENUM_B_SIMPLE_ENUM_B_FIVE
 (
     5,
@@ -634,7 +692,7 @@ vlg::member_desc SIMPLE_ENUM_B_SIMPLE_ENUM_B_FIVE
     45
 );
 #endif
-#if  !defined(WIN32)
+#if !defined WIN32 && defined __GNUG__
 vlg::member_desc SIMPLE_ENUM_B_SIMPLE_ENUM_B_FIVE
 (
     5,
@@ -652,28 +710,28 @@ vlg::member_desc SIMPLE_ENUM_B_SIMPLE_ENUM_B_FIVE
 );
 #endif
 /*-----------------------------------------------------------------------------
-ENUM SEX DESC
+ENUM SIMPLE_ENUM_MID DESC
 -----------------------------------------------------------------------------*/
-vlg::nentity_desc SEX_EntityDesc
+vlg::nentity_desc SIMPLE_ENUM_MID_EntityDesc
 (
     0,
     0,
     0,
     vlg::NEntityType_NENUM,
-    "smplmdl",
-    "SEX",
+    "",
+    "SIMPLE_ENUM_MID",
     0,
     0,
     false
 );
 
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
-vlg::member_desc SEX_SEX_Undef
+#if defined WIN32 && defined _MSC_VER
+vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_Zero
 (
     1,
     vlg::MemberType_NENUM_VALUE,
-    "SEX_Undef",
-    "Undef",
+    "SIMPLE_ENUM_MID_Zero",
+    "Zero",
     vlg::Type_INT32,
     0x0,
     4,
@@ -684,13 +742,13 @@ vlg::member_desc SEX_SEX_Undef
     0
 );
 #endif
-#if  !defined(WIN32)
-vlg::member_desc SEX_SEX_Undef
+#if !defined WIN32 && defined __GNUG__
+vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_Zero
 (
     1,
     vlg::MemberType_NENUM_VALUE,
-    "SEX_Undef",
-    "Undef",
+    "SIMPLE_ENUM_MID_Zero",
+    "Zero",
     vlg::Type_INT32,
     0x0,
     4,
@@ -701,13 +759,13 @@ vlg::member_desc SEX_SEX_Undef
     0
 );
 #endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
-vlg::member_desc SEX_SEX_Male
+#if defined WIN32 && defined _MSC_VER
+vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_One
 (
     2,
     vlg::MemberType_NENUM_VALUE,
-    "SEX_Male",
-    "Male",
+    "SIMPLE_ENUM_MID_One",
+    "One",
     vlg::Type_INT32,
     0x0,
     4,
@@ -718,13 +776,13 @@ vlg::member_desc SEX_SEX_Male
     1
 );
 #endif
-#if  !defined(WIN32)
-vlg::member_desc SEX_SEX_Male
+#if !defined WIN32 && defined __GNUG__
+vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_One
 (
     2,
     vlg::MemberType_NENUM_VALUE,
-    "SEX_Male",
-    "Male",
+    "SIMPLE_ENUM_MID_One",
+    "One",
     vlg::Type_INT32,
     0x0,
     4,
@@ -735,13 +793,13 @@ vlg::member_desc SEX_SEX_Male
     1
 );
 #endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
-vlg::member_desc SEX_SEX_Female
+#if defined WIN32 && defined _MSC_VER
+vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_Two
 (
     3,
     vlg::MemberType_NENUM_VALUE,
-    "SEX_Female",
-    "Female",
+    "SIMPLE_ENUM_MID_Two",
+    "",
     vlg::Type_INT32,
     0x0,
     4,
@@ -752,13 +810,13 @@ vlg::member_desc SEX_SEX_Female
     2
 );
 #endif
-#if  !defined(WIN32)
-vlg::member_desc SEX_SEX_Female
+#if !defined WIN32 && defined __GNUG__
+vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_Two
 (
     3,
     vlg::MemberType_NENUM_VALUE,
-    "SEX_Female",
-    "Female",
+    "SIMPLE_ENUM_MID_Two",
+    "",
     vlg::Type_INT32,
     0x0,
     4,
@@ -769,144 +827,78 @@ vlg::member_desc SEX_SEX_Female
     2
 );
 #endif
-/*-----------------------------------------------------------------------------
-CLASS ROLE DESC
------------------------------------------------------------------------------*/
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
-vlg::nentity_desc ROLE_EntityDesc
-(
-    700,
-    56,
-    8,
-    vlg::NEntityType_NCLASS,
-    "smplmdl",
-    "ROLE",
-    smplmdl::ROLE_alloc_func,
-    3,
-    false
-);
-#endif
-#if  !defined(WIN32)
-vlg::nentity_desc ROLE_EntityDesc
-(
-    700,
-    56,
-    8,
-    vlg::NEntityType_NCLASS,
-    "smplmdl",
-    "ROLE",
-    smplmdl::ROLE_alloc_func,
-    3,
-    false
-);
-#endif
-
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
-vlg::member_desc ROLE_role_id
-(
-    2,
-    vlg::MemberType_FIELD,
-    "role_id",
-    "",
-    vlg::Type_UINT64,
-    0x8,
-    8,
-    1,
-    0,
-    "",
-    vlg::NEntityType_UNDEFINED,
-    0
-);
-#endif
-#if  !defined(WIN32)
-vlg::member_desc ROLE_role_id
-(
-    2,
-    vlg::MemberType_FIELD,
-    "role_id",
-    "",
-    vlg::Type_UINT64,
-    0x8,
-    8,
-    1,
-    0,
-    "",
-    vlg::NEntityType_UNDEFINED,
-    0
-);
-#endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
-vlg::member_desc ROLE_role_name
-(
-    3,
-    vlg::MemberType_FIELD,
-    "role_name",
-    "",
-    vlg::Type_ASCII,
-    0x10,
-    1,
-    34,
-    0,
-    "",
-    vlg::NEntityType_UNDEFINED,
-    0
-);
-#endif
-#if  !defined(WIN32)
-vlg::member_desc ROLE_role_name
-(
-    3,
-    vlg::MemberType_FIELD,
-    "role_name",
-    "",
-    vlg::Type_ASCII,
-    0x10,
-    1,
-    34,
-    0,
-    "",
-    vlg::NEntityType_UNDEFINED,
-    0
-);
-#endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
-vlg::member_desc ROLE_can_act_as_admin
+#if defined WIN32 && defined _MSC_VER
+vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_OneHundred
 (
     4,
-    vlg::MemberType_FIELD,
-    "can_act_as_admin",
-    "can be admin",
-    vlg::Type_BOOL,
-    0x32,
-    1,
+    vlg::MemberType_NENUM_VALUE,
+    "SIMPLE_ENUM_MID_OneHundred",
+    "OneHundred",
+    vlg::Type_INT32,
+    0x0,
+    4,
     1,
     0,
     "",
-    vlg::NEntityType_UNDEFINED,
-    0
+    vlg::NEntityType_NENUM,
+    100
 );
 #endif
-#if  !defined(WIN32)
-vlg::member_desc ROLE_can_act_as_admin
+#if !defined WIN32 && defined __GNUG__
+vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_OneHundred
 (
     4,
-    vlg::MemberType_FIELD,
-    "can_act_as_admin",
-    "can be admin",
-    vlg::Type_BOOL,
-    0x32,
-    1,
+    vlg::MemberType_NENUM_VALUE,
+    "SIMPLE_ENUM_MID_OneHundred",
+    "OneHundred",
+    vlg::Type_INT32,
+    0x0,
+    4,
     1,
     0,
     "",
-    vlg::NEntityType_UNDEFINED,
-    0
+    vlg::NEntityType_NENUM,
+    100
+);
+#endif
+#if defined WIN32 && defined _MSC_VER
+vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_TwoHundredAndOne
+(
+    5,
+    vlg::MemberType_NENUM_VALUE,
+    "SIMPLE_ENUM_MID_TwoHundredAndOne",
+    "",
+    vlg::Type_INT32,
+    0x0,
+    4,
+    1,
+    0,
+    "",
+    vlg::NEntityType_NENUM,
+    201
+);
+#endif
+#if !defined WIN32 && defined __GNUG__
+vlg::member_desc SIMPLE_ENUM_MID_SIMPLE_ENUM_MID_TwoHundredAndOne
+(
+    5,
+    vlg::MemberType_NENUM_VALUE,
+    "SIMPLE_ENUM_MID_TwoHundredAndOne",
+    "",
+    vlg::Type_INT32,
+    0x0,
+    4,
+    1,
+    0,
+    "",
+    vlg::NEntityType_NENUM,
+    201
 );
 #endif
 /*-----------------------------------------------------------------------------
 CLASS USER DESC
 -----------------------------------------------------------------------------*/
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
+#if defined WIN32 && defined _MSC_VER
 vlg::nentity_desc USER_EntityDesc
 (
     800,
@@ -920,7 +912,7 @@ vlg::nentity_desc USER_EntityDesc
     true
 );
 #endif
-#if  !defined(WIN32)
+#if !defined WIN32 && defined __GNUG__
 vlg::nentity_desc USER_EntityDesc
 (
     800,
@@ -935,10 +927,10 @@ vlg::nentity_desc USER_EntityDesc
 );
 #endif
 
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
+#if defined WIN32 && defined _MSC_VER
 vlg::member_desc USER_user_id
 (
-    2,
+    1,
     vlg::MemberType_FIELD,
     "user_id",
     "id",
@@ -952,10 +944,10 @@ vlg::member_desc USER_user_id
     0
 );
 #endif
-#if  !defined(WIN32)
+#if !defined WIN32 && defined __GNUG__
 vlg::member_desc USER_user_id
 (
-    2,
+    1,
     vlg::MemberType_FIELD,
     "user_id",
     "id",
@@ -969,10 +961,10 @@ vlg::member_desc USER_user_id
     0
 );
 #endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
+#if defined WIN32 && defined _MSC_VER
 vlg::member_desc USER_name
 (
-    3,
+    2,
     vlg::MemberType_FIELD,
     "name",
     "name",
@@ -986,10 +978,10 @@ vlg::member_desc USER_name
     0
 );
 #endif
-#if  !defined(WIN32)
+#if !defined WIN32 && defined __GNUG__
 vlg::member_desc USER_name
 (
-    3,
+    2,
     vlg::MemberType_FIELD,
     "name",
     "name",
@@ -1003,10 +995,10 @@ vlg::member_desc USER_name
     0
 );
 #endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
+#if defined WIN32 && defined _MSC_VER
 vlg::member_desc USER_surname
 (
-    4,
+    3,
     vlg::MemberType_FIELD,
     "surname",
     "surname",
@@ -1020,10 +1012,10 @@ vlg::member_desc USER_surname
     0
 );
 #endif
-#if  !defined(WIN32)
+#if !defined WIN32 && defined __GNUG__
 vlg::member_desc USER_surname
 (
-    4,
+    3,
     vlg::MemberType_FIELD,
     "surname",
     "surname",
@@ -1037,10 +1029,10 @@ vlg::member_desc USER_surname
     0
 );
 #endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
+#if defined WIN32 && defined _MSC_VER
 vlg::member_desc USER_sex
 (
-    5,
+    4,
     vlg::MemberType_FIELD,
     "sex",
     "sex",
@@ -1054,10 +1046,10 @@ vlg::member_desc USER_sex
     0
 );
 #endif
-#if  !defined(WIN32)
+#if !defined WIN32 && defined __GNUG__
 vlg::member_desc USER_sex
 (
-    5,
+    4,
     vlg::MemberType_FIELD,
     "sex",
     "sex",
@@ -1071,10 +1063,10 @@ vlg::member_desc USER_sex
     0
 );
 #endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
+#if defined WIN32 && defined _MSC_VER
 vlg::member_desc USER_email
 (
-    6,
+    5,
     vlg::MemberType_FIELD,
     "email",
     "surname",
@@ -1088,10 +1080,10 @@ vlg::member_desc USER_email
     0
 );
 #endif
-#if  !defined(WIN32)
+#if !defined WIN32 && defined __GNUG__
 vlg::member_desc USER_email
 (
-    6,
+    5,
     vlg::MemberType_FIELD,
     "email",
     "surname",
@@ -1105,10 +1097,10 @@ vlg::member_desc USER_email
     0
 );
 #endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
+#if defined WIN32 && defined _MSC_VER
 vlg::member_desc USER_height
 (
-    7,
+    6,
     vlg::MemberType_FIELD,
     "height",
     "height",
@@ -1122,10 +1114,10 @@ vlg::member_desc USER_height
     0
 );
 #endif
-#if  !defined(WIN32)
+#if !defined WIN32 && defined __GNUG__
 vlg::member_desc USER_height
 (
-    7,
+    6,
     vlg::MemberType_FIELD,
     "height",
     "height",
@@ -1139,10 +1131,10 @@ vlg::member_desc USER_height
     0
 );
 #endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
+#if defined WIN32 && defined _MSC_VER
 vlg::member_desc USER_weight
 (
-    8,
+    7,
     vlg::MemberType_FIELD,
     "weight",
     "weight",
@@ -1156,10 +1148,10 @@ vlg::member_desc USER_weight
     0
 );
 #endif
-#if  !defined(WIN32)
+#if !defined WIN32 && defined __GNUG__
 vlg::member_desc USER_weight
 (
-    8,
+    7,
     vlg::MemberType_FIELD,
     "weight",
     "weight",
@@ -1173,10 +1165,10 @@ vlg::member_desc USER_weight
     0
 );
 #endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
+#if defined WIN32 && defined _MSC_VER
 vlg::member_desc USER_active
 (
-    9,
+    8,
     vlg::MemberType_FIELD,
     "active",
     "active",
@@ -1190,10 +1182,10 @@ vlg::member_desc USER_active
     0
 );
 #endif
-#if  !defined(WIN32)
+#if !defined WIN32 && defined __GNUG__
 vlg::member_desc USER_active
 (
-    9,
+    8,
     vlg::MemberType_FIELD,
     "active",
     "active",
@@ -1207,10 +1199,10 @@ vlg::member_desc USER_active
     0
 );
 #endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
+#if defined WIN32 && defined _MSC_VER
 vlg::member_desc USER_cap
 (
-    10,
+    9,
     vlg::MemberType_FIELD,
     "cap",
     "CAP",
@@ -1224,10 +1216,10 @@ vlg::member_desc USER_cap
     0
 );
 #endif
-#if  !defined(WIN32)
+#if !defined WIN32 && defined __GNUG__
 vlg::member_desc USER_cap
 (
-    10,
+    9,
     vlg::MemberType_FIELD,
     "cap",
     "CAP",
@@ -1241,10 +1233,10 @@ vlg::member_desc USER_cap
     0
 );
 #endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
+#if defined WIN32 && defined _MSC_VER
 vlg::member_desc USER_type
 (
-    11,
+    10,
     vlg::MemberType_FIELD,
     "type",
     "type",
@@ -1258,10 +1250,10 @@ vlg::member_desc USER_type
     0
 );
 #endif
-#if  !defined(WIN32)
+#if !defined WIN32 && defined __GNUG__
 vlg::member_desc USER_type
 (
-    11,
+    10,
     vlg::MemberType_FIELD,
     "type",
     "type",
@@ -1275,10 +1267,10 @@ vlg::member_desc USER_type
     0
 );
 #endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
+#if defined WIN32 && defined _MSC_VER
 vlg::member_desc USER_main_role
 (
-    12,
+    11,
     vlg::MemberType_FIELD,
     "main_role",
     "main_role",
@@ -1292,10 +1284,10 @@ vlg::member_desc USER_main_role
     0
 );
 #endif
-#if  !defined(WIN32)
+#if !defined WIN32 && defined __GNUG__
 vlg::member_desc USER_main_role
 (
-    12,
+    11,
     vlg::MemberType_FIELD,
     "main_role",
     "main_role",
@@ -1309,10 +1301,10 @@ vlg::member_desc USER_main_role
     0
 );
 #endif
-#if defined(_M_X64) && defined(WIN32) && defined(_MSC_VER)
+#if defined WIN32 && defined _MSC_VER
 vlg::member_desc USER_extra_roles
 (
-    13,
+    12,
     vlg::MemberType_FIELD,
     "extra_roles",
     "extra_roles",
@@ -1326,10 +1318,10 @@ vlg::member_desc USER_extra_roles
     0
 );
 #endif
-#if  !defined(WIN32)
+#if !defined WIN32 && defined __GNUG__
 vlg::member_desc USER_extra_roles
 (
-    13,
+    12,
     vlg::MemberType_FIELD,
     "extra_roles",
     "extra_roles",
@@ -1434,9 +1426,9 @@ EXP_SYM bool ROLE::is_zero_can_act_as_admin() const
 CLASS ROLE VIRTUAL METHS.
 -----------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------
-CLASS ROLE get_nclass_id.
+CLASS ROLE get_id.
 -----------------------------------------------------------------------------*/
-EXP_SYM unsigned int ROLE::get_nclass_id() const
+EXP_SYM unsigned int ROLE::get_id() const
 {
     return 700;
 }
@@ -1457,26 +1449,26 @@ EXP_SYM size_t ROLE::get_size() const
 /*-----------------------------------------------------------------------------
 CLASS ROLE get_zero_object.
 -----------------------------------------------------------------------------*/
-EXP_SYM const ROLE* ROLE::get_zero_object() const
+EXP_SYM const ROLE& ROLE::get_zero_object() const
 {
-    return &ZERO_OBJ;
+    return ZERO_OBJ;
 }
 /*-----------------------------------------------------------------------------
 CLASS ROLE copy_to.
 -----------------------------------------------------------------------------*/
-EXP_SYM void ROLE::copy_to(nclass *out) const
+EXP_SYM void ROLE::copy_to(nclass &out) const
 {
-    memcpy((void*)(out), (void*)(this), sizeof(ROLE));
+    memcpy((void*)(&out), (void*)(this), sizeof(ROLE));
 }
 /*-----------------------------------------------------------------------------
 CLASS ROLE clone.
 -----------------------------------------------------------------------------*/
-EXP_SYM ROLE* ROLE::clone() const
+EXP_SYM std::unique_ptr<vlg::nclass> ROLE::clone() const
 {
-    ROLE *newptr = NULL;
+    ROLE *newptr = nullptr;
     COMMAND_IF_NULL(newptr = new ROLE(), exit(1))
-    copy_to(newptr);
-    return newptr;
+    copy_to(*newptr);
+    return std::unique_ptr<ROLE>(newptr);
 }
 /*-----------------------------------------------------------------------------
 CLASS ROLE is_zero.
@@ -1501,16 +1493,16 @@ EXP_SYM void ROLE::set_zero()
 /*-----------------------------------------------------------------------------
 CLASS ROLE set_from.
 -----------------------------------------------------------------------------*/
-EXP_SYM void ROLE::set_from(const nclass *obj)
+EXP_SYM void ROLE::set_from(const nclass &obj)
 {
-    memcpy((void*)(this), (void*)(obj), sizeof(ROLE));
+    memcpy((void*)(this), (void*)(&obj), sizeof(ROLE));
 }
 /*-----------------------------------------------------------------------------
 CLASS ROLE get_nentity_descriptor.
 -----------------------------------------------------------------------------*/
-EXP_SYM const vlg::nentity_desc* ROLE::get_nentity_descriptor() const
+EXP_SYM const vlg::nentity_desc& ROLE::get_nentity_descriptor() const
 {
-    return &ROLE_EntityDesc;
+    return ROLE_EntityDesc;
 }
 /*-----------------------------------------------------------------------------
 CLASS ROLE pretty_dump_to_buffer.
@@ -1520,7 +1512,7 @@ EXP_SYM size_t ROLE::pretty_dump_to_buffer(char *buff, bool print_name) const
     size_t blen = 0;
     if(print_name) blen += sprintf(&buff[blen], "ROLE");
     blen += sprintf(&buff[blen], "{");
-#if defined(__GNUG__) && defined(__linux)
+#if defined __GNUG__ && defined __linux
         if(!is_zero_role_id()) blen += sprintf(&buff[blen], "role_id=%lu|", role_id);
 #else
         if(!is_zero_role_id()) blen += sprintf(&buff[blen], "role_id=%llu|", role_id);
@@ -1538,7 +1530,7 @@ EXP_SYM size_t ROLE::pretty_dump_to_file(FILE *f, bool print_name) const
     size_t blen = 0;
     if(print_name) blen += fprintf(f, "ROLE");
     blen += fprintf(f, "{");
-#if defined(__GNUG__) && defined(__linux)
+#if defined __GNUG__ && defined __linux
         if(!is_zero_role_id()) blen += fprintf(f, "role_id=%lu|", role_id);
 #else
         if(!is_zero_role_id()) blen += fprintf(f, "role_id=%llu|", role_id);
@@ -1551,7 +1543,7 @@ EXP_SYM size_t ROLE::pretty_dump_to_file(FILE *f, bool print_name) const
 /*-----------------------------------------------------------------------------
 CLASS ROLE serialize.
 -----------------------------------------------------------------------------*/
-EXP_SYM int ROLE::serialize(vlg::Encode enctyp, const nclass *prev_image, vlg::grow_byte_buffer *obb) const
+EXP_SYM int ROLE::serialize(vlg::Encode enctyp, const nclass *prev_image, vlg::g_bbuf *obb) const
 {
     size_t tlen_offst = obb->position(), tlen = 0;
     switch(enctyp){
@@ -1559,19 +1551,19 @@ EXP_SYM int ROLE::serialize(vlg::Encode enctyp, const nclass *prev_image, vlg::g
             obb->advance_pos_write(ENTLN_B_SZ); tlen = obb->position();
             if(!is_zero_role_id()){
                 obb->grow(MMBID_B_SZ+8);
-                obb->append_ushort(2);
+                obb->append_ushort(1);
                 obb->append(&role_id, 0, 8);
             }
             if(!is_zero_role_name()){
                 size_t fsize = strnlen(role_name, 34);
                 obb->grow(MMBID_B_SZ+FLDLN_B_SZ+fsize);
-                obb->append_ushort(3);
+                obb->append_ushort(2);
                 obb->append_uint((unsigned int)fsize);
                 obb->append(role_name, 0, fsize);
             }
             if(!is_zero_can_act_as_admin()){
                 obb->grow(MMBID_B_SZ+1);
-                obb->append_ushort(4);
+                obb->append_ushort(3);
                 obb->append(&can_act_as_admin, 0, 1);
             }
             tlen = (obb->position() - tlen); obb->put(&tlen, tlen_offst, ENTLN_B_SZ);
@@ -1807,9 +1799,9 @@ EXP_SYM bool USER::is_zero_extra_roles_idx(size_t idx) const
 CLASS USER VIRTUAL METHS.
 -----------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------
-CLASS USER get_nclass_id.
+CLASS USER get_id.
 -----------------------------------------------------------------------------*/
-EXP_SYM unsigned int USER::get_nclass_id() const
+EXP_SYM unsigned int USER::get_id() const
 {
     return 800;
 }
@@ -1830,26 +1822,26 @@ EXP_SYM size_t USER::get_size() const
 /*-----------------------------------------------------------------------------
 CLASS USER get_zero_object.
 -----------------------------------------------------------------------------*/
-EXP_SYM const USER* USER::get_zero_object() const
+EXP_SYM const USER& USER::get_zero_object() const
 {
-    return &ZERO_OBJ;
+    return ZERO_OBJ;
 }
 /*-----------------------------------------------------------------------------
 CLASS USER copy_to.
 -----------------------------------------------------------------------------*/
-EXP_SYM void USER::copy_to(nclass *out) const
+EXP_SYM void USER::copy_to(nclass &out) const
 {
-    memcpy((void*)(out), (void*)(this), sizeof(USER));
+    memcpy((void*)(&out), (void*)(this), sizeof(USER));
 }
 /*-----------------------------------------------------------------------------
 CLASS USER clone.
 -----------------------------------------------------------------------------*/
-EXP_SYM USER* USER::clone() const
+EXP_SYM std::unique_ptr<vlg::nclass> USER::clone() const
 {
-    USER *newptr = NULL;
+    USER *newptr = nullptr;
     COMMAND_IF_NULL(newptr = new USER(), exit(1))
-    copy_to(newptr);
-    return newptr;
+    copy_to(*newptr);
+    return std::unique_ptr<USER>(newptr);
 }
 /*-----------------------------------------------------------------------------
 CLASS USER is_zero.
@@ -1892,16 +1884,16 @@ EXP_SYM void USER::set_zero()
 /*-----------------------------------------------------------------------------
 CLASS USER set_from.
 -----------------------------------------------------------------------------*/
-EXP_SYM void USER::set_from(const nclass *obj)
+EXP_SYM void USER::set_from(const nclass &obj)
 {
-    memcpy((void*)(this), (void*)(obj), sizeof(USER));
+    memcpy((void*)(this), (void*)(&obj), sizeof(USER));
 }
 /*-----------------------------------------------------------------------------
 CLASS USER get_nentity_descriptor.
 -----------------------------------------------------------------------------*/
-EXP_SYM const vlg::nentity_desc* USER::get_nentity_descriptor() const
+EXP_SYM const vlg::nentity_desc& USER::get_nentity_descriptor() const
 {
-    return &USER_EntityDesc;
+    return USER_EntityDesc;
 }
 /*-----------------------------------------------------------------------------
 CLASS USER pretty_dump_to_buffer.
@@ -1966,7 +1958,7 @@ EXP_SYM size_t USER::pretty_dump_to_file(FILE *f, bool print_name) const
 /*-----------------------------------------------------------------------------
 CLASS USER serialize.
 -----------------------------------------------------------------------------*/
-EXP_SYM int USER::serialize(vlg::Encode enctyp, const nclass *prev_image, vlg::grow_byte_buffer *obb) const
+EXP_SYM int USER::serialize(vlg::Encode enctyp, const nclass *prev_image, vlg::g_bbuf *obb) const
 {
     size_t tlen_offst = obb->position(), tlen = 0;
     switch(enctyp){
@@ -1974,71 +1966,71 @@ EXP_SYM int USER::serialize(vlg::Encode enctyp, const nclass *prev_image, vlg::g
             obb->advance_pos_write(ENTLN_B_SZ); tlen = obb->position();
             if(!is_zero_user_id()){
                 obb->grow(MMBID_B_SZ+4);
-                obb->append_ushort(2);
+                obb->append_ushort(1);
                 obb->append(&user_id, 0, 4);
             }
             if(!is_zero_name()){
                 size_t fsize = strnlen(name, 130);
                 obb->grow(MMBID_B_SZ+FLDLN_B_SZ+fsize);
-                obb->append_ushort(3);
+                obb->append_ushort(2);
                 obb->append_uint((unsigned int)fsize);
                 obb->append(name, 0, fsize);
             }
             if(!is_zero_surname()){
                 size_t fsize = strnlen(surname, 130);
                 obb->grow(MMBID_B_SZ+FLDLN_B_SZ+fsize);
-                obb->append_ushort(4);
+                obb->append_ushort(3);
                 obb->append_uint((unsigned int)fsize);
                 obb->append(surname, 0, fsize);
             }
             if(!is_zero_sex()){
                 obb->grow(MMBID_B_SZ+4);
-                obb->append_ushort(5);
+                obb->append_ushort(4);
                 obb->append(&sex, 0, 4);
             }
             if(!is_zero_email()){
                 size_t fsize = strnlen(email, 65);
                 obb->grow(MMBID_B_SZ+FLDLN_B_SZ+fsize);
-                obb->append_ushort(6);
+                obb->append_ushort(5);
                 obb->append_uint((unsigned int)fsize);
                 obb->append(email, 0, fsize);
             }
             if(!is_zero_height()){
                 obb->grow(MMBID_B_SZ+4);
-                obb->append_ushort(7);
+                obb->append_ushort(6);
                 obb->append(&height, 0, 4);
             }
             if(!is_zero_weight()){
                 obb->grow(MMBID_B_SZ+4);
-                obb->append_ushort(8);
+                obb->append_ushort(7);
                 obb->append(&weight, 0, 4);
             }
             if(!is_zero_active()){
                 obb->grow(MMBID_B_SZ+1);
-                obb->append_ushort(9);
+                obb->append_ushort(8);
                 obb->append(&active, 0, 1);
             }
             if(!is_zero_cap()){
                 obb->grow(MMBID_B_SZ+2);
-                obb->append_ushort(10);
+                obb->append_ushort(9);
                 obb->append(&cap, 0, 2);
             }
             if(!is_zero_type()){
                 obb->grow(MMBID_B_SZ+1);
-                obb->append_ushort(11);
+                obb->append_ushort(10);
                 obb->append(&type, 0, 1);
             }
             if(!is_zero_main_role()){
-                obb->append_ushort(12);
-                main_role.serialize(enctyp, NULL, obb); }
+                obb->append_ushort(11);
+                main_role.serialize(enctyp, nullptr, obb); }
             if(!is_zero_extra_roles()){
-                obb->append_ushort(13);
+                obb->append_ushort(12);
                 size_t alen_offst = obb->position();
                 obb->advance_pos_write(ARRAY_B_SZ); size_t alen = obb->position();
                 for(int i = 0; i<3; i++){
                     if(!is_zero_extra_roles_idx(i)){
                         obb->append_ushort(i);
-                        extra_roles[i].serialize(enctyp, NULL, obb); }
+                        extra_roles[i].serialize(enctyp, nullptr, obb); }
                     }
                     alen = (obb->position() - alen); obb->put(&alen, alen_offst, ARRAY_B_SZ);
                 }
@@ -2061,7 +2053,7 @@ MODEL:smplmdl VERSION
 extern "C"{
 const char* get_mdl_ver_smplmdl()
 {
-    return "model.smplmdl.ver.0.0.0.compiler.ver.0.0.0.0.date:Dec  4 2017";
+    return "model.smplmdl.ver.0.0.0.compiler.ver.0.0.0.0.date:Mar 13 2018";
 }
 }
 
@@ -2072,34 +2064,34 @@ MODEL:smplmdl ENTRYPOINT
 extern "C"{
 EXP_SYM vlg::nentity_manager* get_em_smplmdl()
 {
-    COMMAND_IF_NOT_OK(NEM_smplmdl.extend(&SIMPLE_ENUM_MID_EntityDesc), exit(1))
-    COMMAND_IF_NOT_OK(NEM_smplmdl.extend(&SIMPLE_ENUM_A_EntityDesc), exit(1))
-    COMMAND_IF_NOT_OK(NEM_smplmdl.extend(&SIMPLE_ENUM_B_EntityDesc), exit(1))
-    COMMAND_IF_NOT_OK(NEM_smplmdl.extend(&SEX_EntityDesc), exit(1))
-    COMMAND_IF_NOT_OK(ROLE_EntityDesc.add_member_desc(&ROLE_role_id), exit(1))
-    COMMAND_IF_NOT_OK(ROLE_EntityDesc.add_member_desc(&ROLE_role_name), exit(1))
-    COMMAND_IF_NOT_OK(ROLE_EntityDesc.add_member_desc(&ROLE_can_act_as_admin), exit(1))
-    COMMAND_IF_NOT_OK(NEM_smplmdl.extend(&ROLE_EntityDesc), exit(1))
-    COMMAND_IF_NOT_OK(USER_EntityDesc.add_member_desc(&USER_user_id), exit(1))
-    COMMAND_IF_NOT_OK(USER_EntityDesc.add_member_desc(&USER_name), exit(1))
-    COMMAND_IF_NOT_OK(USER_EntityDesc.add_member_desc(&USER_surname), exit(1))
-    COMMAND_IF_NOT_OK(USER_EntityDesc.add_member_desc(&USER_sex), exit(1))
-    COMMAND_IF_NOT_OK(USER_EntityDesc.add_member_desc(&USER_email), exit(1))
-    COMMAND_IF_NOT_OK(USER_EntityDesc.add_member_desc(&USER_height), exit(1))
-    COMMAND_IF_NOT_OK(USER_EntityDesc.add_member_desc(&USER_weight), exit(1))
-    COMMAND_IF_NOT_OK(USER_EntityDesc.add_member_desc(&USER_active), exit(1))
-    COMMAND_IF_NOT_OK(USER_EntityDesc.add_member_desc(&USER_cap), exit(1))
-    COMMAND_IF_NOT_OK(USER_EntityDesc.add_member_desc(&USER_type), exit(1))
-    COMMAND_IF_NOT_OK(USER_EntityDesc.add_member_desc(&USER_main_role), exit(1))
-    COMMAND_IF_NOT_OK(USER_EntityDesc.add_member_desc(&USER_extra_roles), exit(1))
-    COMMAND_IF_NOT_OK(KEY_USER_1.add_member_desc(&USER_user_id), exit(1))
-    COMMAND_IF_NOT_OK(USER_EntityDesc.add_key_desc(&KEY_USER_1), exit(1))
-    COMMAND_IF_NOT_OK(KEY_USER_2.add_member_desc(&USER_name), exit(1))
-    COMMAND_IF_NOT_OK(KEY_USER_2.add_member_desc(&USER_surname), exit(1))
-    COMMAND_IF_NOT_OK(USER_EntityDesc.add_key_desc(&KEY_USER_2), exit(1))
-    COMMAND_IF_NOT_OK(KEY_USER_3.add_member_desc(&USER_email), exit(1))
-    COMMAND_IF_NOT_OK(USER_EntityDesc.add_key_desc(&KEY_USER_3), exit(1))
-    COMMAND_IF_NOT_OK(NEM_smplmdl.extend(&USER_EntityDesc), exit(1))
+    COMMAND_IF_NOT_OK(ROLE_EntityDesc.add_member_desc(ROLE_role_id), exit(1))
+    COMMAND_IF_NOT_OK(ROLE_EntityDesc.add_member_desc(ROLE_role_name), exit(1))
+    COMMAND_IF_NOT_OK(ROLE_EntityDesc.add_member_desc(ROLE_can_act_as_admin), exit(1))
+    COMMAND_IF_NOT_OK(NEM_smplmdl.extend(ROLE_EntityDesc), exit(1))
+    COMMAND_IF_NOT_OK(NEM_smplmdl.extend(SEX_EntityDesc), exit(1))
+    COMMAND_IF_NOT_OK(NEM_smplmdl.extend(SIMPLE_ENUM_A_EntityDesc), exit(1))
+    COMMAND_IF_NOT_OK(NEM_smplmdl.extend(SIMPLE_ENUM_B_EntityDesc), exit(1))
+    COMMAND_IF_NOT_OK(NEM_smplmdl.extend(SIMPLE_ENUM_MID_EntityDesc), exit(1))
+    COMMAND_IF_NOT_OK(USER_EntityDesc.add_member_desc(USER_user_id), exit(1))
+    COMMAND_IF_NOT_OK(USER_EntityDesc.add_member_desc(USER_name), exit(1))
+    COMMAND_IF_NOT_OK(USER_EntityDesc.add_member_desc(USER_surname), exit(1))
+    COMMAND_IF_NOT_OK(USER_EntityDesc.add_member_desc(USER_sex), exit(1))
+    COMMAND_IF_NOT_OK(USER_EntityDesc.add_member_desc(USER_email), exit(1))
+    COMMAND_IF_NOT_OK(USER_EntityDesc.add_member_desc(USER_height), exit(1))
+    COMMAND_IF_NOT_OK(USER_EntityDesc.add_member_desc(USER_weight), exit(1))
+    COMMAND_IF_NOT_OK(USER_EntityDesc.add_member_desc(USER_active), exit(1))
+    COMMAND_IF_NOT_OK(USER_EntityDesc.add_member_desc(USER_cap), exit(1))
+    COMMAND_IF_NOT_OK(USER_EntityDesc.add_member_desc(USER_type), exit(1))
+    COMMAND_IF_NOT_OK(USER_EntityDesc.add_member_desc(USER_main_role), exit(1))
+    COMMAND_IF_NOT_OK(USER_EntityDesc.add_member_desc(USER_extra_roles), exit(1))
+    COMMAND_IF_NOT_OK(KEY_USER_1.add_member_desc(USER_user_id), exit(1))
+    COMMAND_IF_NOT_OK(USER_EntityDesc.add_key_desc(KEY_USER_1), exit(1))
+    COMMAND_IF_NOT_OK(KEY_USER_2.add_member_desc(USER_surname), exit(1))
+    COMMAND_IF_NOT_OK(KEY_USER_2.add_member_desc(USER_name), exit(1))
+    COMMAND_IF_NOT_OK(USER_EntityDesc.add_key_desc(KEY_USER_2), exit(1))
+    COMMAND_IF_NOT_OK(KEY_USER_3.add_member_desc(USER_email), exit(1))
+    COMMAND_IF_NOT_OK(USER_EntityDesc.add_key_desc(KEY_USER_3), exit(1))
+    COMMAND_IF_NOT_OK(NEM_smplmdl.extend(USER_EntityDesc), exit(1))
     return &NEM_smplmdl;
 }
 }

@@ -46,6 +46,20 @@ class vlg_toolkit_Conn_mdl : public QSortFilterProxyModel {
 //------------------------------------------------------------------------------
 // vlg_toolkit_Connection
 //------------------------------------------------------------------------------
+class vlg_toolkit_Connection;
+class toolkit_connection : public vlg::connection {
+    public:
+        toolkit_connection(vlg_toolkit_Connection &widget);
+
+        virtual void on_status_change(vlg::ConnectionStatus current) override;
+
+    private:
+        vlg_toolkit_Connection &widget_;
+};
+
+//------------------------------------------------------------------------------
+// vlg_toolkit_Connection
+//------------------------------------------------------------------------------
 
 namespace Ui {
 class vlg_toolkit_Connection;
@@ -55,7 +69,7 @@ class vlg_toolkit_Connection : public QWidget {
         Q_OBJECT
 
     public:
-        explicit vlg_toolkit_Connection(vlg::connection &conn,
+        explicit vlg_toolkit_Connection(vlg::peer &peer,
                                         const QString &host,
                                         const QString &port,
                                         const QString &usr,
@@ -99,17 +113,12 @@ class vlg_toolkit_Connection : public QWidget {
         int tab_idx() const;
         void setTab_idx(int tab_idx);
 
-
-        /*****
-         REP
-         ****/
-
     private:
         QMainWindow &m_win_;
         int tab_idx_; //in the QTabWidget
         int tab_id_;
         QTabWidget &parent_;
-        vlg::connection &conn_;
+        toolkit_connection conn_;
 
     private:
         vlg_toolkit_Conn_mdl b_mdl_;
@@ -119,6 +128,8 @@ class vlg_toolkit_Connection : public QWidget {
 
     public:
         Ui::vlg_toolkit_Connection *ui;
+        toolkit_connection &conn();
+
     private slots:
         void on_connect_button_clicked();
         void on_disconnect_button_clicked();

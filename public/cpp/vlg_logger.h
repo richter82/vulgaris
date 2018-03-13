@@ -27,19 +27,15 @@ namespace vlg {
 
 /** @brief class appender.
 */
-class appender_impl;
-class appender {
-    public:
+struct appender_impl;
+struct appender {
+        explicit appender();
+        explicit appender(const char *fname);
+        explicit appender(FILE *fd);
+        virtual ~appender();
 
-        explicit        appender();
-        explicit        appender(const char *fname);
-        explicit        appender(FILE *fd);
-        virtual         ~appender();
+        virtual void flush();
 
-    public:
-        virtual void    flush();
-
-    public:
         virtual size_t  put_msg(TraceLVL lvl,
                                 const char *sign,
                                 uint16_t sign_len,
@@ -84,52 +80,42 @@ class appender {
                                       char *buff,
                                       uint16_t *buff_len,
                                       va_list args);
-    private:
-        appender_impl *impl_;
+    public:
+        std::unique_ptr<appender_impl> impl_;
 };
 
 /** @brief class logger.
 */
-class logger_impl;
-class logger {
+struct logger_impl;
+struct logger {
+        static RetCode set_logger_cfg_file_dir(const char *dir);
+        static RetCode set_logger_cfg_file_path_name(const char *file_path);
+        static RetCode load_logger_config();
+        static RetCode load_logger_config(const char *fname);
+        static RetCode get_logger(const char *logger_name,
+                                  logger **logger);
 
-    public:
-        static RetCode      set_logger_cfg_file_dir(const char *dir);
-        static RetCode      set_logger_cfg_file_path_name(const char *file_path);
-        static RetCode      load_logger_config();
-        static RetCode      load_logger_config(const char *fname);
-        static RetCode      get_logger(const char *logger_name,
-                                       logger **logger);
+        static logger *get_logger(const char *logger_name);
+        static RetCode add_appender_to_all_loggers(appender *apnd);
+        static RetCode remove_last_appender_from_all_loggers();
+        static void set_level_for_all_loggers(TraceLVL lvl);
 
-        static logger       *get_logger(const char *logger_name);
-        static RetCode      add_appender_to_all_loggers(appender *apnd);
-        static RetCode      remove_last_appender_from_all_loggers();
-        static void         set_level_for_all_loggers(TraceLVL lvl);
+        explicit logger(TraceLVL level,
+                        const char *sign,
+                        appender *apnds[],
+                        uint16_t apnds_n);
 
-    public:
-        explicit logger();
         virtual ~logger();
 
-    public:
-        void        set_rep_from(logger &other);
+        TraceLVL level();
 
-        RetCode     init(TraceLVL level,
-                         const char *sign,
-                         appender *apnds[],
-                         uint16_t apnds_n);
+        appender **get_appenders();
+        uint16_t get_appender_count();
 
-    public:
-        TraceLVL    level();
-        logger_impl *get_opaque();
+        void set_level(TraceLVL level);
+        RetCode add_appender(appender *apnd);
+        RetCode remove_last_appender();
 
-        appender    **get_appenders();
-        uint16_t    get_appender_count();
-
-        void        set_level(TraceLVL level);
-        RetCode     add_appender(appender *apnd);
-        RetCode     remove_last_appender();
-
-    public:
         size_t log(TraceLVL level, uint32_t id, const char *msg, ...);
         size_t pln(const char *msg, ...);
 
@@ -142,6 +128,47 @@ class logger {
         size_t cri(uint32_t id, const char *msg, ...);
         size_t fat(uint32_t id, const char *msg, ...);
 
+        size_t trc_nclass(uint32_t id,
+                          const nclass *obj,
+                          bool print_class_name,
+                          const char *fmt,
+                          ...);
+
+        size_t dbg_nclass(uint32_t id,
+                          const nclass *obj,
+                          bool print_class_name,
+                          const char *fmt,
+                          ...);
+
+        size_t inf_nclass(uint32_t id,
+                          const nclass *obj,
+                          bool print_class_name,
+                          const char *fmt,
+                          ...);
+
+        size_t wrn_nclass(uint32_t id,
+                          const nclass *obj,
+                          bool print_class_name,
+                          const char *fmt,
+                          ...);
+
+        size_t err_nclass(uint32_t id,
+                          const nclass *obj,
+                          bool print_class_name,
+                          const char *fmt,
+                          ...);
+
+        size_t cri_nclass(uint32_t id,
+                          const nclass *obj,
+                          bool print_class_name,
+                          const char *fmt,
+                          ...);
+
+        size_t fat_nclass(uint32_t id,
+                          const nclass *obj,
+                          bool print_class_name,
+                          const char *fmt,
+                          ...);
     protected:
         size_t plnm(const char *msg);
         size_t lowm(uint32_t id, const char *msg);
@@ -153,69 +180,10 @@ class logger {
         size_t crim(uint32_t id, const char *msg);
         size_t fatm(uint32_t id, const char *msg);
 
-    private:
-        logger_impl *impl_;
-};
-
-}
-
-namespace vlg {
-
-/** @brief  nclass_logger is a convenient logger with specialized methods
-            accepting nclass objects.
-*/
-class nclass_logger : public vlg::logger {
     public:
-        //---ctors
-        explicit nclass_logger();
-        ~nclass_logger();
-
-        //---pub meths
-        size_t trc_class(uint32_t id,
-                         const nclass *obj,
-                         bool print_class_name,
-                         const char *fmt,
-                         ...);
-
-        size_t dbg_class(uint32_t id,
-                         const nclass *obj,
-                         bool print_class_name,
-                         const char *fmt,
-                         ...);
-
-        size_t inf_class(uint32_t id,
-                         const nclass *obj,
-                         bool print_class_name,
-                         const char *fmt,
-                         ...);
-
-        size_t wrn_class(uint32_t id,
-                         const nclass *obj,
-                         bool print_class_name,
-                         const char *fmt,
-                         ...);
-
-        size_t err_class(uint32_t id,
-                         const nclass *obj,
-                         bool print_class_name,
-                         const char *fmt,
-                         ...);
-
-        size_t cri_class(uint32_t id,
-                         const nclass *obj,
-                         bool print_class_name,
-                         const char *fmt,
-                         ...);
-
-        size_t fat_class(uint32_t id,
-                         const nclass *obj,
-                         bool print_class_name,
-                         const char *fmt,
-                         ...);
+        std::unique_ptr<logger_impl> impl_;
 };
 
-nclass_logger *get_nclass_logger(const char *logger_name);
 }
-
 
 #endif

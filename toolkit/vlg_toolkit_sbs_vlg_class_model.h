@@ -63,10 +63,11 @@ struct VLG_SBS_COL_DATA_ENTRY {
 };
 
 struct VLG_SBS_DATA_ENTRY {
-    VLG_SBS_DATA_ENTRY(vlg::nclass *entry,
+    VLG_SBS_DATA_ENTRY(std::shared_ptr<vlg::nclass> &entry,
                        int row_idx,
                        int col_num);
-    vlg::nclass *entry_;
+
+    std::shared_ptr<vlg::nclass> entry_;
     QVector<VLG_SBS_COL_DATA_ENTRY> fld_act_;
 };
 
@@ -74,12 +75,11 @@ struct VLG_SBS_DATA_ENTRY {
 // VLG_CLASS_ROW_IDX_PAIR  -- HELPER STRUCT
 //------------------------------------------------------------------------------
 struct VLG_CLASS_ROW_IDX_PAIR {
-    VLG_CLASS_ROW_IDX_PAIR(int rowidx = 0, vlg::nclass *obj = NULL);
-
+    VLG_CLASS_ROW_IDX_PAIR(int rowidx = 0, vlg::nclass *obj = nullptr);
     VLG_CLASS_ROW_IDX_PAIR &operator = (const VLG_CLASS_ROW_IDX_PAIR &src);
 
     int rowidx_;
-    vlg::nclass *obj_;
+    std::shared_ptr<vlg::nclass> obj_;
 };
 
 //------------------------------------------------------------------------------
@@ -89,7 +89,7 @@ struct VLG_CLASS_ROW_IDX_PAIR {
 struct ENM_GEN_SBS_REP_REC_UD {
     ENM_GEN_SBS_REP_REC_UD(vlg_toolkit_sbs_vlg_class_model &mdl,
                            const vlg::nentity_manager &bem,
-                           vlg::ascii_string *prfx,
+                           std::string *prfx,
                            bool array_fld,
                            unsigned int fld_idx);
 
@@ -97,7 +97,7 @@ struct ENM_GEN_SBS_REP_REC_UD {
 
     vlg_toolkit_sbs_vlg_class_model &mdl_;
     const vlg::nentity_manager &bem_;
-    vlg::ascii_string *prfx_;
+    std::string *prfx_;
 
     bool array_fld_;
     unsigned int fld_idx_;   //used to render column name when the field is an array
@@ -169,7 +169,7 @@ class vlg_toolkit_sbs_vlg_class_model : public QAbstractTableModel {
         void IncrColnum();
 
     public:
-        void offerEntry(vlg::nclass *entry);
+        void offerEntry(std::shared_ptr<vlg::subscription_event> &);
 
     private:
         void GenerateModelRep();

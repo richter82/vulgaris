@@ -30,12 +30,12 @@ const char *get_trace_level_string(TraceLVL lvl);
 }
 
 void FillQstring_FldValue(const char *fld_ptr,
-                          const vlg::member_desc *mdesc,
+                          const vlg::member_desc &mdesc,
                           QString &out)
 {
-    switch(mdesc->get_field_vlg_type()) {
+    switch(mdesc.get_field_vlg_type()) {
         case vlg::Type_ENTITY: {
-            if(mdesc->get_field_nentity_type() == vlg::NEntityType_NENUM) {
+            if(mdesc.get_field_nentity_type() == vlg::NEntityType_NENUM) {
                 int val = *(int *)fld_ptr;
                 out = QString("%1").arg(val);
             }
@@ -97,12 +97,12 @@ void FillQstring_FldValue(const char *fld_ptr,
 }
 
 void FillFldValue_Qstring(const QVariant &value,
-                          const vlg::member_desc *mdesc,
+                          const vlg::member_desc &mdesc,
                           char *fld_ptr)
 {
-    switch(mdesc->get_field_vlg_type()) {
+    switch(mdesc.get_field_vlg_type()) {
         case vlg::Type_ENTITY:
-            if(mdesc->get_field_nentity_type() == vlg::NEntityType_NENUM) {
+            if(mdesc.get_field_nentity_type() == vlg::NEntityType_NENUM) {
                 *(int *)fld_ptr = value.toInt();
             }
             break;
@@ -134,8 +134,8 @@ void FillFldValue_Qstring(const QVariant &value,
             *(double *)fld_ptr = value.toDouble();
             break;
         case vlg::Type_ASCII:
-            if(mdesc->get_field_nmemb() > 1) {
-                strncpy(fld_ptr, value.toString().toLatin1().data(), mdesc->get_field_nmemb());
+            if(mdesc.get_field_nmemb() > 1) {
+                strncpy(fld_ptr, value.toString().toLatin1().data(), mdesc.get_field_nmemb());
             } else {
                 *(char *)fld_ptr = value.toChar().toLatin1();
             }

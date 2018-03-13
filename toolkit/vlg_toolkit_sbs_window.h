@@ -25,6 +25,22 @@
 #include "vlg_toolkit_vlg_model.h"
 #include "vlg_toolkit_sbs_vlg_class_model.h"
 
+//------------------------------------------------------------------------------
+// toolkit_subscription
+//------------------------------------------------------------------------------
+class vlg_toolkit_sbs_window;
+class toolkit_subscription : public vlg::subscription {
+    public:
+        toolkit_subscription(vlg_toolkit_sbs_window &widget);
+
+        virtual void on_status_change(vlg::SubscriptionStatus current) override;
+        virtual void on_incoming_event(std::unique_ptr<vlg::subscription_event> &) override;
+
+    private:
+        vlg_toolkit_sbs_window &widget_;
+};
+
+
 namespace Ui {
 class vlg_toolkit_sbs_window;
 }
@@ -43,7 +59,7 @@ class vlg_toolkit_sbs_model : public QSortFilterProxyModel {
         bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;
 
     public:
-        void offerEntry(vlg::nclass *entry);
+        void offerEntry(std::shared_ptr<vlg::subscription_event> &);
         vlg_toolkit_sbs_vlg_class_model &wrapped_mdl();
 
     private:
@@ -58,14 +74,10 @@ class vlg_toolkit_sbs_window : public QMainWindow {
         Q_OBJECT
 
     public:
-        explicit vlg_toolkit_sbs_window(const vlg::nentity_desc &edesc,
-                                        const vlg::nentity_manager &bem,
-                                        vlg::subscription &sbs,
-                                        vlg_toolkit_sbs_vlg_class_model &mdl,
+        explicit vlg_toolkit_sbs_window(vlg::connection &conn,
+                                        const vlg::nentity_desc &edesc,
                                         QWidget *parent = 0);
         ~vlg_toolkit_sbs_window();
-
-        vlg::subscription &sbs() const;
 
     protected:
         void closeEvent(QCloseEvent *event);
@@ -77,40 +89,25 @@ class vlg_toolkit_sbs_window : public QMainWindow {
 
     public slots:
         void OnSbsStatusChange(vlg::SubscriptionStatus status);
-        void OnSbsEvent(vlg::subscription_event *sbs_evt);
+        void OnSbsEvent(std::shared_ptr<vlg::subscription_event>);
         void OnCustomMenuRequested(const QPoint &pos);
         void OnNewTxRequested();
 
     signals:
         void SignalSbsStatusChange(vlg::SubscriptionStatus status);
-        void SignalSbsEvent(vlg::subscription_event *sbs_evt);
+        void SignalSbsEvent(std::shared_ptr<vlg::subscription_event>);
 
     public:
         void EmitSbsStatus(vlg::SubscriptionStatus status);
-        void EmitSbsEvent(vlg::subscription_event *sbs_evt);
-
-    public:
-        friend void sbs_status_change_hndlr(vlg::subscription &sbs,
-                                            vlg::SubscriptionStatus status,
-                                            void *ud);
-
-        friend void sbs_evt_notify_hndlr(vlg::subscription &sbs,
-                                         vlg::subscription_event &sbs_evt,
-                                         void *ud);
 
     private:
         void SbsStartedActions();
         void SbsStoppedActions();
 
-
-        /*****
-         REP
-         ****/
-
     private:
-        vlg::subscription &sbs_;
-        vlg_toolkit_sbs_model sbs_mdl_;
-
+        toolkit_subscription  sbs_;
+        vlg_toolkit_sbs_vlg_class_model sbs_mdl_;
+        vlg_toolkit_sbs_model sbs_mdl_wr_;
 
     public:
         Ui::vlg_toolkit_sbs_window *ui;

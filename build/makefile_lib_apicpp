@@ -2,7 +2,8 @@ SRC = 	../src/apicpp/vlg_connection.cpp\
 		../src/apicpp/vlg_peer.cpp\
 		../src/apicpp/vlg_persistence.cpp\
 		../src/apicpp/vlg_subscription.cpp\
-		../src/apicpp/vlg_transaction.cpp
+		../src/apicpp/vlg_transaction.cpp\
+		../src/apicpp/vlg_model.cpp
 		
 OBJ = $(SRC:.cpp=.o)
 OUTDIR = ../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/lib

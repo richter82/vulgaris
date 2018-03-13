@@ -104,7 +104,7 @@ QVariant model_item::data(int column) const
                     }
                     break;
                 case 4:
-                    return QString("%1").arg(edesc_->get_nentity_member_num());
+                    return QString("%1").arg(edesc_->get_nentity_member_count());
                 case 5:
                     return QString(edesc_->is_persistent() ? "Yes" : "No");
                 default:
@@ -282,7 +282,7 @@ QVariant vlg_toolkit_vlg_model::headerData(int section,
     return QVariant();
 }
 
-void EnumMdscEDescFunc(const vlg::member_desc &desc, void *ud, bool &stop)
+bool EnumMdscEDescFunc(const vlg::member_desc &desc, void *ud)
 {
     model_item *bmi_parent = (model_item *)ud;
     model_item *mdsc_item = new model_item(VLG_MODEL_ITEM_TYPE_MDESC,
@@ -290,10 +290,11 @@ void EnumMdscEDescFunc(const vlg::member_desc &desc, void *ud, bool &stop)
                                            &desc,
                                            bmi_parent);
     bmi_parent->appendChild(mdsc_item);
+    return true;
 }
 
 
-void EnumBemEdescF(const vlg::nentity_desc &nentity_desc, void *ud, bool &stop)
+bool EnumBemEdescF(const vlg::nentity_desc &nentity_desc, void *ud)
 {
     vlg_toolkit_vlg_model *btbm = (vlg_toolkit_vlg_model *)ud;
     model_item *edsc_item = new model_item(VLG_MODEL_ITEM_TYPE_EDESC,
@@ -302,6 +303,7 @@ void EnumBemEdescF(const vlg::nentity_desc &nentity_desc, void *ud, bool &stop)
                                            btbm->rootItem());
     btbm->rootItem()->appendChild(edsc_item);
     nentity_desc.enum_member_descriptors(EnumMdscEDescFunc, edsc_item);
+    return true;
 }
 
 void vlg_toolkit_vlg_model::updateModelData(model_item *parent)

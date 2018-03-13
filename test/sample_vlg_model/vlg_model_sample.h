@@ -2,7 +2,7 @@
 Model:              smplmdl
 Model ver:          0.0.0
 Source:             vlg_model_sample.h
-Compiled on:        04-12-2017
+Compiled on:        13-03-2018
 Lang:               C++
 ********************************************************/
 
@@ -10,7 +10,7 @@ Lang:               C++
 #define VLG_GEN_H_VLG_MODEL_SAMPLE
 #if defined(__cplusplus)
 #include "vlg_model.h"
-#ifdef WIN32
+#if defined WIN32 && defined _MSC_VER
 #ifdef VLG_DMODEL_EXPORTS
 #define EXP_SYM __declspec(dllexport)
 #else
@@ -29,22 +29,20 @@ Lang:               C++
 #endif
 #endif
 
-#define MID_MYVALUE 57
-#define MID_ANOTH_DEFINE 107
-#define MYVALUE 5
 #define ANOTH_DEFINE 10
-#define NAME_LEN 128
 #define EXTRA_ROLE_PER_USER 3
+#define MID_ANOTH_DEFINE 107
+#define MID_MYVALUE 57
+#define MYVALUE 5
+#define NAME_LEN 128
 
 /*-----------------------------------------------------------------------------
-vlg_enum: SIMPLE_ENUM_MID
+vlg_enum: SEX
 -----------------------------------------------------------------------------*/
-enum SIMPLE_ENUM_MID{
-    SIMPLE_ENUM_MID_Zero,
-    SIMPLE_ENUM_MID_One,
-    SIMPLE_ENUM_MID_Two,
-    SIMPLE_ENUM_MID_OneHundred=100,
-    SIMPLE_ENUM_MID_TwoHundredAndOne=201,
+enum SEX{
+    SEX_Undef,
+    SEX_Male,
+    SEX_Female,
 };
 
 /*-----------------------------------------------------------------------------
@@ -70,12 +68,14 @@ enum SIMPLE_ENUM_B{
 };
 
 /*-----------------------------------------------------------------------------
-vlg_enum: SEX
+vlg_enum: SIMPLE_ENUM_MID
 -----------------------------------------------------------------------------*/
-enum SEX{
-    SEX_Undef,
-    SEX_Male,
-    SEX_Female,
+enum SIMPLE_ENUM_MID{
+    SIMPLE_ENUM_MID_Zero,
+    SIMPLE_ENUM_MID_One,
+    SIMPLE_ENUM_MID_Two,
+    SIMPLE_ENUM_MID_OneHundred=100,
+    SIMPLE_ENUM_MID_TwoHundredAndOne=201,
 };
 
 /*-----------------------------------------------------------------------------
@@ -86,7 +86,7 @@ namespace smplmdl{
 #define ROLE_ENTITY_ID 700
 
 class ROLE : public vlg::nclass{
-friend class vlg::nentity_manager;
+friend struct vlg::nentity_manager;
 friend void* ROLE_alloc_func(size_t type_size, const void *copy);
 public:
 EXP_SYM ROLE();
@@ -96,19 +96,19 @@ public:
 /*-----------------------------------------------------------------------------
 virtual methods
 -----------------------------------------------------------------------------*/
-EXP_SYM virtual unsigned int get_nclass_id() const;
+EXP_SYM virtual unsigned int get_id() const;
 EXP_SYM virtual unsigned int get_compiler_version() const;
 EXP_SYM virtual size_t get_size() const;
-EXP_SYM virtual const ROLE* get_zero_object() const;
-EXP_SYM virtual void copy_to(vlg::nclass *obj) const;
-EXP_SYM virtual ROLE* clone() const;
+EXP_SYM virtual const ROLE& get_zero_object() const;
+EXP_SYM virtual void copy_to(vlg::nclass &obj) const;
+EXP_SYM virtual std::unique_ptr<vlg::nclass> clone() const;
 EXP_SYM virtual bool is_zero() const;
 EXP_SYM virtual void set_zero();
-EXP_SYM virtual void set_from(const vlg::nclass *obj);
-EXP_SYM virtual const vlg::nentity_desc* get_nentity_descriptor() const;
+EXP_SYM virtual void set_from(const vlg::nclass &obj);
+EXP_SYM virtual const vlg::nentity_desc& get_nentity_descriptor() const;
 EXP_SYM virtual size_t pretty_dump_to_buffer(char *buff, bool print_cname = true) const;
 EXP_SYM virtual size_t pretty_dump_to_file(FILE *f, bool print_cname = true) const;
-EXP_SYM virtual int serialize(vlg::Encode enctyp, const vlg::nclass *prev_image, vlg::grow_byte_buffer *obb) const;
+EXP_SYM virtual int serialize(vlg::Encode enctyp, const vlg::nclass *prev_image, vlg::g_bbuf *obb) const;
 
 /*-----------------------------------------------------------------------------
 getter(s) / setter(s) / is_zero(s)
@@ -147,7 +147,7 @@ namespace smplmdl{
 #define USER_ENTITY_ID 800
 
 class USER : public vlg::nclass{
-friend class vlg::nentity_manager;
+friend struct vlg::nentity_manager;
 friend void* USER_alloc_func(size_t type_size, const void *copy);
 public:
 EXP_SYM USER();
@@ -157,19 +157,19 @@ public:
 /*-----------------------------------------------------------------------------
 virtual methods
 -----------------------------------------------------------------------------*/
-EXP_SYM virtual unsigned int get_nclass_id() const;
+EXP_SYM virtual unsigned int get_id() const;
 EXP_SYM virtual unsigned int get_compiler_version() const;
 EXP_SYM virtual size_t get_size() const;
-EXP_SYM virtual const USER* get_zero_object() const;
-EXP_SYM virtual void copy_to(vlg::nclass *obj) const;
-EXP_SYM virtual USER* clone() const;
+EXP_SYM virtual const USER& get_zero_object() const;
+EXP_SYM virtual void copy_to(vlg::nclass &obj) const;
+EXP_SYM virtual std::unique_ptr<vlg::nclass> clone() const;
 EXP_SYM virtual bool is_zero() const;
 EXP_SYM virtual void set_zero();
-EXP_SYM virtual void set_from(const vlg::nclass *obj);
-EXP_SYM virtual const vlg::nentity_desc* get_nentity_descriptor() const;
+EXP_SYM virtual void set_from(const vlg::nclass &obj);
+EXP_SYM virtual const vlg::nentity_desc& get_nentity_descriptor() const;
 EXP_SYM virtual size_t pretty_dump_to_buffer(char *buff, bool print_cname = true) const;
 EXP_SYM virtual size_t pretty_dump_to_file(FILE *f, bool print_cname = true) const;
-EXP_SYM virtual int serialize(vlg::Encode enctyp, const vlg::nclass *prev_image, vlg::grow_byte_buffer *obb) const;
+EXP_SYM virtual int serialize(vlg::Encode enctyp, const vlg::nclass *prev_image, vlg::g_bbuf *obb) const;
 
 /*-----------------------------------------------------------------------------
 getter(s) / setter(s) / is_zero(s)
