@@ -51,7 +51,7 @@ typedef enum  {
     VLG_PERS_TASK_OP_EXECUTESTATEMENT,
 } VLG_PERS_TASK_OP;
 
-struct persistence_task : public vlg::p_tsk {
+struct persistence_task : public p_tsk {
     persistence_task(VLG_PERS_TASK_OP op_code);
     virtual RetCode execute();
 
@@ -119,18 +119,18 @@ struct persistence_connection_pool {
     // allocated threads for this connection pool.
     persistence_worker  **conn_pool_th_pool_;
 
-    mutable vlg::mx mon_;
+    mutable mx mon_;
 };
 
 // we cannot use a thread-pool because we want 1 thread per connection.
-struct persistence_worker : public vlg::p_th {
+struct persistence_worker : public p_th {
     persistence_worker(persistence_connection_pool &conn_pool);
 
     RetCode submit_task(persistence_task *task);
     virtual void *run();
 
     persistence_connection_pool &conn_pool_;
-    vlg::b_qu task_queue_;
+    b_qu task_queue_;
 };
 
 struct persistence_connection_impl {
@@ -317,32 +317,32 @@ struct persistence_manager_impl {
         RetCode parse_data(std::string &data);
 
         RetCode parse_conn_pool_cfg(unsigned long &lnum,
-                                    vlg::str_tok &tknz,
+                                    str_tok &tknz,
                                     std::unordered_map<std::string, persistence_driver *> &conn_pool_name_to_driv);
 
         RetCode parse_single_conn_pool_cfg(unsigned long &lnum,
-                                           vlg::str_tok &tknz,
+                                           str_tok &tknz,
                                            std::string &conn_pool_name,
                                            std::unordered_map<std::string, persistence_driver *> &conn_pool_name_to_driv);
 
         RetCode parse_URI(unsigned long &lnum,
-                          vlg::str_tok &tknz,
+                          str_tok &tknz,
                           std::string &url,
                           std::string &usr,
                           std::string &psswd);
 
         RetCode parse_impl_after_colon(unsigned long &lnum,
-                                       vlg::str_tok &tknz,
+                                       str_tok &tknz,
                                        unsigned int &pool_size);
 
-        RetCode parse_class_mapping_cfg(unsigned long &lnum,
-                                        vlg::str_tok &tknz,
-                                        std::unordered_map<std::string, persistence_driver *> &conn_pool_name_to_driv);
+        RetCode parse_nclass_mapping_cfg(unsigned long &lnum,
+                                         str_tok &tknz,
+                                         std::unordered_map<std::string, persistence_driver *> &conn_pool_name_to_driv);
 
-        RetCode parse_single_class_map_cfg(unsigned long &lnum,
-                                           vlg::str_tok &tknz,
-                                           unsigned int nclass_id,
-                                           std::unordered_map<std::string, persistence_driver *> &conn_pool_name_to_driv);
+        RetCode parse_single_nclass_map_cfg(unsigned long &lnum,
+                                            str_tok &tknz,
+                                            unsigned int nclass_id,
+                                            std::unordered_map<std::string, persistence_driver *> &conn_pool_name_to_driv);
 
         RetCode map_classid_driver(unsigned int nclass_id,
                                    persistence_driver *driver);

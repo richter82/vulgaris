@@ -102,12 +102,9 @@ struct persistence_query {
     explicit persistence_query(const nentity_manager &);
     ~persistence_query();
 
-    unsigned int get_id() const;
-
     RetCode execute(unsigned int nclass_id,
                     const char *sql);
 
-    PersistenceQueryStatus get_status() const;
     const nentity_manager &get_nentity_manager() const;
 
     RetCode next_obj(unsigned int &ts0_out,

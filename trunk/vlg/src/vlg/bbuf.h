@@ -25,10 +25,9 @@
 
 namespace vlg {
 
-/** @brief class grow_byte_buffer.
+/** @brief g_bbuf.
 */
-class g_bbuf {
-    public:
+struct g_bbuf {
         explicit g_bbuf();
         explicit g_bbuf(size_t initial_capacity);
         ~g_bbuf();
@@ -100,7 +99,6 @@ class g_bbuf {
 
         RetCode read_uint_to_sizet(size_t *);
 
-    private:
         size_t capcty_;
         size_t pos_;
         size_t limit_;

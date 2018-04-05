@@ -23,113 +23,27 @@
 #define VLG_C_PERSISTENCE_H_
 #include "vlg.h"
 
-#if defined(__cplusplus)
-using namespace vlg;
-extern "C" {
-#endif
+//dyna
+RetCode persistence_manager_load_persistence_driver_dynamic(const char *drivers[], int drivers_num);
 
-/***************************
-driver loading
-***************************/
-/*dyna*/
-RetCode persistence_manager_load_persistence_driver_dynamic(const char *drivers[],
-                                                            int drivers_num);
+//static
+RetCode persistence_manager_load_persistence_driver(persistence_driver *drivers[], int drivers_num);
 
-/*static*/
-RetCode persistence_manager_load_persistence_driver(persistence_driver_impl_wr
-                                                    drivers[],
-                                                    int drivers_num);
-//returns null if no driver is available.
-persistence_driver_impl_wr persistence_manager_available_driver(unsigned int nclass_id);
-
+persistence_driver *persistence_manager_available_driver(unsigned int nclass_id);
 RetCode persistence_manager_set_cfg_file_dir(const char *dir);
-
 RetCode persistence_manager_set_cfg_file_path_name(const char *file_path);
-
 RetCode persistence_manager_load_config(const char *file_name);
-
 RetCode persistence_manager_start_all_drivers(void);
-
-RetCode persistence_connection_bind(persistence_connection_wr pconn,
-                                    unsigned int nclass_id,
-                                    persistence_driver_impl_wr driver);
-
-PersistenceConnectionStatus persistence_connection_get_status(
-    persistence_connection_wr
-    pconn);
-
-unsigned int persistence_connection_get_id(persistence_connection_wr pconn);
-
-RetCode persistence_connection_create_entity_schema_by_class_id(persistence_connection_wr pconn,
-                                                                PersistenceAlteringMode mode,
-                                                                const nentity_manager_wr nem,
-                                                                unsigned int nclass_id);
-
-RetCode persistence_connection_create_entity_schema_by_edesc(persistence_connection_wr pconn,
-                                                             PersistenceAlteringMode mode,
-                                                             const nentity_manager_wr nem,
-                                                             const nentity_desc_wr desc);
-
-RetCode persistence_connection_save_entity(persistence_connection_wr pconn,
-                                           const nentity_manager_wr nem,
-                                           unsigned int ts0,
-                                           unsigned int ts1,
-                                           const nclass_wr in);
-
-RetCode persistence_connection_update_entity(persistence_connection_wr pconn,
-                                             unsigned short key,
-                                             const nentity_manager_wr nem,
-                                             unsigned int ts0,
-                                             unsigned int ts1,
-                                             const nclass_wr in);
-
-RetCode persistence_connection_save_or_update_entity(persistence_connection_wr
-                                                     pconn,
-                                                     unsigned short key,
-                                                     const nentity_manager_wr nem,
-                                                     unsigned int ts0,
-                                                     unsigned int ts1,
-                                                     const nclass_wr in);
-
-RetCode persistence_connection_remove_entity(persistence_connection_wr pconn,
-                                             unsigned short key,
-                                             const nentity_manager_wr nem,
-                                             unsigned int ts0,
-                                             unsigned int ts1,
-                                             PersistenceDeletionMode mode,
-                                             const nclass_wr in);
-
-RetCode persistence_connection_load_entity(persistence_connection_wr pconn,
-                                           unsigned short key,
-                                           const nentity_manager_wr nem,
-                                           unsigned int *ts0_out,
-                                           unsigned int *ts1_out,
-                                           nclass_wr in_out);
-
-RetCode persistence_connection_execute_statement(persistence_connection_wr
-                                                 pconn,
-                                                 const char *stmt,
-                                                 unsigned int nclass_id);
-
-RetCode persistence_query_bind(persistence_query_wr pqry,
-                               unsigned int nclass_id,
-                               const char *sql);
-
-unsigned int persistence_query_get_id(persistence_query_wr pqry);
-
-PersistenceQueryStatus persistence_query_get_status(persistence_query_wr pqry);
-
-const nentity_manager_wr persistence_query_get_entity_manager(persistence_query_wr pqry);
-
-persistence_connection_wr persistence_query_get_connection(persistence_query_wr pqry);
-
-RetCode persistence_query_next_entity(persistence_query_wr pqry,
-                                      unsigned int *ts0_out,
-                                      unsigned int *ts1_out,
-                                      nclass_wr out);
-
-#if defined(__cplusplus)
-}
-#endif
+RetCode persistence_connection_create_nclass_schema_by_nclass_id(persistence_connection *pconn, PersistenceAlteringMode mode, const nentity_manager *nem, unsigned int nclass_id);
+RetCode persistence_connection_create_nclass_schema_by_edesc(persistence_connection *pconn, PersistenceAlteringMode mode, const nentity_manager *nem, const nentity_desc *desc);
+RetCode persistence_connection_save_nclass(persistence_connection *pconn, const nentity_manager *nem, unsigned int ts0, unsigned int ts1, const nclass *in);
+RetCode persistence_connection_update_nclass(persistence_connection *pconn, unsigned short key, const nentity_manager *nem, unsigned int ts0, unsigned int ts1, const nclass *in);
+RetCode persistence_connection_save_or_update_nclass(persistence_connection *pconn, unsigned short key, const nentity_manager *nem, unsigned int ts0, unsigned int ts1, const nclass *in);
+RetCode persistence_connection_remove_nclass(persistence_connection *pconn, unsigned short key, const nentity_manager *nem, unsigned int ts0, unsigned int ts1, PersistenceDeletionMode mode, const nclass *in);
+RetCode persistence_connection_load_nclass(persistence_connection *pconn, unsigned short key, const nentity_manager *nem, unsigned int *ts0_out, unsigned int *ts1_out, nclass *in_out);
+RetCode persistence_connection_execute_statement(persistence_connection *pconn, const char *stmt, unsigned int nclass_id);
+RetCode persistence_query_bind(persistence_query *pqry, unsigned int nclass_id, const char *sql);
+const nentity_manager *persistence_query_get_nentity_manager(persistence_query *pqry);
+RetCode persistence_query_next_nclass(persistence_query *pqry, unsigned int *ts0_out, unsigned int *ts1_out, nclass *out);
 
 #endif

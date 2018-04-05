@@ -17,9 +17,6 @@
     <ClInclude Include="..\public\c\vlg_c_connection.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\c\vlg_c_logger.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="..\public\c\vlg_c_model.h">
       <Filter>h</Filter>
     </ClInclude>
@@ -33,9 +30,6 @@
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\public\vlg.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\public\c\vlg_c_drv_sqlite.h">
       <Filter>h</Filter>
     </ClInclude>
   </ItemGroup>
@@ -53,9 +47,6 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\src\apic\c_connection.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\apic\c_drv_sqlite.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\src\apic\c_model.cpp">

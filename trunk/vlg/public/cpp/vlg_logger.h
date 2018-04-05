@@ -25,7 +25,7 @@
 
 namespace vlg {
 
-/** @brief class appender.
+/** @brief appender.
 */
 struct appender_impl;
 struct appender {
@@ -84,7 +84,7 @@ struct appender {
         std::unique_ptr<appender_impl> impl_;
 };
 
-/** @brief class logger.
+/** @brief logger.
 */
 struct logger_impl;
 struct logger {
@@ -130,43 +130,43 @@ struct logger {
 
         size_t trc_nclass(uint32_t id,
                           const nclass *obj,
-                          bool print_class_name,
+                          bool print_nclass_name,
                           const char *fmt,
                           ...);
 
         size_t dbg_nclass(uint32_t id,
                           const nclass *obj,
-                          bool print_class_name,
+                          bool print_nclass_name,
                           const char *fmt,
                           ...);
 
         size_t inf_nclass(uint32_t id,
                           const nclass *obj,
-                          bool print_class_name,
+                          bool print_nclass_name,
                           const char *fmt,
                           ...);
 
         size_t wrn_nclass(uint32_t id,
                           const nclass *obj,
-                          bool print_class_name,
+                          bool print_nclass_name,
                           const char *fmt,
                           ...);
 
         size_t err_nclass(uint32_t id,
                           const nclass *obj,
-                          bool print_class_name,
+                          bool print_nclass_name,
                           const char *fmt,
                           ...);
 
         size_t cri_nclass(uint32_t id,
                           const nclass *obj,
-                          bool print_class_name,
+                          bool print_nclass_name,
                           const char *fmt,
                           ...);
 
         size_t fat_nclass(uint32_t id,
                           const nclass *obj,
-                          bool print_class_name,
+                          bool print_nclass_name,
                           const char *fmt,
                           ...);
     protected:

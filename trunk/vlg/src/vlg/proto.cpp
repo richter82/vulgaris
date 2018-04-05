@@ -242,7 +242,7 @@ MASKS FOR ENCODING:
 
 
 inline void Encode_WRD_PKTHDR(const VLG_WRD_PKTHDR_REC *rec,
-                              vlg::g_bbuf *obb)
+                              g_bbuf *obb)
 {
     unsigned int data_out = 0;
     //PROVER |VVVV VV00 0000 0000|0000 0000 0000 0000|
@@ -259,21 +259,21 @@ inline void Encode_WRD_PKTHDR(const VLG_WRD_PKTHDR_REC *rec,
 }
 
 inline void Encode_WRD_PKTLEN(const unsigned int *pktlen,
-                              vlg::g_bbuf *obb)
+                              g_bbuf *obb)
 {
     //PKTLEN |LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL|
     obb->append_uint(htonl(*pktlen));
 }
 
 inline void Encode_WRD_TMSTMP(const time_stamp *tstamp,
-                              vlg::g_bbuf *obb)
+                              g_bbuf *obb)
 {
     //TMSTMP |TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT|
     obb->append_uint(htonl(*tstamp));
 }
 
 inline void Encode_WRD_CLIHBT(const unsigned short *hbtsec,
-                              vlg::g_bbuf *obb)
+                              g_bbuf *obb)
 {
     unsigned int data_out = 0;
     //CLIHBT |HHHH HHHH 0000 0000|0000 0000 0000 0000|
@@ -282,7 +282,7 @@ inline void Encode_WRD_CLIHBT(const unsigned short *hbtsec,
 }
 
 inline void Encode_WRD_SRVCRS(const VLG_WRD_SRVCRS_REC *rec,
-                              vlg::g_bbuf *obb)
+                              g_bbuf *obb)
 {
     unsigned int data_out = 0;
     //CONRES |RRR0 0000 0000 0000|0000 0000 0000 0000|
@@ -295,7 +295,7 @@ inline void Encode_WRD_SRVCRS(const VLG_WRD_SRVCRS_REC *rec,
 }
 
 inline void Encode_WRD_DISWRD(const VLG_WRD_DISWRD_REC *rec,
-                              vlg::g_bbuf *obb)
+                              g_bbuf *obb)
 {
     unsigned int data_out = 0;
     //DISRES |RRRR0000000000000000000000000000|
@@ -304,7 +304,7 @@ inline void Encode_WRD_DISWRD(const VLG_WRD_DISWRD_REC *rec,
 }
 
 inline void Encode_WRD_TXREQW(const VLG_WRD_TXREQW_REC *rec,
-                              vlg::g_bbuf *obb)
+                              g_bbuf *obb)
 {
     unsigned int data_out = 0;
     //TXTYPE |TTTT0000000000000000000000000000|
@@ -317,7 +317,7 @@ inline void Encode_WRD_TXREQW(const VLG_WRD_TXREQW_REC *rec,
 }
 
 inline void Encode_WRD_CLSENC(const VLG_WRD_CLSENC_REC *rec,
-                              vlg::g_bbuf *obb)
+                              g_bbuf *obb)
 {
     unsigned int data_out = 0;
     //ENCTYP |EEEE0000000000000000000000000000|
@@ -332,7 +332,7 @@ inline void Encode_WRD_CLSENC(const VLG_WRD_CLSENC_REC *rec,
 }
 
 inline void Encode_WRD_TXRESW(const VLG_WRD_TXRESW_REC *rec,
-                              vlg::g_bbuf *obb)
+                              g_bbuf *obb)
 {
     unsigned int data_out = 0;
     //TXRESL |XXX00000000000000000000000000000|
@@ -350,49 +350,49 @@ inline void Encode_WRD_TXRESW(const VLG_WRD_TXRESW_REC *rec,
 }
 
 inline void Encode_WRD_TXPLID(const unsigned int *txplid,
-                              vlg::g_bbuf *obb)
+                              g_bbuf *obb)
 {
     //TXPLID |PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP|
     obb->append_uint(htonl(*txplid));
 }
 
 inline void Encode_WRD_TXSVID(const unsigned int *txsvid,
-                              vlg::g_bbuf *obb)
+                              g_bbuf *obb)
 {
     //TXSVID |SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS|
     obb->append_uint(htonl(*txsvid));
 }
 
 inline void Encode_WRD_TXCNID(const unsigned int *txcnid,
-                              vlg::g_bbuf *obb)
+                              g_bbuf *obb)
 {
     //TXCNID |CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC|
     obb->append_uint(htonl(*txcnid));
 }
 
 inline void Encode_WRD_TXPRID(const unsigned int *txprid,
-                              vlg::g_bbuf *obb)
+                              g_bbuf *obb)
 {
     //TXPRID |PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP|
     obb->append_uint(htonl(*txprid));
 }
 
 inline void Encode_WRD_CONNID(const unsigned int *connid,
-                              vlg::g_bbuf *obb)
+                              g_bbuf *obb)
 {
     //CONNID |CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC|
     obb->append_uint(htonl(*connid));
 }
 
 inline void Encode_WRD_RQSTID(const unsigned int *rqstid,
-                              vlg::g_bbuf *obb)
+                              g_bbuf *obb)
 {
     //RQSTID |RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR|
     obb->append_uint(htonl(*rqstid));
 }
 
 inline void Encode_WRD_SBREQW(const VLG_WRD_SBREQW_REC *rec,
-                              vlg::g_bbuf *obb)
+                              g_bbuf *obb)
 {
     unsigned int data_out = 0;
     //SBSTYP |00SS 0000 0000 0000 | 0000 0000 0000 0000|
@@ -407,7 +407,7 @@ inline void Encode_WRD_SBREQW(const VLG_WRD_SBREQW_REC *rec,
 }
 
 inline void Encode_WRD_SBRESW(const VLG_WRD_SBRESW_REC *rec,
-                              vlg::g_bbuf *obb)
+                              g_bbuf *obb)
 {
     unsigned int data_out = 0;
     //TXRESL |XXX00000000000000000000000000000|
@@ -423,21 +423,21 @@ inline void Encode_WRD_SBRESW(const VLG_WRD_SBRESW_REC *rec,
 }
 
 inline void Encode_WRD_SBSRID(const unsigned int *sbsrid,
-                              vlg::g_bbuf *obb)
+                              g_bbuf *obb)
 {
     //SBSRID |SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS|
     obb->append_uint(htonl(*sbsrid));
 }
 
 inline void Encode_WRD_SEVTID(const unsigned int *sevtid,
-                              vlg::g_bbuf *obb)
+                              g_bbuf *obb)
 {
     //SEVTID |EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE|
     obb->append_uint(htonl(*sevtid));
 }
 
 inline void Encode_WRD_SEVTTP(const VLG_WRD_SEVTTP_REC *rec,
-                              vlg::g_bbuf *obb)
+                              g_bbuf *obb)
 {
     unsigned int data_out = 0;
     //SEVTTP |TTTT0000000000000000000000000000|
@@ -652,7 +652,7 @@ inline void Decode_WRD_SEVTTP(const unsigned int *data_in,
 //TEST REQUEST
 void build_PKT_TSTREQ(time_stamp tstamp,
                       unsigned int connid,
-                      vlg::g_bbuf *obb)
+                      g_bbuf *obb)
 {
     VLG_WRD_PKTHDR_REC pkthdr;
     pkthdr.hdrlen = connid ? 3 : 2;
@@ -668,7 +668,7 @@ void build_PKT_TSTREQ(time_stamp tstamp,
 //HEARTBEAT
 void build_PKT_HRTBET(time_stamp tstamp,
                       unsigned int connid,
-                      vlg::g_bbuf *obb)
+                      g_bbuf *obb)
 {
     VLG_WRD_PKTHDR_REC pkthdr;
     pkthdr.hdrlen = connid ? 3 : 2;
@@ -683,7 +683,7 @@ void build_PKT_HRTBET(time_stamp tstamp,
 
 //CONNECTION REQUEST
 void build_PKT_CONREQ(unsigned short clihbt,
-                      vlg::g_bbuf *obb)
+                      g_bbuf *obb)
 {
     VLG_WRD_PKTHDR_REC pkthdr;
     pkthdr.hdrlen = 2;
@@ -698,7 +698,7 @@ void build_PKT_CONRES(ConnectionResult conres,
                       ProtocolCode errcod,
                       unsigned short agrhbt,
                       unsigned int connid,
-                      vlg::g_bbuf *obb)
+                      g_bbuf *obb)
 {
     VLG_WRD_PKTHDR_REC pkthdr;
     pkthdr.hdrlen = connid ? 3 : 2;
@@ -718,7 +718,7 @@ void build_PKT_CONRES(ConnectionResult conres,
 //DISCONNECTED
 void build_PKT_DSCOND(ProtocolCode disres,
                       unsigned int connid,
-                      vlg::g_bbuf *obb)
+                      g_bbuf *obb)
 {
     VLG_WRD_PKTHDR_REC pkthdr;
     pkthdr.hdrlen = connid ? 3 : 2;
@@ -741,7 +741,7 @@ void build_PKT_TXRQST(TransactionRequestType txtype,
                       Encode enctyp,
                       unsigned int nclsid,
                       unsigned int connid,
-                      vlg::g_bbuf *obb)
+                      g_bbuf *obb)
 {
     VLG_WRD_PKTHDR_REC pkthdr;
     VLG_WRD_TXREQW_REC txreqw;
@@ -783,7 +783,7 @@ void build_PKT_TXRESP(TransactionResult txresl,
                       bool rescls,
                       Encode enctyp,
                       unsigned int nclsid,
-                      vlg::g_bbuf *obb)
+                      g_bbuf *obb)
 {
     VLG_WRD_PKTHDR_REC pkthdr;
     VLG_WRD_TXRESW_REC txresw;
@@ -827,7 +827,7 @@ void build_PKT_SBSREQ(SubscriptionType sbstyp,
                       unsigned int rqstid,
                       unsigned int tmstp0,
                       unsigned int tmstp1,
-                      vlg::g_bbuf *obb)
+                      g_bbuf *obb)
 {
     VLG_WRD_PKTHDR_REC pkthdr;
     VLG_WRD_SBREQW_REC sbreqw;
@@ -864,7 +864,7 @@ void build_PKT_SBSRES(SubscriptionResponse sbresl,
                       ProtocolCode vlgcod,
                       unsigned int rqstid,
                       unsigned int sbsrid,
-                      vlg::g_bbuf *obb)
+                      g_bbuf *obb)
 {
     VLG_WRD_PKTHDR_REC pkthdr;
     VLG_WRD_SBRESW_REC sbresw;
@@ -894,7 +894,7 @@ void build_PKT_SBSEVT(unsigned int sbsrid,
                       unsigned int sevtid,
                       unsigned int tmstp0,
                       unsigned int tmstp1,
-                      vlg::g_bbuf *obb)
+                      g_bbuf *obb)
 {
     VLG_WRD_PKTHDR_REC pkthdr;
     VLG_WRD_SEVTTP_REC sevttpw;
@@ -926,7 +926,7 @@ void build_PKT_SBSEVT(unsigned int sbsrid,
 //SUBSCRIPTION EVENT ACK
 void build_PKT_SBSACK(unsigned int sbsrid,
                       unsigned int sevtid,
-                      vlg::g_bbuf *obb)
+                      g_bbuf *obb)
 {
     VLG_WRD_PKTHDR_REC pkthdr;
     pkthdr.hdrlen = 3;
@@ -939,7 +939,7 @@ void build_PKT_SBSACK(unsigned int sbsrid,
 
 //SUBSCRIPTION STOP REQUEST
 void build_PKT_SBSTOP(unsigned int sbsrid,
-                      vlg::g_bbuf *obb)
+                      g_bbuf *obb)
 {
     VLG_WRD_PKTHDR_REC pkthdr;
     pkthdr.prover = VLG_PROTO_VER;
@@ -953,7 +953,7 @@ void build_PKT_SBSTOP(unsigned int sbsrid,
 void build_PKT_SBSSPR(SubscriptionResponse sbresl,
                       ProtocolCode vlgcod,
                       unsigned int sbsrid,
-                      vlg::g_bbuf *obb)
+                      g_bbuf *obb)
 {
     VLG_WRD_PKTHDR_REC pkthdr;
     VLG_WRD_SBRESW_REC sbresw;
@@ -975,9 +975,9 @@ void build_PKT_SBSSPR(SubscriptionResponse sbresl,
 
 // CONNECTION RECV METHS
 
-inline RetCode connection_impl::recv_single_hdr_row(unsigned int *hdr_row)
+inline RetCode conn_impl::recv_single_hdr_row(unsigned int *hdr_row)
 {
-    RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = RetCode_OK;
     bool stay = true;
     long brecv = 0, tot_brecv = 0, recv_buf_sz = VLG_WRD_BYTE_SIZE;
     char buff[VLG_WRD_BYTE_SIZE] = {0};
@@ -989,10 +989,10 @@ inline RetCode connection_impl::recv_single_hdr_row(unsigned int *hdr_row)
                       __func__, brecv, tot_brecv, recv_buf_sz))
         }
         if(tot_brecv != VLG_WRD_BYTE_SIZE) {
-            if((rcode = socket_excptn_hndl(brecv)) != vlg::RetCode_SCKEAGN) {
+            if((rcode = socket_excptn_hndl(brecv)) != RetCode_SCKEAGN) {
                 stay = false;
             } else {
-                rcode = vlg::RetCode_OK;
+                rcode = RetCode_OK;
             }
         } else {
             break;
@@ -1004,9 +1004,9 @@ inline RetCode connection_impl::recv_single_hdr_row(unsigned int *hdr_row)
 
 #define RCVSNGLROW if((rcode = recv_single_hdr_row(&hdr_row))) return rcode;
 
-RetCode connection_impl::recv_and_decode_hdr(vlg_hdr_rec *pkt_hdr)
+RetCode conn_impl::recv_and_decode_hdr(vlg_hdr_rec *pkt_hdr)
 {
-    RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = RetCode_OK;
     unsigned int hdr_row = 0;
     RCVSNGLROW
     Decode_WRD_PKTHDR(&hdr_row, &pkt_hdr->phdr);
@@ -1161,7 +1161,7 @@ RetCode connection_impl::recv_and_decode_hdr(vlg_hdr_rec *pkt_hdr)
             }
             break;
         default:
-            return vlg::RetCode_DRPPKT;
+            return RetCode_DRPPKT;
     }
     return rcode;
 }

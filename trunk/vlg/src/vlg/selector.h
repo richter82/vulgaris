@@ -29,13 +29,13 @@ namespace vlg {
 // selector_event
 
 struct selector_event {
-    explicit selector_event(VLG_SELECTOR_Evt evt, connection *conn);
-    explicit selector_event(VLG_SELECTOR_Evt evt, std::shared_ptr<connection> &conn);
+    explicit selector_event(VLG_SELECTOR_Evt evt, conn_impl *conn);
+    explicit selector_event(VLG_SELECTOR_Evt evt, std::shared_ptr<incoming_connection> &conn);
 
     VLG_SELECTOR_Evt evt_;
     ConnectionType con_type_;
-    connection *conn_;
-    std::shared_ptr<connection> inco_conn_;
+    conn_impl *conn_;
+    std::shared_ptr<incoming_connection> inco_conn_;
 
     //not really safe rely on this,
     //what if socket is reused by the system?.
@@ -64,7 +64,7 @@ enum SelectorStatus {
     SelectorStatus_ERROR = 500,
 };
 
-struct selector : public vlg::p_th {
+struct selector : public p_th {
     explicit selector(peer_impl &peer);
     ~selector();
 
@@ -114,8 +114,8 @@ struct selector : public vlg::p_th {
     RetCode consume_inco_sock_events();
 
     RetCode add_early_outg_conn(selector_event *conn_evt);
-    RetCode promote_early_outg_conn(connection &conn);
-    RetCode delete_early_outg_conn(connection &conn);
+    RetCode promote_early_outg_conn(conn_impl *conn);
+    RetCode delete_early_outg_conn(conn_impl *conn);
 
     RetCode manage_disconnect_conn(selector_event *conn_evt);
 
@@ -132,21 +132,21 @@ struct selector : public vlg::p_th {
     sockaddr_in udp_ntfy_sa_in_;
     SOCKET udp_ntfy_srv_socket_;
     SOCKET udp_ntfy_cli_socket_;
-    mutable vlg::mx mon_;
+    mutable mx mon_;
 
     //---srv_rep
     SOCKET srv_listen_socket_;
     sockaddr_in srv_sockaddr_in_;
     acceptor srv_acceptor_;
-    std::unordered_map<unsigned int, std::shared_ptr<connection>> inco_connid_conn_map_;
-    std::unordered_map<SOCKET, std::shared_ptr<connection>> write_pending_sock_inco_conn_map_;
-    vlg::p_exec_srv inco_exec_srv_;
+    std::unordered_map<unsigned int, std::shared_ptr<incoming_connection>> inco_connid_conn_map_;
+    std::unordered_map<SOCKET, std::shared_ptr<incoming_connection>> write_pending_sock_inco_conn_map_;
+    p_exec_srv inco_exec_srv_;
 
     //---cli_rep
-    std::unordered_map<SOCKET, connection *> outg_early_sock_conn_map_;
-    std::unordered_map<unsigned int, connection *> outg_connid_conn_map_;
-    std::unordered_map<SOCKET, connection *> write_pending_sock_outg_conn_map_;
-    vlg::p_exec_srv outg_exec_srv_;
+    std::unordered_map<SOCKET, conn_impl *> outg_early_sock_conn_map_;
+    std::unordered_map<unsigned int, conn_impl *> outg_connid_conn_map_;
+    std::unordered_map<SOCKET, conn_impl *> write_pending_sock_outg_conn_map_;
+    p_exec_srv outg_exec_srv_;
 };
 
 }

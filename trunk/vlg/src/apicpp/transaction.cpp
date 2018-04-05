@@ -26,162 +26,126 @@
 
 namespace vlg {
 
-transaction::transaction() : impl_(new transaction_impl(*this))
+incoming_transaction::incoming_transaction(std::shared_ptr<incoming_connection> &conn) :
+    impl_(new incoming_transaction_impl(*this, conn))
 {
     CTOR_TRC
 }
 
-transaction::~transaction()
+incoming_transaction::~incoming_transaction()
 {
     DTOR_TRC
 }
 
-RetCode transaction::bind(connection &conn)
+incoming_connection &incoming_transaction::get_connection()
 {
-    impl_->conn_ = &conn;
-    return RetCode_OK;
+    return *impl_->conn_sh_;
 }
 
-connection &transaction::get_connection()
-{
-    return *impl_->conn_;
-}
-
-TransactionResult transaction::get_close_result()
+TransactionResult incoming_transaction::get_close_result()
 {
     return impl_->tx_res_;
 }
 
-ProtocolCode transaction::get_close_result_code()
+ProtocolCode incoming_transaction::get_close_result_code()
 {
     return impl_->result_code_;
 }
 
-TransactionRequestType transaction::get_request_type()
+TransactionRequestType incoming_transaction::get_request_type()
 {
     return impl_->txtype_;
 }
 
-Action transaction::get_request_action()
+Action incoming_transaction::get_request_action()
 {
     return impl_->txactn_;
 }
 
-unsigned int transaction::get_request_nclass_id()
+unsigned int incoming_transaction::get_request_nclass_id()
 {
     return impl_->req_nclassid_;
 }
 
-Encode transaction::get_request_nclass_encode()
+Encode incoming_transaction::get_request_nclass_encode()
 {
     return impl_->req_clsenc_;
 }
 
-unsigned int transaction::get_result_nclass_id()
+unsigned int incoming_transaction::get_result_nclass_id()
 {
     return impl_->res_nclassid_;
 }
 
-Encode transaction::get_result_nclass_encode()
+Encode incoming_transaction::get_result_nclass_encode()
 {
     return impl_->res_clsenc_;
 }
 
-bool transaction::is_result_obj_required()
+bool incoming_transaction::is_result_obj_required()
 {
     return impl_->rsclrq_;
 }
 
-bool transaction::is_result_obj_set()
+bool incoming_transaction::is_result_obj_set()
 {
     return impl_->rescls_;
 }
 
-const nclass *transaction::get_request_obj()
+const nclass *incoming_transaction::get_request_obj()
 {
     return impl_->request_obj_.get();
 }
 
-const nclass *transaction::get_current_obj()
+const nclass *incoming_transaction::get_current_obj()
 {
     return impl_->current_obj_.get();
 }
 
-const nclass *transaction::get_result_obj()
+const nclass *incoming_transaction::get_result_obj()
 {
     return impl_->result_obj_.get();
 }
 
-void transaction::set_result(TransactionResult tx_res)
+void incoming_transaction::set_result(TransactionResult tx_res)
 {
     impl_->tx_res_ = tx_res;
 }
 
-void transaction::set_result_code(ProtocolCode tx_res_code)
+void incoming_transaction::set_result_code(ProtocolCode tx_res_code)
 {
     impl_->result_code_ = tx_res_code;
 }
 
-void transaction::set_request_type(TransactionRequestType tx_req_type)
-{
-    impl_->txtype_ = tx_req_type;
-}
-
-void transaction::set_request_action(Action tx_act)
-{
-    impl_->txactn_ = tx_act;
-}
-
-void transaction::set_request_nclass_id(unsigned int nclass_id)
-{
-    impl_->req_nclassid_ = nclass_id;
-}
-
-void transaction::set_request_nclass_encode(Encode nclass_encode)
-{
-    impl_->req_clsenc_ = nclass_encode;
-}
-
-void transaction::set_result_nclass_id(unsigned int nclass_id)
+void incoming_transaction::set_result_nclass_id(unsigned int nclass_id)
 {
     impl_->res_nclassid_ = nclass_id;
 }
 
-void transaction::set_result_nclass_encode(Encode nclass_encode)
+void incoming_transaction::set_result_nclass_encode(Encode nclass_encode)
 {
     impl_->res_clsenc_ = nclass_encode;
 }
 
-void transaction::set_result_obj_required(bool res_class_req)
-{
-    impl_->rescls_ = res_class_req;
-}
-
-void transaction::set_request_obj(const nclass &obj)
-{
-    impl_->txtype_ = TransactionRequestType_OBJECT;
-    impl_->set_request_obj(obj);
-}
-
-void transaction::set_current_obj(const nclass &obj)
+void incoming_transaction::set_current_obj(const nclass &obj)
 {
     impl_->set_current_obj(obj);
 }
 
-void transaction::set_result_obj(const nclass &obj)
+void incoming_transaction::set_result_obj(const nclass &obj)
 {
     impl_->set_result_obj(obj);
 }
 
-TransactionStatus transaction::get_status()
+TransactionStatus incoming_transaction::get_status()
 {
     return impl_->status_;
 }
 
-RetCode transaction::await_for_status_reached_or_outdated(TransactionStatus test,
-                                                          TransactionStatus &current,
-                                                          time_t sec,
-                                                          long nsec)
+RetCode incoming_transaction::await_for_status_reached_or_outdated(TransactionStatus test,
+                                                                   TransactionStatus &current,
+                                                                   time_t sec,
+                                                                   long nsec)
 {
     return impl_->await_for_status_reached_or_outdated(test,
                                                        current,
@@ -189,38 +153,211 @@ RetCode transaction::await_for_status_reached_or_outdated(TransactionStatus test
                                                        nsec);
 }
 
-RetCode transaction::await_for_close(time_t sec, long nsec)
+RetCode incoming_transaction::await_for_close(time_t sec, long nsec)
 {
     return  impl_->await_for_closure(sec, nsec);
 }
 
-tx_id &transaction::get_id()
+tx_id &incoming_transaction::get_id()
 {
     return  impl_->txid_;
 }
 
-void transaction::set_id(tx_id &txid)
+void incoming_transaction::set_id(tx_id &txid)
 {
     impl_->txid_ = txid;
 }
 
-RetCode transaction::renew()
+void incoming_transaction::on_status_change(TransactionStatus current)
+{}
+
+void incoming_transaction::on_request()
+{}
+
+void incoming_transaction::on_close()
+{}
+
+}
+
+namespace vlg {
+
+outgoing_transaction::outgoing_transaction() : impl_(new outgoing_transaction_impl(*this))
+{
+    CTOR_TRC
+}
+
+outgoing_transaction::~outgoing_transaction()
+{
+    DTOR_TRC
+}
+
+RetCode outgoing_transaction::bind(outgoing_connection &conn)
+{
+    impl_->conn_ = &conn;
+    return RetCode_OK;
+}
+
+outgoing_connection &outgoing_transaction::get_connection()
+{
+    return *impl_->conn_;
+}
+
+TransactionResult outgoing_transaction::get_close_result()
+{
+    return impl_->tx_res_;
+}
+
+ProtocolCode outgoing_transaction::get_close_result_code()
+{
+    return impl_->result_code_;
+}
+
+TransactionRequestType outgoing_transaction::get_request_type()
+{
+    return impl_->txtype_;
+}
+
+Action outgoing_transaction::get_request_action()
+{
+    return impl_->txactn_;
+}
+
+unsigned int outgoing_transaction::get_request_nclass_id()
+{
+    return impl_->req_nclassid_;
+}
+
+Encode outgoing_transaction::get_request_nclass_encode()
+{
+    return impl_->req_clsenc_;
+}
+
+unsigned int outgoing_transaction::get_result_nclass_id()
+{
+    return impl_->res_nclassid_;
+}
+
+Encode outgoing_transaction::get_result_nclass_encode()
+{
+    return impl_->res_clsenc_;
+}
+
+bool outgoing_transaction::is_result_obj_required()
+{
+    return impl_->rsclrq_;
+}
+
+bool outgoing_transaction::is_result_obj_set()
+{
+    return impl_->rescls_;
+}
+
+const nclass *outgoing_transaction::get_request_obj()
+{
+    return impl_->request_obj_.get();
+}
+
+const nclass *outgoing_transaction::get_current_obj()
+{
+    return impl_->current_obj_.get();
+}
+
+const nclass *outgoing_transaction::get_result_obj()
+{
+    return impl_->result_obj_.get();
+}
+
+void outgoing_transaction::set_result(TransactionResult tx_res)
+{
+    impl_->tx_res_ = tx_res;
+}
+
+void outgoing_transaction::set_result_code(ProtocolCode tx_res_code)
+{
+    impl_->result_code_ = tx_res_code;
+}
+
+void outgoing_transaction::set_request_type(TransactionRequestType tx_req_type)
+{
+    impl_->txtype_ = tx_req_type;
+}
+
+void outgoing_transaction::set_request_action(Action tx_act)
+{
+    impl_->txactn_ = tx_act;
+}
+
+void outgoing_transaction::set_request_nclass_id(unsigned int nclass_id)
+{
+    impl_->req_nclassid_ = nclass_id;
+}
+
+void outgoing_transaction::set_request_nclass_encode(Encode nclass_encode)
+{
+    impl_->req_clsenc_ = nclass_encode;
+}
+
+void outgoing_transaction::set_result_obj_required(bool res_nclass_req)
+{
+    impl_->rescls_ = res_nclass_req;
+}
+
+void outgoing_transaction::set_request_obj(const nclass &obj)
+{
+    impl_->txtype_ = TransactionRequestType_OBJECT;
+    impl_->set_request_obj(obj);
+}
+
+void outgoing_transaction::set_current_obj(const nclass &obj)
+{
+    impl_->set_current_obj(obj);
+}
+
+TransactionStatus outgoing_transaction::get_status()
+{
+    return impl_->status_;
+}
+
+RetCode outgoing_transaction::await_for_status_reached_or_outdated(TransactionStatus test,
+                                                                   TransactionStatus &current,
+                                                                   time_t sec,
+                                                                   long nsec)
+{
+    return impl_->await_for_status_reached_or_outdated(test,
+                                                       current,
+                                                       sec,
+                                                       nsec);
+}
+
+RetCode outgoing_transaction::await_for_close(time_t sec, long nsec)
+{
+    return  impl_->await_for_closure(sec, nsec);
+}
+
+tx_id &outgoing_transaction::get_id()
+{
+    return  impl_->txid_;
+}
+
+void outgoing_transaction::set_id(tx_id &txid)
+{
+    impl_->txid_ = txid;
+}
+
+RetCode outgoing_transaction::renew()
 {
     return impl_->re_new();
 }
 
-RetCode transaction::send()
+RetCode outgoing_transaction::send()
 {
     return impl_->send();
 }
 
-void transaction::on_status_change(TransactionStatus current)
+void outgoing_transaction::on_status_change(TransactionStatus current)
 {}
 
-void transaction::on_request()
-{}
-
-void transaction::on_close()
+void outgoing_transaction::on_close()
 {}
 
 }

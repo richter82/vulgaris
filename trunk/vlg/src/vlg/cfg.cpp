@@ -23,7 +23,7 @@
 
 namespace vlg {
 
-RetCode read_par(vlg::str_tok &tknz, param_arg_pair &pap)
+RetCode read_par(str_tok &tknz, param_arg_pair &pap)
 {
     std::string tkn, par;
     while(tknz.next_token(tkn, CR_DF_DLMT, true)) {
@@ -38,7 +38,7 @@ RetCode read_par(vlg::str_tok &tknz, param_arg_pair &pap)
     return RetCode_OK;
 }
 
-RetCode read_arg(vlg::str_tok &tknz, param_arg_pair &pap)
+RetCode read_arg(str_tok &tknz, param_arg_pair &pap)
 {
     bool null_str_arg = true;
     std::string tkn, arg;
@@ -119,7 +119,7 @@ RetCode cfg_ldr::set_params_file_dir(const char *dir)
 RetCode cfg_ldr::load_config()
 {
     bool par_read = false;
-    vlg::str_tok tknz(data_);
+    str_tok tknz(data_);
     std::string tkn;
     param_arg_pair pap = { 0 };
     while(tknz.next_token(tkn, " \n\r\t\"-", true)) {

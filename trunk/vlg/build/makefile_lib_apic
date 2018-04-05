@@ -1,20 +1,18 @@
-SRC = 	../src/apic/vlg_c_connection.cpp\
-		../src/apic/vlg_c_model.cpp\
-		../src/apic/vlg_c_peer.cpp\
-		../src/apic/vlg_c_persistence.cpp\
-		../src/apic/vlg_c_subscription.cpp\
-		../src/apic/vlg_c_transaction.cpp\
-		../src/apic/vlg_c_drv_sqlite.cpp
+SRC = 	../src/apic/c_connection.cpp\
+		../src/apic/c_model.cpp\
+		../src/apic/c_peer.cpp\
+		../src/apic/c_persistence.cpp\
+		../src/apic/c_subscription.cpp\
+		../src/apic/c_transaction.cpp
 		
 OBJ = $(SRC:.cpp=.o)
 OUTDIR = ../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/lib
 INCLUDES = 	-I../public\
 			-I../public/cpp\
 			-I../public/c\
-			-I../src\
-			-I../src/cr
+			-I../src
 			
-CCFLAGS = -std=c++11 -Wall -fPIC $(CC_DBG_REL_OPT)
+CCFLAGS = -std=c++14 -Wall -fPIC $(CC_DBG_REL_OPT)
 CCC = g++
 
 .cpp.o:

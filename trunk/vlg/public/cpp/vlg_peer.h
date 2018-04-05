@@ -45,14 +45,12 @@ struct peer {
     bool is_create_persistent_schema();
     bool is_drop_existing_persistent_schema();
 
-    // CONFIG GETTERS
     PeerPersonality get_personality();
     sockaddr_in get_server_sockaddr();
     unsigned int get_server_transaction_service_executor_size();
     unsigned int get_server_subscription_service_executor_size();
     unsigned int get_client_transaction_service_executor_size();
 
-    // CONFIG SETTERS
     void set_personality(PeerPersonality);
     void set_server_address(const char *);
     void set_server_port(int);
@@ -96,18 +94,16 @@ struct peer {
     RetCode await_for_status_change(PeerStatus &peer_status,
                                     time_t sec = -1,
                                     long nsec = 0);
-    // SERVER-CONNECTIVITY
+
     incoming_connection_factory &get_incoming_connection_factory();
     void set_incoming_connection_factory(incoming_connection_factory &);
 
-    // ACTIONS
     RetCode start(int argc,
                   char *argv[],
                   bool peer_automa_on_new_thread);
 
     RetCode stop(bool force_disconnect = false);
 
-    // PERSISTENCE
     RetCode create_persistent_schema(PersistenceAlteringMode);
 
     RetCode nclass_create_persistent_schema(PersistenceAlteringMode mode,
@@ -130,12 +126,10 @@ struct peer {
                        PersistenceDeletionMode mode,
                        const nclass &in);
 
-    // DISTRIBUTION
     RetCode obj_distribute(SubscriptionEventType event_type,
                            Action action,
                            const nclass &in);
 
-    // PERSISTENCE + DISTRIBUTION
     RetCode obj_save_and_distribute(const nclass &in);
 
     RetCode obj_update_and_distribute(unsigned short nclass_key,
@@ -151,9 +145,9 @@ struct peer {
     /**
     @param incoming_connection the brand new incoming connection.
     @return default implementation always returns RetCode_OK,
-            so all incoming will be accepted.
+    so all incoming will be accepted.
     */
-    virtual RetCode accept_connection(connection &);
+    virtual RetCode on_incoming_connection(std::shared_ptr<incoming_connection> &);
 
     std::unique_ptr<peer_impl> impl_;
 };

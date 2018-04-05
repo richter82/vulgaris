@@ -336,28 +336,28 @@ typedef unsigned int time_stamp;
 //TEST REQUEST
 void build_PKT_TSTREQ(time_stamp tstamp,
                       unsigned int connid,
-                      vlg::g_bbuf *obb);
+                      g_bbuf *obb);
 
 //HEARTBEAT
 void build_PKT_HRTBET(time_stamp tstamp,
                       unsigned int connid,
-                      vlg::g_bbuf *obb);
+                      g_bbuf *obb);
 
 //CONNECTION REQUEST
 void build_PKT_CONREQ(unsigned short clihbt,
-                      vlg::g_bbuf *obb);
+                      g_bbuf *obb);
 
 //CONNECTION RESPONSE
 void build_PKT_CONRES(ConnectionResult conres,
                       ProtocolCode errcod,
                       unsigned short agrhbt,
                       unsigned int connid,
-                      vlg::g_bbuf *obb);
+                      g_bbuf *obb);
 
 //DISCONNECTED
 void build_PKT_DSCOND(ProtocolCode disres,
                       unsigned int connid,
-                      vlg::g_bbuf *obb);
+                      g_bbuf *obb);
 
 //TRANSACTION REQUEST
 void build_PKT_TXRQST(TransactionRequestType txtype,
@@ -367,7 +367,7 @@ void build_PKT_TXRQST(TransactionRequestType txtype,
                       Encode enctyp,
                       unsigned int nclsid,
                       unsigned int connid,
-                      vlg::g_bbuf *obb);
+                      g_bbuf *obb);
 
 //TRANSACTION RESPONSE
 void build_PKT_TXRESP(TransactionResult txresl,
@@ -376,7 +376,7 @@ void build_PKT_TXRESP(TransactionResult txresl,
                       bool rescls,
                       Encode enctyp,
                       unsigned int nclsid,
-                      vlg::g_bbuf *obb);
+                      g_bbuf *obb);
 
 //SUBSCRIPTION REQUEST
 void build_PKT_SBSREQ(SubscriptionType sbstyp,
@@ -389,14 +389,14 @@ void build_PKT_SBSREQ(SubscriptionType sbstyp,
                       unsigned int rqstid,
                       unsigned int tmstp0,
                       unsigned int tmstp1,
-                      vlg::g_bbuf *obb);
+                      g_bbuf *obb);
 
 //SUBSCRIPTION RESPONSE
 void build_PKT_SBSRES(SubscriptionResponse sbresl,
                       ProtocolCode vlgcod,
                       unsigned int rqstid,
                       unsigned int sbsrid,
-                      vlg::g_bbuf *obb);
+                      g_bbuf *obb);
 
 //SUBSCRIPTION EVENT
 void build_PKT_SBSEVT(unsigned int sbsrid,
@@ -406,22 +406,22 @@ void build_PKT_SBSEVT(unsigned int sbsrid,
                       unsigned int sevtid,
                       unsigned int tmstp0,
                       unsigned int tmstp1,
-                      vlg::g_bbuf *obb);
+                      g_bbuf *obb);
 
 //SUBSCRIPTION EVENT ACK
 void build_PKT_SBSACK(unsigned int sbsrid,
                       unsigned int sevtid,
-                      vlg::g_bbuf *obb);
+                      g_bbuf *obb);
 
 //SUBSCRIPTION STOP REQUEST
 void build_PKT_SBSTOP(unsigned int sbsrid,
-                      vlg::g_bbuf *obb);
+                      g_bbuf *obb);
 
 //SUBSCRIPTION STOP RESPONSE
 void build_PKT_SBSSPR(SubscriptionResponse sbresl,
                       ProtocolCode vlgcod,
                       unsigned int sbsrid,
-                      vlg::g_bbuf *obb);
+                      g_bbuf *obb);
 
 }
 

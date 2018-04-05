@@ -23,6 +23,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_peer_dyn", "test_peerd
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_smplmdl_dyn", "test_smplmdldyn.vcxproj", "{53A6320C-02A7-45CA-9333-493CF4CDB5C0}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_cpeer", "test_cpeer.vcxproj", "{E4A176B0-862C-4B40-9F73-76B3435279DD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -111,6 +113,14 @@ Global
 		{53A6320C-02A7-45CA-9333-493CF4CDB5C0}.Release|Win32.Build.0 = Release|Win32
 		{53A6320C-02A7-45CA-9333-493CF4CDB5C0}.Release|x64.ActiveCfg = Release|x64
 		{53A6320C-02A7-45CA-9333-493CF4CDB5C0}.Release|x64.Build.0 = Release|x64
+		{E4A176B0-862C-4B40-9F73-76B3435279DD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E4A176B0-862C-4B40-9F73-76B3435279DD}.Debug|Win32.Build.0 = Debug|Win32
+		{E4A176B0-862C-4B40-9F73-76B3435279DD}.Debug|x64.ActiveCfg = Debug|x64
+		{E4A176B0-862C-4B40-9F73-76B3435279DD}.Debug|x64.Build.0 = Debug|x64
+		{E4A176B0-862C-4B40-9F73-76B3435279DD}.Release|Win32.ActiveCfg = Release|Win32
+		{E4A176B0-862C-4B40-9F73-76B3435279DD}.Release|Win32.Build.0 = Release|Win32
+		{E4A176B0-862C-4B40-9F73-76B3435279DD}.Release|x64.ActiveCfg = Release|x64
+		{E4A176B0-862C-4B40-9F73-76B3435279DD}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

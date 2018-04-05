@@ -26,8 +26,8 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
 #ifdef __GNUG__
+#include <string.h>
 #include <errno.h>
 #include <stdarg.h>
 #define SOCKET int
@@ -498,35 +498,43 @@ typedef enum  {
 */
 #if defined(__cplusplus)
 struct tx_id {
-    explicit        tx_id();
+    explicit tx_id();
 #else
 typedef struct {
 #endif
-    unsigned int    txplid;
-    unsigned int    txsvid;
-    unsigned int    txcnid;
-    unsigned int    txprid;
+    unsigned int txplid;
+    unsigned int txsvid;
+    unsigned int txcnid;
+    unsigned int txprid;
 #if defined(__cplusplus)
 };
-typedef tx_id tx_id_wr;
 #else
-} tx_id_wr;
+} tx_id;
 #endif
 
 #if defined(__cplusplus)
-class nclass;
+struct nclass;
 struct nentity_desc;
 struct nentity_manager;
 struct peer;
 struct peer_impl;
-struct connection;
-struct connection_impl;
+struct outgoing_connection;
+struct incoming_connection;
+struct conn_impl;
+struct outgoing_connection_impl;
+struct incoming_connection_impl;
 struct incoming_connection_factory;
-struct transaction;
-struct transaction_impl;
+struct outgoing_transaction;
+struct incoming_transaction;
+struct tx_impl;
+struct outgoing_transaction_impl;
+struct incoming_transaction_impl;
 struct incoming_transaction_factory;
-struct subscription;
-struct subscription_impl;
+struct outgoing_subscription;
+struct incoming_subscription;
+struct sbs_impl;
+struct outgoing_subscription_impl;
+struct incoming_subscription_impl;
 struct subscription_event;
 struct subscription_event_impl;
 struct incoming_subscription_factory;
@@ -536,24 +544,35 @@ struct persistence_manager_impl;
 struct persistence_task;
 struct persistence_connection_pool;
 struct persistence_worker;
-class g_bbuf;
+struct g_bbuf;
+#else
+typedef struct nclass nclass;
+typedef struct shr_nclass shr_nclass;
+typedef struct own_nclass own_nclass;
+typedef struct key_desc key_desc;
+typedef struct member_desc member_desc;
+typedef struct nentity_desc nentity_desc;
+typedef struct nentity_manager nentity_manager;
+typedef struct peer peer;
+typedef struct own_peer own_peer;
+typedef struct outgoing_connection outgoing_connection;
+typedef struct own_outgoing_connection own_outgoing_connection;
+typedef struct incoming_connection incoming_connection;
+typedef struct shr_incoming_connection shr_incoming_connection;
+typedef struct outgoing_transaction outgoing_transaction;
+typedef struct own_outgoing_transaction own_outgoing_transaction;
+typedef struct incoming_transaction incoming_transaction;
+typedef struct shr_incoming_transaction shr_incoming_transaction;
+typedef struct outgoing_subscription outgoing_subscription;
+typedef struct own_outgoing_subscription own_outgoing_subscription;
+typedef struct incoming_subscription incoming_subscription;
+typedef struct shr_incoming_subscription shr_incoming_subscription;
+typedef struct subscription_event subscription_event;
+typedef struct persistence_manager persistence_manager;
+typedef struct persistence_driver persistence_driver;
+typedef struct persistence_connection persistence_connection;
+typedef struct persistence_query persistence_query;
 #endif
-typedef void *persistence_manager_wr;
-typedef void *persistence_connection_wr;
-typedef void *persistence_query_wr;
-typedef void *persistence_driver_impl_wr;
-typedef void *peer_wr;
-typedef void *connection_wr;
-typedef void *transaction_wr;
-typedef void *subscription_wr;
-typedef void *subscription_event_wr;
-typedef void *member_desc_wr;
-typedef void *nentity_desc_wr;
-typedef void *key_desc_wr;
-typedef void *nentity_manager_wr;
-typedef void *vlg_logger_wr;
-typedef void *nclass_wr;
-typedef void *ascii_str_wr;
 
 #if defined(__cplusplus)
 }
@@ -565,11 +584,6 @@ extern "C" {
 namespace vlg {
 #endif
 
-/**
-@param type_size
-@param copy
-@return
-*/
 typedef void *(*nclass_alloc)();
 
 #if defined(__cplusplus)

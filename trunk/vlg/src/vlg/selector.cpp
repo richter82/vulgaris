@@ -25,19 +25,19 @@
 
 namespace vlg {
 
-selector_event::selector_event(VLG_SELECTOR_Evt evt, connection *conn) :
+selector_event::selector_event(VLG_SELECTOR_Evt evt, conn_impl *conn) :
     evt_(evt),
-    con_type_(ConnectionType_OUTGOING),
+    con_type_(conn ? conn->con_type_ : ConnectionType_UNDEFINED),
     conn_(conn),
-    socket_(conn ? conn->get_socket() : INVALID_SOCKET)
+    socket_(conn ? conn->socket_ : INVALID_SOCKET)
 {
     memset(&saddr_, 0, sizeof(sockaddr_in));
 }
 
-selector_event::selector_event(VLG_SELECTOR_Evt evt, std::shared_ptr<connection> &conn) :
+selector_event::selector_event(VLG_SELECTOR_Evt evt, std::shared_ptr<incoming_connection> &conn) :
     evt_(evt),
     con_type_(ConnectionType_INGOING),
-    conn_(conn.get()),
+    conn_(conn.get()->impl_.get()),
     inco_conn_(conn),
     socket_(conn ? conn->get_socket() : INVALID_SOCKET)
 {
@@ -415,18 +415,18 @@ RetCode selector::process_outg_sock_outg_events()
         if(FD_ISSET(it->first, &write_FDs_)) {
             IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d][is write-pending]", __func__,
                       it->first,
-                      it->second->impl_->connid_))
+                      it->second->connid_))
             g_bbuf *sending_pkt = nullptr;
-            if(it->second->impl_->pkt_sending_q_.get(&sending_pkt)) {
+            if(it->second->pkt_sending_q_.get(&sending_pkt)) {
                 IFLOG(cri(TH_ID, LS_CLO "[reading from packet queue]", __func__))
                 SET_ERROR_AND_RETURRetCodeKO_ACT
             }
             //send data to socket.
-            if((rcode = it->second->impl_->send_single_pkt(sending_pkt))) {
+            if((rcode = it->second->send_single_pkt(sending_pkt))) {
                 IFLOG(err(TH_ID, LS_TRL "[socket:%d, connid:%d][failed sending packet]",
                           __func__,
                           it->first,
-                          it->second->get_id()))
+                          it->second->connid_))
             }
             delete sending_pkt;
             if(!(--sel_res_)) {
@@ -437,7 +437,7 @@ RetCode selector::process_outg_sock_outg_events()
         if(FD_ISSET(it->first, &excep_FDs_)) {
             IFLOG(wrn(TH_ID, LS_TRL "[socket:%d, connid:%d][writepending socket is in exception]", __func__,
                       it->first,
-                      it->second->get_id()))
+                      it->second->connid_))
             if(!(--sel_res_)) {
                 break;
             }
@@ -459,21 +459,21 @@ RetCode selector::process_outg_sock_inco_events()
             //first: check if it is readable.
             if(FD_ISSET(it->first, &read_FDs_)) {
                 IFLOG(trc(TH_ID, LS_TRL"[socket:%d][early-outgoing socket became readable]", __func__, it->first))
-                if(it->second->get_status() != ConnectionStatus_ESTABLISHED &&
-                        it->second->get_status() != ConnectionStatus_PROTOCOL_HANDSHAKE &&
-                        it->second->get_status() != ConnectionStatus_AUTHENTICATED) {
+                if(it->second->status_ != ConnectionStatus_ESTABLISHED &&
+                        it->second->status_ != ConnectionStatus_PROTOCOL_HANDSHAKE &&
+                        it->second->status_ != ConnectionStatus_AUTHENTICATED) {
                     IFLOG(trc(TH_ID, LS_TRL"[socket:%d, connid:%d, status:%d][not eligible for recv()]", __func__,
                               it->first,
                               connid,
-                              it->second->get_status()))
+                              it->second->status_))
                     break;
                 }
                 std::unique_ptr<vlg_hdr_rec> pkt_hdr(new vlg_hdr_rec());
                 std::unique_ptr<g_bbuf> pkt_body(new g_bbuf());
                 //read data from socket.
-                if(!(rcode = it->second->impl_->recv_single_pkt(pkt_hdr.get(), pkt_body.get()))) {
+                if(!(rcode = it->second->recv_single_pkt(pkt_hdr.get(), pkt_body.get()))) {
                     pkt_body->flip();
-                    task = new peer_recv_task_outg_conn(*it->second, pkt_hdr, pkt_body);
+                    task = new peer_recv_task_outg_conn(*it->second->opubl_, pkt_hdr, pkt_body);
                     if((sub_res = outg_exec_srv_.submit(task))) {
                         IFLOG(cri(TH_ID, LS_TRL "[socket:%d][submit failed][res:%d]",
                                   __func__,
@@ -498,29 +498,29 @@ RetCode selector::process_outg_sock_inco_events()
     if(sel_res_) {
         for(auto it = outg_connid_conn_map_.begin(); it != outg_connid_conn_map_.end(); it++) {
             //first: check if it is readable.
-            if(FD_ISSET(it->second->get_socket(), &read_FDs_)) {
+            if(FD_ISSET(it->second->socket_, &read_FDs_)) {
                 IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d][client-side socket became readable]", __func__,
-                          it->second->get_socket(),
+                          it->second->socket_,
                           connid))
-                if(it->second->get_status() != ConnectionStatus_ESTABLISHED &&
-                        it->second->get_status() != ConnectionStatus_PROTOCOL_HANDSHAKE &&
-                        it->second->get_status() != ConnectionStatus_AUTHENTICATED) {
+                if(it->second->status_ != ConnectionStatus_ESTABLISHED &&
+                        it->second->status_ != ConnectionStatus_PROTOCOL_HANDSHAKE &&
+                        it->second->status_ != ConnectionStatus_AUTHENTICATED) {
                     IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d, status:%d][not eligible for recv()]", __func__,
-                              it->second->get_socket(),
+                              it->second->socket_,
                               connid,
-                              it->second->get_status()))
+                              it->second->status_))
                     break;
                 }
                 std::unique_ptr<vlg_hdr_rec> pkt_hdr(new vlg_hdr_rec());
                 std::unique_ptr<g_bbuf> pkt_body(new g_bbuf());
                 //read data from socket.
-                if(!(rcode = it->second->impl_->recv_single_pkt(pkt_hdr.get(), pkt_body.get()))) {
+                if(!(rcode = it->second->recv_single_pkt(pkt_hdr.get(), pkt_body.get()))) {
                     pkt_body->flip();
-                    task = new peer_recv_task_outg_conn(*it->second, pkt_hdr, pkt_body);
+                    task = new peer_recv_task_outg_conn(*it->second->opubl_, pkt_hdr, pkt_body);
                     if((sub_res = outg_exec_srv_.submit(task))) {
                         IFLOG(cri(TH_ID, LS_TRL "[socket:%d, connid:%d][submit failed][res:%d]",
                                   __func__,
-                                  it->second->get_socket(),
+                                  it->second->socket_,
                                   connid,
                                   sub_res))
                     }
@@ -530,8 +530,8 @@ RetCode selector::process_outg_sock_inco_events()
                 }
             }
             //second: check if it is in exception.
-            if(FD_ISSET(it->second->get_socket(), &excep_FDs_)) {
-                IFLOG(wrn(TH_ID, LS_TRL "[socket:%d][client-side socket is in exception]", __func__, it->second->get_socket()))
+            if(FD_ISSET(it->second->socket_, &excep_FDs_)) {
+                IFLOG(wrn(TH_ID, LS_TRL "[socket:%d][client-side socket is in exception]", __func__, it->second->socket_))
                 if(!(--sel_res_)) {
                     break;
                 }
@@ -544,7 +544,7 @@ RetCode selector::process_outg_sock_inco_events()
 
 inline RetCode selector::consume_inco_sock_events()
 {
-    std::shared_ptr<connection> new_conn_shp;
+    std::shared_ptr<incoming_connection> new_conn_shp;
     unsigned int new_connid = 0;
     if(FD_ISSET(srv_listen_socket_, &read_FDs_)) {
         if(peer_.next_connid(new_connid)) {
@@ -629,17 +629,17 @@ RetCode selector::FDSET_write_outgoing_pending_sockets()
 {
     auto it = write_pending_sock_outg_conn_map_.begin();
     while(it != write_pending_sock_outg_conn_map_.end()) {
-        if(it->second->impl_->pkt_sending_q_.size()) {
+        if(it->second->pkt_sending_q_.size()) {
             IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d][owp+]", __func__,
                       it->first,
-                      it->second->get_id()))
+                      it->second->connid_))
             FD_SET(it->first, &write_FDs_);
             nfds_ = ((int)it->first > nfds_) ? (int)it->first : nfds_;
             it++;
         } else {
             IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d][owp-]", __func__,
                       it->first,
-                      it->second->get_id()))
+                      it->second->connid_))
             it = write_pending_sock_outg_conn_map_.erase(it);
         }
     }
@@ -693,61 +693,61 @@ inline RetCode selector::FDSET_outgoing_sockets()
 {
     auto it_1 = outg_early_sock_conn_map_.begin();
     while(it_1 != outg_early_sock_conn_map_.end()) {
-        if(it_1->second->get_status() == ConnectionStatus_ESTABLISHED ||
-                it_1->second->get_status() == ConnectionStatus_PROTOCOL_HANDSHAKE ||
-                it_1->second->get_status() == ConnectionStatus_AUTHENTICATED) {
+        if(it_1->second->status_ == ConnectionStatus_ESTABLISHED ||
+                it_1->second->status_ == ConnectionStatus_PROTOCOL_HANDSHAKE ||
+                it_1->second->status_ == ConnectionStatus_AUTHENTICATED) {
             IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d][early][orp+]", __func__,
-                      it_1->second->get_socket(),
-                      it_1->second->get_id()))
-            FD_SET(it_1->second->get_socket(), &read_FDs_);
-            FD_SET(it_1->second->get_socket(), &excep_FDs_);
-            nfds_ = ((int)it_1->second->get_socket() > nfds_) ? (int)it_1->second->get_socket() : nfds_;
+                      it_1->second->socket_,
+                      it_1->second->connid_))
+            FD_SET(it_1->second->socket_, &read_FDs_);
+            FD_SET(it_1->second->socket_, &excep_FDs_);
+            nfds_ = ((int)it_1->second->socket_ > nfds_) ? (int)it_1->second->socket_ : nfds_;
             it_1++;
         } else {
             IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d, status:%d][early][[orp-]",
                       __func__,
-                      it_1->second->get_socket(),
-                      it_1->second->get_id(),
-                      it_1->second->get_status()))
+                      it_1->second->socket_,
+                      it_1->second->connid_,
+                      it_1->second->status_))
             it_1 = outg_early_sock_conn_map_.erase(it_1);
-            if(it_1->second->get_status() != ConnectionStatus_DISCONNECTED) {
-                it_1->second->impl_->socket_shutdown();
+            if(it_1->second->status_ != ConnectionStatus_DISCONNECTED) {
+                it_1->second->socket_shutdown();
             }
-            if(write_pending_sock_outg_conn_map_.erase(it_1->second->get_socket())) {
+            if(write_pending_sock_outg_conn_map_.erase(it_1->second->socket_)) {
                 IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d][early][owp-]",
                           __func__,
-                          it_1->second->get_socket(),
-                          it_1->second->get_id()))
+                          it_1->second->socket_,
+                          it_1->second->connid_))
             }
         }
     }
     auto it_2 = outg_connid_conn_map_.begin();
     while(it_2 != outg_connid_conn_map_.end()) {
-        if(it_2->second->get_status() == ConnectionStatus_ESTABLISHED ||
-                it_2->second->get_status() == ConnectionStatus_PROTOCOL_HANDSHAKE ||
-                it_2->second->get_status() == ConnectionStatus_AUTHENTICATED) {
+        if(it_2->second->status_ == ConnectionStatus_ESTABLISHED ||
+                it_2->second->status_ == ConnectionStatus_PROTOCOL_HANDSHAKE ||
+                it_2->second->status_ == ConnectionStatus_AUTHENTICATED) {
             IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d][orp+]",
                       __func__,
-                      it_2->second->get_socket(),
-                      it_2->second->get_id()))
-            FD_SET(it_2->second->get_socket(), &read_FDs_);
-            FD_SET(it_2->second->get_socket(), &excep_FDs_);
-            nfds_ = ((int)it_2->second->get_socket() > nfds_) ? (int)it_2->second->get_socket() : nfds_;
+                      it_2->second->socket_,
+                      it_2->second->connid_))
+            FD_SET(it_2->second->socket_, &read_FDs_);
+            FD_SET(it_2->second->socket_, &excep_FDs_);
+            nfds_ = ((int)it_2->second->socket_ > nfds_) ? (int)it_2->second->socket_ : nfds_;
             it_2++;
         } else {
             IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d, status:%d][orp-]",
                       __func__,
-                      it_2->second->get_socket(),
-                      it_2->second->get_id(),
-                      it_2->second->get_status()))
-            if(it_2->second->get_status() != ConnectionStatus_DISCONNECTED) {
-                it_2->second->impl_->socket_shutdown();
+                      it_2->second->socket_,
+                      it_2->second->connid_,
+                      it_2->second->status_))
+            if(it_2->second->status_ != ConnectionStatus_DISCONNECTED) {
+                it_2->second->socket_shutdown();
             }
-            if(write_pending_sock_outg_conn_map_.erase(it_2->second->get_socket())) {
+            if(write_pending_sock_outg_conn_map_.erase(it_2->second->socket_)) {
                 IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d][owp-]",
                           __func__,
-                          it_2->second->get_socket(),
-                          it_2->second->get_id()))
+                          it_2->second->socket_,
+                          it_2->second->connid_))
             }
             it_2 = outg_connid_conn_map_.erase(it_2);
         }
@@ -759,20 +759,20 @@ inline RetCode selector::manage_disconnect_conn(selector_event *conn_evt)
 {
     RetCode rcode = RetCode_OK;
     g_bbuf *sending_pkt = nullptr;
-    if(conn_evt->conn_->impl_->pkt_sending_q_.get(&sending_pkt)) {
+    if(conn_evt->conn_->pkt_sending_q_.get(&sending_pkt)) {
         IFLOG(cri(TH_ID, LS_CLO "[reading from packet queue]", __func__))
         SET_ERROR_AND_RETURRetCodeKO_ACT
     }
-    if((rcode = conn_evt->conn_->impl_->send_single_pkt(sending_pkt))) {
+    if((rcode = conn_evt->conn_->send_single_pkt(sending_pkt))) {
         IFLOG(err(TH_ID, LS_TRL "[socket:%d][failed sending disconnection packet]",
                   __func__,
-                  conn_evt->conn_->get_socket()))
+                  conn_evt->conn_->socket_))
         delete sending_pkt;
         return RetCode_KO;
     }
     delete sending_pkt;
-    conn_evt->conn_->impl_->socket_shutdown();
-    conn_evt->conn_->impl_->notify_disconnection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
+    conn_evt->conn_->socket_shutdown();
+    conn_evt->conn_->notify_disconnection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
     return rcode;
 }
 
@@ -781,58 +781,56 @@ inline RetCode selector::add_early_outg_conn(selector_event *conn_evt)
 {
     RetCode rcode = RetCode_OK;
     g_bbuf *sending_pkt = nullptr;
-    if((rcode = conn_evt->conn_->impl_->establish_connection(conn_evt->saddr_))) {
-        if(conn_evt->conn_->impl_->pkt_sending_q_.get(&sending_pkt)) {
+    if((rcode = conn_evt->conn_->establish_connection(conn_evt->saddr_))) {
+        if(conn_evt->conn_->pkt_sending_q_.get(&sending_pkt)) {
             IFLOG(cri(TH_ID, LS_CLO "[reading from packet queue]", __func__))
             SET_ERROR_AND_RETURRetCodeKO_ACT
         }
         delete sending_pkt;
         return rcode;
     }
-    if(conn_evt->conn_->impl_->set_socket_blocking_mode(false)) {
+    if(conn_evt->conn_->set_socket_blocking_mode(false)) {
         IFLOG(cri(TH_ID, LS_CLO "[setting socket not blocking]", __func__))
         SET_ERROR_AND_RETURRetCodeKO_ACT
     }
-    SOCKET new_conn_socket = conn_evt->conn_->get_socket();
-    if(conn_evt->conn_->impl_->pkt_sending_q_.get(&sending_pkt)) {
+    if(conn_evt->conn_->pkt_sending_q_.get(&sending_pkt)) {
         IFLOG(cri(TH_ID, LS_CLO "[reading from packet queue]", __func__))
         SET_ERROR_AND_RETURRetCodeKO_ACT
     }
-    if((rcode = conn_evt->conn_->impl_->send_single_pkt(sending_pkt))) {
+    if((rcode = conn_evt->conn_->send_single_pkt(sending_pkt))) {
         IFLOG(err(TH_ID, LS_TRL "[socket:%d][failed sending conn-req packet]",
                   __func__,
-                  new_conn_socket))
+                  conn_evt->conn_->socket_))
         delete sending_pkt;
         return rcode;
     }
     delete sending_pkt;
-    outg_early_sock_conn_map_[new_conn_socket] = conn_evt->conn_;
+    outg_early_sock_conn_map_[conn_evt->conn_->socket_] = conn_evt->conn_;
     return rcode;
 }
 
-inline RetCode selector::promote_early_outg_conn(connection &conn)
+inline RetCode selector::promote_early_outg_conn(conn_impl *conn)
 {
-    outg_early_sock_conn_map_.erase(conn.get_socket());
-    outg_connid_conn_map_[conn.get_id()] = &conn;
+    outg_early_sock_conn_map_.erase(conn->socket_);
+    outg_connid_conn_map_[conn->connid_] = conn;
     return RetCode_OK;
 }
 
-inline RetCode selector::delete_early_outg_conn(connection &conn)
+inline RetCode selector::delete_early_outg_conn(conn_impl *conn)
 {
-    outg_early_sock_conn_map_.erase(conn.get_socket());
+    outg_early_sock_conn_map_.erase(conn->socket_);
     return RetCode_OK;
 }
 
 inline bool selector::is_still_valid_connection(const selector_event *evt)
 {
-    unsigned int connid = evt->conn_->get_id();
     if(evt->con_type_ == ConnectionType_INGOING) {
-        return (inco_connid_conn_map_.find(connid) != inco_connid_conn_map_.end());
+        return (inco_connid_conn_map_.find(evt->conn_->connid_) != inco_connid_conn_map_.end());
     } else {
         if(evt->evt_ == VLG_SELECTOR_Evt_ConnReqAccepted || evt->evt_ == VLG_SELECTOR_Evt_ConnReqRefused) {
             return (outg_early_sock_conn_map_.find(evt->socket_) != outg_early_sock_conn_map_.end());
         } else {
-            return (outg_connid_conn_map_.find(connid) != outg_connid_conn_map_.end());
+            return (outg_connid_conn_map_.find(evt->conn_->connid_) != outg_connid_conn_map_.end());
         }
     }
 }
@@ -852,7 +850,7 @@ RetCode selector::consume_asynch_events()
                   __func__,
                   conn_evt->evt_,
                   conn_evt->socket_,
-                  conn_evt->conn_ ? conn_evt->conn_->get_id() : -1))
+                  conn_evt->conn_ ? conn_evt->conn_->connid_ : -1))
         if(conn_evt->evt_ != VLG_SELECTOR_Evt_Interrupt) {
             /*check if we still have connection*/
             if(conn_evt->evt_ != VLG_SELECTOR_Evt_ConnectRequest) {
@@ -874,10 +872,10 @@ RetCode selector::consume_asynch_events()
                         manage_disconnect_conn(conn_evt);
                         break;
                     case VLG_SELECTOR_Evt_ConnReqAccepted:    /*can originate in client peer only*/
-                        promote_early_outg_conn(*conn_evt->conn_);
+                        promote_early_outg_conn(conn_evt->conn_);
                         break;
                     case VLG_SELECTOR_Evt_ConnReqRefused:     /*can originate in client peer only*/
-                        delete_early_outg_conn(*conn_evt->conn_);
+                        delete_early_outg_conn(conn_evt->conn_);
                         break;
                     case VLG_SELECTOR_Evt_Inactivity:         /*can originate in both peer*/
                         //@todo
@@ -1005,16 +1003,16 @@ RetCode selector::stop_and_clean()
     }
     if(peer_.personality_ == PeerPersonality_PURE_CLIENT || peer_.personality_ == PeerPersonality_BOTH) {
         std::for_each(outg_connid_conn_map_.begin(), outg_connid_conn_map_.end(), [](auto &it) {
-            if(it.second->get_status() != ConnectionStatus_DISCONNECTED) {
-                it.second->impl_->socket_shutdown();
-                it.second->impl_->notify_disconnection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
+            if(it.second->status_ != ConnectionStatus_DISCONNECTED) {
+                it.second->socket_shutdown();
+                it.second->notify_disconnection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
             }
         });
         outg_connid_conn_map_.clear();
         std::for_each(outg_early_sock_conn_map_.begin(), outg_early_sock_conn_map_.end(), [](auto &it) {
-            if(it.second->get_status() != ConnectionStatus_DISCONNECTED) {
-                it.second->impl_->socket_shutdown();
-                it.second->impl_->notify_disconnection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
+            if(it.second->status_ != ConnectionStatus_DISCONNECTED) {
+                it.second->socket_shutdown();
+                it.second->notify_disconnection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
             }
         });
         outg_early_sock_conn_map_.clear();

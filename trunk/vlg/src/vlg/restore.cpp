@@ -45,7 +45,7 @@ inline RetCode FldSeqA_Restore(void *entity_ptr,
                                const nentity_manager *nem,
                                Encode enctyp,
                                const member_desc *mmbrd,
-                               vlg::g_bbuf *ibb)
+                               g_bbuf *ibb)
 {
     size_t array_sz = 0, start_pos = 0;
     unsigned short array_idx = 0;
@@ -53,7 +53,7 @@ inline RetCode FldSeqA_Restore(void *entity_ptr,
     //read current array len
     SF_GBB_READ_H(ibb, read_uint_to_sizet(&array_sz), return gbb_read_res)
     if(ibb->available_read() < array_sz) {
-        return vlg::RetCode_MALFORM;
+        return RetCode_MALFORM;
     }
     //we set starting point in the buffer.
     start_pos = ibb->position();
@@ -63,7 +63,7 @@ inline RetCode FldSeqA_Restore(void *entity_ptr,
             //read elem idx.
             SF_GBB_READ_H(ibb, read_ushort(&array_idx), return gbb_read_res)
             if(mmbrd->get_field_nmemb() < array_idx) {
-                return vlg::RetCode_MALFORM;
+                return RetCode_MALFORM;
             }
             //compute array fld offset
             elem_cptr = reinterpret_cast<char *>(entity_ptr);
@@ -77,7 +77,7 @@ inline RetCode FldSeqA_Restore(void *entity_ptr,
             //read elem idx.
             SF_GBB_READ_H(ibb, read_ushort(&array_idx), return gbb_read_res)
             if(mmbrd->get_field_nmemb() < array_idx) {
-                return vlg::RetCode_MALFORM;
+                return RetCode_MALFORM;
             }
             //compute array fld offset
             elem_cptr = reinterpret_cast<char *>(entity_ptr);
@@ -85,7 +85,7 @@ inline RetCode FldSeqA_Restore(void *entity_ptr,
             SF_GBB_READ_H(ibb, read(mmbrd->get_field_type_size(), elem_cptr), return gbb_read_res)
         }
     }
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
 
@@ -93,7 +93,7 @@ inline RetCode FldSeqA_Restore(void *entity_ptr,
 
 RetCode nclass::restore(const nentity_manager *nem,
                         Encode enctyp,
-                        vlg::g_bbuf *ibb)
+                        g_bbuf *ibb)
 {
     size_t obj_sz = 0, fld_sz = 0, start_pos = 0;
     unsigned short fld_idx = 0;
@@ -103,7 +103,7 @@ RetCode nclass::restore(const nentity_manager *nem,
             //read class obj len
             SF_GBB_READ_H(ibb, read_uint_to_sizet(&obj_sz), return gbb_read_res)
             if(ibb->available_read() < obj_sz) {
-                return vlg::RetCode_MALFORM;
+                return RetCode_MALFORM;
             }
             //we set starting point in the buffer.
             start_pos = ibb->position();
@@ -114,7 +114,7 @@ RetCode nclass::restore(const nentity_manager *nem,
                 //get member descriptor.
                 const member_desc *mmbrd = get_nentity_descriptor().get_member_desc_by_id(fld_idx);
                 if(!mmbrd) {
-                    return vlg::RetCode_MALFORM;
+                    return RetCode_MALFORM;
                 }
                 //compute fld offset
                 fld_cptr = reinterpret_cast<char *>(this);
@@ -126,7 +126,7 @@ RetCode nclass::restore(const nentity_manager *nem,
                         //read string len.
                         SF_GBB_READ_H(ibb, read_uint_to_sizet(&fld_sz), return gbb_read_res)
                         if(mmbrd->get_field_nmemb() < fld_sz) {
-                            return vlg::RetCode_MALFORM;
+                            return RetCode_MALFORM;
                         }
                         SF_GBB_READ_H(ibb, read(fld_sz, fld_cptr), return gbb_read_res)
                     } else {
@@ -159,15 +159,15 @@ RetCode nclass::restore(const nentity_manager *nem,
                             }
                             break;
                         default:
-                            return vlg::RetCode_MALFORM;
+                            return RetCode_MALFORM;
                     }
                 }
             }
             break;
         default:
-            return vlg::RetCode_UNSP;
+            return RetCode_UNSP;
     }
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
 }

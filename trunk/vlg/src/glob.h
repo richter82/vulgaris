@@ -36,7 +36,6 @@
 #include "vlg/cfg.h"
 #include "vlg/bbuf.h"
 #include "vlg/concurr.h"
-
 #include "vlg/proto.h"
 
 #include "vlg_model.h"
@@ -75,6 +74,7 @@
 #define VLG_TK_COMMENT      "#"
 #define VLG_MDL_NAME_LEN    256
 
+#define LS_WEL "WL|"
 #define LS_EMP "  |"
 #define LS_CTR "-C|%s"
 #define LS_DTR "~D|%s"
@@ -152,9 +152,9 @@ void *grow_buff_or_die(void *buffer,
                        size_t amount);
 
 const extern std_shared_ptr_obj_mng<nclass> ncls_std_shp_omng;
-const extern std_shared_ptr_obj_mng<connection> conn_std_shp_omng;
-const extern std_shared_ptr_obj_mng<transaction> tx_std_shp_omng;
-const extern std_shared_ptr_obj_mng<subscription> sbs_std_shp_omng;
+const extern std_shared_ptr_obj_mng<incoming_connection> conn_std_shp_omng;
+const extern std_shared_ptr_obj_mng<incoming_transaction> tx_std_shp_omng;
+const extern std_shared_ptr_obj_mng<incoming_subscription> sbs_std_shp_omng;
 const extern std_shared_ptr_obj_mng<subscription_event> sbse_std_shp_omng;
 
 extern logger *v_log_;

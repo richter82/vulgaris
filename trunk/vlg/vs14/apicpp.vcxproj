@@ -20,7 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\public\cpp\vlg_connection.h" />
-    <ClInclude Include="..\public\cpp\vlg_drv_sqlite.h" />
     <ClInclude Include="..\public\cpp\vlg_logger.h" />
     <ClInclude Include="..\public\cpp\vlg_model.h" />
     <ClInclude Include="..\public\cpp\vlg_peer.h" />
@@ -31,7 +30,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\apicpp\connection.cpp" />
-    <ClCompile Include="..\src\apicpp\model.cpp" />
     <ClCompile Include="..\src\apicpp\peer.cpp" />
     <ClCompile Include="..\src\apicpp\persistence.cpp" />
     <ClCompile Include="..\src\apicpp\subscription.cpp" />

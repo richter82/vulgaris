@@ -37,7 +37,7 @@ struct acceptor {
     RetCode set_sockaddr_in(sockaddr_in &serv_sockaddr_in);
     RetCode create_server_socket(SOCKET &serv_socket);
     RetCode accept(unsigned int new_connid,
-                   std::shared_ptr<connection> &new_connection);
+                   std::shared_ptr<incoming_connection> &new_connection);
 
     peer_impl &peer_;
     SOCKET serv_socket_;

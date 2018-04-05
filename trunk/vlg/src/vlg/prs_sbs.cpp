@@ -50,19 +50,19 @@ bool peer_enum_em_classes_create_schema(const nentity_desc &nentity_desc,
             } else {
                 IFLOG(wrn(TH_ID,LS_TRL "[no available persistence connection for nclass_id:%d]", __func__,
                           nentity_desc.get_nclass_id()))
-                pud->res = vlg::RetCode_KO;
+                pud->res = RetCode_KO;
             }
         } else {
             IFLOG(wrn(TH_ID,LS_TRL "[no available persistence driver for nclass_id:%d]", __func__,
                       nentity_desc.get_nclass_id()))
-            pud->res = vlg::RetCode_KO;
+            pud->res = RetCode_KO;
         }
         if(pud->res) {
             IFLOG(wrn(TH_ID,LS_TRL "[failed to create persistence schema for nclass_id:%d][res:%d]",
                       __func__,
                       nentity_desc.get_nclass_id(),
                       pud->res))
-            if(pud->res != vlg::RetCode_DBOPFAIL) {
+            if(pud->res != RetCode_DBOPFAIL) {
                 //if it is worst than RetCode_DBOPFAIL we break;
                 return false;
             }
@@ -76,12 +76,12 @@ RetCode peer_impl::create_persistent_schema(PersistenceAlteringMode mode)
     IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO NOT_PERS_ENBL_PEER, __func__))
-        return vlg::RetCode_KO;
+        return RetCode_KO;
     }
     SPC_REC ud;
     ud.peer = this;
     ud.mode = mode;
-    ud.res = vlg::RetCode_OK;
+    ud.res = RetCode_OK;
     nem_.enum_nclass_descriptors(peer_enum_em_classes_create_schema, &ud);
     IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, ud.res))
     return ud.res;
@@ -93,9 +93,9 @@ RetCode peer_impl::nclass_create_persistent_schema(PersistenceAlteringMode mode,
     IFLOG(trc(TH_ID, LS_OPN "[mode:%d, nclass_id:%d]", __func__, mode, nclass_id))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO NOT_PERS_ENBL_PEER, __func__))
-        return vlg::RetCode_KO;
+        return RetCode_KO;
     }
-    RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = RetCode_OK;
     const nentity_desc *nclass_desc = nem_.get_nentity_descriptor(nclass_id);
     if(nclass_desc) {
         if(nclass_desc->is_persistent()) {
@@ -108,19 +108,19 @@ RetCode peer_impl::nclass_create_persistent_schema(PersistenceAlteringMode mode,
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "[no available persistence-connection for nclass_id:%d]", __func__, nclass_id))
-                    rcode = vlg::RetCode_KO;
+                    rcode = RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "[no available persistence-driver for nclass_id:%d]", __func__, nclass_id))
-                rcode = vlg::RetCode_KO;
+                rcode = RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "[nclass is not persistent][nclass_id:%u]", __func__, nclass_id))
-            rcode = vlg::RetCode_KO;
+            rcode = RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "[nclass descriptor not found][nclass_id:%u]", __func__, nclass_id))
-        rcode = vlg::RetCode_KO;
+        rcode = RetCode_KO;
     }
     IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
@@ -134,9 +134,9 @@ RetCode peer_impl::obj_load(unsigned short key,
     IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO NOT_PERS_ENBL_PEER, __func__))
-        return vlg::RetCode_KO;
+        return RetCode_KO;
     }
-    RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = RetCode_OK;
     unsigned int nclass_id = in_out.get_id();
     const nentity_desc *nclass_desc = nem_.get_nentity_descriptor(nclass_id);
     if(nclass_desc) {
@@ -148,19 +148,19 @@ RetCode peer_impl::obj_load(unsigned short key,
                     rcode = conn->load_entity(key, nem_, ts0_out, ts1_out, in_out);
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "[no available persistence-connection for nclass_id:%d]", __func__, nclass_id))
-                    rcode = vlg::RetCode_KO;
+                    rcode = RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "[no available persistence-driver for nclass_id:%d]", __func__, nclass_id))
-                rcode = vlg::RetCode_KO;
+                rcode = RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "[nclass is not persistent][nclass_id:%u]", __func__, nclass_id))
-            rcode = vlg::RetCode_KO;
+            rcode = RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "[nclass descriptor not found][nclass_id:%u]", __func__, nclass_id))
-        rcode = vlg::RetCode_KO;
+        rcode = RetCode_KO;
     }
     IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
@@ -171,9 +171,9 @@ RetCode peer_impl::obj_save(const nclass &in)
     IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO NOT_PERS_ENBL_PEER, __func__))
-        return vlg::RetCode_KO;
+        return RetCode_KO;
     }
-    RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = RetCode_OK;
     per_nclass_id_conn_set *sdr = nullptr;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in.get_id();
@@ -192,19 +192,19 @@ RetCode peer_impl::obj_save(const nclass &in)
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "[no available persistence-connection for nclass_id:%d]", __func__, nclass_id))
-                    rcode = vlg::RetCode_KO;
+                    rcode = RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "[no available persistence-driver for nclass_id:%d]", __func__, nclass_id))
-                rcode = vlg::RetCode_KO;
+                rcode = RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "[nclass is not persistent][nclass_id:%u]", __func__, nclass_id))
-            rcode = vlg::RetCode_KO;
+            rcode = RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "[nclass descriptor not found][nclass_id:%u]", __func__, nclass_id))
-        rcode = vlg::RetCode_KO;
+        rcode = RetCode_KO;
     }
     IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
@@ -216,9 +216,9 @@ RetCode peer_impl::obj_update(unsigned short key,
     IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO NOT_PERS_ENBL_PEER, __func__))
-        return vlg::RetCode_KO;
+        return RetCode_KO;
     }
-    RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = RetCode_OK;
     per_nclass_id_conn_set *sdr = nullptr;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in.get_id();
@@ -237,19 +237,19 @@ RetCode peer_impl::obj_update(unsigned short key,
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "[no available persistence-connection for nclass_id:%d]", __func__, nclass_id))
-                    rcode = vlg::RetCode_KO;
+                    rcode = RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "[no available persistence-driver for nclass_id:%d]", __func__, nclass_id))
-                rcode = vlg::RetCode_KO;
+                rcode = RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "[nclass is not persistent][nclass_id:%u]", __func__, nclass_id))
-            rcode = vlg::RetCode_KO;
+            rcode = RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "[nclass descriptor not found][nclass_id:%u]", __func__, nclass_id))
-        rcode = vlg::RetCode_KO;
+        rcode = RetCode_KO;
     }
     IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
@@ -261,9 +261,9 @@ RetCode peer_impl::obj_update_or_save(unsigned short key,
     IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO NOT_PERS_ENBL_PEER, __func__))
-        return vlg::RetCode_KO;
+        return RetCode_KO;
     }
-    RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = RetCode_OK;
     unsigned int ts0 = 0, ts1 = 0;
     per_nclass_id_conn_set *sdr = nullptr;
     unsigned int nclass_id = in.get_id();
@@ -282,19 +282,19 @@ RetCode peer_impl::obj_update_or_save(unsigned short key,
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "[no available persistence-connection for nclass_id:%d]", __func__, nclass_id))
-                    rcode = vlg::RetCode_KO;
+                    rcode = RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "[no available persistence-driver for nclass_id:%d]", __func__, nclass_id))
-                rcode = vlg::RetCode_KO;
+                rcode = RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "[nclass is not persistent][nclass_id:%u]", __func__, nclass_id))
-            rcode = vlg::RetCode_KO;
+            rcode = RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "[nclass descriptor not found][nclass_id:%u]", __func__, nclass_id))
-        rcode = vlg::RetCode_KO;
+        rcode = RetCode_KO;
     }
     IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
@@ -307,9 +307,9 @@ RetCode peer_impl::obj_remove(unsigned short key,
     IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO NOT_PERS_ENBL_PEER, __func__))
-        return vlg::RetCode_KO;
+        return RetCode_KO;
     }
-    RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = RetCode_OK;
     per_nclass_id_conn_set *sdr = nullptr;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in.get_id();
@@ -328,19 +328,19 @@ RetCode peer_impl::obj_remove(unsigned short key,
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "[no available persistence-connection for nclass_id:%d]", __func__, nclass_id))
-                    rcode = vlg::RetCode_KO;
+                    rcode = RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "[no available persistence-driver for nclass_id:%d]", __func__, nclass_id))
-                rcode = vlg::RetCode_KO;
+                rcode = RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "[nclass is not persistent][nclass_id:%u]", __func__, nclass_id))
-            rcode = vlg::RetCode_KO;
+            rcode = RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "[nclass descriptor not found][nclass_id:%u]", __func__, nclass_id))
-        rcode = vlg::RetCode_KO;
+        rcode = RetCode_KO;
     }
     IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
@@ -354,7 +354,7 @@ RetCode peer_impl::obj_distribute(SubscriptionEventType evt_type,
                                   const nclass &in)
 {
     IFLOG(trc(TH_ID, LS_OPN, __func__))
-    RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = RetCode_OK;
     per_nclass_id_conn_set *sdr = nullptr;
     unsigned int ts0 = 0, ts1 = 0;
     if((rcode = get_per_nclassid_helper_rec(in.get_id(), &sdr))) {
@@ -386,9 +386,9 @@ RetCode peer_impl::obj_save_and_distribute(const nclass &in)
     IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO NOT_PERS_ENBL_PEER, __func__))
-        return vlg::RetCode_KO;
+        return RetCode_KO;
     }
-    RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = RetCode_OK;
     per_nclass_id_conn_set *sdr = nullptr;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in.get_id();
@@ -407,19 +407,19 @@ RetCode peer_impl::obj_save_and_distribute(const nclass &in)
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "[no available persistence-connection for nclass_id:%d]", __func__, nclass_id))
-                    rcode = vlg::RetCode_KO;
+                    rcode = RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "[no available persistence-driver for nclass_id:%d]", __func__, nclass_id))
-                rcode = vlg::RetCode_KO;
+                rcode = RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "[nclass is not persistent][nclass_id:%u]", __func__, nclass_id))
-            rcode = vlg::RetCode_KO;
+            rcode = RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "[nclass descriptor not found][nclass_id:%u]", __func__, nclass_id))
-        rcode = vlg::RetCode_KO;
+        rcode = RetCode_KO;
     }
     //**** SBS MNG BG
     if(!rcode) {
@@ -447,9 +447,9 @@ RetCode peer_impl::obj_update_and_distribute(unsigned short key,
     IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO NOT_PERS_ENBL_PEER, __func__))
-        return vlg::RetCode_KO;
+        return RetCode_KO;
     }
-    RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = RetCode_OK;
     per_nclass_id_conn_set *sdr = nullptr;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in.get_id();
@@ -468,19 +468,19 @@ RetCode peer_impl::obj_update_and_distribute(unsigned short key,
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "[no available persistence-connection for nclass_id:%d]", __func__, nclass_id))
-                    rcode = vlg::RetCode_KO;
+                    rcode = RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "[no available persistence-driver for nclass_id:%d]", __func__, nclass_id))
-                rcode = vlg::RetCode_KO;
+                rcode = RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "[nclass is not persistent][nclass_id:%u]", __func__, nclass_id))
-            rcode = vlg::RetCode_KO;
+            rcode = RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "[nclass descriptor not found][nclass_id:%u]", __func__, nclass_id))
-        rcode = vlg::RetCode_KO;
+        rcode = RetCode_KO;
     }
     //**** SBS MNG BG
     if(!rcode) {
@@ -507,9 +507,9 @@ RetCode peer_impl::obj_update_or_save_and_distribute(unsigned short key,
     IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO NOT_PERS_ENBL_PEER, __func__))
-        return vlg::RetCode_KO;
+        return RetCode_KO;
     }
-    RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = RetCode_OK;
     unsigned int ts0 = 0, ts1 = 0;
     per_nclass_id_conn_set *sdr = nullptr;
     unsigned int nclass_id = in.get_id();
@@ -528,19 +528,19 @@ RetCode peer_impl::obj_update_or_save_and_distribute(unsigned short key,
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "[no available persistence-connection for nclass_id:%d]", __func__, nclass_id))
-                    rcode = vlg::RetCode_KO;
+                    rcode = RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "[no available persistence-driver for nclass_id:%d]", __func__, nclass_id))
-                rcode = vlg::RetCode_KO;
+                rcode = RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "[nclass is not persistent][nclass_id:%u]", __func__, nclass_id))
-            rcode = vlg::RetCode_KO;
+            rcode = RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "[nclass descriptor not found][nclass_id:%u]", __func__, nclass_id))
-        rcode = vlg::RetCode_KO;
+        rcode = RetCode_KO;
     }
     //**** SBS MNG BG
     if(!rcode) {
@@ -568,9 +568,9 @@ RetCode peer_impl::obj_remove_and_distribute(unsigned short key,
     IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO NOT_PERS_ENBL_PEER, __func__))
-        return vlg::RetCode_KO;
+        return RetCode_KO;
     }
-    RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = RetCode_OK;
     per_nclass_id_conn_set *sdr = nullptr;
     unsigned int ts0 = 0, ts1 = 0;
     unsigned int nclass_id = in.get_id();
@@ -589,19 +589,19 @@ RetCode peer_impl::obj_remove_and_distribute(unsigned short key,
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "[no available persistence-connection for nclass_id:%d]", __func__, nclass_id))
-                    rcode = vlg::RetCode_KO;
+                    rcode = RetCode_KO;
                 }
             } else {
                 IFLOG(err(TH_ID, LS_TRL "[no available persistence-driver for nclass_id:%d]", __func__, nclass_id))
-                rcode = vlg::RetCode_KO;
+                rcode = RetCode_KO;
             }
         } else {
             IFLOG(err(TH_ID, LS_TRL "[nclass is not persistent][nclass_id:%u]", __func__, nclass_id))
-            rcode = vlg::RetCode_KO;
+            rcode = RetCode_KO;
         }
     } else {
         IFLOG(err(TH_ID, LS_TRL "[nclass descriptor not found][nclass_id:%u]", __func__, nclass_id))
-        rcode = vlg::RetCode_KO;
+        rcode = RetCode_KO;
     }
     //**** SBS MNG BG
     if(!rcode) {

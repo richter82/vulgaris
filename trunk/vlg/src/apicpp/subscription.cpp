@@ -67,129 +67,124 @@ std::unique_ptr<nclass> &subscription_event::get_data()
     return impl_->sbs_data_;
 }
 
-subscription::subscription() : impl_(new subscription_impl(*this))
+incoming_subscription::incoming_subscription(std::shared_ptr<incoming_connection> &conn) : impl_
+    (new incoming_subscription_impl(*this, conn))
 {
     CTOR_TRC
 }
 
-subscription::~subscription()
+incoming_subscription::~incoming_subscription()
 {
     DTOR_TRC
 }
 
-RetCode subscription::bind(connection &conn)
+incoming_connection &incoming_subscription::get_connection()
 {
-    impl_->set_connection(conn);
-    return RetCode_OK;
+    return *impl_->conn_sh_;
 }
 
-connection &subscription::get_connection()
-{
-    return *impl_->conn_;
-}
-
-unsigned int subscription::get_id()
+unsigned int incoming_subscription::get_id()
 {
     return impl_->sbsid_;
 }
 
-unsigned int subscription::get_nclass_id()
+unsigned int incoming_subscription::get_nclass_id()
 {
     return impl_->nclassid_;
 }
 
-SubscriptionType subscription::get_type() const
+SubscriptionType incoming_subscription::get_type() const
 {
     return impl_->sbstyp_;
 }
 
-SubscriptionMode subscription::get_mode() const
+SubscriptionMode incoming_subscription::get_mode() const
 {
     return impl_->sbsmod_;
 }
 
-SubscriptionFlowType subscription::get_flow_type() const
+SubscriptionFlowType incoming_subscription::get_flow_type() const
 {
     return impl_->flotyp_;
 }
 
-SubscriptionDownloadType subscription::get_download_type()
+SubscriptionDownloadType incoming_subscription::get_download_type()
 const
 {
     return impl_->dwltyp_;
 }
 
-Encode subscription::get_nclass_encode() const
+Encode incoming_subscription::get_nclass_encode() const
 {
     return impl_->enctyp_;
 }
 
-unsigned int subscription::get_open_timestamp_0() const
+unsigned int incoming_subscription::get_open_timestamp_0() const
 {
     return impl_->open_tmstp0_;
 }
 
-unsigned int subscription::get_open_timestamp_1() const
+unsigned int incoming_subscription::get_open_timestamp_1() const
 {
     return impl_->open_tmstp1_;
 }
 
-bool subscription::is_initial_query_ended()
+bool incoming_subscription::is_initial_query_ended()
 {
     return impl_->initial_query_ended_;
 }
 
-void subscription::set_nclass_id(unsigned int nclass_id)
+void incoming_subscription::set_nclass_id(unsigned int nclass_id)
 {
     impl_->nclassid_ = nclass_id;
 }
 
-void subscription::set_type(SubscriptionType sbs_type)
+void incoming_subscription::set_type(SubscriptionType sbs_type)
 {
     impl_->sbstyp_ = sbs_type;
 }
 
-void subscription::set_mode(SubscriptionMode sbs_mode)
+void incoming_subscription::set_mode(SubscriptionMode sbs_mode)
 {
     impl_->sbsmod_ = sbs_mode;
 }
 
-void subscription::set_flow_type(SubscriptionFlowType
-                                 sbs_flow_type)
+void incoming_subscription::set_flow_type(SubscriptionFlowType
+                                          sbs_flow_type)
 {
     impl_->flotyp_ = sbs_flow_type;
 }
 
-void subscription::set_download_type(SubscriptionDownloadType
-                                     sbs_dwnl_type)
+void incoming_subscription::set_download_type(SubscriptionDownloadType
+                                              sbs_dwnl_type)
 {
     impl_->dwltyp_ = sbs_dwnl_type;
 }
 
-void subscription::set_nclass_encode(Encode nclass_encode)
+void incoming_subscription::set_nclass_encode(Encode nclass_encode)
 {
     impl_->enctyp_ = nclass_encode;
 }
 
-void subscription::set_open_timestamp_0(unsigned int ts0)
+void incoming_subscription::set_open_timestamp_0(unsigned int ts0)
 {
     impl_->open_tmstp0_ = ts0;
 }
 
-void subscription::set_open_timestamp_1(unsigned int ts1)
+void incoming_subscription::set_open_timestamp_1(unsigned int ts1)
 {
     impl_->open_tmstp1_ = ts1;
 }
 
-SubscriptionStatus subscription::get_status() const
+SubscriptionStatus incoming_subscription::get_status() const
 {
     return impl_->status_;
 }
 
-RetCode subscription::await_for_status_reached_or_outdated(SubscriptionStatus test,
-                                                           SubscriptionStatus &current,
-                                                           time_t sec,
-                                                           long nsec)
+RetCode incoming_subscription::await_for_status_reached_or_outdated(SubscriptionStatus test,
+                                                                    SubscriptionStatus &current,
+                                                                    time_t sec,
+                                                                    long nsec)
 {
     return impl_->await_for_status_reached_or_outdated(test,
                                                        current,
@@ -197,19 +192,176 @@ RetCode subscription::await_for_status_reached_or_outdated(SubscriptionStatus te
                                                        nsec);
 }
 
-RetCode subscription::start()
+RetCode incoming_subscription::stop()
+{
+    return impl_->stop();
+}
+
+RetCode incoming_subscription::await_for_stop_result(SubscriptionResponse
+                                                     &sbs_stop_result,
+                                                     ProtocolCode &sbs_stop_protocode,
+                                                     time_t sec,
+                                                     long nsec)
+{
+    return impl_->await_for_stop_result(sbs_stop_result,
+                                        sbs_stop_protocode,
+                                        sec,
+                                        nsec);
+}
+
+void incoming_subscription::on_status_change(SubscriptionStatus current)
+{}
+
+void incoming_subscription::on_stop()
+{}
+
+RetCode incoming_subscription::accept_distribution(const subscription_event &sbs_evt)
+{
+    return RetCode_OK;
+}
+
+}
+
+namespace vlg {
+
+outgoing_subscription::outgoing_subscription() : impl_(new outgoing_subscription_impl(*this))
+{
+    CTOR_TRC
+}
+
+outgoing_subscription::~outgoing_subscription()
+{
+    DTOR_TRC
+}
+
+RetCode outgoing_subscription::bind(outgoing_connection &conn)
+{
+    impl_->conn_ = conn.impl_.get();
+    return RetCode_OK;
+}
+
+outgoing_connection &outgoing_subscription::get_connection()
+{
+    return *impl_->conn_->opubl_;
+}
+
+unsigned int outgoing_subscription::get_id()
+{
+    return impl_->sbsid_;
+}
+
+unsigned int outgoing_subscription::get_nclass_id()
+{
+    return impl_->nclassid_;
+}
+
+SubscriptionType outgoing_subscription::get_type() const
+{
+    return impl_->sbstyp_;
+}
+
+SubscriptionMode outgoing_subscription::get_mode() const
+{
+    return impl_->sbsmod_;
+}
+
+SubscriptionFlowType outgoing_subscription::get_flow_type() const
+{
+    return impl_->flotyp_;
+}
+
+SubscriptionDownloadType outgoing_subscription::get_download_type()
+const
+{
+    return impl_->dwltyp_;
+}
+
+Encode outgoing_subscription::get_nclass_encode() const
+{
+    return impl_->enctyp_;
+}
+
+unsigned int outgoing_subscription::get_open_timestamp_0() const
+{
+    return impl_->open_tmstp0_;
+}
+
+unsigned int outgoing_subscription::get_open_timestamp_1() const
+{
+    return impl_->open_tmstp1_;
+}
+
+void outgoing_subscription::set_nclass_id(unsigned int nclass_id)
+{
+    impl_->nclassid_ = nclass_id;
+}
+
+void outgoing_subscription::set_type(SubscriptionType sbs_type)
+{
+    impl_->sbstyp_ = sbs_type;
+}
+
+void outgoing_subscription::set_mode(SubscriptionMode sbs_mode)
+{
+    impl_->sbsmod_ = sbs_mode;
+}
+
+void outgoing_subscription::set_flow_type(SubscriptionFlowType
+                                          sbs_flow_type)
+{
+    impl_->flotyp_ = sbs_flow_type;
+}
+
+void outgoing_subscription::set_download_type(SubscriptionDownloadType
+                                              sbs_dwnl_type)
+{
+    impl_->dwltyp_ = sbs_dwnl_type;
+}
+
+void outgoing_subscription::set_nclass_encode(Encode nclass_encode)
+{
+    impl_->enctyp_ = nclass_encode;
+}
+
+void outgoing_subscription::set_open_timestamp_0(unsigned int ts0)
+{
+    impl_->open_tmstp0_ = ts0;
+}
+
+void outgoing_subscription::set_open_timestamp_1(unsigned int ts1)
+{
+    impl_->open_tmstp1_ = ts1;
+}
+
+SubscriptionStatus outgoing_subscription::get_status() const
+{
+    return impl_->status_;
+}
+
+RetCode outgoing_subscription::await_for_status_reached_or_outdated(SubscriptionStatus test,
+                                                                    SubscriptionStatus &current,
+                                                                    time_t sec,
+                                                                    long nsec)
+{
+    return impl_->await_for_status_reached_or_outdated(test,
+                                                       current,
+                                                       sec,
+                                                       nsec);
+}
+
+RetCode outgoing_subscription::start()
 {
     return impl_->start();
 }
 
-RetCode subscription::start(SubscriptionType sbs_type,
-                            SubscriptionMode sbs_mode,
-                            SubscriptionFlowType sbs_flow_type,
-                            SubscriptionDownloadType sbs_dwnl_type,
-                            Encode nclass_encode,
-                            unsigned int nclass_id,
-                            unsigned int open_timestamp_0,
-                            unsigned int open_timestamp_1)
+RetCode outgoing_subscription::start(SubscriptionType sbs_type,
+                                     SubscriptionMode sbs_mode,
+                                     SubscriptionFlowType sbs_flow_type,
+                                     SubscriptionDownloadType sbs_dwnl_type,
+                                     Encode nclass_encode,
+                                     unsigned int nclass_id,
+                                     unsigned int open_timestamp_0,
+                                     unsigned int open_timestamp_1)
 {
     return impl_->start(sbs_type,
                         sbs_mode,
@@ -220,11 +372,11 @@ RetCode subscription::start(SubscriptionType sbs_type,
                         open_timestamp_1);
 }
 
-RetCode subscription::await_for_start_result(SubscriptionResponse
-                                             &sbs_start_result,
-                                             ProtocolCode &sbs_start_protocode,
-                                             time_t sec,
-                                             long nsec)
+RetCode outgoing_subscription::await_for_start_result(SubscriptionResponse
+                                                      &sbs_start_result,
+                                                      ProtocolCode &sbs_start_protocode,
+                                                      time_t sec,
+                                                      long nsec)
 {
     return impl_->await_for_start_result(sbs_start_result,
                                          sbs_start_protocode,
@@ -232,16 +384,16 @@ RetCode subscription::await_for_start_result(SubscriptionResponse
                                          nsec);
 }
 
-RetCode subscription::stop()
+RetCode outgoing_subscription::stop()
 {
     return impl_->stop();
 }
 
-RetCode subscription::await_for_stop_result(SubscriptionResponse
-                                            &sbs_stop_result,
-                                            ProtocolCode &sbs_stop_protocode,
-                                            time_t sec,
-                                            long nsec)
+RetCode outgoing_subscription::await_for_stop_result(SubscriptionResponse
+                                                     &sbs_stop_result,
+                                                     ProtocolCode &sbs_stop_protocode,
+                                                     time_t sec,
+                                                     long nsec)
 {
     return impl_->await_for_stop_result(sbs_stop_result,
                                         sbs_stop_protocode,
@@ -249,21 +401,16 @@ RetCode subscription::await_for_stop_result(SubscriptionResponse
                                         nsec);
 }
 
-void subscription::on_status_change(SubscriptionStatus current)
+void outgoing_subscription::on_status_change(SubscriptionStatus current)
 {}
 
-void subscription::on_start()
+void outgoing_subscription::on_start()
 {}
 
-void subscription::on_stop()
+void outgoing_subscription::on_stop()
 {}
 
-void subscription::on_incoming_event(std::unique_ptr<subscription_event> &sbs_evt)
+void outgoing_subscription::on_incoming_event(std::unique_ptr<subscription_event> &sbs_evt)
 {}
-
-RetCode subscription::accept_distribution(const subscription_event &sbs_evt)
-{
-    return vlg::RetCode_OK;
-}
 
 }
