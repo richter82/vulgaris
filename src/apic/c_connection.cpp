@@ -19,252 +19,296 @@
  *
  */
 
-#include "vlg_c_connection.h"
 #include "vlg_connection.h"
-
-namespace vlg {
-
-class c_connection : public connection {
-    private:
-        static void connection_status_change_c_connection(connection &conn,
-                                                          ConnectionStatus status,
-                                                          void *ud) {
-            c_connection &self = static_cast<c_connection &>(conn);
-            self.csc_wr_((connection_wr)&conn, status, self.csc_ud_);
-        }
-
-    public:
-        c_connection() :
-            och_wr_(nullptr),
-            odh_wr_(nullptr),
-            csc_wr_(nullptr),
-            och_ud_(nullptr),
-            odh_ud_(nullptr),
-            csc_ud_(nullptr) {
-        }
-
-        // CONNECTIVITY APPLICATIVE HANDLERS
-    public:
-        virtual void on_connect(ConnectivityEventResult con_evt_res,
-                                ConnectivityEventType connectivity_evt_type) {
-            if(och_wr_) {
-                och_wr_((connection_wr)this, con_evt_res, connectivity_evt_type, och_ud_);
-            }
-        }
-
-        virtual void on_disconnect(ConnectivityEventResult con_evt_res,
-                                   ConnectivityEventType connectivity_evt_type) {
-            if(odh_wr_) {
-                odh_wr_((connection_wr)this, con_evt_res, connectivity_evt_type, odh_ud_);
-            }
-        }
-
-        on_connect_handler_wr Och_wr() const {
-            return och_wr_;
-        }
-
-        void Och_wr(on_connect_handler_wr val) {
-            och_wr_ = val;
-        }
-
-        on_disconnect_handler_wr Odh_wr() const {
-            return odh_wr_;
-        }
-
-        void Odh_wr(on_disconnect_handler_wr val) {
-            odh_wr_ = val;
-        }
-
-        connection_status_change_wr Csc_wr() const {
-            return csc_wr_;
-        }
-
-        void Csc_wr(connection_status_change_wr val) {
-            csc_wr_ = val;
-        }
-
-        void *Csc_ud() const {
-            return csc_ud_;
-        }
-
-        void Csc_ud(void *val) {
-            csc_ud_ = val;
-            //set_status_change_handler(connection_status_change_c_connection,
-            //                          csc_ud_);
-        }
-
-        void *Och_ud() const {
-            return och_ud_;
-        }
-        void Och_ud(void *val) {
-            och_ud_ = val;
-        }
-
-        void *Odh_ud() const {
-            return odh_ud_;
-        }
-        void Odh_ud(void *val) {
-            odh_ud_ = val;
-        }
-
-    private:
-        on_connect_handler_wr och_wr_;
-        on_disconnect_handler_wr odh_wr_;
-        connection_status_change_wr csc_wr_;
-        void *och_ud_;
-        void *odh_ud_;
-        void *csc_ud_;
-};
+using namespace vlg;
 
 extern "C" {
-    connection_wr connection_create()
+
+    typedef struct own_outgoing_connection own_outgoing_connection;
+
+    typedef void(*inco_connection_status_change)(incoming_connection *ic,
+                                                 ConnectionStatus status,
+                                                 void *ud);
+
+    typedef void(*inco_connection_on_disconnect_handler)(incoming_connection *ic,
+                                                         ConnectivityEventResult con_evt_res,
+                                                         ConnectivityEventType c_evt_type,
+                                                         void *ud);
+
+    typedef void(*outg_connection_status_change)(outgoing_connection *oc,
+                                                 ConnectionStatus status,
+                                                 void *ud);
+
+    typedef void(*outg_connection_on_connect_handler)(outgoing_connection *oc,
+                                                      ConnectivityEventResult con_evt_res,
+                                                      ConnectivityEventType c_evt_type,
+                                                      void *ud);
+
+    typedef void(*outg_connection_on_disconnect_handler)(outgoing_connection *oc,
+                                                         ConnectivityEventResult con_evt_res,
+                                                         ConnectivityEventType c_evt_type,
+                                                         void *ud);
+}
+
+//inco_connection
+
+extern "C" {
+
+    peer *inco_connection_get_peer(incoming_connection *ic)
     {
-        return new c_connection();
+        return &(ic->get_peer());
     }
 
-    void connection_destroy(connection_wr conn)
+    unsigned int inco_connection_get_connection_id(incoming_connection *ic)
     {
-        delete static_cast<c_connection *>(conn);
+        return ic->get_id();
     }
 
-    RetCode connection_bind(connection_wr conn, peer_wr p)
+    unsigned short inco_connection_get_client_heartbeat(incoming_connection *ic)
     {
-        return static_cast<connection *>(conn)->bind(*(peer *)p);
+        return ic->get_client_heartbeat();
     }
 
-    peer_wr connection_get_peer(connection_wr conn)
+    unsigned short inco_connection_get_server_agreed_heartbeat(incoming_connection *ic)
     {
-        return &(static_cast<connection *>(conn)->get_peer());
+        return ic->get_server_agreed_heartbeat();
     }
 
-    ConnectionType connection_get_connection_type(connection_wr conn)
+    ConnectionStatus inco_connection_get_status(incoming_connection *ic)
     {
-        return static_cast<connection *>(conn)->get_connection_type();
+        return ic->get_status();
     }
 
-    unsigned int connection_get_connection_id(connection_wr conn)
+    RetCode inco_connection_await_for_status_reached_or_outdated(incoming_connection *ic,
+                                                                 ConnectionStatus test,
+                                                                 ConnectionStatus *current,
+                                                                 time_t sec,
+                                                                 long nsec)
     {
-        return static_cast<connection *>(conn)->get_id();
+        return ic->await_for_status_reached_or_outdated(test, *current, sec, nsec);
     }
 
-    ConnectionResult connection_get_connection_response(connection_wr conn)
+    RetCode inco_connection_await_for_status_change(incoming_connection *ic,
+                                                    ConnectionStatus *status,
+                                                    time_t sec,
+                                                    long nsec)
     {
-        return static_cast<connection *>(conn)->get_connection_response();
+        return ic->await_for_status_change(*status, sec, nsec);
     }
 
-    ProtocolCode connection_get_connection_result_code(connection_wr conn)
+
+
+    RetCode inco_connection_disconnect(incoming_connection *ic,
+                                       ProtocolCode reason_code)
     {
-        return static_cast<connection *>(conn)->get_connection_result_code();
+        return ic->disconnect(reason_code);
     }
 
-    unsigned short connection_get_client_heartbeat(connection_wr conn)
+    RetCode inco_connection_await_for_disconnection_result(incoming_connection *ic,
+                                                           ConnectivityEventResult *con_evt_res,
+                                                           ConnectivityEventType *connectivity_evt_type,
+                                                           time_t sec,
+                                                           long nsec)
     {
-        return static_cast<connection *>(conn)->get_client_heartbeat();
+        return ic->await_for_disconnection_result(*con_evt_res, *connectivity_evt_type, sec, nsec);
     }
 
-    unsigned short connection_get_server_agreed_heartbeat(connection_wr conn)
+    SOCKET inco_connection_get_socket(incoming_connection *ic)
     {
-        return static_cast<connection *>(conn)->get_server_agreed_heartbeat();
+        return ic->get_socket();
     }
 
-    ProtocolCode connection_get_disconnection_reason_code(connection_wr conn)
+    const char *inco_connection_get_host_ip(incoming_connection *ic)
     {
-        return static_cast<connection *>(conn)->get_disconnection_reason_code();
+        return ic->get_host_ip();
     }
 
-    ConnectionStatus connection_get_status(connection_wr conn)
+    unsigned short inco_connection_get_host_port(incoming_connection *ic)
     {
-        return static_cast<connection *>(conn)->get_status();
-    }
-
-    RetCode connection_await_for_status_reached_or_outdated(connection_wr conn,
-                                                            ConnectionStatus test,
-                                                            ConnectionStatus *current,
-                                                            time_t sec,
-                                                            long nsec)
-    {
-        return static_cast<connection *>(conn)->await_for_status_reached_or_outdated(
-                   test, *current,
-                   sec,
-                   nsec);
-    }
-
-    RetCode connection_await_for_status_change(connection_wr conn,
-                                               ConnectionStatus *status,
-                                               time_t sec,
-                                               long nsec)
-    {
-        return static_cast<connection *>(conn)->await_for_status_change(*status, sec,
-                                                                        nsec);
-    }
-
-    void connection_set_status_change_handler(connection_wr conn,
-                                              connection_status_change_wr handler, void *ud)
-    {
-        static_cast<c_connection *>(conn)->Csc_wr(handler);
-        static_cast<c_connection *>(conn)->Csc_ud(ud);
-    }
-
-    RetCode connection_connect(connection_wr conn, sockaddr_in *connection_params)
-    {
-        return static_cast<connection *>(conn)->connect(*connection_params);
-    }
-
-    RetCode connection_await_for_connection_result(connection_wr conn,
-                                                   ConnectivityEventResult *con_evt_res,
-                                                   ConnectivityEventType *connectivity_evt_type,
-                                                   time_t sec,
-                                                   long nsec)
-    {
-        return static_cast<connection *>(conn)->await_for_connection_result(
-                   *con_evt_res, *connectivity_evt_type, sec, nsec);
-    }
-
-    RetCode connection_disconnect(connection_wr conn,
-                                  ProtocolCode reason_code)
-    {
-        return static_cast<connection *>(conn)->disconnect(reason_code);
-    }
-
-    RetCode connection_await_for_disconnection_result(connection_wr conn,
-                                                      ConnectivityEventResult *con_evt_res,
-                                                      ConnectivityEventType *connectivity_evt_type,
-                                                      time_t sec,
-                                                      long nsec)
-    {
-        return static_cast<connection *>(conn)->await_for_disconnection_result(
-                   *con_evt_res, *connectivity_evt_type, sec, nsec);
-    }
-
-    void connection_set_on_connect_handler(connection_wr conn,
-                                           on_connect_handler_wr hndl, void *ud)
-    {
-        static_cast<c_connection *>(conn)->Och_wr(hndl);
-        static_cast<c_connection *>(conn)->Och_ud(ud);
-    }
-
-    void connection_set_on_disconnect_handler(connection_wr conn,
-                                              on_disconnect_handler_wr hndl, void *ud)
-    {
-        static_cast<c_connection *>(conn)->Odh_wr(hndl);
-        static_cast<c_connection *>(conn)->Odh_ud(ud);
-    }
-
-    SOCKET connection_get_socket(connection_wr conn)
-    {
-        return static_cast<connection *>(conn)->get_socket();
-    }
-
-    const char *connection_get_host_ip(connection_wr conn)
-    {
-        return static_cast<connection *>(conn)->get_host_ip();
-    }
-
-    unsigned short connection_get_host_port(connection_wr conn)
-    {
-        return static_cast<connection *>(conn)->get_host_port();
+        return ic->get_host_port();
     }
 }
+
+//c_outg_conn
+
+struct c_outg_conn : public outgoing_connection {
+    c_outg_conn() :
+        ocsc_(nullptr),
+        ococh_(nullptr),
+        ocodh_(nullptr),
+        ocsc_ud_(nullptr),
+        ococh_ud_(nullptr),
+        ocodh_ud_(nullptr) {}
+
+    virtual void on_status_change(ConnectionStatus current) override {
+        ocsc_(this, current, ocsc_ud_);
+    }
+
+    virtual void on_connect(ConnectivityEventResult con_evt_res,
+                            ConnectivityEventType c_evt_type) override {
+        ococh_(this, con_evt_res, c_evt_type, ococh_ud_);
+    }
+
+    virtual void on_disconnect(ConnectivityEventResult con_evt_res,
+                               ConnectivityEventType c_evt_type) override {
+        ocodh_(this, con_evt_res, c_evt_type, ocodh_ud_);
+    }
+
+    outg_connection_status_change ocsc_;
+    outg_connection_on_connect_handler ococh_;
+    outg_connection_on_disconnect_handler ocodh_;
+
+    void *ocsc_ud_;
+    void *ococh_ud_;
+    void *ocodh_ud_;
+};
+
+//outg_connection
+
+extern "C" {
+
+    own_outgoing_connection *outg_connection_create(void)
+    {
+        return (own_outgoing_connection *) new c_outg_conn();
+    }
+
+    outgoing_connection *outg_connection_get_ptr(own_outgoing_connection *oc)
+    {
+        return (outgoing_connection *) oc;
+    }
+
+    void outg_connection_destroy(own_outgoing_connection *oc)
+    {
+        delete(c_outg_conn *)oc;
+    }
+
+    RetCode outg_connection_bind(outgoing_connection *oc, peer *p)
+    {
+        return oc->bind(*p);
+    }
+
+    peer *outg_connection_get_peer(outgoing_connection *oc)
+    {
+        return &(oc->get_peer());
+    }
+
+    unsigned int outg_connection_get_connection_id(outgoing_connection *oc)
+    {
+        return oc->get_id();
+    }
+
+    ConnectionResult outg_connection_get_connection_response(outgoing_connection *oc)
+    {
+        return oc->get_connection_response();
+    }
+
+    ProtocolCode outg_connection_get_connection_result_code(outgoing_connection *oc)
+    {
+        return oc->get_connection_result_code();
+    }
+
+    unsigned short outg_connection_get_client_heartbeat(outgoing_connection *oc)
+    {
+        return oc->get_client_heartbeat();
+    }
+
+    unsigned short outg_connection_get_server_agreed_heartbeat(outgoing_connection *oc)
+    {
+        return oc->get_server_agreed_heartbeat();
+    }
+
+    ProtocolCode outg_connection_get_disconnection_reason_code(outgoing_connection *oc)
+    {
+        return oc->get_disconnection_reason_code();
+    }
+
+    ConnectionStatus outg_connection_get_status(outgoing_connection *oc)
+    {
+        return oc->get_status();
+    }
+
+    RetCode outg_connection_await_for_status_reached_or_outdated(outgoing_connection *oc,
+                                                                 ConnectionStatus test,
+                                                                 ConnectionStatus *current,
+                                                                 time_t sec,
+                                                                 long nsec)
+    {
+        return oc->await_for_status_reached_or_outdated(test, *current, sec, nsec);
+    }
+
+    RetCode outg_connection_await_for_status_change(outgoing_connection *oc,
+                                                    ConnectionStatus *status,
+                                                    time_t sec,
+                                                    long nsec)
+    {
+        return oc->await_for_status_change(*status, sec, nsec);
+    }
+
+    void outg_connection_set_status_change_handler(outgoing_connection *oc,
+                                                   outg_connection_status_change handler, void *ud)
+    {
+        static_cast<c_outg_conn *>(oc)->ocsc_ = handler;
+        static_cast<c_outg_conn *>(oc)->ocsc_ud_ = ud;
+    }
+
+    RetCode outg_connection_connect(outgoing_connection *oc, sockaddr_in *connection_params)
+    {
+        return oc->connect(*connection_params);
+    }
+
+    RetCode outg_connection_await_for_connection_result(outgoing_connection *oc,
+                                                        ConnectivityEventResult *con_evt_res,
+                                                        ConnectivityEventType *connectivity_evt_type,
+                                                        time_t sec,
+                                                        long nsec)
+    {
+        return oc->await_for_connection_result(*con_evt_res, *connectivity_evt_type, sec, nsec);
+    }
+
+    RetCode outg_connection_disconnect(outgoing_connection *oc,
+                                       ProtocolCode reason_code)
+    {
+        return oc->disconnect(reason_code);
+    }
+
+    RetCode outg_connection_await_for_disconnection_result(outgoing_connection *oc,
+                                                           ConnectivityEventResult *con_evt_res,
+                                                           ConnectivityEventType *connectivity_evt_type,
+                                                           time_t sec,
+                                                           long nsec)
+    {
+        return oc->await_for_disconnection_result(*con_evt_res, *connectivity_evt_type, sec, nsec);
+    }
+
+    void outg_connection_set_on_connect_handler(outgoing_connection *oc,
+                                                outg_connection_on_connect_handler hndl, void *ud)
+    {
+        static_cast<c_outg_conn *>(oc)->ococh_ = hndl;
+        static_cast<c_outg_conn *>(oc)->ococh_ud_ = ud;
+    }
+
+    void outg_connection_set_on_disconnect_handler(outgoing_connection *oc,
+                                                   outg_connection_on_disconnect_handler hndl, void *ud)
+    {
+        static_cast<c_outg_conn *>(oc)->ocodh_ = hndl;
+        static_cast<c_outg_conn *>(oc)->ocodh_ud_ = ud;
+    }
+
+    SOCKET outg_connection_get_socket(outgoing_connection *oc)
+    {
+        return oc->get_socket();
+    }
+
+    const char *outg_connection_get_host_ip(outgoing_connection *oc)
+    {
+        return oc->get_host_ip();
+    }
+
+    unsigned short outg_connection_get_host_port(outgoing_connection *oc)
+    {
+        return oc->get_host_port();
+    }
 }
+
 
 

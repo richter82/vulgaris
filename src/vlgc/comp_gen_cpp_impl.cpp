@@ -33,8 +33,7 @@ extern RetCode VLG_COMP_CPP_Calc_NMspc(entity_desc_comp &edesc,
                                        std::string &out);
 
 #define BBUF_DECL \
-"namespace vlg { class g_bbuf {\n"\
-"public:\n"\
+"namespace vlg { struct g_bbuf {\n"\
  CR_1IND"explicit g_bbuf();\n"\
  CR_1IND"~g_bbuf();\n"\
  CR_1IND"RetCode init(size_t initial_capacity);\n"\
@@ -1402,7 +1401,7 @@ RetCode VLG_COMP_Gen_ClassManager__CPP_(compile_unit &cunit,
 }
 
 #define VLG_COMP_CPP_ENTRY_PT_OPN \
-"vlg::nentity_manager* get_em_%s()\n"\
+"vlg::nentity_manager* get_nem_%s()\n"\
 "{\n"
 
 #define VLG_COMP_CPP_ENTRY_PT_CLS \
@@ -1475,10 +1474,10 @@ RetCode VLG_COMP_Gen_EntryPoint_C__CPP_(compile_unit &cunit,
                                         FILE *file)
 {
     fprintf(file, OPN_CMMNT_LN"MODEL:%s C ENTRYPOINT\n" CLS_CMMNT_LN, cunit.model_name());
-    fprintf(file, "typedef void *nentity_manager_wr;\n");
+    fprintf(file, "typedef struct nentity_manager nentity_manager;\n");
     fprintf(file, "extern \"C\"{\n");
-    fprintf(file, "nentity_manager_wr get_c_em_%s()\n{\n", cunit.model_name());
-    fprintf(file, CR_1IND"return (nentity_manager_wr)get_em_%s();\n", cunit.model_name());
+    fprintf(file, "nentity_manager* get_c_nem_%s()\n{\n", cunit.model_name());
+    fprintf(file, CR_1IND"return (nentity_manager*)get_nem_%s();\n", cunit.model_name());
     fprintf(file, "}\n");
     fprintf(file, "}\n\n");
     return vlg::RetCode_OK;

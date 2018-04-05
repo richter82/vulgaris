@@ -188,7 +188,7 @@ RetCode peer::extend_model(const char *model_name)
 RetCode peer::on_load_config(int pnum, const char *param,
                              const char *value)
 {
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
 void peer::on_status_change(PeerStatus current)
@@ -196,22 +196,22 @@ void peer::on_status_change(PeerStatus current)
 
 RetCode peer::on_init()
 {
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
 RetCode peer::on_starting()
 {
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
 RetCode peer::on_stopping()
 {
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
 RetCode peer::on_move_running()
 {
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
 RetCode peer::on_error()
@@ -355,9 +355,9 @@ RetCode peer::obj_remove_and_distribute(unsigned short nclass_key,
     return impl_->obj_remove_and_distribute(nclass_key, mode, in);
 }
 
-RetCode peer::accept_connection(connection &incoming_connection)
+RetCode peer::on_incoming_connection(std::shared_ptr<incoming_connection> &)
 {
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
 }

@@ -1,17 +1,16 @@
-SRC =	../src/drisqlite/vlg_drv_sqlite.cpp
+SRC =	../src/drisqlite/drv_sqlite.cpp
 OBJ = $(SRC:.cpp=.o)
 OUTDIR = ../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/libso
 INCLUDES = 	-I../public\
 			-I../public/cpp\
 			-I../src\
-			-I../src/cr\
 			-I../contrib/sqlite
 			
-CCFLAGS = -std=c++11 -Wall -fPIC $(CC_DBG_REL_OPT)
+CCFLAGS = -std=c++14 -Wall -fPIC $(CC_DBG_REL_OPT)
 CCC = g++
 LDFLAGS = -shared
 LDFLAGS_1 = -Wl$(LDFLAGS_1_OPT)
-LDLIBS= -L../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/lib -L../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/contrib/lib -lsqlite -lvlg -lcr -lpthread $(LD_ARCH_LIB)
+LDLIBS= -L../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/lib -L../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/contrib/lib -lsqlite -lvlg -lpthread $(LD_ARCH_LIB)
 LDFLAGS_2 = -Wl$(LDFLAGS_2_OPT)
 
 ifndef SOLIB_EXT

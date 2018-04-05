@@ -86,7 +86,7 @@ RetCode VLG_COMP_Gen_EntryPoint_decl__H_(compile_unit &cunit,
     tknz.next_token(name, VLG_COMP_DOT);
     fprintf(file, OPN_CMMNT_LN "NEM entry point\n" CLS_CMMNT_LN);
     fprintf(file, "extern \"C\"{\n");
-    fprintf(file, EXPORT_SYMBOL"vlg::nentity_manager* get_em_%s();\n", cunit.model_name());
+    fprintf(file, EXPORT_SYMBOL"vlg::nentity_manager* get_nem_%s();\n", cunit.model_name());
     fprintf(file, "}\n\n");
     return vlg::RetCode_OK;
 }
@@ -102,7 +102,7 @@ RetCode VLG_COMP_Gen_EntryPoint_C_decl__H_(compile_unit &cunit,
     tknz.next_token(name, VLG_COMP_DOT);
     fprintf(file, "#else\n");
     fprintf(file, OPN_CMMNT_LN "NEM entry point C\n" CLS_CMMNT_LN);
-    fprintf(file, "nentity_manager_wr get_c_em_%s();\n", cunit.model_name());
+    fprintf(file, "nentity_manager* get_c_nem_%s();\n", cunit.model_name());
     fprintf(file, "#endif\n");
     return vlg::RetCode_OK;
 }

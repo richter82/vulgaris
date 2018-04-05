@@ -20,8 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\public\c\vlg_c_connection.h" />
-    <ClInclude Include="..\public\c\vlg_c_drv_sqlite.h" />
-    <ClInclude Include="..\public\c\vlg_c_logger.h" />
     <ClInclude Include="..\public\c\vlg_c_model.h" />
     <ClInclude Include="..\public\c\vlg_c_peer.h" />
     <ClInclude Include="..\public\c\vlg_c_persistence.h" />
@@ -31,7 +29,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\apic\c_connection.cpp" />
-    <ClCompile Include="..\src\apic\c_drv_sqlite.cpp" />
     <ClCompile Include="..\src\apic\c_model.cpp" />
     <ClCompile Include="..\src\apic\c_peer.cpp" />
     <ClCompile Include="..\src\apic\c_persistence.cpp" />
@@ -105,7 +102,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public;..\public\c</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\vlg;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public;..\public\c</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -130,7 +127,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public;..\public\c</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\vlg;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public;..\public\c</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -152,7 +149,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public;..\public\c</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\vlg;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public;..\public\c</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -177,7 +174,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public;..\public\c</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\src\vlg;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public;..\public\c</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>

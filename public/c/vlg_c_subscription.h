@@ -23,112 +23,112 @@
 #define VLG_C_SUBSCRIPTION_H_
 #include "vlg.h"
 
-#if defined(__cplusplus)
-using namespace vlg;
-extern "C" {
-#endif
+/************************************************************************
+SUBSCRIPTION EVENT
+************************************************************************/
 
-unsigned int subscription_event_get_id(subscription_event_wr sev);
-SubscriptionEventType subscription_event_get_event_type(subscription_event_wr sev);
-ProtocolCode subscription_event_get_proto_code(subscription_event_wr sev);
-unsigned int subscription_event_get_timestamp_0(subscription_event_wr sev);
-unsigned int subscription_event_get_timestamp_1(subscription_event_wr sev);
-Action  subscription_event_get_action(subscription_event_wr sev);
-nclass_wr subscription_event_get_object(subscription_event_wr sev);
+unsigned int subscription_event_get_id(subscription_event *sev);
+SubscriptionEventType subscription_event_get_event_type(subscription_event *sev);
+ProtocolCode subscription_event_get_proto_code(subscription_event *sev);
+unsigned int subscription_event_get_timestamp_0(subscription_event *sev);
+unsigned int subscription_event_get_timestamp_1(subscription_event *sev);
+Action  subscription_event_get_action(subscription_event *sev);
+own_nclass *subscription_event_get_object(subscription_event *sev);
 
-typedef void(*subscription_status_change_wr)(subscription_wr subscription,
-                                             SubscriptionStatus status,
-                                             void *ud);
+/************************************************************************
+INCOMING SUBSCRIPTION HANDLERS
+************************************************************************/
 
-typedef void(*subscription_event_notify_wr)(subscription_wr subscription,
-                                            subscription_event_wr sbs_evt,
-                                            void *ud);
+typedef void(*inco_subscription_status_change)(incoming_subscription *isbs, SubscriptionStatus status, void *ud);
+typedef RetCode(*inco_subscription_accept_distribution)(incoming_subscription *isbs, const subscription_event *sbs_evt, void *ud);
+typedef void(*inco_subscription_on_stop)(incoming_subscription *isbs, void *ud);
 
-subscription_wr subscription_create(void);
-void subscription_destroy(subscription_wr subscription);
+/************************************************************************
+INCOMING SUBSCRIPTION
+************************************************************************/
 
-RetCode subscription_bind(subscription_wr subscription,
-                          connection_wr conn);
+void inco_subscription_release(shr_incoming_subscription *sbs);
+incoming_subscription *inco_subscription_get_ptr(shr_incoming_subscription *sbs);
+incoming_connection *inco_subscription_get_connection(incoming_subscription *sbs);
+unsigned int inco_subscription_get_id(incoming_subscription *sbs);
+unsigned int inco_subscription_get_subscription_nclass_id(incoming_subscription *sbs);
+SubscriptionType inco_subscription_get_subscription_type(incoming_subscription *sbs);
+SubscriptionMode inco_subscription_get_subscription_mode(incoming_subscription *sbs);
+SubscriptionFlowType inco_subscription_get_subscription_flow_type(incoming_subscription *sbs);
+SubscriptionDownloadType inco_subscription_get_subscription_download_type(incoming_subscription *sbs);
+Encode inco_subscription_get_subscription_nclass_encode(incoming_subscription *sbs);
+unsigned int inco_subscription_get_open_timestamp_0(incoming_subscription *sbs);
+unsigned int inco_subscription_get_open_timestamp_1(incoming_subscription *sbs);
+int inco_subscription_is_initial_query_ended(incoming_subscription *sbs);
+void inco_subscription_set_subscription_nclass_id(incoming_subscription *sbs, unsigned int nclass_id);
+void inco_subscription_set_subscription_type(incoming_subscription *sbs, SubscriptionType sbs_type);
+void inco_subscription_set_subscription_mode(incoming_subscription *sbs, SubscriptionMode sbs_mode);
+void inco_subscription_set_subscription_flow_type(incoming_subscription *sbs, SubscriptionFlowType sbs_flow_type);
+void inco_subscription_set_subscription_download_type(incoming_subscription *sbs, SubscriptionDownloadType sbs_dwnl_type);
+void inco_subscription_set_nclass_encode(incoming_subscription *sbs, Encode nclass_encode);
+void inco_subscription_set_open_timestamp_0(incoming_subscription *sbs, unsigned int ts0);
+void inco_subscription_set_open_timestamp_1(incoming_subscription *sbs, unsigned int ts1);
+RetCode inco_subscription_await_for_status_reached_or_outdated(incoming_subscription *sbs, SubscriptionStatus test, SubscriptionStatus *current, time_t sec, long nsec);
+void inco_subscription_set_status_change_handler(incoming_subscription *sbs, inco_subscription_status_change handler, void *ud);
+void inco_subscription_set_accept_distribution_handler(incoming_subscription *sbs, inco_subscription_accept_distribution handler, void *ud);
+void inco_subscription_set_on_stop_handler(incoming_subscription *sbs, inco_subscription_on_stop handler, void *ud);
+RetCode inco_subscription_stop(incoming_subscription *sbs);
+RetCode inco_subscription_await_for_stop_result(incoming_subscription *sbs, SubscriptionResponse *stop_result, ProtocolCode *stop_protocode, time_t sec, long nsec);
 
-connection_wr subscription_get_connection(subscription_wr subscription);
-unsigned int subscription_get_id(subscription_wr subscription);
-unsigned int subscription_get_subscription_class_id(subscription_wr subscription);
-SubscriptionType subscription_get_subscription_type(subscription_wr subscription);
-SubscriptionMode subscription_get_subscription_mode(subscription_wr subscription);
-SubscriptionFlowType subscription_get_subscription_flow_type(subscription_wr subscription);
-SubscriptionDownloadType subscription_get_subscription_download_type(subscription_wr subscription);
-Encode subscription_get_subscription_class_encode(subscription_wr subscription);
-unsigned int subscription_get_open_timestamp_0(subscription_wr subscription);
-unsigned int subscription_get_open_timestamp_1(subscription_wr subscription);
-int subscription_is_initial_query_ended(subscription_wr subscription);
-void subscription_set_subscription_class_id(subscription_wr subscription,
-                                            unsigned int nclass_id);
+/************************************************************************
+INCOMING SUBSCRIPTION HANDLERS
+************************************************************************/
 
-void subscription_set_subscription_type(subscription_wr subscription,
-                                        SubscriptionType sbs_type);
+typedef void(*outg_subscription_status_change)(outgoing_subscription *osbs, SubscriptionStatus status, void *ud);
+typedef void(*outg_subscription_notify_event)(outgoing_subscription *osbs, const subscription_event *sbs_evt, void *ud);
+typedef void(*outg_subscription_on_start)(outgoing_subscription *osbs, void *ud);
+typedef void(*outg_subscription_on_stop)(outgoing_subscription *osbs, void *ud);
 
-void subscription_set_subscription_mode(subscription_wr subscription,
-                                        SubscriptionMode sbs_mode);
+/************************************************************************
+OUTGOING SUBSCRIPTION
+************************************************************************/
 
-void subscription_set_subscription_flow_type(subscription_wr subscription,
-                                             SubscriptionFlowType sbs_flow_type);
+own_outgoing_subscription *outg_subscription_create(void);
+outgoing_subscription *outg_subscription_get_ptr(own_outgoing_subscription *sbs);
+void outg_subscription_destroy(own_outgoing_subscription *sbs);
+RetCode outg_subscription_bind(outgoing_subscription *sbs, outgoing_connection *conn);
+outgoing_connection *outg_subscription_get_connection(outgoing_subscription *sbs);
+unsigned int outg_subscription_get_id(outgoing_subscription *sbs);
+unsigned int outg_subscription_get_subscription_nclass_id(outgoing_subscription *sbs);
+SubscriptionType outg_subscription_get_subscription_type(outgoing_subscription *sbs);
+SubscriptionMode outg_subscription_get_subscription_mode(outgoing_subscription *sbs);
+SubscriptionFlowType outg_subscription_get_subscription_flow_type(outgoing_subscription *sbs);
+SubscriptionDownloadType outg_subscription_get_subscription_download_type(outgoing_subscription *sbs);
+Encode outg_subscription_get_subscription_nclass_encode(outgoing_subscription *sbs);
+unsigned int outg_subscription_get_open_timestamp_0(outgoing_subscription *sbs);
+unsigned int outg_subscription_get_open_timestamp_1(outgoing_subscription *sbs);
+void outg_subscription_set_subscription_nclass_id(outgoing_subscription *sbs, unsigned int nclass_id);
+void outg_subscription_set_subscription_type(outgoing_subscription *sbs, SubscriptionType sbs_type);
+void outg_subscription_set_subscription_mode(outgoing_subscription *sbs, SubscriptionMode sbs_mode);
+void outg_subscription_set_subscription_flow_type(outgoing_subscription *sbs, SubscriptionFlowType sbs_flow_type);
+void outg_subscription_set_subscription_download_type(outgoing_subscription *sbs, SubscriptionDownloadType sbs_dwnl_type);
+void outg_subscription_set_nclass_encode(outgoing_subscription *sbs, Encode nclass_encode);
+void outg_subscription_set_open_timestamp_0(outgoing_subscription *sbs, unsigned int ts0);
+void outg_subscription_set_open_timestamp_1(outgoing_subscription *sbs, unsigned int ts1);
+RetCode outg_subscription_await_for_status_reached_or_outdated(outgoing_subscription *sbs, SubscriptionStatus test, SubscriptionStatus *current, time_t sec, long nsec);
+void outg_subscription_set_status_change_handler(outgoing_subscription *sbs, outg_subscription_status_change handler, void *ud);
+void outg_subscription_set_event_notify_handler(outgoing_subscription *sbs, outg_subscription_notify_event handler, void *ud);
+void outg_subscription_set_on_start_handler(outgoing_subscription *sbs, outg_subscription_on_start handler, void *ud);
+void outg_subscription_set_on_stop_handler(outgoing_subscription *sbs, outg_subscription_on_stop handler, void *ud);
+RetCode outg_subscription_start(outgoing_subscription *sbs);
 
-void subscription_set_subscription_download_type(subscription_wr subscription,
-                                                 SubscriptionDownloadType sbs_dwnl_type);
+RetCode outg_subscription_start_full(outgoing_subscription *sbs,
+                                     SubscriptionType sbs_type,
+                                     SubscriptionMode sbs_mode,
+                                     SubscriptionFlowType sbs_flow_type,
+                                     SubscriptionDownloadType sbs_dwnl_type,
+                                     Encode nclass_encode,
+                                     unsigned int nclass_id,
+                                     unsigned int open_timestamp_0,
+                                     unsigned int open_timestamp_1);
 
-void subscription_set_class_encode(subscription_wr subscription,
-                                   Encode nclass_encode);
-
-void subscription_set_open_timestamp_0(subscription_wr subscription,
-                                       unsigned int ts0);
-
-void subscription_set_open_timestamp_1(subscription_wr subscription,
-                                       unsigned int ts1);
-
-RetCode subscription_await_for_status_reached_or_outdated(subscription_wr subscription,
-                                                          SubscriptionStatus test,
-                                                          SubscriptionStatus *current,
-                                                          time_t sec,
-                                                          long nsec);
-
-void subscription_set_status_change_handler(subscription_wr subscription,
-                                            subscription_status_change_wr handler,
-                                            void *ud);
-
-void subscription_set_event_notify_handler(subscription_wr subscription,
-                                           subscription_event_notify_wr handler,
-                                           void *ud);
-
-RetCode subscription_start(subscription_wr subscription);
-
-RetCode subscription_start_full(subscription_wr             subscription,
-                                SubscriptionType            sbs_type,
-                                SubscriptionMode            sbs_mode,
-                                SubscriptionFlowType        sbs_flow_type,
-                                SubscriptionDownloadType    sbs_dwnl_type,
-                                Encode                      nclass_encode,
-                                unsigned int                nclass_id,
-                                unsigned int                open_timestamp_0,
-                                unsigned int                open_timestamp_1);
-
-/* this function must be called from same thread that called start()*/
-RetCode subscription_await_for_start_result(subscription_wr subscription,
-                                            SubscriptionResponse *start_result,
-                                            ProtocolCode *start_protocode,
-                                            time_t sec,
-                                            long nsec);
-
-RetCode subscription_stop(subscription_wr subscription);
-
-/* this function must be called from same thread that called stop()*/
-RetCode subscription_await_for_stop_result(subscription_wr subscription,
-                                           SubscriptionResponse *stop_result,
-                                           ProtocolCode *stop_protocode,
-                                           time_t sec,
-                                           long nsec);
-
-#if defined(__cplusplus)
-}
-#endif
+RetCode outg_subscription_await_for_start_result(outgoing_subscription *sbs, SubscriptionResponse *start_result, ProtocolCode *start_protocode, time_t sec, long nsec);
+RetCode outg_subscription_stop(outgoing_subscription *sbs);
+RetCode outg_subscription_await_for_stop_result(outgoing_subscription *sbs, SubscriptionResponse *stop_result, ProtocolCode *stop_protocode, time_t sec, long nsec);
 
 #endif

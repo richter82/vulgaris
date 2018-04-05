@@ -19,17 +19,340 @@
  *
  */
 
-#include "vlg_c_peer.h"
 #include "vlg_peer.h"
+#include "vlg_connection.h"
+#include "vlg_transaction.h"
+#include "vlg_subscription.h"
 
-namespace vlg {
+using namespace vlg;
 
-class c_peer : public peer {
+extern "C" {
+    typedef struct own_peer own_peer;
+    typedef struct shr_incoming_connection shr_incoming_connection;
+    typedef struct shr_incoming_transaction shr_incoming_transaction;
+    typedef struct shr_incoming_subscription shr_incoming_subscription;
+
+    //peer
+
+    typedef void (*peer_status_change)(peer *p, PeerStatus status, void *ud);
+    typedef const char *(*peer_name_handler)(peer *p, void *ud);
+    typedef const unsigned int *(*peer_version_handler)(peer *p, void *ud);
+
+    typedef RetCode(*peer_load_config_handler)(peer *p,
+                                               int pnum,
+                                               const char *param,
+                                               const char *value,
+                                               void *ud);
+
+    typedef RetCode(*peer_init_handler)(peer *p, void *ud);
+    typedef RetCode(*peer_starting_handler)(peer *p, void *ud);
+    typedef RetCode(*peer_stopping_handler)(peer *p, void *ud);
+    typedef RetCode(*peer_on_move_running_handler)(peer *p, void *ud);
+    typedef RetCode(*peer_error_handler)(peer *p, void *ud);
+    typedef void(*peer_dying_breath_handler)(peer *p, void *ud);
+    typedef RetCode(*peer_on_incoming_connection_handler)(peer *p, shr_incoming_connection *ic, void *ud);
+
+    //incoming connection
+
+    typedef void(*inco_connection_status_change)(incoming_connection *conn,
+                                                 ConnectionStatus status,
+                                                 void *ud);
+
+    typedef void(*inco_connection_on_disconnect_handler)(incoming_connection *conn,
+                                                         ConnectivityEventResult con_evt_res,
+                                                         ConnectivityEventType c_evt_type,
+                                                         void *ud);
+
+    typedef RetCode(*inco_connection_on_incoming_transaction_handler)(incoming_connection *conn,
+                                                                      shr_incoming_transaction *itx,
+                                                                      void *ud);
+
+    typedef RetCode(*inco_connection_on_incoming_subscription_handler)(incoming_connection *conn,
+                                                                       shr_incoming_subscription *isbs,
+                                                                       void *ud);
+
+    //incoming tx
+
+    typedef void(*inco_transaction_status_change)(incoming_transaction *tx,
+                                                  TransactionStatus status,
+                                                  void *ud);
+
+    typedef void(*inco_transaction_request)(incoming_transaction *tx,
+                                            void *ud);
+
+    typedef void(*inco_transaction_closure)(incoming_transaction *tx,
+                                            void *ud);
+
+    //incoming sbs
+
+    typedef void(*inco_subscription_status_change)(incoming_subscription *isbs,
+                                                   SubscriptionStatus status,
+                                                   void *ud);
+
+    typedef RetCode(*inco_subscription_accept_distribution)(incoming_subscription *isbs,
+                                                            const subscription_event *sbs_evt,
+                                                            void *ud);
+
+    typedef void(*inco_subscription_on_stop)(incoming_subscription *isbs,
+                                             void *ud);
+}
+
+//c_inco_tx
+
+struct c_inco_tx : public incoming_transaction {
+    c_inco_tx(std::shared_ptr<incoming_connection> &c) :
+        incoming_transaction(c),
+        tr_wr_(nullptr),
+        tc_wr_(nullptr),
+        tsc_wr_(nullptr),
+        tr_ud_(nullptr),
+        tc_ud_(nullptr),
+        tsc_ud_(nullptr) {}
+
+    virtual void on_status_change(TransactionStatus status) override {
+        tsc_wr_(this, status, tsc_ud_);
+    }
+
+    virtual void on_request() override {
+        tr_wr_(this, tr_ud_);
+    }
+
+    virtual void on_close() override {
+        tc_wr_(this, tc_ud_);
+    }
+
+    inco_transaction_request tr_wr_;
+    inco_transaction_closure tc_wr_;
+    inco_transaction_status_change tsc_wr_;
+    void *tr_ud_;
+    void *tc_ud_;
+    void *tsc_ud_;
+};
+
+//c_inco_tx_factory
+
+struct c_inco_tx_factory : public incoming_transaction_factory {
+    virtual c_inco_tx &make_incoming_transaction(std::shared_ptr<incoming_connection> &ic) override {
+        return *new c_inco_tx(ic);
+    }
+};
+
+extern "C" {
+    void inco_transaction_release(shr_incoming_transaction *tx)
+    {
+        delete(std::shared_ptr<incoming_connection> *)tx;
+    }
+
+    incoming_transaction *inco_transaction_get_ptr(shr_incoming_transaction *tx)
+    {
+        return ((std::shared_ptr<incoming_transaction> *)tx)->get();
+    }
+
+    void inco_transaction_set_transaction_status_change_handler(incoming_transaction *tx,
+                                                                inco_transaction_status_change handler,
+                                                                void *ud)
+    {
+        static_cast<c_inco_tx *>(tx)->tsc_wr_ = handler;
+        static_cast<c_inco_tx *>(tx)->tsc_ud_ = ud;
+    }
+
+    void inco_transaction_set_transaction_closure_handler(incoming_transaction *tx,
+                                                          inco_transaction_closure handler,
+                                                          void *ud)
+    {
+        static_cast<c_inco_tx *>(tx)->tc_wr_ = handler;
+        static_cast<c_inco_tx *>(tx)->tc_ud_ = ud;
+    }
+
+    void inco_transaction_set_inco_transaction_request_handler(incoming_transaction *tx,
+                                                               inco_transaction_request handler,
+                                                               void *ud)
+    {
+        static_cast<c_inco_tx *>(tx)->tr_wr_ = handler;
+        static_cast<c_inco_tx *>(tx)->tr_ud_ = ud;
+    }
+}
+
+static c_inco_tx_factory citf;
+
+//c_inco_sbs
+
+struct c_inco_sbs : public incoming_subscription {
+    c_inco_sbs(std::shared_ptr<incoming_connection> &c) :
+        incoming_subscription(c),
+        isad_wr_(nullptr),
+        issc_wr_(nullptr),
+        isos_(nullptr),
+        issc_ud_(nullptr),
+        isad_ud_(nullptr),
+        isos_ud_(nullptr) {}
+
+    virtual void on_status_change(SubscriptionStatus status) override {
+        issc_wr_(this, status, issc_ud_);
+    }
+
+    virtual void on_stop() override {
+        isos_(this, isos_ud_);
+    }
+
+    virtual RetCode accept_distribution(const subscription_event &sbs_evt) override {
+        return isad_wr_(this, &sbs_evt, isad_ud_);
+    }
+
+    inco_subscription_accept_distribution isad_wr_;
+    inco_subscription_status_change issc_wr_;
+    inco_subscription_on_stop isos_;
+    void *issc_ud_;
+    void *isad_ud_;
+    void *isos_ud_;
+};
+
+//c_inco_sbs_factory
+
+struct c_inco_sbs_factory : public incoming_subscription_factory {
+    virtual c_inco_sbs &make_incoming_subscription(std::shared_ptr<incoming_connection> &ic) override {
+        return *new c_inco_sbs(ic);
+    }
+};
+
+static c_inco_sbs_factory cisf;
+
+extern "C" {
+    void inco_subscription_release(shr_incoming_subscription *sbs)
+    {
+        delete(std::shared_ptr<shr_incoming_subscription> *)sbs;
+    }
+
+    incoming_subscription *inco_subscription_get_ptr(shr_incoming_subscription *sbs)
+    {
+        return ((std::shared_ptr<incoming_subscription> *)sbs)->get();
+    }
+
+    void inco_subscription_set_status_change_handler(incoming_subscription *subscription,
+                                                     inco_subscription_status_change handler,
+                                                     void *ud)
+    {
+        static_cast<c_inco_sbs *>(subscription)->issc_wr_ = handler;
+        static_cast<c_inco_sbs *>(subscription)->issc_ud_ = ud;
+    }
+
+    void inco_subscription_set_accept_distribution_handler(incoming_subscription *subscription,
+                                                           inco_subscription_accept_distribution handler,
+                                                           void *ud)
+    {
+        static_cast<c_inco_sbs *>(subscription)->isad_wr_ = handler;
+        static_cast<c_inco_sbs *>(subscription)->isad_ud_ = ud;
+    }
+
+    void inco_subscription_set_on_stop_handler(incoming_subscription *sbs,
+                                               inco_subscription_on_stop handler,
+                                               void *ud)
+    {
+        static_cast<c_inco_sbs *>(sbs)->isos_ = handler;
+        static_cast<c_inco_sbs *>(sbs)->isos_ud_ = ud;
+    }
+}
+
+//c_inco_conn
+
+struct c_inco_conn : public incoming_connection {
+    c_inco_conn(peer &p) : incoming_connection(p),
+        icsc_(nullptr),
+        icodh_(nullptr),
+        icoith_(nullptr),
+        icoish_(nullptr),
+        icsc_ud_(nullptr),
+        icodh_ud_(nullptr),
+        icoith_ud_(nullptr),
+        icoish_ud_(nullptr) {
+        set_incoming_transaction_factory(citf);
+        set_incoming_subscription_factory(cisf);
+    }
+
+    virtual void on_status_change(ConnectionStatus current) override {
+        icsc_(this, current, icsc_ud_);
+    }
+
+    virtual void on_disconnect(ConnectivityEventResult con_evt_res,
+                               ConnectivityEventType c_evt_type) override {
+        icodh_(this, con_evt_res, c_evt_type, icodh_ud_);
+    }
+
+    virtual RetCode on_incoming_transaction(std::shared_ptr<incoming_transaction> &ic) override {
+        return icoith_(this, (shr_incoming_transaction *)new std::shared_ptr<incoming_transaction>(ic), icoith_ud_);
+    }
+
+    virtual RetCode on_incoming_subscription(std::shared_ptr<incoming_subscription> &ic) override {
+        return icoish_(this, (shr_incoming_subscription *)new std::shared_ptr<incoming_subscription>(ic), icoish_ud_);
+    }
+
+    inco_connection_status_change icsc_;
+    inco_connection_on_disconnect_handler icodh_;
+    inco_connection_on_incoming_transaction_handler icoith_;
+    inco_connection_on_incoming_subscription_handler icoish_;
+
+    void *icsc_ud_;
+    void *icodh_ud_;
+    void *icoith_ud_;
+    void *icoish_ud_;
+};
+
+//c_inco_conn_factory
+
+struct c_inco_conn_factory : public incoming_connection_factory {
+    virtual incoming_connection &make_incoming_connection(peer &p) override {
+        return *new c_inco_conn(p);
+    }
+};
+
+static c_inco_conn_factory cicf;
+
+extern "C" {
+    void inco_connection_release(shr_incoming_connection *ic)
+    {
+        delete(std::shared_ptr<incoming_connection> *)ic;
+    }
+
+    void inco_connection_set_status_change_handler(incoming_connection *ic,
+                                                   inco_connection_status_change hndl,
+                                                   void *ud)
+    {
+        static_cast<c_inco_conn *>(ic)->icsc_ = hndl;
+        static_cast<c_inco_conn *>(ic)->icsc_ud_ = ud;
+    }
+
+    void inco_connection_set_on_disconnect_handler(incoming_connection *ic,
+                                                   inco_connection_on_disconnect_handler hndl,
+                                                   void *ud)
+    {
+        static_cast<c_inco_conn *>(ic)->icodh_ = hndl;
+        static_cast<c_inco_conn *>(ic)->icodh_ud_ = ud;
+    }
+
+    void inco_connection_set_on_incoming_transaction_handler(incoming_connection *ic,
+                                                             inco_connection_on_incoming_transaction_handler hndl,
+                                                             void *ud)
+    {
+        static_cast<c_inco_conn *>(ic)->icoith_ = hndl;
+        static_cast<c_inco_conn *>(ic)->icoith_ud_ = ud;
+    }
+
+    void inco_connection_set_on_incoming_subscription_handler(incoming_connection *ic,
+                                                              inco_connection_on_incoming_subscription_handler hndl,
+                                                              void *ud)
+    {
+        static_cast<c_inco_conn *>(ic)->icoish_ = hndl;
+        static_cast<c_inco_conn *>(ic)->icoish_ud_ = ud;
+    }
+}
+
+//c_peer
+
+struct c_peer : public peer {
     private:
-        static void peer_status_change_c_peer(peer &p, PeerStatus status,
-                                              void *ud) {
+        static void peer_status_change_c_peer(peer &p, PeerStatus status, void *ud) {
             c_peer &self = static_cast<c_peer &>(p);
-            self.psc_wr_((peer_wr)&p, status, self.psc_ud_);
+            self.psc_wr_((peer *)&p, status, self.psc_ud_);
         }
 
     public:
@@ -44,6 +367,7 @@ class c_peer : public peer {
             peh_wr_(nullptr),
             pdbh_wr_(nullptr),
             psc_wr_(nullptr),
+            sic_wr_(nullptr),
             psc_ud_(nullptr),
             pnh_wr_ud_(nullptr),
             pvh_wr_ud_(nullptr),
@@ -53,234 +377,97 @@ class c_peer : public peer {
             pstoph_wr_ud_(nullptr),
             ptoah_wr_ud_(nullptr),
             peh_wr_ud_(nullptr),
-            pdbh_wr_ud_(nullptr) {}
+            pdbh_wr_ud_(nullptr),
+            sic_wr_ud_(nullptr) {
+            set_incoming_connection_factory(cicf);
+        }
 
-    public:
-        // LIFECYCLE - User mandatory entrypoints
-        virtual const char *get_name() {
+        virtual const char *get_name() override {
             if(pnh_wr_) {
-                return pnh_wr_((peer_wr)this, pnh_wr_ud_);
+                return pnh_wr_(this, pnh_wr_ud_);
             }
             return nullptr;
         }
 
-        virtual const unsigned int *get_version() {
+        virtual const unsigned int *get_version() override {
             if(pvh_wr_) {
-                return pvh_wr_((peer_wr)this, pvh_wr_ud_);
+                return pvh_wr_(this, pvh_wr_ud_);
             }
             return nullptr;
         }
 
-        // LIFECYCLE - User opt. entrypoints
-    public:
-        virtual RetCode on_load_config(int pnum, const char *param, const char *value) {
+        virtual RetCode on_load_config(int pnum, const char *param, const char *value) override {
             if(plch_wr_) {
-                return plch_wr_((peer_wr)this, pnum, param, value, plch_wr_ud_);
+                return plch_wr_(this, pnum, param, value, plch_wr_ud_);
             } else {
                 return RetCode_OK;
             }
         }
 
-        virtual RetCode on_init() {
+        virtual RetCode on_init() override {
             if(pih_wr_) {
-                return pih_wr_((peer_wr)this, pih_wr_ud_);
+                return pih_wr_(this, pih_wr_ud_);
             } else {
                 return RetCode_OK;
             }
         }
 
-        virtual RetCode on_starting() {
+        virtual RetCode on_starting() override {
             if(pstarth_wr_) {
-                return pstarth_wr_((peer_wr)this, pstarth_wr_ud_);
+                return pstarth_wr_(this, pstarth_wr_ud_);
             } else {
                 return RetCode_OK;
             }
         }
 
-        virtual RetCode on_stopping() {
+        virtual RetCode on_stopping() override {
             if(pstoph_wr_) {
-                return pstoph_wr_((peer_wr)this, pstoph_wr_ud_);
+                return pstoph_wr_(this, pstoph_wr_ud_);
             } else {
                 return RetCode_OK;
             }
         }
 
-        virtual RetCode on_move_running() {
+        virtual RetCode on_move_running() override {
             if(ptoah_wr_) {
-                return ptoah_wr_((peer_wr)this, ptoah_wr_ud_);
+                return ptoah_wr_(this, ptoah_wr_ud_);
             } else {
                 return RetCode_OK;
             }
         }
 
-        virtual RetCode on_error() {
+        virtual RetCode on_error() override {
             if(peh_wr_) {
-                return peh_wr_((peer_wr)this, peh_wr_ud_);
+                return peh_wr_(this, peh_wr_ud_);
             }
             return RetCode_OK;
         }
 
-        virtual void on_dying_breath() {
+        virtual void on_dying_breath() override {
             if(pdbh_wr_) {
-                pdbh_wr_((peer_wr)this, pdbh_wr_ud_);
+                pdbh_wr_(this, pdbh_wr_ud_);
             }
         }
 
-        peer_name_handler_wr Pnh_wr() const {
-            return pnh_wr_;
+        virtual RetCode on_incoming_connection(std::shared_ptr<incoming_connection> &ic) override {
+            if(sic_wr_) {
+                return sic_wr_(this, (shr_incoming_connection *) new std::shared_ptr<incoming_connection>(ic), sic_wr_ud_);
+            }
+            return RetCode_OK;
         }
 
-        void Pnh_wr(peer_name_handler_wr val) {
-            pnh_wr_ = val;
-        }
+        peer_name_handler pnh_wr_;
+        peer_version_handler pvh_wr_;
+        peer_load_config_handler plch_wr_;
+        peer_init_handler pih_wr_;
+        peer_starting_handler pstarth_wr_;
+        peer_stopping_handler pstoph_wr_;
+        peer_on_move_running_handler ptoah_wr_;
+        peer_error_handler peh_wr_;
+        peer_dying_breath_handler pdbh_wr_;
+        peer_status_change psc_wr_;
+        peer_on_incoming_connection_handler sic_wr_;
 
-        peer_version_handler_wr Pvh_wr() const {
-            return pvh_wr_;
-        }
-
-        void Pvh_wr(peer_version_handler_wr val) {
-            pvh_wr_ = val;
-        }
-
-        peer_load_config_handler_wr Plch_wr() const {
-            return plch_wr_;
-        }
-
-        void Plch_wr(peer_load_config_handler_wr val) {
-            plch_wr_ = val;
-        }
-
-        peer_init_handler_wr Pih_wr() const {
-            return pih_wr_;
-        }
-
-        void Pih_wr(peer_init_handler_wr val) {
-            pih_wr_ = val;
-        }
-
-        peer_starting_handler_wr Pstarth_wr() const {
-            return pstarth_wr_;
-        }
-
-        void Pstarth_wr(peer_starting_handler_wr val) {
-            pstarth_wr_ = val;
-        }
-
-        peer_stopping_handler_wr Pstoph_wr() const {
-            return pstoph_wr_;
-        }
-
-        void Pstoph_wr(peer_stopping_handler_wr val) {
-            pstoph_wr_ = val;
-        }
-
-        peer_transit_on_air_handler_wr Ptoah_wr() const {
-            return ptoah_wr_;
-        }
-
-        void Ptoah_wr(peer_transit_on_air_handler_wr val) {
-            ptoah_wr_ = val;
-        }
-
-        peer_error_handler_wr Peh_wr() const {
-            return peh_wr_;
-        }
-
-        void Peh_wr(peer_error_handler_wr val) {
-            peh_wr_ = val;
-        }
-
-        peer_dying_breath_handler_wr Pdbh_wr() const {
-            return pdbh_wr_;
-        }
-
-        void Pdbh_wr(peer_dying_breath_handler_wr val) {
-            pdbh_wr_ = val;
-        }
-
-        peer_status_change_wr Psc_wr() const {
-            return psc_wr_;
-        }
-
-        void Psc_wr(peer_status_change_wr val) {
-            psc_wr_ = val;
-        }
-
-        void *Psc_ud() const {
-            return psc_ud_;
-        }
-
-        void Psc_ud(void *val) {
-            psc_ud_ = val;
-            //set_status_change_handler(peer_status_change_c_peer, psc_ud_);
-        }
-
-        void *Pnh_wr_ud() const {
-            return pnh_wr_ud_;
-        }
-        void Pnh_wr_ud(void *val) {
-            pnh_wr_ud_ = val;
-        }
-        void *Pvh_wr_ud() const {
-            return pvh_wr_ud_;
-        }
-        void Pvh_wr_ud(void *val) {
-            pvh_wr_ud_ = val;
-        }
-        void *Plch_wr_ud() const {
-            return plch_wr_ud_;
-        }
-        void Plch_wr_ud(void *val) {
-            plch_wr_ud_ = val;
-        }
-        void *Pih_wr_ud() const {
-            return pih_wr_ud_;
-        }
-        void Pih_wr_ud(void *val) {
-            pih_wr_ud_ = val;
-        }
-        void *Pstarth_wr_ud() const {
-            return pstarth_wr_ud_;
-        }
-        void Pstarth_wr_ud(void *val) {
-            pstarth_wr_ud_ = val;
-        }
-        void *Pstoph_wr_ud() const {
-            return pstoph_wr_ud_;
-        }
-        void Pstoph_wr_ud(void *val) {
-            pstoph_wr_ud_ = val;
-        }
-        void *Ptoah_wr_ud() const {
-            return ptoah_wr_ud_;
-        }
-        void Ptoah_wr_ud(void *val) {
-            ptoah_wr_ud_ = val;
-        }
-        void *Peh_wr_ud() const {
-            return peh_wr_ud_;
-        }
-        void Peh_wr_ud(void *val) {
-            peh_wr_ud_ = val;
-        }
-        void *Pdbh_wr_ud() const {
-            return pdbh_wr_ud_;
-        }
-        void Pdbh_wr_ud(void *val) {
-            pdbh_wr_ud_ = val;
-        }
-
-    private:
-        peer_name_handler_wr pnh_wr_;
-        peer_version_handler_wr pvh_wr_;
-        peer_load_config_handler_wr plch_wr_;
-        peer_init_handler_wr pih_wr_;
-        peer_starting_handler_wr pstarth_wr_;
-        peer_stopping_handler_wr pstoph_wr_;
-        peer_transit_on_air_handler_wr ptoah_wr_;
-        peer_error_handler_wr peh_wr_;
-        peer_dying_breath_handler_wr pdbh_wr_;
-        peer_status_change_wr psc_wr_;
         void *psc_ud_;
         void *pnh_wr_ud_;
         void *pvh_wr_ud_;
@@ -291,381 +478,358 @@ class c_peer : public peer {
         void *ptoah_wr_ud_;
         void *peh_wr_ud_;
         void *pdbh_wr_ud_;
+        void *sic_wr_ud_;
 };
 
 extern "C" {
-
-    peer_wr peer_create()
+    own_peer *peer_create()
     {
-        return new c_peer();
+        return (own_peer *) new c_peer();
     }
 
-    void peer_destroy(peer_wr p)
+    void peer_destroy(own_peer *p)
     {
-        delete static_cast<c_peer *>(p);
+        delete(c_peer *)p;
     }
 
-    RetCode peer_set_params_file_dir(peer_wr p, const char *dir)
+    peer *own_peer_get_ptr(own_peer *p)
     {
-        return static_cast<peer *>(p)->set_params_file_dir(dir);
+        return (c_peer *)p;
     }
 
-    RetCode peer_set_params_file_path_name(peer_wr p, const char *file_path)
+    RetCode peer_set_params_file_dir(peer *p, const char *dir)
     {
-        return static_cast<peer *>(p)->set_params_file_path_name(file_path);
+        return p->set_params_file_dir(dir);
     }
 
-    const char *peer_get_name(peer_wr p)
+    RetCode peer_set_params_file_path_name(peer *p, const char *file_path)
     {
-        return static_cast<peer *>(p)->get_name();
+        return p->set_params_file_path_name(file_path);
     }
 
-    const unsigned int *peer_get_version(peer_wr p)
+    const char *peer_get_name(peer *p)
     {
-        return static_cast<peer *>(p)->get_version();
+        return p->get_name();
     }
 
-    unsigned int peer_get_version_major(peer_wr p)
+    const unsigned int *peer_get_version(peer *p)
     {
-        return static_cast<peer *>(p)->get_version_major();
+        return p->get_version();
     }
 
-    unsigned int peer_get_version_minor(peer_wr p)
+    unsigned int peer_get_version_major(peer *p)
     {
-        return static_cast<peer *>(p)->get_version_minor();
+        return p->get_version_major();
     }
 
-    unsigned int peer_get_version_maintenance(peer_wr p)
+    unsigned int peer_get_version_minor(peer *p)
     {
-        return static_cast<peer *>(p)->get_version_maintenance();
+        return p->get_version_minor();
     }
 
-    unsigned int peer_get_version_architecture(peer_wr p)
+    unsigned int peer_get_version_maintenance(peer *p)
     {
-        return static_cast<peer *>(p)->get_version_architecture();
+        return p->get_version_maintenance();
     }
 
-    int peer_is_configured(peer_wr p)
+    unsigned int peer_get_version_architecture(peer *p)
     {
-        return static_cast<peer *>(p)->is_configured();
+        return p->get_version_architecture();
     }
 
-    const nentity_manager_wr peer_get_entity_manager(peer_wr p)
+    int peer_is_configured(peer *p)
     {
-        const nentity_manager &nem = static_cast<peer *>(p)->get_entity_manager();
-        return (const nentity_manager_wr)&nem;
+        return p->is_configured();
     }
 
-    nentity_manager_wr peer_get_entity_manager_m(peer_wr p)
+    const nentity_manager *peer_get_nentity_manager(peer *p)
     {
-        nentity_manager &nem = static_cast<peer *>(p)->get_entity_manager_m();
-        return (nentity_manager_wr)&nem;
+        return &p->get_entity_manager();
     }
 
-    int peer_is_persistent(peer_wr p)
+    int peer_is_persistent(peer *p)
     {
-        return static_cast<peer *>(p)->is_persistent() ? 1 : 0;
+        return p->is_persistent() ? 1 : 0;
     }
 
-    int peer_is_persistent_schema_creating(peer_wr p)
+    int peer_is_persistent_schema_creating(peer *p)
     {
-        return static_cast<peer *>(p)->is_create_persistent_schema() ? 1 : 0;
+        return p->is_create_persistent_schema() ? 1 : 0;
     }
 
-    int peer_is_dropping_existing_schema(peer_wr p)
+    int peer_is_dropping_existing_schema(peer *p)
     {
-        return static_cast<peer *>(p)->is_drop_existing_persistent_schema() ? 1 : 0;
+        return p->is_drop_existing_persistent_schema() ? 1 : 0;
     }
 
-    PeerPersonality peer_get_personality(peer_wr p)
+    PeerPersonality peer_get_personality(peer *p)
     {
-        return static_cast<peer *>(p)->get_personality();
+        return p->get_personality();
     }
 
-    sockaddr_in peer_get_server_sockaddr(peer_wr p)
+    sockaddr_in peer_get_server_sockaddr(peer *p)
     {
-        return static_cast<peer *>(p)->get_server_sockaddr();
+        return p->get_server_sockaddr();
     }
 
-    unsigned int peer_server_executor_count(peer_wr p)
+    unsigned int peer_server_executor_count(peer *p)
     {
-        return static_cast<peer *>(p)->get_server_transaction_service_executor_size();
+        return p->get_server_transaction_service_executor_size();
     }
 
-    unsigned int peer_client_executor_count(peer_wr p)
+    unsigned int peer_client_executor_count(peer *p)
     {
-        return static_cast<peer *>(p)->get_client_transaction_service_executor_size();
+        return p->get_client_transaction_service_executor_size();
     }
 
-    unsigned int peer_server_sbs_executor_count(peer_wr p)
+    unsigned int peer_server_sbs_executor_count(peer *p)
     {
-        return static_cast<peer *>(p)->get_server_subscription_service_executor_size();
+        return p->get_server_subscription_service_executor_size();
     }
 
-    void peer_set_personality(peer_wr p, PeerPersonality personality)
+    void peer_set_personality(peer *p, PeerPersonality personality)
     {
-        static_cast<peer *>(p)->set_personality(personality);
+        p->set_personality(personality);
     }
 
-    void peer_add_load_model(peer_wr p, const char *model)
+    void peer_add_load_model(peer *p, const char *model)
     {
-        static_cast<peer *>(p)->add_load_model(model);
+        p->add_load_model(model);
     }
 
-    void peer_set_srv_sin_addr(peer_wr p, const char *address)
+    void peer_set_srv_sin_addr(peer *p, const char *address)
     {
-        static_cast<peer *>(p)->set_server_address(address);
+        p->set_server_address(address);
     }
 
-    void peer_set_sin_port(peer_wr p, int port)
+    void peer_set_sin_port(peer *p, int port)
     {
-        static_cast<peer *>(p)->set_server_port(port);
+        p->set_server_port(port);
     }
 
-    void peer_set_srv_executors(peer_wr p, unsigned int server_executors)
+    void peer_set_srv_executors(peer *p, unsigned int server_executors)
     {
-        static_cast<peer *>(p)->set_server_transaction_service_executor_size(server_executors);
+        p->set_server_transaction_service_executor_size(server_executors);
     }
 
-    void peer_set_cli_executors(peer_wr p, unsigned int client_executors)
+    void peer_set_cli_executors(peer *p, unsigned int client_executors)
     {
-        static_cast<peer *>(p)->set_client_transaction_service_executor_size(client_executors);
+        p->set_client_transaction_service_executor_size(client_executors);
     }
 
-    void peer_set_srv_sbs_executors(peer_wr p, unsigned int srv_sbs_executors)
+    void peer_set_srv_sbs_executors(peer *p, unsigned int srv_sbs_executors)
     {
-        static_cast<peer *>(p)->set_server_subscription_service_executor_size(srv_sbs_executors);
+        p->set_server_subscription_service_executor_size(srv_sbs_executors);
     }
 
-    void peer_set_persistent(peer_wr p, int persistent)
+    void peer_set_persistent(peer *p, int persistent)
     {
-        static_cast<peer *>(p)->set_persistent(persistent ? true : false);
+        p->set_persistent(persistent ? true : false);
     }
 
-    void peer_set_persistent_schema_creating(peer_wr p,
-                                             int persistent_schema_create)
+    void peer_set_persistent_schema_creating(peer *p, int persistent_schema_create)
     {
-        static_cast<peer *>(p)->set_create_persistent_schema(persistent_schema_create
-                                                             ? true : false);
+        p->set_create_persistent_schema(persistent_schema_create ? true : false);
     }
 
-    void peer_set_dropping_existing_schema(peer_wr p, int drop_existing_schema)
+    void peer_set_dropping_existing_schema(peer *p, int drop_existing_schema)
     {
-        static_cast<peer *>(p)->set_drop_existing_persistent_schema(drop_existing_schema ?
-                                                                    true : false);
+        p->set_drop_existing_persistent_schema(drop_existing_schema ? true : false);
     }
 
-    void peer_add_load_persistent_driver(peer_wr p, const char *driver)
+    void peer_add_load_persistent_driver(peer *p, const char *driver)
     {
-        static_cast<peer *>(p)->add_load_persistent_driver(driver);
+        p->add_load_persistent_driver(driver);
     }
 
-    RetCode peer_extend_model_with_em(peer_wr p, nentity_manager_wr nem)
+    RetCode peer_extend_model_with_nem(peer *p, nentity_manager *nem)
     {
-        return static_cast<peer *>(p)->extend_model(*static_cast<nentity_manager *>(nem));
+        return p->extend_model(*static_cast<nentity_manager *>(nem));
     }
 
-    RetCode peer_extend_model_with_model_name(peer_wr p, const char *model_name)
+    RetCode peer_extend_model_with_model_name(peer *p, const char *model_name)
     {
-        return static_cast<peer *>(p)->extend_model(model_name);
+        return p->extend_model(model_name);
     }
 
-    void peer_set_name_handler(peer_wr p, peer_name_handler_wr hndl, void *ud)
+    void peer_set_name_handler(peer *p, peer_name_handler hndl, void *ud)
     {
-        static_cast<c_peer *>(p)->Pnh_wr(hndl);
-        static_cast<c_peer *>(p)->Pnh_wr_ud(ud);
+        static_cast<c_peer *>(p)->pnh_wr_ = hndl;
+        static_cast<c_peer *>(p)->pnh_wr_ud_ = ud;
     }
 
-    void peer_set_version_handler(peer_wr p, peer_version_handler_wr hndl, void *ud)
+    void peer_set_version_handler(peer *p, peer_version_handler hndl, void *ud)
     {
-        static_cast<c_peer *>(p)->Pvh_wr(hndl);
-        static_cast<c_peer *>(p)->Pvh_wr_ud(ud);
+        static_cast<c_peer *>(p)->pvh_wr_ = hndl;
+        static_cast<c_peer *>(p)->pvh_wr_ud_ = ud;
     }
 
-    void peer_set_load_config_handler(peer_wr p, peer_load_config_handler_wr hndl,
-                                      void *ud)
+    void peer_set_load_config_handler(peer *p, peer_load_config_handler hndl, void *ud)
     {
-        static_cast<c_peer *>(p)->Plch_wr(hndl);
-        static_cast<c_peer *>(p)->Plch_wr_ud(ud);
+        static_cast<c_peer *>(p)->plch_wr_ = hndl;
+        static_cast<c_peer *>(p)->plch_wr_ud_ = ud;
     }
 
-    void peer_set_init_handler(peer_wr p, peer_init_handler_wr hndl, void *ud)
+    void peer_set_init_handler(peer *p, peer_init_handler hndl, void *ud)
     {
-        static_cast<c_peer *>(p)->Pih_wr(hndl);
-        static_cast<c_peer *>(p)->Pih_wr_ud(ud);
+        static_cast<c_peer *>(p)->pih_wr_ = hndl;
+        static_cast<c_peer *>(p)->pih_wr_ud_ = ud;
     }
 
-    void peer_set_starting_handler(peer_wr p, peer_starting_handler_wr hndl,
-                                   void *ud)
+    void peer_set_starting_handler(peer *p, peer_starting_handler hndl, void *ud)
     {
-        static_cast<c_peer *>(p)->Pstarth_wr(hndl);
-        static_cast<c_peer *>(p)->Pstarth_wr_ud(ud);
+        static_cast<c_peer *>(p)->pstarth_wr_ = hndl;
+        static_cast<c_peer *>(p)->pstarth_wr_ud_ = ud;
     }
 
-    void peer_set_stopping_handler(peer_wr p, peer_stopping_handler_wr hndl,
-                                   void *ud)
+    void peer_set_stopping_handler(peer *p, peer_stopping_handler hndl, void *ud)
     {
-        static_cast<c_peer *>(p)->Pstoph_wr(hndl);
-        static_cast<c_peer *>(p)->Pstoph_wr_ud(ud);
+        static_cast<c_peer *>(p)->pstoph_wr_ = hndl;
+        static_cast<c_peer *>(p)->pstoph_wr_ud_ = ud;
     }
 
-    void peer_set_transit_on_air_handler(peer_wr p,
-                                         peer_transit_on_air_handler_wr hndl, void *ud)
+    void peer_set_on_move_running_handler(peer *p, peer_on_move_running_handler hndl, void *ud)
     {
-        static_cast<c_peer *>(p)->Ptoah_wr(hndl);
-        static_cast<c_peer *>(p)->Ptoah_wr_ud(ud);
+        static_cast<c_peer *>(p)->ptoah_wr_ = hndl;
+        static_cast<c_peer *>(p)->ptoah_wr_ud_ = ud;
     }
 
-    void peer_set_error_handler(peer_wr p, peer_error_handler_wr hndl, void *ud)
+    void peer_set_error_handler(peer *p, peer_error_handler hndl, void *ud)
     {
-        static_cast<c_peer *>(p)->Peh_wr(hndl);
-        static_cast<c_peer *>(p)->Peh_wr_ud(ud);
+        static_cast<c_peer *>(p)->peh_wr_ = hndl;
+        static_cast<c_peer *>(p)->peh_wr_ud_ = ud;
     }
 
-    void peer_set_dying_breath_handler(peer_wr p, peer_dying_breath_handler_wr hndl,
-                                       void *ud)
+    void peer_set_dying_breath_handler(peer *p, peer_dying_breath_handler hndl, void *ud)
     {
-        static_cast<c_peer *>(p)->Pdbh_wr(hndl);
-        static_cast<c_peer *>(p)->Pdbh_wr_ud(ud);
+        static_cast<c_peer *>(p)->pdbh_wr_ = hndl;
+        static_cast<c_peer *>(p)->pdbh_wr_ud_ = ud;
     }
 
-    void peer_set_configured(peer_wr p, int configured)
+    void peer_set_configured(peer *p, int configured)
     {
-        static_cast<peer *>(p)->set_configured(configured ? true : false);
+        p->set_configured(configured ? true : false);
     }
 
-    PeerStatus peer_get_status(peer_wr p)
+    PeerStatus peer_get_status(peer *p)
     {
-        return static_cast<peer *>(p)->get_status();
+        return p->get_status();
     }
 
-    void peer_set_status_change_handler(peer_wr p, peer_status_change_wr handler,
-                                        void *ud)
+    void peer_set_status_change_handler(peer *p, peer_status_change handler, void *ud)
     {
-        static_cast<c_peer *>(p)->Psc_wr(handler);
-        static_cast<c_peer *>(p)->Psc_ud(ud);
+        static_cast<c_peer *>(p)->psc_wr_ = handler;
+        static_cast<c_peer *>(p)->psc_ud_ = ud;
     }
 
-    RetCode peer_await_for_status_reached_or_outdated(peer_wr p,
+    void peer_set_peer_on_incoming_connection_handler(peer *p, peer_on_incoming_connection_handler handler, void *ud)
+    {
+        static_cast<c_peer *>(p)->sic_wr_ = handler;
+        static_cast<c_peer *>(p)->sic_wr_ud_ = ud;
+    }
+
+    RetCode peer_await_for_status_reached_or_outdated(peer *p,
                                                       PeerStatus test,
                                                       PeerStatus *current,
                                                       time_t sec,
                                                       long nsec)
     {
-        return static_cast<peer *>(p)->await_for_status_reached_or_outdated(test,
-                                                                            *current, sec, nsec);
+        return p->await_for_status_reached_or_outdated(test, *current, sec, nsec);
     }
 
-    RetCode peer_await_for_status_change(peer_wr p,
+    RetCode peer_await_for_status_change(peer *p,
                                          PeerStatus *peer_status,
                                          time_t sec,
                                          long nsec)
     {
-        return static_cast<peer *>(p)->await_for_status_change(*peer_status, sec, nsec);
+        return p->await_for_status_change(*peer_status, sec, nsec);
     }
 
-    RetCode peer_start(peer_wr p, int argc, char *argv[], int spawn_new_thread)
+    RetCode peer_start(peer *p, int argc, char *argv[], int spawn_new_thread)
     {
-        return static_cast<peer *>(p)->start(argc, argv,
-                                             spawn_new_thread ? true : false);
+        return p->start(argc, argv, spawn_new_thread ? true : false);
     }
 
-    RetCode peer_stop(peer_wr p, int force_disconnect /*= false*/)
+    RetCode peer_stop(peer *p, int force_disconnect)
     {
-        return static_cast<peer *>(p)->stop(force_disconnect ? true : false);
+        return p->stop(force_disconnect ? true : false);
     }
 
-    RetCode peer_persistence_schema_create(peer_wr p,
-                                           PersistenceAlteringMode mode)
+    RetCode peer_persistence_schema_create(peer *p, PersistenceAlteringMode mode)
     {
-        return static_cast<peer *>(p)->create_persistent_schema(mode);
+        return p->create_persistent_schema(mode);
     }
 
-    RetCode peer_class_persistence_schema_create(peer_wr p,
-                                                 PersistenceAlteringMode mode, unsigned int nclass_id)
+    RetCode peer_nclass_persistence_schema_create(peer *p, PersistenceAlteringMode mode, unsigned int nclass_id)
     {
-        return static_cast<peer *>(p)->nclass_create_persistent_schema(mode, nclass_id);
+        return p->nclass_create_persistent_schema(mode, nclass_id);
     }
 
-    RetCode peer_class_persistent_load(peer_wr p, unsigned short nclass_key,
-                                       unsigned int *ts_0_out, unsigned int *ts_1_out,
-                                       nclass_wr in_out)
+    RetCode peer_nclass_persistent_load(peer *p,
+                                        unsigned short nclass_key,
+                                        unsigned int *ts_0_out,
+                                        unsigned int *ts_1_out,
+                                        nclass *in_out)
     {
-        return static_cast<peer *>(p)->obj_load(nclass_key, *ts_0_out,
-                                                *ts_1_out, *(nclass *)in_out);
+        return p->obj_load(nclass_key,
+                           *ts_0_out,
+                           *ts_1_out,
+                           *in_out);
     }
 
-    RetCode peer_class_persistent_save(peer_wr p, nclass_wr in)
+    RetCode peer_nclass_persistent_save(peer *p, nclass *in)
     {
-        return static_cast<peer *>(p)->obj_save(*(nclass *)in);
+        return p->obj_save(*in);
     }
 
-    RetCode peer_class_persistent_update(peer_wr p, unsigned short nclass_key,
-                                         nclass_wr in)
+    RetCode peer_nclass_persistent_update(peer *p, unsigned short nclass_key, nclass *in)
     {
-        return static_cast<peer *>(p)->obj_update(nclass_key,
-                                                  *(nclass *)in);
+        return p->obj_update(nclass_key, *in);
     }
 
-    RetCode peer_class_persistent_update_or_save(peer_wr p,
-                                                 unsigned short nclass_key,
-                                                 nclass_wr in)
+    RetCode peer_nclass_persistent_update_or_save(peer *p,
+                                                  unsigned short nclass_key,
+                                                  nclass *in)
     {
-        return static_cast<peer *>(p)->obj_update_or_save(nclass_key,
-                                                          *(nclass *)in);
+        return p->obj_update_or_save(nclass_key, *in);
     }
 
-    RetCode peer_class_persistent_remove(peer_wr p, unsigned short nclass_key,
-                                         PersistenceDeletionMode mode,
-                                         nclass_wr in)
+    RetCode peer_nclass_persistent_remove(peer *p,
+                                          unsigned short nclass_key,
+                                          PersistenceDeletionMode mode,
+                                          nclass *in)
     {
-        return static_cast<peer *>(p)->obj_remove(nclass_key, mode,
-                                                  *(nclass *)in);
+        return p->obj_remove(nclass_key, mode, *in);
     }
 
-    RetCode peer_class_distribute(peer_wr p,
-                                  SubscriptionEventType event_type,
-                                  Action action, nclass_wr in)
+    RetCode peer_nclass_distribute(peer *p,
+                                   SubscriptionEventType event_type,
+                                   Action action,
+                                   nclass *in)
     {
-        //@FIXME
-        //return static_cast<peer *>(p)->obj_distribute(event_type, action,
-        //                                              *(nclass *)in);
-        return RetCode_KO;
+        return p->obj_distribute(event_type, action, *in);
     }
 
-    RetCode peer_class_persistent_save_and_distribute(peer_wr p,
-                                                      nclass_wr in)
+    RetCode peer_nclass_persistent_save_and_distribute(peer *p, nclass *in)
     {
-        //@FIXME
-        //return static_cast<peer *>(p)->obj_save_and_distribute(*(nclass *)in);
-        return RetCode_KO;
+        return p->obj_save_and_distribute(*in);
     }
 
-    RetCode peer_class_persistent_update_and_distribute(peer_wr p,
-                                                        unsigned short nclass_key, nclass_wr in)
+    RetCode peer_nclass_persistent_update_and_distribute(peer *p, unsigned short nclass_key, nclass *in)
     {
-        //@FIXME
-        //return static_cast<peer *>(p)->obj_update_and_distribute(nclass_key, *(nclass *)in);
-        return RetCode_KO;
+        return p->obj_update_and_distribute(nclass_key, *in);
     }
 
-    RetCode peer_class_persistent_update_or_save_and_distribute(peer_wr p,
-                                                                unsigned short nclass_key, nclass_wr in)
+    RetCode peer_nclass_persistent_update_or_save_and_distribute(peer *p, unsigned short nclass_key, nclass *in)
     {
-        //@FIXME
-        //return static_cast<peer *>(p)->obj_update_or_save_and_distribute(nclass_key, *(nclass *)in);
-        return RetCode_KO;
+        return p->obj_update_or_save_and_distribute(nclass_key, *in);
     }
 
-    RetCode peer_class_persistent_remove_and_distribute(peer_wr p,
-                                                        unsigned short nclass_key,
-                                                        PersistenceDeletionMode mode,
-                                                        nclass_wr in)
+    RetCode peer_nclass_persistent_remove_and_distribute(peer *p,
+                                                         unsigned short nclass_key,
+                                                         PersistenceDeletionMode mode,
+                                                         nclass *in)
     {
-        //@FIXME
-        //return static_cast<peer *>(p)->obj_remove_and_distribute(nclass_key, mode, *(nclass *)in);
-        return RetCode_KO;
+        return p->obj_remove_and_distribute(nclass_key, mode, *in);
     }
-
-}
 }

@@ -46,17 +46,11 @@ struct member_desc {
 
     ~member_desc();
 
-    /*
-    member section
-    */
     unsigned short get_id() const;
     MemberType get_member_type() const;
     const char *get_member_name() const;
     const char *get_member_description() const;
 
-    /*
-    field
-    */
     Type get_field_vlg_type() const;
     size_t get_field_offset() const;
     size_t get_field_type_size() const;
@@ -65,9 +59,6 @@ struct member_desc {
     const char *get_field_user_type() const;
     NEntityType get_field_nentity_type() const;
 
-    /*
-    nenum
-    */
     long get_nenum_value() const;
 
     std::unique_ptr<member_desc_impl> impl_;
@@ -110,7 +101,7 @@ struct nentity_desc {
                           NEntityType nentity_type,
                           const char *entity_namespace,
                           const char *entity_name,
-                          vlg::nclass_alloc nclass_allocation_function,
+                          nclass_alloc nclass_allocation_function,
                           unsigned int nentity_member_num,
                           bool persistent);
     ~nentity_desc();
@@ -123,7 +114,7 @@ struct nentity_desc {
     NEntityType get_nentity_type() const;
     const char *get_nentity_namespace() const;
     const char *get_nentity_name() const;
-    vlg::nclass_alloc get_nclass_allocation_function() const;
+    nclass_alloc get_nclass_allocation_function() const;
     unsigned int get_nentity_member_count() const;
     bool is_persistent() const;
 
@@ -144,116 +135,101 @@ struct nentity_desc {
 
 /** @brief nclass
  */
-class nclass {
-        friend struct nentity_manager;
+struct nclass {
+    explicit nclass();
+    virtual ~nclass();
 
-    public:
-        explicit nclass();
-        virtual ~nclass();
+    virtual unsigned int get_id() const = 0;
+    virtual unsigned int get_compiler_version() const = 0;
+    virtual size_t get_size() const = 0;
+    virtual const nclass &get_zero_object() const = 0;
 
-    public:
-        virtual unsigned int get_id() const = 0;
-        virtual unsigned int get_compiler_version() const = 0;
-        virtual size_t get_size() const = 0;
-        virtual const nclass &get_zero_object() const = 0;
+    virtual void copy_to(nclass &) const = 0;
+    virtual std::unique_ptr<nclass> clone() const = 0;
+    virtual bool is_zero() const = 0;
+    virtual void set_zero() = 0;
+    virtual void set_from(const nclass &) = 0;
 
-        /*
-        nclass manipulation
-        */
-    public:
-        virtual void copy_to(nclass &) const = 0;
-        virtual std::unique_ptr<nclass> clone() const = 0;
-        virtual bool is_zero() const = 0;
-        virtual void set_zero() = 0;
-        virtual void set_from(const nclass &) = 0;
+    size_t get_field_size_by_id(unsigned int) const;
+    size_t get_field_size_by_name(const char *) const;
+    char *get_field_address_by_id(unsigned int);
+    char *get_field_address_by_name(const char *);
 
-        /*
-        nclass field manipulation
-        */
-    public:
-        size_t get_field_size_by_id(unsigned int) const;
-        size_t get_field_size_by_name(const char *) const;
-        char *get_field_address_by_id(unsigned int);
-        char *get_field_address_by_name(const char *);
+    char *get_field_address_by_id_and_index(unsigned int field_id,
+                                            unsigned int index);
 
-        char *get_field_address_by_id_and_index(unsigned int field_id,
-                                                unsigned int index);
+    char *get_field_address_by_name_and_index(const char *field_name,
+                                              unsigned int index);
 
-        char *get_field_address_by_name_and_index(const char *field_name,
-                                                  unsigned int index);
+    char *get_field_address_by_column_number(unsigned int column_number,
+                                             const nentity_manager &nem,
+                                             const member_desc **member_descriptor);
 
-        char *get_field_address_by_column_number(unsigned int column_number,
-                                                 const nentity_manager &nem,
-                                                 const member_desc **member_descriptor);
+    RetCode set_field_by_id(unsigned int field_id,
+                            const void *ptr,
+                            size_t maxlen = 0);
 
-        RetCode set_field_by_id(unsigned int field_id,
-                                const void *ptr,
-                                size_t maxlen = 0);
+    RetCode set_field_by_name(const char *field_name,
+                              const void *ptr,
+                              size_t maxlen = 0);
 
-        RetCode set_field_by_name(const char *field_name,
+    RetCode set_field_by_id_index(unsigned int field_id,
                                   const void *ptr,
+                                  unsigned int index,
                                   size_t maxlen = 0);
 
-        RetCode set_field_by_id_index(unsigned int field_id,
-                                      const void *ptr,
+    RetCode set_field_by_name_index(const char *field_name,
+                                    const void *ptr,
+                                    unsigned int index,
+                                    size_t maxlen = 0);
+
+    RetCode is_field_zero_by_id(unsigned int field_id,
+                                bool &res) const;
+
+    RetCode is_field_zero_by_name(const char *field_name,
+                                  bool &res) const;
+
+    RetCode is_field_zero_by_id_index(unsigned int field_id,
                                       unsigned int index,
-                                      size_t maxlen = 0);
-
-        RetCode set_field_by_name_index(const char *field_name,
-                                        const void *ptr,
-                                        unsigned int index,
-                                        size_t maxlen = 0);
-
-        RetCode is_field_zero_by_id(unsigned int field_id,
-                                    bool &res) const;
-
-        RetCode is_field_zero_by_name(const char *field_name,
+                                      unsigned int nmenb,
                                       bool &res) const;
 
-        RetCode is_field_zero_by_id_index(unsigned int field_id,
-                                          unsigned int index,
-                                          unsigned int nmenb,
-                                          bool &res) const;
+    RetCode is_field_zero_by_name_index(const char *field_name,
+                                        unsigned int index,
+                                        unsigned int nmenb,
+                                        bool &res) const;
 
-        RetCode is_field_zero_by_name_index(const char *field_name,
-                                            unsigned int index,
-                                            unsigned int nmenb,
-                                            bool &res) const;
+    RetCode set_field_zero_by_id(unsigned int field_id);
+    RetCode set_field_zero_by_name(const char *field_name);
 
-        RetCode set_field_zero_by_id(unsigned int field_id);
-        RetCode set_field_zero_by_name(const char *field_name);
+    RetCode set_field_zero_by_id_index(unsigned int field_id,
+                                       unsigned int index,
+                                       unsigned int nmenb);
 
-        RetCode set_field_zero_by_id_index(unsigned int field_id,
-                                           unsigned int index,
-                                           unsigned int nmenb);
+    RetCode set_field_zero_by_name_index(const char *field_name,
+                                         unsigned int index,
+                                         unsigned int nmenb);
 
-        RetCode set_field_zero_by_name_index(const char *field_name,
-                                             unsigned int index,
-                                             unsigned int nmenb);
+    virtual const nentity_desc &get_nentity_descriptor() const = 0;
 
-        virtual const nentity_desc &get_nentity_descriptor() const = 0;
+    virtual size_t pretty_dump_to_buffer(char *buffer,
+                                         bool print_nclass_name = true) const = 0;
 
-        virtual size_t pretty_dump_to_buffer(char *buffer,
-                                             bool print_nclass_name = true) const = 0;
+    virtual size_t pretty_dump_to_file(FILE *file,
+                                       bool print_nclass_name = true) const = 0;
 
-        virtual size_t pretty_dump_to_file(FILE *file,
-                                           bool print_nclass_name = true) const = 0;
+    /*
+    serialize / restore
+    */
+    virtual int serialize(Encode encode,
+                          const nclass *previous_image,
+                          g_bbuf *obb) const = 0;
 
-        /*
-        serialize / restore
-        */
-        virtual int serialize(Encode encode,
-                              const nclass *previous_image,
-                              vlg::g_bbuf *obb) const = 0;
+    RetCode restore(const nentity_manager *nem,
+                    Encode encode,
+                    g_bbuf *ibb);
 
-        RetCode restore(const nentity_manager *nem,
-                        Encode encode,
-                        vlg::g_bbuf *ibb);
-
-        /*
-        persistence related
-        */
-        virtual RetCode get_primary_key_value_as_string(std::unique_ptr<char> &);
+    virtual RetCode get_primary_key_value_as_string(std::unique_ptr<char> &);
 };
 
 typedef const char *(*model_version_func)();

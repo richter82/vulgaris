@@ -38,46 +38,46 @@ namespace vlg {
 READ- VLG_PERS_MNG_ReadUInt
 ***********************************/
 RetCode VLG_PERS_MNG_ReadUInt(unsigned long &lnum,
-                              vlg::str_tok &tknz,
+                              str_tok &tknz,
                               unsigned int &uint)
 {
     std::string tkn;
     while(tknz.next_token(tkn, CR_DF_DLMT, true)) {
         CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return vlg::RetCode_BADCFG)
-        if(vlg::string_is_number(tkn.c_str())) {
+        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
+        if(string_is_number(tkn.c_str())) {
             uint = atoi(tkn.c_str());
         } else {
-            return vlg::RetCode_KO;
+            return RetCode_KO;
         }
         break;
     }
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
 /***********************************
 READ- VLG_PERS_MNG_ReadString
 ***********************************/
 RetCode VLG_PERS_MNG_ReadString(unsigned long &lnum,
-                                vlg::str_tok &tknz,
+                                str_tok &tknz,
                                 std::string &out)
 {
     std::string tkn;
     while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_QT, true)) {
         CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return vlg::RetCode_BADCFG)
+        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
         if(tkn == CR_TK_QT) {
             //ok we have read the beginning quote of the string
             break;
         } else {
             //unexp token
-            return vlg::RetCode_KO;
+            return RetCode_KO;
         }
     }
     while(tknz.next_token(tkn, CR_NL_DLMT
                           CR_TK_QT, true)) {
         //we expect a string, so we return with error if newline found.
-        CR_DO_CMD_ON_NEWLINE(tkn, return vlg::RetCode_BADCFG)
+        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
         if(!out.length()) {
             if(tkn == CR_TK_QT) {
                 //empty string
@@ -91,60 +91,60 @@ RetCode VLG_PERS_MNG_ReadString(unsigned long &lnum,
                 break;
             } else {
                 //unexp token
-                return vlg::RetCode_KO;
+                return RetCode_KO;
             }
         }
     }
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
 RetCode VLG_PERS_MNG_ReadColon(unsigned long &lnum,
-                               vlg::str_tok &tknz)
+                               str_tok &tknz)
 {
     std::string tkn;
     //read mandatory colon
     while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_COLON, true)) {
         CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return vlg::RetCode_BADCFG)
+        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
         if(tkn == CR_TK_COLON) {
             break;
         } else {
-            return vlg::RetCode_BADCFG;
+            return RetCode_BADCFG;
         }
     }
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
 RetCode VLG_PERS_MNG_ReadRBL(unsigned long &lnum,
-                             vlg::str_tok &tknz)
+                             str_tok &tknz)
 {
     std::string tkn;
     while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_RBL, true)) {
         CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return vlg::RetCode_BADCFG)
+        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
         if(tkn == CR_TK_RBL) {
             break;
         } else {
-            return vlg::RetCode_BADCFG;
+            return RetCode_BADCFG;
         }
     }
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
 RetCode VLG_PERS_MNG_ReadRBR(unsigned long &lnum,
-                             vlg::str_tok &tknz)
+                             str_tok &tknz)
 {
     std::string tkn;
     while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_RBR, true)) {
         CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return vlg::RetCode_BADCFG)
+        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
         if(tkn == CR_TK_RBR) {
             break;
         } else {
-            return vlg::RetCode_BADCFG;
+            return RetCode_BADCFG;
         }
     }
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
 // VLG_PERS_MANAGER
@@ -168,21 +168,21 @@ persistence_manager_impl &persistence_manager_impl::get_instance()
 RetCode persistence_manager_impl::set_cfg_file_dir(const char *dir)
 {
     strncpy(pers_cfg_file_dir,dir, PERS_CFG_FILE_DIR_LEN);
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
 RetCode persistence_manager_impl::set_cfg_file_path_name(
     const char *file_path)
 {
     strncpy(pers_cfg_file_path_name,file_path, PERS_CFG_FILE_PATH_NAME_LEN);
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
 RetCode persistence_manager_impl::load_pers_driver_dyna(const char *drivers[],
                                                         int drivers_num)
 {
     IFLOG(trc(TH_ID, LS_OPN "[drivers_num:%d]", __func__, drivers_num))
-    RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = RetCode_OK;
     for(int i = 0; i < drivers_num; i++) {
         if(get_instance().drivname_driv_hm_.find(drivers[i]) != get_instance().drivname_driv_hm_.end()) {
             IFLOG(wrn(TH_ID, LS_TRL "[driver already loaded, skipping:%s]", __func__, drivers[i]))
@@ -202,7 +202,7 @@ RetCode persistence_manager_impl::load_pers_driver_dyna(const char *drivers[],
 RetCode persistence_manager_impl::load_pers_driver_dyna(std::set<std::string> &drivmap)
 {
     IFLOG(trc(TH_ID, LS_OPN "[drivers_num:%d]", __func__, drivmap.size()))
-    RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = RetCode_OK;
     for(auto it = drivmap.begin(); it != drivmap.end(); it++) {
         persistence_driver *driv = nullptr;
         if((rcode = persistence_driver::load_driver_dyna(it->c_str(), &driv))) {
@@ -219,7 +219,7 @@ RetCode persistence_manager_impl::load_pers_driver(persistence_driver *drivers[]
                                                    int drivers_num)
 {
     IFLOG(trc(TH_ID, LS_OPN "[drivers_num:%d]", __func__, drivers_num))
-    RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = RetCode_OK;
     for(int i = 0; i < drivers_num; i++) {
         if(get_instance().drivname_driv_hm_.find(drivers[i]->get_driver_name()) != get_instance().drivname_driv_hm_.end()) {
             IFLOG(wrn(TH_ID, LS_TRL "[driver already loaded, skipping:%s]", __func__, drivers[i]))
@@ -270,17 +270,17 @@ PARSE- ParseData
 
 RetCode persistence_manager_impl::parse_impl_after_colon(
     unsigned long &lnum,
-    vlg::str_tok &tknz, unsigned int &integer)
+    str_tok &tknz, unsigned int &integer)
 {
     std::string tkn;
     //read mandatory colon
     RET_ON_KO(VLG_PERS_MNG_ReadColon(lnum, tknz))
     RET_ON_KO(VLG_PERS_MNG_ReadUInt(lnum, tknz, integer))
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
 RetCode persistence_manager_impl::parse_URI(unsigned long &lnum,
-                                            vlg::str_tok &tknz,
+                                            str_tok &tknz,
                                             std::string &url,
                                             std::string &usr,
                                             std::string &psswd)
@@ -293,12 +293,12 @@ RetCode persistence_manager_impl::parse_URI(unsigned long &lnum,
     //read url keyword
     while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_COLON, true)) {
         CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return vlg::RetCode_BADCFG)
+        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
         if(tkn == VLG_RWRD_URL) {
             break;
         } else {
             IFLOG(cri(TH_ID, LS_PRS "[line:%d, unexpected token:%s]", __func__, lnum, tkn.c_str()))
-            return vlg::RetCode_BADCFG;
+            return RetCode_BADCFG;
         }
     }
     //read mandatory colon
@@ -308,12 +308,12 @@ RetCode persistence_manager_impl::parse_URI(unsigned long &lnum,
     //read usr keyword
     while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_COLON, true)) {
         CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return vlg::RetCode_BADCFG)
+        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
         if(tkn == VLG_RWRD_USR) {
             break;
         } else {
             IFLOG(cri(TH_ID, LS_PRS "[line:%d, unexpected token:%s]", __func__, lnum, tkn.c_str()))
-            return vlg::RetCode_BADCFG;
+            return RetCode_BADCFG;
         }
     }
     //read mandatory colon
@@ -323,12 +323,12 @@ RetCode persistence_manager_impl::parse_URI(unsigned long &lnum,
     //read psswd keyword
     while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_COLON, true)) {
         CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return vlg::RetCode_BADCFG)
+        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
         if(tkn == VLG_RWRD_PSSWD) {
             break;
         } else {
             IFLOG(cri(TH_ID, LS_PRS "[line:%d, unexpected token:%s]", __func__, lnum, tkn.c_str()))
-            return vlg::RetCode_BADCFG;
+            return RetCode_BADCFG;
         }
     }
     //read mandatory colon
@@ -337,12 +337,12 @@ RetCode persistence_manager_impl::parse_URI(unsigned long &lnum,
     RET_ON_KO(VLG_PERS_MNG_ReadString(lnum, tknz, psswd))
     //read mandatory ]
     RET_ON_KO(VLG_PERS_MNG_ReadRBR(lnum, tknz))
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
 
 RetCode persistence_manager_impl::parse_single_conn_pool_cfg(unsigned long &lnum,
-                                                             vlg::str_tok &tknz,
+                                                             str_tok &tknz,
                                                              std::string &conn_pool_name,
                                                              std::unordered_map<std::string, persistence_driver *> &conn_pool_name_to_driv)
 {
@@ -352,11 +352,11 @@ RetCode persistence_manager_impl::parse_single_conn_pool_cfg(unsigned long &lnum
     //read driver type
     while(tknz.next_token(tkn, CR_DF_DLMT, true)) {
         CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return vlg::RetCode_BADCFG)
+        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
         auto it = drivname_driv_hm_.find(tkn);
         if(it == drivname_driv_hm_.end()) {
             IFLOG(cri(TH_ID, LS_PRS "[line:%d, driver not loaded:%s]", __func__, lnum, tkn.c_str()))
-            return vlg::RetCode_BADCFG;
+            return RetCode_BADCFG;
         } else {
             driv = it->second;
         }
@@ -365,38 +365,38 @@ RetCode persistence_manager_impl::parse_single_conn_pool_cfg(unsigned long &lnum
     //read uri rword
     while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_COLON, true)) {
         CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return vlg::RetCode_BADCFG)
+        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
         if(tkn == VLG_RWRD_URI) {
             RET_ON_KO(parse_URI(lnum, tknz, url, usr, psswd))
             break;
         } else {
             IFLOG(cri(TH_ID, LS_PRS "[line:%d, unexpected token:%s]", __func__, lnum, tkn.c_str()))
-            return vlg::RetCode_BADCFG;
+            return RetCode_BADCFG;
         }
         break;
     }
     //read pool_size keyword
     while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_COLON, true)) {
         CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return vlg::RetCode_BADCFG)
+        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
         if(tkn == VLG_RWRD_POOL_SIZE) {
             RET_ON_KO(parse_impl_after_colon(lnum, tknz, pool_size))
             break;
         } else {
             IFLOG(cri(TH_ID, LS_PRS "[line:%d, unexpected token:%s]", __func__, lnum, tkn.c_str()))
-            return vlg::RetCode_BADCFG;
+            return RetCode_BADCFG;
         }
     }
     //read th_size keyword
     while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_COLON, true)) {
         CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return vlg::RetCode_BADCFG)
+        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
         if(tkn == VLG_RWRD_POOL_TH_SIZE) {
             RET_ON_KO(parse_impl_after_colon(lnum, tknz, th_size))
             break;
         } else {
             IFLOG(cri(TH_ID, LS_PRS "[line:%d, unexpected token:%s]", __func__, lnum, tkn.c_str()))
-            return vlg::RetCode_BADCFG;
+            return RetCode_BADCFG;
         }
     }
     RET_ON_KO(driv->add_pool(conn_pool_name.c_str(),
@@ -406,11 +406,11 @@ RetCode persistence_manager_impl::parse_single_conn_pool_cfg(unsigned long &lnum
                              pool_size,
                              th_size))
     conn_pool_name_to_driv[conn_pool_name] = driv;
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
 RetCode persistence_manager_impl::parse_conn_pool_cfg(unsigned long &lnum,
-                                                      vlg::str_tok &tknz,
+                                                      str_tok &tknz,
                                                       std::unordered_map<std::string, persistence_driver *> &conn_pool_name_to_driv)
 {
     std::string tkn, conn_pool_name;
@@ -427,24 +427,24 @@ RetCode persistence_manager_impl::parse_conn_pool_cfg(unsigned long &lnum,
                                                  conn_pool_name_to_driv))
         }
     }
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
-RetCode persistence_manager_impl::parse_single_class_map_cfg(unsigned long &lnum,
-                                                             vlg::str_tok &tknz,
-                                                             unsigned int nclass_id,
-                                                             std::unordered_map<std::string, persistence_driver *> &conn_pool_name_to_driv)
+RetCode persistence_manager_impl::parse_single_nclass_map_cfg(unsigned long &lnum,
+                                                              str_tok &tknz,
+                                                              unsigned int nclass_id,
+                                                              std::unordered_map<std::string, persistence_driver *> &conn_pool_name_to_driv)
 {
     std::string tkn;
     persistence_driver *driv = nullptr;
     //read driver type
     while(tknz.next_token(tkn, CR_DF_DLMT, true)) {
         CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return vlg::RetCode_BADCFG)
+        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
         auto it = conn_pool_name_to_driv.find(tkn);
         if(it == conn_pool_name_to_driv.end()) {
             IFLOG(cri(TH_ID, LS_PRS "[line:%d, connection pool not defined:%s]", __func__, lnum, tkn.c_str()))
-            return vlg::RetCode_BADCFG;
+            return RetCode_BADCFG;
         } else {
             driv = it->second;
         }
@@ -452,12 +452,12 @@ RetCode persistence_manager_impl::parse_single_class_map_cfg(unsigned long &lnum
     }
     RET_ON_KO(driv->map_nclassid_to_pool(nclass_id, tkn.c_str()))
     RET_ON_KO(map_classid_driver(nclass_id, driv))
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
-RetCode persistence_manager_impl::parse_class_mapping_cfg(unsigned long &lnum,
-                                                          vlg::str_tok &tknz,
-                                                          std::unordered_map<std::string, persistence_driver *> &conn_pool_name_to_driv)
+RetCode persistence_manager_impl::parse_nclass_mapping_cfg(unsigned long &lnum,
+                                                           str_tok &tknz,
+                                                           std::unordered_map<std::string, persistence_driver *> &conn_pool_name_to_driv)
 {
     std::string tkn, nclass_id;
     while(tknz.next_token(tkn, CR_DF_DLMT, true)) {
@@ -467,18 +467,18 @@ RetCode persistence_manager_impl::parse_class_mapping_cfg(unsigned long &lnum,
             break;
         } else {
             nclass_id.assign(tkn);
-            if(!vlg::string_is_number(nclass_id.c_str())) {
+            if(!string_is_number(nclass_id.c_str())) {
                 IFLOG(cri(TH_ID, LS_PRS "[line:%d, bad nclass_id:%s]", __func__, lnum, nclass_id.c_str()))
-                return vlg::RetCode_BADCFG;
+                return RetCode_BADCFG;
             }
             unsigned int classid_n = atoi(nclass_id.c_str());
-            RET_ON_KO(parse_single_class_map_cfg(lnum,
-                                                 tknz,
-                                                 classid_n,
-                                                 conn_pool_name_to_driv))
+            RET_ON_KO(parse_single_nclass_map_cfg(lnum,
+                                                  tknz,
+                                                  classid_n,
+                                                  conn_pool_name_to_driv))
         }
     }
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
 RetCode persistence_manager_impl::parse_data(std::string &data)
@@ -487,7 +487,7 @@ RetCode persistence_manager_impl::parse_data(std::string &data)
     unsigned long lnum = 1;
     bool parsing_comment = false;
     std::string tkn;
-    vlg::str_tok tknz(data);
+    str_tok tknz(data);
     std::unordered_map<std::string, persistence_driver *> conn_pool_name_driv_hm;
 
     while(tknz.next_token(tkn, CR_DF_DLMT VLG_TK_COMMENT, true)) {
@@ -497,30 +497,30 @@ RetCode persistence_manager_impl::parse_data(std::string &data)
         if(!parsing_comment) {
             if(tkn == VLG_RWRD_CONN_CFG_BG) {
                 if(conn_cfg_done) {
-                    return vlg::RetCode_BADCFG;
+                    return RetCode_BADCFG;
                 }
                 RET_ON_KO(parse_conn_pool_cfg(lnum, tknz, conn_pool_name_driv_hm))
                 conn_cfg_done = true;
             } else if(tkn == VLG_RWRD_MAP_CFG_BG) {
                 if(mapping_cfg_done) {
-                    return vlg::RetCode_BADCFG;
+                    return RetCode_BADCFG;
                 }
-                RET_ON_KO(parse_class_mapping_cfg(lnum, tknz, conn_pool_name_driv_hm))
+                RET_ON_KO(parse_nclass_mapping_cfg(lnum, tknz, conn_pool_name_driv_hm))
                 mapping_cfg_done = true;
             } else if(tkn == VLG_TK_COMMENT) {
                 //comment begin
                 parsing_comment = true;
             } else {
                 IFLOG(cri(TH_ID, LS_PRS "[line:%d, unexpected token:%s]", __func__, lnum, tkn.c_str()))
-                return vlg::RetCode_BADCFG;
+                return RetCode_BADCFG;
             }
         }
     }
     if(!conn_cfg_done || !mapping_cfg_done) {
         IFLOG(cri(TH_ID, LS_PRS "%s() - bad persistence configuration", __func__))
-        return vlg::RetCode_BADCFG;
+        return RetCode_BADCFG;
     }
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
 RetCode persistence_manager_impl::load_cfg(const char *filename)
@@ -535,19 +535,19 @@ RetCode persistence_manager_impl::load_cfg(const char *filename)
     FILE *fdesc = fopen(path.c_str(), "r");
     if(!fdesc) {
         IFLOG(wrn(TH_ID, LS_CLO "[cannot open persistent configuration file:%s]", __func__, filename))
-        return vlg::RetCode_IOERR;
+        return RetCode_IOERR;
     }
     std::string data;
     RET_ON_KO(load_file(fdesc, data))
     RET_ON_KO(parse_data(data))
     IFLOG(trc(TH_ID, LS_CLO, __func__))
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
 RetCode persistence_manager_impl::load_cfg()
 {
     IFLOG(trc(TH_ID, LS_OPN, __func__))
-    RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = RetCode_OK;
     if(strlen(pers_cfg_file_path_name)) {
         rcode = load_cfg(pers_cfg_file_path_name);
     } else {

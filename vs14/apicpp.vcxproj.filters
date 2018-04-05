@@ -29,9 +29,6 @@
     <ClInclude Include="..\public\cpp\vlg_connection.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\cpp\vlg_drv_sqlite.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="..\public\cpp\vlg_logger.h">
       <Filter>h</Filter>
     </ClInclude>
@@ -53,9 +50,6 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\src\apicpp\connection.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\apicpp\model.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

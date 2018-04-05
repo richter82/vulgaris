@@ -90,14 +90,14 @@ struct peer_automa {
         char **peer_argv_;
         std::string peer_cfg_file_path_name_;
 
-        vlg::cfg_ldr peer_conf_ldr_;
+        cfg_ldr peer_conf_ldr_;
         bool configured_;
         RetCode peer_last_error_;
         bool peer_exit_required_;
 
         // stop / dispose
         bool force_disconnect_on_stop_;
-        mutable vlg::mx peer_mon_;
+        mutable mx peer_mon_;
 
     private:
         static void peer_param_clbk_ud(int pnum,

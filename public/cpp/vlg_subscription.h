@@ -47,20 +47,18 @@ struct subscription_event {
 struct incoming_subscription_factory {
     explicit incoming_subscription_factory();
     virtual ~incoming_subscription_factory();
-    virtual subscription &make_incoming_subscription(connection &);
+    virtual incoming_subscription &make_incoming_subscription(std::shared_ptr<incoming_connection> &);
 
     static incoming_subscription_factory &default_factory();
 };
 
-/** @brief subscription.
+/** @brief incoming_subscription.
 */
-struct subscription {
-    explicit subscription();
-    virtual ~subscription();
+struct incoming_subscription {
+    explicit incoming_subscription(std::shared_ptr<incoming_connection> &);
+    virtual ~incoming_subscription();
 
-    RetCode bind(connection &);
-
-    connection &get_connection();
+    incoming_connection &get_connection();
     unsigned int get_id();
     unsigned int get_nclass_id();
     SubscriptionType get_type() const;
@@ -71,6 +69,60 @@ struct subscription {
     unsigned int get_open_timestamp_0() const;
     unsigned int get_open_timestamp_1() const;
     bool is_initial_query_ended();
+
+    void set_nclass_id(unsigned int);
+    void set_type(SubscriptionType);
+    void set_mode(SubscriptionMode);
+    void set_flow_type(SubscriptionFlowType);
+    void set_download_type(SubscriptionDownloadType);
+    void set_nclass_encode(Encode);
+    void set_open_timestamp_0(unsigned int);
+    void set_open_timestamp_1(unsigned int);
+
+    SubscriptionStatus get_status() const;
+
+    RetCode await_for_status_reached_or_outdated(SubscriptionStatus test,
+                                                 SubscriptionStatus &current,
+                                                 time_t sec = -1,
+                                                 long nsec = 0);
+
+    RetCode stop();
+
+    RetCode await_for_stop_result(SubscriptionResponse &stop_result,
+                                  ProtocolCode &stop_protocode,
+                                  time_t sec = -1,
+                                  long nsec = 0);
+
+    virtual void on_status_change(SubscriptionStatus);
+    virtual void on_stop();
+
+    virtual RetCode accept_distribution(const subscription_event &);
+
+    std::unique_ptr<incoming_subscription_impl> impl_;
+};
+
+}
+
+namespace vlg {
+
+/** @brief outgoing_subscription.
+*/
+struct outgoing_subscription {
+    explicit outgoing_subscription();
+    virtual ~outgoing_subscription();
+
+    RetCode bind(outgoing_connection &);
+
+    outgoing_connection &get_connection();
+    unsigned int get_id();
+    unsigned int get_nclass_id();
+    SubscriptionType get_type() const;
+    SubscriptionMode get_mode() const;
+    SubscriptionFlowType get_flow_type() const;
+    SubscriptionDownloadType get_download_type() const;
+    Encode get_nclass_encode() const;
+    unsigned int get_open_timestamp_0() const;
+    unsigned int get_open_timestamp_1() const;
 
     void set_nclass_id(unsigned int);
     void set_type(SubscriptionType);
@@ -116,9 +168,7 @@ struct subscription {
     virtual void on_stop();
     virtual void on_incoming_event(std::unique_ptr<subscription_event> &);
 
-    virtual RetCode accept_distribution(const subscription_event &);
-
-    std::unique_ptr<vlg::subscription_impl> impl_;
+    std::unique_ptr<outgoing_subscription_impl> impl_;
 };
 
 }

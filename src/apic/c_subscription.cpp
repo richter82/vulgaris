@@ -19,300 +19,452 @@
  *
  */
 
-#include "vlg_c_subscription.h"
 #include "vlg_subscription.h"
+using namespace vlg;
 
-namespace vlg {
+extern "C" {
+    typedef struct own_outgoing_subscription own_outgoing_subscription;
+    typedef struct own_nclass own_nclass;
 
-class c_subscription : public subscription {
-    private:
-        static void subscription_status_change_c_subscription(subscription &subscription,
-                                                              SubscriptionStatus status, void *ud) {
-            c_subscription &self = static_cast<c_subscription &>(subscription);
-            self.ssc_wr_((subscription_wr)&subscription, status, self.ssc_ud_);
-        }
+    typedef void(*outg_subscription_status_change)(outgoing_subscription *osbs,
+                                                   SubscriptionStatus status,
+                                                   void *ud);
 
-        static void subscription_event_notify_c_subscription(subscription &subscription,
-                                                             subscription_event &sbs_evt, void *ud) {
-            c_subscription &self = static_cast<c_subscription &>(subscription);
-            self.sen_wr_((subscription_wr)&subscription, (subscription_event_wr)&sbs_evt,
-                         self.sen_ud_);
-        }
+    typedef void(*outg_subscription_notify_event)(outgoing_subscription *osbs,
+                                                  const subscription_event *sbs_evt,
+                                                  void *ud);
 
-    public:
-        c_subscription() : sen_wr_(nullptr), ssc_wr_(nullptr), ssc_ud_(nullptr), sen_ud_(nullptr) {}
+    typedef void(*outg_subscription_on_start)(outgoing_subscription *osbs,
+                                              void *ud);
 
-        subscription_event_notify_wr Sen_wr() const {
-            return sen_wr_;
-        }
-        void Sen_wr(subscription_event_notify_wr val) {
-            sen_wr_ = val;
-        }
-        subscription_status_change_wr Ssc_wr() const {
-            return ssc_wr_;
-        }
-        void Ssc_wr(subscription_status_change_wr val) {
-            ssc_wr_ = val;
-        }
-        void *Ssc_ud() const {
-            return ssc_ud_;
-        }
-        void Ssc_ud(void *val) {
-            ssc_ud_ = val;
-            //set_status_change_handler(subscription_status_change_c_subscription, ssc_ud_);
-        }
-        void *Sen_ud() const {
-            return sen_ud_;
-        }
-        void Sen_ud(void *val) {
-            sen_ud_ = val;
-            //set_event_notify_handler(subscription_event_notify_c_subscription, sen_ud_);
-        }
-
-    private:
-        subscription_event_notify_wr sen_wr_;
-        subscription_status_change_wr ssc_wr_;
-        void *ssc_ud_;
-        void *sen_ud_;
-};
+    typedef void(*outg_subscription_on_stop)(outgoing_subscription *osbs,
+                                             void *ud);
+}
 
 extern "C" {
 
-    unsigned int subscription_event_get_id(subscription_event_wr sev)
+    //subscription_event
+
+    unsigned int subscription_event_get_id(subscription_event *sev)
     {
-        return static_cast<subscription_event *>(sev)->get_id();
+        return sev->get_id();
     }
 
-    SubscriptionEventType subscription_event_get_event_type(
-        subscription_event_wr sev)
+    SubscriptionEventType subscription_event_get_event_type(subscription_event *sev)
     {
-        return static_cast<subscription_event *>(sev)->get_event_type();
+        return sev->get_event_type();
     }
 
-    ProtocolCode subscription_event_get_proto_code(subscription_event_wr sev)
+    ProtocolCode subscription_event_get_proto_code(subscription_event *sev)
     {
-        return static_cast<subscription_event *>(sev)->get_proto_code();
+        return sev->get_proto_code();
     }
 
-    unsigned int subscription_event_get_timestamp_0(subscription_event_wr sev)
+    unsigned int subscription_event_get_timestamp_0(subscription_event *sev)
     {
-        return static_cast<subscription_event *>(sev)->get_timestamp_0();
+        return sev->get_timestamp_0();
     }
 
-    unsigned int subscription_event_get_timestamp_1(subscription_event_wr sev)
+    unsigned int subscription_event_get_timestamp_1(subscription_event *sev)
     {
-        return static_cast<subscription_event *>(sev)->get_timestamp_1();
+        return sev->get_timestamp_1();
     }
 
-    Action subscription_event_get_action(subscription_event_wr sev)
+    Action subscription_event_get_action(subscription_event *sev)
     {
-        return static_cast<subscription_event *>(sev)->get_action();
+        return sev->get_action();
     }
 
-    nclass_wr subscription_event_get_object(subscription_event_wr sev)
+    own_nclass *subscription_event_get_object(subscription_event *sev)
     {
-        //@FIXME
-        //return static_cast<subscription_event *>(sev)->get_data();
-        return nullptr;
+        return (own_nclass *) new std::unique_ptr<nclass>(std::move(sev->get_data()));
     }
 
-    subscription_wr subscription_create()
+    //incoming_subscription
+
+    incoming_connection *inco_subscription_get_connection(incoming_subscription *subscription)
     {
-        return new c_subscription();
+        return &subscription->get_connection();
     }
 
-    void subscription_destroy(subscription_wr subscription)
+    unsigned int inco_subscription_get_id(incoming_subscription *subscription)
     {
-        delete static_cast<vlg::subscription *>(subscription);
+        return subscription->get_id();
     }
 
-    RetCode subscription_bind(subscription_wr subscription, connection_wr conn)
+    unsigned int inco_subscription_get_subscription_nclass_id(incoming_subscription *subscription)
     {
-        return static_cast<vlg::subscription *>(subscription)->bind(*(connection *)conn);
+        return subscription->get_nclass_id();
     }
 
-    connection_wr subscription_get_connection(subscription_wr subscription)
+    SubscriptionType inco_subscription_get_subscription_type(incoming_subscription *subscription)
     {
-        return &static_cast<vlg::subscription *>(subscription)->get_connection();
+        return subscription->get_type();
     }
 
-    unsigned int subscription_get_id(subscription_wr subscription)
+    SubscriptionMode inco_subscription_get_subscription_mode(incoming_subscription *subscription)
     {
-        return static_cast<vlg::subscription *>(subscription)->get_id();
+        return subscription->get_mode();
     }
 
-    unsigned int subscription_get_subscription_class_id(subscription_wr subscription)
+    SubscriptionFlowType inco_subscription_get_subscription_flow_type(incoming_subscription *subscription)
     {
-        return static_cast<vlg::subscription *>(subscription)->get_nclass_id();
+        return subscription->get_flow_type();
     }
 
-    SubscriptionType subscription_get_subscription_type(subscription_wr subscription)
+    SubscriptionDownloadType inco_subscription_get_subscription_download_type(
+        incoming_subscription *subscription)
     {
-        return static_cast<vlg::subscription *>(subscription)->get_type();
+        return subscription->get_download_type();
     }
 
-    SubscriptionMode subscription_get_subscription_mode(subscription_wr subscription)
+    Encode inco_subscription_get_subscription_nclass_encode(incoming_subscription *subscription)
     {
-        return static_cast<vlg::subscription *>(subscription)->get_mode();
+        return subscription->get_nclass_encode();
     }
 
-    SubscriptionFlowType subscription_get_subscription_flow_type(subscription_wr subscription)
+    unsigned int inco_subscription_get_open_timestamp_0(incoming_subscription *subscription)
     {
-        return static_cast<vlg::subscription *>(subscription)->get_flow_type();
+        return subscription->get_open_timestamp_0();
     }
 
-    SubscriptionDownloadType subscription_get_subscription_download_type(
-        subscription_wr subscription)
+    unsigned int inco_subscription_get_open_timestamp_1(incoming_subscription *subscription)
     {
-        return static_cast<vlg::subscription *>(subscription)->get_download_type();
+        return subscription->get_open_timestamp_1();
     }
 
-    Encode subscription_get_subscription_class_encode(subscription_wr subscription)
+    int inco_subscription_is_initial_query_ended(incoming_subscription *subscription)
     {
-        return static_cast<vlg::subscription *>(subscription)->get_nclass_encode();
+        return subscription->is_initial_query_ended() ? 1 : 0;
     }
 
-    unsigned int subscription_get_open_timestamp_0(subscription_wr subscription)
+    void inco_subscription_set_subscription_nclass_id(incoming_subscription *subscription,
+                                                      unsigned int nclass_id)
     {
-        return static_cast<vlg::subscription *>(subscription)->get_open_timestamp_0();
+        subscription->set_nclass_id(nclass_id);
     }
 
-    unsigned int subscription_get_open_timestamp_1(subscription_wr subscription)
+    void inco_subscription_set_subscription_type(incoming_subscription *subscription,
+                                                 SubscriptionType sbs_type)
     {
-        return static_cast<vlg::subscription *>(subscription)->get_open_timestamp_1();
+        subscription->set_type(sbs_type);
     }
 
-    int subscription_is_initial_query_ended(subscription_wr subscription)
+    void inco_subscription_set_subscription_mode(incoming_subscription *subscription,
+                                                 SubscriptionMode sbs_mode)
     {
-        return static_cast<vlg::subscription *>(subscription)->is_initial_query_ended() ? 1 : 0;
+        subscription->set_mode(sbs_mode);
     }
 
-    void subscription_set_subscription_class_id(subscription_wr subscription,
-                                                unsigned int nclass_id)
+    void inco_subscription_set_subscription_flow_type(incoming_subscription *subscription,
+                                                      SubscriptionFlowType sbs_flow_type)
     {
-        static_cast<vlg::subscription *>(subscription)->set_nclass_id(nclass_id);
+        subscription->set_flow_type(sbs_flow_type);
     }
 
-    void subscription_set_subscription_type(subscription_wr subscription,
-                                            SubscriptionType sbs_type)
+    void inco_subscription_set_subscription_download_type(incoming_subscription *subscription,
+                                                          SubscriptionDownloadType sbs_dwnl_type)
     {
-        static_cast<vlg::subscription *>(subscription)->set_type(sbs_type);
+        subscription->set_download_type(sbs_dwnl_type);
     }
 
-    void subscription_set_subscription_mode(subscription_wr subscription,
-                                            SubscriptionMode sbs_mode)
+    void inco_subscription_set_nclass_encode(incoming_subscription *subscription, Encode nclass_encode)
     {
-        static_cast<vlg::subscription *>(subscription)->set_mode(sbs_mode);
+        subscription->set_nclass_encode(nclass_encode);
     }
 
-    void subscription_set_subscription_flow_type(subscription_wr subscription,
-                                                 SubscriptionFlowType sbs_flow_type)
+    void inco_subscription_set_open_timestamp_0(incoming_subscription *subscription, unsigned int ts0)
     {
-        static_cast<vlg::subscription *>(subscription)->set_flow_type(sbs_flow_type);
+        subscription->set_open_timestamp_0(ts0);
     }
 
-    void subscription_set_subscription_download_type(subscription_wr subscription,
-                                                     SubscriptionDownloadType sbs_dwnl_type)
+    void inco_subscription_set_open_timestamp_1(incoming_subscription *subscription, unsigned int ts1)
     {
-        static_cast<vlg::subscription *>(subscription)->set_download_type(sbs_dwnl_type);
+        subscription->set_open_timestamp_0(ts1);
     }
 
-    void subscription_set_class_encode(subscription_wr subscription, Encode nclass_encode)
+    RetCode inco_subscription_await_for_status_reached_or_outdated(incoming_subscription *subscription,
+                                                                   SubscriptionStatus test,
+                                                                   SubscriptionStatus *current,
+                                                                   time_t sec,
+                                                                   long nsec)
     {
-        static_cast<vlg::subscription *>(subscription)->set_nclass_encode(nclass_encode);
+        return subscription->await_for_status_reached_or_outdated(test,
+                                                                  *current,
+                                                                  sec,
+                                                                  nsec);
     }
 
-    void subscription_set_open_timestamp_0(subscription_wr subscription, unsigned int ts0)
+    RetCode inco_subscription_stop(incoming_subscription *subscription)
     {
-        static_cast<vlg::subscription *>(subscription)->set_open_timestamp_0(ts0);
+        return subscription->stop();
     }
 
-    void subscription_set_open_timestamp_1(subscription_wr subscription, unsigned int ts1)
+    RetCode inco_subscription_await_for_stop_result(incoming_subscription *subscription,
+                                                    SubscriptionResponse *stop_result,
+                                                    ProtocolCode *stop_protocode,
+                                                    time_t sec,
+                                                    long nsec)
     {
-        static_cast<vlg::subscription *>(subscription)->set_open_timestamp_0(ts1);
+        return subscription->await_for_stop_result(*stop_result,
+                                                   *stop_protocode,
+                                                   sec,
+                                                   nsec);
+    }
+}
+
+//c_outg_sbs
+
+struct c_outg_sbs : public outgoing_subscription {
+    c_outg_sbs() :
+        osad_wr_(nullptr),
+        ossc_wr_(nullptr),
+        ososrt_(nullptr),
+        osostp_(nullptr),
+        ossc_ud_(nullptr),
+        osad_ud_(nullptr),
+        ososrt_ud_(nullptr),
+        osostp_ud_(nullptr) {}
+
+    virtual void on_status_change(SubscriptionStatus status) override {
+        ossc_wr_(this, status, ossc_ud_);
     }
 
-    RetCode subscription_await_for_status_reached_or_outdated(subscription_wr subscription,
-                                                              SubscriptionStatus test,
-                                                              SubscriptionStatus *current,
-                                                              time_t sec,
-                                                              long nsec)
-    {
-        return static_cast<vlg::subscription *>(subscription)->await_for_status_reached_or_outdated(test,
-                                                                                                    *current,
-                                                                                                    sec,
-                                                                                                    nsec);
+    virtual void on_start() override {
+        ososrt_(this, ososrt_ud_);
     }
 
-    void subscription_set_status_change_handler(subscription_wr subscription,
-                                                subscription_status_change_wr handler,
+    virtual void on_stop() override {
+        osostp_(this, osostp_ud_);
+    }
+
+    virtual void on_incoming_event(std::unique_ptr<subscription_event> &sev) override {
+        osad_wr_(this, sev.get(), osad_ud_);
+    }
+
+    outg_subscription_notify_event osad_wr_;
+    outg_subscription_status_change ossc_wr_;
+    outg_subscription_on_start ososrt_;
+    outg_subscription_on_stop osostp_;
+    void *ossc_ud_;
+    void *osad_ud_;
+    void *ososrt_ud_;
+    void *osostp_ud_;
+};
+
+extern "C" {
+    own_outgoing_subscription *outg_subscription_create()
+    {
+        return (own_outgoing_subscription *)new c_outg_sbs();
+    }
+
+    outgoing_subscription *outg_subscription_get_ptr(own_outgoing_subscription *sbs)
+    {
+        return (outgoing_subscription *)sbs;
+    }
+
+    void outg_subscription_destroy(own_outgoing_subscription *subscription)
+    {
+        delete(c_outg_sbs *)subscription;
+    }
+
+    RetCode outg_subscription_bind(outgoing_subscription *subscription, outgoing_connection *conn)
+    {
+        return subscription->bind(*conn);
+    }
+
+    outgoing_connection *outg_subscription_get_connection(outgoing_subscription *subscription)
+    {
+        return &subscription->get_connection();
+    }
+
+    unsigned int outg_subscription_get_id(outgoing_subscription *subscription)
+    {
+        return subscription->get_id();
+    }
+
+    unsigned int outg_subscription_get_subscription_nclass_id(outgoing_subscription *subscription)
+    {
+        return subscription->get_nclass_id();
+    }
+
+    SubscriptionType outg_subscription_get_subscription_type(outgoing_subscription *subscription)
+    {
+        return subscription->get_type();
+    }
+
+    SubscriptionMode outg_subscription_get_subscription_mode(outgoing_subscription *subscription)
+    {
+        return subscription->get_mode();
+    }
+
+    SubscriptionFlowType outg_subscription_get_subscription_flow_type(outgoing_subscription *subscription)
+    {
+        return subscription->get_flow_type();
+    }
+
+    SubscriptionDownloadType outg_subscription_get_subscription_download_type(outgoing_subscription *subscription)
+    {
+        return subscription->get_download_type();
+    }
+
+    Encode outg_subscription_get_subscription_nclass_encode(outgoing_subscription *subscription)
+    {
+        return subscription->get_nclass_encode();
+    }
+
+    unsigned int outg_subscription_get_open_timestamp_0(outgoing_subscription *subscription)
+    {
+        return subscription->get_open_timestamp_0();
+    }
+
+    unsigned int outg_subscription_get_open_timestamp_1(outgoing_subscription *subscription)
+    {
+        return subscription->get_open_timestamp_1();
+    }
+
+    void outg_subscription_set_subscription_nclass_id(outgoing_subscription *subscription,
+                                                      unsigned int nclass_id)
+    {
+        subscription->set_nclass_id(nclass_id);
+    }
+
+    void outg_subscription_set_subscription_type(outgoing_subscription *subscription,
+                                                 SubscriptionType sbs_type)
+    {
+        subscription->set_type(sbs_type);
+    }
+
+    void outg_subscription_set_subscription_mode(outgoing_subscription *subscription,
+                                                 SubscriptionMode sbs_mode)
+    {
+        subscription->set_mode(sbs_mode);
+    }
+
+    void outg_subscription_set_subscription_flow_type(outgoing_subscription *subscription,
+                                                      SubscriptionFlowType sbs_flow_type)
+    {
+        subscription->set_flow_type(sbs_flow_type);
+    }
+
+    void outg_subscription_set_subscription_download_type(outgoing_subscription *subscription,
+                                                          SubscriptionDownloadType sbs_dwnl_type)
+    {
+        subscription->set_download_type(sbs_dwnl_type);
+    }
+
+    void outg_subscription_set_nclass_encode(outgoing_subscription *subscription, Encode nclass_encode)
+    {
+        subscription->set_nclass_encode(nclass_encode);
+    }
+
+    void outg_subscription_set_open_timestamp_0(outgoing_subscription *subscription, unsigned int ts0)
+    {
+        subscription->set_open_timestamp_0(ts0);
+    }
+
+    void outg_subscription_set_open_timestamp_1(outgoing_subscription *subscription, unsigned int ts1)
+    {
+        subscription->set_open_timestamp_0(ts1);
+    }
+
+    RetCode outg_subscription_await_for_status_reached_or_outdated(outgoing_subscription *subscription,
+                                                                   SubscriptionStatus test,
+                                                                   SubscriptionStatus *current,
+                                                                   time_t sec,
+                                                                   long nsec)
+    {
+        return subscription->await_for_status_reached_or_outdated(test,
+                                                                  *current,
+                                                                  sec,
+                                                                  nsec);
+    }
+
+    void outg_subscription_set_status_change_handler(outgoing_subscription *subscription,
+                                                     outg_subscription_status_change handler,
+                                                     void *ud)
+    {
+        static_cast<c_outg_sbs *>(subscription)->ossc_wr_ = handler;
+        static_cast<c_outg_sbs *>(subscription)->ossc_ud_ = ud;
+    }
+
+    void outg_subscription_set_event_notify_handler(outgoing_subscription *subscription,
+                                                    outg_subscription_notify_event handler,
+                                                    void *ud)
+    {
+        static_cast<c_outg_sbs *>(subscription)->osad_wr_ = handler;
+        static_cast<c_outg_sbs *>(subscription)->osad_ud_ = ud;
+    }
+
+    void outg_subscription_set_on_start_handler(outgoing_subscription *sbs,
+                                                outg_subscription_on_start handler,
                                                 void *ud)
     {
-        static_cast<c_subscription *>(subscription)->Ssc_wr(handler);
-        static_cast<c_subscription *>(subscription)->Ssc_ud(ud);
+        static_cast<c_outg_sbs *>(sbs)->ososrt_ = handler;
+        static_cast<c_outg_sbs *>(sbs)->ososrt_ud_ = ud;
     }
 
-    void subscription_set_event_notify_handler(subscription_wr subscription,
-                                               subscription_event_notify_wr handler,
+    void outg_subscription_set_on_stop_handler(outgoing_subscription *sbs,
+                                               outg_subscription_on_stop handler,
                                                void *ud)
     {
-        static_cast<c_subscription *>(subscription)->Sen_wr(handler);
-        static_cast<c_subscription *>(subscription)->Sen_ud(ud);
+        static_cast<c_outg_sbs *>(sbs)->osostp_ = handler;
+        static_cast<c_outg_sbs *>(sbs)->osostp_ud_ = ud;
     }
 
-    RetCode subscription_start(subscription_wr subscription)
+    RetCode outg_subscription_start(outgoing_subscription *subscription)
     {
-        return static_cast<vlg::subscription *>(subscription)->start();
+        return subscription->start();
     }
 
-    RetCode subscription_start_full(subscription_wr subscription,
-                                    SubscriptionType sbs_type,
-                                    SubscriptionMode sbs_mode,
-                                    SubscriptionFlowType sbs_flow_type,
-                                    SubscriptionDownloadType sbs_dwnl_type,
-                                    Encode nclass_encode,
-                                    unsigned int nclass_id,
-                                    unsigned int open_timestamp_0,
-                                    unsigned int open_timestamp_1)
+    RetCode outg_subscription_start_full(outgoing_subscription *subscription,
+                                         SubscriptionType sbs_type,
+                                         SubscriptionMode sbs_mode,
+                                         SubscriptionFlowType sbs_flow_type,
+                                         SubscriptionDownloadType sbs_dwnl_type,
+                                         Encode nclass_encode,
+                                         unsigned int nclass_id,
+                                         unsigned int open_timestamp_0,
+                                         unsigned int open_timestamp_1)
     {
-        return static_cast<vlg::subscription *>(subscription)->start(sbs_type,
-                                                                     sbs_mode,
-                                                                     sbs_flow_type,
-                                                                     sbs_dwnl_type,
-                                                                     nclass_encode,
-                                                                     nclass_id,
-                                                                     open_timestamp_0,
-                                                                     open_timestamp_1);
+        return subscription->start(sbs_type,
+                                   sbs_mode,
+                                   sbs_flow_type,
+                                   sbs_dwnl_type,
+                                   nclass_encode,
+                                   nclass_id,
+                                   open_timestamp_0,
+                                   open_timestamp_1);
     }
 
-    RetCode subscription_await_for_start_result(subscription_wr subscription,
-                                                SubscriptionResponse *start_result,
-                                                ProtocolCode *start_protocode,
-                                                time_t sec,
-                                                long nsec)
+    RetCode outg_subscription_await_for_start_result(outgoing_subscription *subscription,
+                                                     SubscriptionResponse *start_result,
+                                                     ProtocolCode *start_protocode,
+                                                     time_t sec,
+                                                     long nsec)
     {
-        return static_cast<vlg::subscription *>(subscription)->await_for_start_result(*start_result,
-                                                                                      *start_protocode,
-                                                                                      sec,
-                                                                                      nsec);
+        return subscription->await_for_start_result(*start_result,
+                                                    *start_protocode,
+                                                    sec,
+                                                    nsec);
     }
 
-    RetCode subscription_stop(subscription_wr subscription)
+    RetCode outg_subscription_stop(outgoing_subscription *subscription)
     {
-        return static_cast<vlg::subscription *>(subscription)->stop();
+        return subscription->stop();
     }
 
-    RetCode subscription_await_for_stop_result(subscription_wr subscription,
-                                               SubscriptionResponse *stop_result,
-                                               ProtocolCode *stop_protocode,
-                                               time_t sec,
-                                               long nsec)
+    RetCode outg_subscription_await_for_stop_result(outgoing_subscription *subscription,
+                                                    SubscriptionResponse *stop_result,
+                                                    ProtocolCode *stop_protocode,
+                                                    time_t sec,
+                                                    long nsec)
     {
-        return static_cast<vlg::subscription *>(subscription)->await_for_stop_result(*stop_result,
-                                                                                     *stop_protocode,
-                                                                                     sec,
-                                                                                     nsec);
+        return subscription->await_for_stop_result(*stop_result,
+                                                   *stop_protocode,
+                                                   sec,
+                                                   nsec);
     }
 
 }
-}
+

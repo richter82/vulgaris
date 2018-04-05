@@ -30,9 +30,9 @@ namespace vlg {
 
 struct connection_impl;
 
-class peer_recv_task_inco_conn : public vlg::p_tsk {
+class peer_recv_task_inco_conn : public p_tsk {
     public:
-        peer_recv_task_inco_conn(std::shared_ptr<vlg::connection> &conn_sh,
+        peer_recv_task_inco_conn(std::shared_ptr<incoming_connection> &conn_sh,
                                  std::unique_ptr<vlg_hdr_rec> &pkt_hdr,
                                  std::unique_ptr<g_bbuf> &pkt_body);
 
@@ -41,14 +41,14 @@ class peer_recv_task_inco_conn : public vlg::p_tsk {
         virtual RetCode execute();
 
     private:
-        std::shared_ptr<vlg::connection> conn_sh_;
+        std::shared_ptr<incoming_connection> conn_sh_;
         std::unique_ptr<vlg_hdr_rec> pkt_hdr_;
         std::unique_ptr<g_bbuf> pkt_body_;
 };
 
-class peer_recv_task_outg_conn : public vlg::p_tsk {
+class peer_recv_task_outg_conn : public p_tsk {
     public:
-        peer_recv_task_outg_conn(vlg::connection &conn,
+        peer_recv_task_outg_conn(outgoing_connection &conn,
                                  std::unique_ptr<vlg_hdr_rec> &pkt_hdr,
                                  std::unique_ptr<g_bbuf> &pkt_body);
 
@@ -57,7 +57,7 @@ class peer_recv_task_outg_conn : public vlg::p_tsk {
         virtual RetCode execute();
 
     private:
-        vlg::connection &conn_;
+        outgoing_connection &conn_;
         std::unique_ptr<vlg_hdr_rec> pkt_hdr_;
         std::unique_ptr<g_bbuf> pkt_body_;
 };
@@ -79,8 +79,8 @@ struct per_nclass_id_conn_set {
     unsigned int sbsevtid_;
     unsigned int ts0_;
     unsigned int ts1_;
-    vlg::s_hm connid_condesc_set_;  //[connid --> condesc]
-    mutable vlg::mx mon_;
+    s_hm connid_condesc_set_;  //[connid --> condesc]
+    mutable mx mon_;
 };
 
 #define VLG_DEF_SRV_SBS_EXEC_NO     1
@@ -92,49 +92,39 @@ struct peer_impl : public peer_automa {
 
         RetCode set_params_file_dir(const char *dir);
 
-        // CONFIG SETTERS
         void set_cfg_load_model(const char *model);
         void set_cfg_srv_sin_addr(const char *addr);
         void set_cfg_srv_sin_port(int port);
         void set_cfg_load_pers_driv(const char *driv);
 
-        // MODEL
         RetCode extend_model(nentity_manager &nem);
         RetCode extend_model(const char *model_name);
 
-        // CONNECTIVITY
         RetCode next_connid(unsigned int &connid);
 
-        RetCode new_incoming_connection(std::shared_ptr<connection> &new_connection,
+        RetCode new_incoming_connection(std::shared_ptr<incoming_connection> &new_connection,
                                         unsigned int connid = 0);
 
-        // SERVER SPECIFIC CONNECTIVITY HANDLER
         incoming_connection_factory &get_incoming_connection_factory() const;
         void set_incoming_connection_factory(incoming_connection_factory &conn_f);
 
-        // PROTOCOL RCVNG INTERFACE
-        /*
-        this method is called by an executor
-        */
-        RetCode recv_and_route_pkt(vlg::connection &conn,
+        RetCode recv_and_route_pkt(outgoing_connection &conn,
                                    vlg_hdr_rec *hdr,
-                                   vlg::g_bbuf *body);
+                                   g_bbuf *body);
 
-        RetCode recv_and_route_pkt(std::shared_ptr<vlg::connection> &inco_conn,
+        RetCode recv_and_route_pkt(std::shared_ptr<incoming_connection> &inco_conn,
                                    vlg_hdr_rec *hdr,
-                                   vlg::g_bbuf *body);
+                                   g_bbuf *body);
 
-        // SUBSCRIPTION
-        RetCode add_subscriber(subscription_impl *sbsdesc);
-        RetCode remove_subscriber(subscription_impl *sbsdesc);
+        RetCode add_subscriber(incoming_subscription_impl *sbsdesc);
+        RetCode remove_subscriber(incoming_subscription_impl *sbsdesc);
 
         RetCode get_per_nclassid_helper_rec(unsigned int nclass_id,
                                             per_nclass_id_conn_set **out);
 
         RetCode submit_sbs_evt_task(subscription_event_impl &sbs_evt,
-                                    vlg::s_hm &connid_condesc_set);
+                                    s_hm &connid_condesc_set);
 
-        // PERSISTENCE
         RetCode create_persistent_schema(PersistenceAlteringMode mode);
 
         RetCode nclass_create_persistent_schema(PersistenceAlteringMode mode,
@@ -157,13 +147,11 @@ struct peer_impl : public peer_automa {
                            PersistenceDeletionMode mode,
                            const nclass &in);
 
-        // DISTRIBUTION
         RetCode obj_distribute(SubscriptionEventType evt_type,
                                ProtocolCode proto_code,
                                Action act,
                                const nclass &in);
 
-        // PERSISTENCE + DISTRIBUTION
         RetCode obj_save_and_distribute(const nclass &in);
 
         RetCode obj_update_and_distribute(unsigned short key,
@@ -179,21 +167,21 @@ struct peer_impl : public peer_automa {
         RetCode init();
         RetCode init_dyna();
 
-        // VLG_PEER_LFCYC HANDLERS
     private:
-        virtual const char *get_automa_name()                       override;
-        virtual const unsigned int *get_automa_version()            override;
+        virtual const char *get_automa_name() override;
+        virtual const unsigned int *get_automa_version() override;
+
         virtual RetCode on_automa_load_config(int pnum,
                                               const char *param,
-                                              const char *value)    override;
+                                              const char *value) override;
 
-        virtual RetCode    on_automa_early_init()      override;
-        virtual RetCode    on_automa_init()            override;
-        virtual RetCode    on_automa_start()           override;
-        virtual RetCode    on_automa_stop()            override;
-        virtual RetCode    on_automa_move_running()    override;
-        virtual RetCode    on_automa_error()           override;
-        virtual void       on_automa_dying_breath()    override;
+        virtual RetCode on_automa_early_init() override;
+        virtual RetCode on_automa_init() override;
+        virtual RetCode on_automa_start() override;
+        virtual RetCode on_automa_stop() override;
+        virtual RetCode on_automa_move_running() override;
+        virtual RetCode on_automa_error() override;
+        virtual void on_automa_dying_breath() override;
 
     public:
         PeerPersonality personality_;
@@ -202,7 +190,7 @@ struct peer_impl : public peer_automa {
         unsigned int srv_sbs_exectrs_;
 
         selector selector_;
-        mutable vlg::mx mon_;
+        mutable mx mon_;
         unsigned int prgr_conn_id_;
         nentity_manager nem_;
         std::set<std::string> model_map_;
@@ -214,18 +202,11 @@ struct peer_impl : public peer_automa {
         bool drop_existing_schema_;
 
     protected:
-        /***********************************
-        NOTE:
-        Responsability of srv_sbs_exec_serv_ executor service is limited to
-        the synchro-management of BRAND-NEW-SBS-EVENTS for all started subscription.
-        This means that actions such as: management of SBS-EVT-ACK and subsequent
-        actions; management of triggering of initial-download for ALL-TYPE request
-        is responsability of srv_exec_serv_ executor service.
-        ***********************************/
         //srv subscription executor service.
-        vlg::p_exec_srv srv_sbs_exec_serv_;
+        p_exec_srv srv_sbs_exec_serv_;
+
         //nclassid --> condesc_set
-        vlg::s_hm srv_sbs_nclassid_condesc_set_;
+        s_hm srv_sbs_nclassid_condesc_set_;
 
         //factory for incoming connections
         //factories cannot be references

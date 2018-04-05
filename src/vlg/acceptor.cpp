@@ -33,27 +33,27 @@ static bool init_WSA = false;
 RetCode WSA_init()
 {
     if(init_WSA) {
-        return vlg::RetCode_OK;
+        return RetCode_OK;
     }
     WSAData wsaData;
     int nCode;
     if((nCode = WSAStartup(MAKEWORD(2,2), &wsaData)) != 0) {
         IFLOG(cri(TH_ID, LS_EMP"[WSADATA error code:%d]", nCode))
-        return vlg::RetCode_KO;
+        return RetCode_KO;
     }
     IFLOG(inf(TH_ID, LS_EMP"[WSADATA loaded]"))
     init_WSA = true;
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
 RetCode WSA_destroy()
 {
     if(!init_WSA) {
-        return vlg::RetCode_OK;
+        return RetCode_OK;
     }
     WSACleanup();
     IFLOG(inf(TH_ID, LS_EMP"[WSADATA cleaned up]"))
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
 #endif
@@ -87,7 +87,7 @@ acceptor::~acceptor()
 
 RetCode acceptor::set_sockaddr_in(sockaddr_in &serv_sockaddr_in) {
     serv_sockaddr_in_ = serv_sockaddr_in;
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
 RetCode acceptor::create_server_socket(SOCKET &serv_socket) {
@@ -103,7 +103,7 @@ RetCode acceptor::create_server_socket(SOCKET &serv_socket) {
                 IFLOG(dbg(TH_ID, LS_TRL "[listen OK]", __func__))
             } else {
                 IFLOG(err(TH_ID, LS_CLO "[listen KO]", __func__))
-                return vlg::RetCode_SYSERR;
+                return RetCode_SYSERR;
             }
         } else {
             int err = 0;
@@ -113,18 +113,18 @@ RetCode acceptor::create_server_socket(SOCKET &serv_socket) {
             err = errno;
 #endif
             IFLOG(err(TH_ID, LS_CLO "[bind KO][err:%d]", __func__, err))
-            return vlg::RetCode_SYSERR;
+            return RetCode_SYSERR;
         }
     } else {
         IFLOG(err(TH_ID, LS_CLO "[socket KO]", __func__))
-        return vlg::RetCode_SYSERR;
+        return RetCode_SYSERR;
     }
     IFLOG(trc(TH_ID, LS_CLO, __func__));
-    return vlg::RetCode_OK;
+    return RetCode_OK;
 }
 
 RetCode acceptor::accept(unsigned int new_connid,
-                         std::shared_ptr<connection> &new_connection) {
+                         std::shared_ptr<incoming_connection> &new_connection) {
     IFLOG(trc(TH_ID, LS_OPN, __func__))
     SOCKET socket = INVALID_SOCKET;
     struct sockaddr_in addr;
@@ -142,7 +142,7 @@ RetCode acceptor::accept(unsigned int new_connid,
         err = errno;
 #endif
         IFLOG(err(TH_ID, LS_CLO "[accept KO][err:%d]", __func__, err))
-        return vlg::RetCode_SYSERR;
+        return RetCode_SYSERR;
     } else {
         IFLOG(dbg(TH_ID, LS_TRL "[socket:%d, host:%s, port:%d][accept OK][candidate connid:%d]",
                   __func__,
@@ -156,7 +156,7 @@ RetCode acceptor::accept(unsigned int new_connid,
     new_connection->impl_->con_type_ = ConnectionType_INGOING;
     new_connection->impl_->connid_ = new_connid;
 
-    RetCode rcode = vlg::RetCode_OK;
+    RetCode rcode = RetCode_OK;
     if((rcode = new_connection->impl_->set_connection_established(socket))) {
         IFLOG(err(TH_ID, LS_CLO "[new_connid:%d - setting connection established fail with res:%d]", __func__,
                   new_connid,

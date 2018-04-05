@@ -192,10 +192,10 @@ RetCode persistence_query::execute(unsigned int nclass_id, const char *sql)
         if(pcon) {
             return pcon->execute_query(sql, nem_, impl_);
         } else {
-            return vlg::RetCode_UNVRSC;
+            return RetCode_UNVRSC;
         }
     } else {
-        return vlg::RetCode_UNVRSC;
+        return RetCode_UNVRSC;
     }
 }
 

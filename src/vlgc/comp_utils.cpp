@@ -520,7 +520,6 @@ key_desc_comp::key_desc_comp(unsigned short keyid, bool primary) :
 
 RetCode key_desc_comp::init(std::set<member_desc_comp *> &fldset)
 {
-    const member_desc_comp *mmbrdesc = nullptr;
     fildset_ = fldset;
     return vlg::RetCode_OK;
 }

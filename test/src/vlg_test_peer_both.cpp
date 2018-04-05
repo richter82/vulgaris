@@ -22,15 +22,16 @@
 #include "vlg_model_sample.h"
 #include "glob.h"
 
+#include "vlg_persistence.h"
 //needed only if statically linked
 #include "vlg_drv_sqlite.h"
 
 #define LS_TST "TT|"
 #define TEST_TMOUT 4
 
-int save_class_position(const char *filename,
-                        unsigned int ts0,
-                        unsigned int ts1)
+int save_nclass_position(const char *filename,
+                         unsigned int ts0,
+                         unsigned int ts1)
 {
     FILE *f;
     if((f = fopen(filename,"w+"))) {
@@ -42,9 +43,9 @@ int save_class_position(const char *filename,
     }
 }
 
-int load_class_position(const char *filename,
-                        unsigned int &ts0,
-                        unsigned int &ts1)
+int load_nclass_position(const char *filename,
+                         unsigned int &ts0,
+                         unsigned int &ts1)
 {
     FILE *f;
     if((f = fopen(filename,"r"))) {
@@ -74,36 +75,32 @@ int fill_user(smplmdl::USER &usr, int count)
     return 0;
 }
 
-// outgoing_connection
+// outg_conn
 
-class outgoing_connection : public vlg::connection {
-    public:
-        virtual void on_connect(vlg::ConnectivityEventResult con_evt_res,
-                                vlg::ConnectivityEventType connectivity_evt_type) override {
-            IFLOG(inf(TH_ID, LS_TST"[called outgoing_connection on_connect][%d, %d]",
-                      con_evt_res,
-                      connectivity_evt_type))
-        }
-        virtual void on_disconnect(vlg::ConnectivityEventResult con_evt_res,
-                                   vlg::ConnectivityEventType connectivity_evt_type) override {
-            IFLOG(inf(TH_ID, LS_TST"[called outgoing_connection on_disconnect][%d, %d]",
-                      con_evt_res,
-                      connectivity_evt_type))
-        }
+struct outg_conn : public vlg::outgoing_connection {
+    virtual void on_connect(vlg::ConnectivityEventResult con_evt_res,
+                            vlg::ConnectivityEventType connectivity_evt_type) override {
+        IFLOG(inf(TH_ID, LS_TST"[called outg_conn on_connect][%d, %d]",
+                  con_evt_res,
+                  connectivity_evt_type))
+    }
+    virtual void on_disconnect(vlg::ConnectivityEventResult con_evt_res,
+                               vlg::ConnectivityEventType connectivity_evt_type) override {
+        IFLOG(inf(TH_ID, LS_TST"[called outg_conn on_disconnect][%d, %d]",
+                  con_evt_res,
+                  connectivity_evt_type))
+    }
 };
 
-// incoming_connection
+// inco_conn
 
-class incoming_connection : public vlg::connection {
-    public:
-        virtual void on_connect(vlg::ConnectivityEventResult con_evt_res,
-                                vlg::ConnectivityEventType connectivity_evt_type) override {
-            IFLOG(inf(TH_ID, LS_TST"[called incoming_connection on_connect]"))
-        }
-        virtual void on_disconnect(vlg::ConnectivityEventResult con_evt_res,
-                                   vlg::ConnectivityEventType connectivity_evt_type) override {
-            IFLOG(inf(TH_ID, LS_TST"[called incoming_connection on_disconnect]"))
-        }
+struct inco_conn : public vlg::incoming_connection {
+    inco_conn(vlg::peer &p) : incoming_connection(p) {}
+
+    virtual void on_disconnect(vlg::ConnectivityEventResult con_evt_res,
+                               vlg::ConnectivityEventType connectivity_evt_type) override {
+        IFLOG(inf(TH_ID, LS_TST"[called inco_conn on_disconnect]"))
+    }
 };
 
 // incoming_connection_factory
@@ -111,67 +108,59 @@ class incoming_connection : public vlg::connection {
 struct incoming_connection_factory : public vlg::incoming_connection_factory {
     virtual ~incoming_connection_factory() {
     }
-    virtual vlg::connection *make_incoming_connection(vlg::peer &p) override {
-        return new incoming_connection();
+    virtual inco_conn &make_incoming_connection(vlg::peer &p) override {
+        return *new inco_conn(p);
     }
 };
 
 // incoming_transaction
 
-class incoming_transaction : public vlg::transaction {
-    public:
-        virtual void on_request() override {
-            IFLOG(inf(TH_ID, LS_TST"[called incoming_transaction on_request]"))
-            const vlg::nclass *sending_obj = get_request_obj();
-            if(sending_obj) {
-                switch(sending_obj->get_id()) {
-                    case USER_ENTITY_ID:
-                        IFLOG(dbg(TH_ID, LS_TST"[applicative-tx mng for USER]"))
-                        if(!get_connection().get_peer().obj_update_or_save_and_distribute(1, *sending_obj)) {
-                            set_result(vlg::TransactionResult_COMMITTED);
-                            set_result_code(vlg::ProtocolCode_SUCCESS);
-                        } else {
-                            set_result(vlg::TransactionResult_FAILED);
-                            set_result_code(vlg::ProtocolCode_APPLICATIVE_ERROR);
-                        }
-                        {
-                            set_result_obj(*sending_obj);
-                        }
-                        break;
-                    default:
-                        break;
-                }
+struct inco_tx : public vlg::incoming_transaction {
+    inco_tx(std::shared_ptr<vlg::incoming_connection> &conn) : vlg::incoming_transaction(conn) {}
+    virtual void on_request() override {
+        IFLOG(inf(TH_ID, LS_TST"[called incoming_transaction on_request]"))
+        const vlg::nclass *sending_obj = get_request_obj();
+        if(sending_obj) {
+            switch(sending_obj->get_id()) {
+                case USER_ENTITY_ID:
+                    IFLOG(dbg(TH_ID, LS_TST"[applicative-tx mng for USER]"))
+                    if(!get_connection().get_peer().obj_update_or_save_and_distribute(1, *sending_obj)) {
+                        set_result(vlg::TransactionResult_COMMITTED);
+                        set_result_code(vlg::ProtocolCode_SUCCESS);
+                    } else {
+                        set_result(vlg::TransactionResult_FAILED);
+                        set_result_code(vlg::ProtocolCode_APPLICATIVE_ERROR);
+                    }
+                    set_result_obj(*sending_obj);
+                    break;
+                default:
+                    break;
             }
         }
+    }
 
-        virtual void on_close() override {
-            IFLOG(dbg(TH_ID, LS_TST"[called incoming_transaction on_close]"))
-        }
+    virtual void on_close() override {
+        IFLOG(dbg(TH_ID, LS_TST"[called incoming_transaction on_close]"))
+    }
 };
 
 // incoming_transaction_factory
 
-class incoming_transaction_factory : public vlg::incoming_transaction_factory {
-    public:
-        virtual ~incoming_transaction_factory() {
-        }
-    public:
-        virtual vlg::transaction &make_incoming_transaction(vlg::connection &conn) override {
-            return *new incoming_transaction();
-        }
+struct incoming_transaction_factory : public vlg::incoming_transaction_factory {
+    virtual ~incoming_transaction_factory() {
+    }
+
+    virtual inco_tx &make_incoming_transaction(std::shared_ptr<vlg::incoming_connection> &conn) override {
+        return *new inco_tx(conn);
+    }
 };
 
 // outgoing_transaction
 
-class outgoing_transaction : public vlg::transaction {
-    public:
-        virtual void on_request() override {
-            IFLOG(dbg(TH_ID, LS_TST"[called outgoing_transaction on_request]"))
-        }
-
-        virtual void on_close() override {
-            IFLOG(dbg(TH_ID, LS_TST"[called outgoing_transaction on_close]"))
-        }
+struct outg_tx : public vlg::outgoing_transaction {
+    virtual void on_close() override {
+        IFLOG(dbg(TH_ID, LS_TST"[called outgoing_transaction on_close]"))
+    }
 };
 
 void applicative_on_sbs_event(vlg::subscription_event &sbs_evt)
@@ -179,10 +168,9 @@ void applicative_on_sbs_event(vlg::subscription_event &sbs_evt)
 
 // outgoing_subscription
 
-class outgoing_subscription : public vlg::subscription {
-    public:
-        outgoing_subscription() : recv_items(0) {}
-    public:
+struct outg_sbs : public vlg::outgoing_subscription {
+        outg_sbs() : recv_items(0) {}
+
         virtual void on_start() override {
             IFLOG(inf(TH_ID, LS_TST"[called outgoing_subscription on_start]"))
         }
@@ -202,9 +190,9 @@ class outgoing_subscription : public vlg::subscription {
                         get_connection().get_peer().obj_update_or_save(1, *sbs_evt->get_data());
                         switch(get_nclass_id()) {
                             case USER_ENTITY_ID:
-                                save_class_position("user.pos",
-                                                    sbs_evt.get()->get_timestamp_0(),
-                                                    sbs_evt.get()->get_timestamp_1());
+                                save_nclass_position("user.pos",
+                                                     sbs_evt.get()->get_timestamp_0(),
+                                                     sbs_evt.get()->get_timestamp_1());
                                 break;
                             default:
                                 break;
@@ -234,36 +222,34 @@ class outgoing_subscription : public vlg::subscription {
 
 // incoming_subscription
 
-class incoming_subscription : public vlg::subscription {
-    public:
-        virtual void on_start() override {
-            IFLOG(inf(TH_ID, LS_TST"[called incoming_subscription on_start]"))
-        }
-        virtual void on_stop() override {
-            IFLOG(inf(TH_ID, LS_TST"[called incoming_subscription on_stop]"))
-        }
-        virtual vlg::RetCode accept_distribution(const vlg::subscription_event &sbs_evt) override {
-            IFLOG(dbg(TH_ID, LS_TST"[called incoming_subscription on_event_accept]"))
-            return vlg::RetCode_OK;
-        }
+struct inco_sbs : public vlg::incoming_subscription {
+    inco_sbs(std::shared_ptr<vlg::incoming_connection> &conn) : vlg::incoming_subscription(conn) {}
+
+    virtual void on_stop() override {
+        IFLOG(inf(TH_ID, LS_TST"[called incoming_subscription on_stop]"))
+    }
+
+    virtual vlg::RetCode accept_distribution(const vlg::subscription_event &sbs_evt) override {
+        IFLOG(dbg(TH_ID, LS_TST"[called incoming_subscription on_event_accept]"))
+        return vlg::RetCode_OK;
+    }
 };
 
 // incoming_transaction_factory
 
-class incoming_subscription_factory : public vlg::incoming_subscription_factory {
-    public:
-        virtual ~incoming_subscription_factory() {
-        }
-    public:
-        virtual vlg::subscription &make_incoming_subscription(vlg::connection &conn) override {
-            return *new incoming_subscription();
-        }
+struct incoming_subscription_factory : public vlg::incoming_subscription_factory {
+    virtual ~incoming_subscription_factory() {
+    }
+
+    virtual inco_sbs &make_incoming_subscription(std::shared_ptr<vlg::incoming_connection> &conn) override {
+        return *new inco_sbs(conn);
+    }
 };
 
 // both_peer
 
-class both_peer : public vlg::peer {
-    public:
+struct both_peer : public vlg::peer {
+
         both_peer() {
             peer_both_ver_[0] = 0;
             peer_both_ver_[1] = 0;
@@ -319,12 +305,13 @@ class both_peer : public vlg::peer {
             IFLOG(inf(TH_ID, LS_TST"[called both_peer on_dying_breath]"))
         }
 
-        virtual vlg::RetCode accept_connection(vlg::connection &incoming_connection) override {
+        virtual vlg::RetCode on_incoming_connection(std::shared_ptr<vlg::incoming_connection> &iconn) override {
             IFLOG(inf(TH_ID, LS_TST"[called both_peer on_new_incoming_connection]"))
-            incoming_connection.set_incoming_transaction_factory(inco_tx_fctry_);
-            incoming_connection.set_incoming_subscription_factory(inco_sbs_fctry_);
+            iconn->set_incoming_transaction_factory(inco_tx_fctry_);
+            iconn->set_incoming_subscription_factory(inco_sbs_fctry_);
             return vlg::RetCode_OK;
         }
+
     private:
         unsigned int peer_both_ver_[4];
         incoming_subscription_factory inco_sbs_fctry_;
@@ -333,8 +320,7 @@ class both_peer : public vlg::peer {
 
 // entry_point class
 
-class entry_point {
-    public:
+struct entry_point {
         static void wait_for_enter() {
             printf("+++WAIT FOR ENTER");
             char c;
@@ -342,7 +328,6 @@ class entry_point {
             printf("+++ENTER");
         }
 
-    public:
         entry_point() : first_tx_send_(true), gen_evt_th_(*this) {
             tpeer_.set_incoming_connection_factory(inco_conn_fctry_);
             memset(&out_conn_params_, 0, sizeof(out_conn_params_));
@@ -362,7 +347,7 @@ class entry_point {
 #if STA_L
             vlg::persistence_driver *sqlite_dri = vlg::get_pers_driv_sqlite();
             vlg::persistence_manager::load_driver(&sqlite_dri, 1);
-            tpeer_.extend_model(*get_em_smplmdl());
+            tpeer_.extend_model(*get_nem_smplmdl());
 #endif
             return vlg::RetCode_OK;
         }
@@ -396,7 +381,7 @@ class entry_point {
         vlg::RetCode start_user_sbs() {
             //READ LAST RECEIVED POSITION TS0, TS1
             unsigned int ts0 = 0, ts1 = 0;
-            load_class_position("user.pos", ts0, ts1);
+            load_nclass_position("user.pos", ts0, ts1);
 
             out_sbs_.bind(out_conn_);
             out_sbs_.start(vlg::SubscriptionType_SNAPSHOT,
@@ -458,9 +443,9 @@ class entry_point {
     private:
         sockaddr_in out_conn_params_;
         both_peer tpeer_;
-        outgoing_connection out_conn_;
-        outgoing_subscription out_sbs_;
-        outgoing_transaction out_tx_;
+        outg_conn out_conn_;
+        outg_sbs out_sbs_;
+        outg_tx out_tx_;
         bool first_tx_send_;
         incoming_connection_factory inco_conn_fctry_;
 

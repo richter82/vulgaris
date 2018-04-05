@@ -50,11 +50,8 @@
 
 namespace vlg {
 
-#define LOG_CFG_FILE_DIR_LEN 512
-static char log_cfg_file_dir[LOG_CFG_FILE_DIR_LEN] = {0};
-
-#define LOG_CFG_FILE_NAME_PATH_LEN 512
-static char log_cfg_file_name_path[LOG_CFG_FILE_NAME_PATH_LEN] = {0};
+static std::string log_cfg_file_dir;
+static std::string log_cfg_file_name_path;
 
 TraceLVL get_trace_level_enum(const char *str)
 {
@@ -113,17 +110,19 @@ class logger_cfg_loader {
         virtual RetCode load_cfg() = 0;
 };
 
-bool deflt_log_loaded = false;
-std::unordered_map<std::string, std::unique_ptr<logger>> lgname_lg;
-std::unordered_map<std::string, std::unique_ptr<logger>> &get_logger_map()
+static bool deflt_log_loaded = false;
+static std::unique_ptr<std::unordered_map<std::string, std::unique_ptr<logger>>> lgname_lg;
+static std::unordered_map<std::string, std::unique_ptr<logger>> &get_logger_map()
 {
-    return lgname_lg;
+    if(!lgname_lg) {
+        lgname_lg.reset(new std::unordered_map<std::string, std::unique_ptr<logger>>());
+    }
+    return *lgname_lg;
 }
 
 RetCode logger::add_appender_to_all_loggers(appender *apnd)
 {
-    RetCode res = RetCode_OK;
-    std::for_each(lgname_lg.begin(), lgname_lg.end(), [&](auto &it) {
+    std::for_each(get_logger_map().begin(), get_logger_map().end(), [&](auto &it) {
         it.second->add_appender(apnd);
     });
     return RetCode_OK;
@@ -131,14 +130,14 @@ RetCode logger::add_appender_to_all_loggers(appender *apnd)
 
 void logger::set_level_for_all_loggers(TraceLVL lvl)
 {
-    std::for_each(lgname_lg.begin(), lgname_lg.end(), [&](auto &it) {
+    std::for_each(get_logger_map().begin(), get_logger_map().end(), [&](auto &it) {
         it.second->set_level(lvl);
     });
 }
 
 RetCode logger::remove_last_appender_from_all_loggers()
 {
-    std::for_each(lgname_lg.begin(), lgname_lg.end(), [&](auto &it) {
+    std::for_each(get_logger_map().begin(), get_logger_map().end(), [&](auto &it) {
         it.second->remove_last_appender();
     });
     return RetCode_OK;
@@ -205,10 +204,13 @@ void LPrsERR_UNEXP(const char *unexp)
 
 // appender_impl
 
-std::unordered_map<std::string, std::unique_ptr<appender>> apnds;
+static std::unique_ptr<std::unordered_map<std::string, std::unique_ptr<appender>>> apnds;
 std::unordered_map<std::string, std::unique_ptr<appender>> &get_appender_map()
 {
-    return apnds;
+    if(!apnds) {
+        apnds.reset(new std::unordered_map<std::string, std::unique_ptr<appender>>());
+    }
+    return *apnds;
 }
 
 struct appender_impl {
@@ -597,7 +599,7 @@ class std_logger_cfg_loader : public logger_cfg_loader {
 
     private:
 
-        RetCode parse_lines_max(vlg::str_tok &toknz, int &lnmax) {
+        RetCode parse_lines_max(str_tok &toknz, int &lnmax) {
             std::string tkn;
             while(toknz.next_token(tkn)) {
                 CR_SKIP_SP_TABS(tkn)
@@ -616,7 +618,7 @@ class std_logger_cfg_loader : public logger_cfg_loader {
             return RetCode_BADCFG;
         }
 
-        RetCode read_dot(unsigned long &lnum, vlg::str_tok &tknz) {
+        RetCode read_dot(unsigned long &lnum, str_tok &tknz) {
             std::string tkn;
             while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_DOT, true)) {
                 if(tkn == CR_TK_DOT) {
@@ -628,7 +630,7 @@ class std_logger_cfg_loader : public logger_cfg_loader {
             return RetCode_OK;
         }
 
-        RetCode skip_sp_tab_and_read_eq(unsigned long &lnum, vlg::str_tok &tknz) {
+        RetCode skip_sp_tab_and_read_eq(unsigned long &lnum, str_tok &tknz) {
             std::string tkn;
             while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_EQUAL, true)) {
                 CR_SKIP_SP_TABS(tkn)
@@ -642,7 +644,7 @@ class std_logger_cfg_loader : public logger_cfg_loader {
             return RetCode_OK;
         }
 
-        RetCode read_tkn(unsigned long &lnum, vlg::str_tok &tknz,
+        RetCode read_tkn(unsigned long &lnum, str_tok &tknz,
                          std::string &tkn_out) {
             std::string tkn;
             if(tknz.next_token(tkn, CR_DF_DLMT CR_TK_DOT CR_TK_EQUAL, true)) {
@@ -653,7 +655,7 @@ class std_logger_cfg_loader : public logger_cfg_loader {
             return RetCode_BADCFG;
         }
 
-        RetCode parse_apnd(std::string &apname, vlg::str_tok &toknz) {
+        RetCode parse_apnd(std::string &apname, str_tok &toknz) {
             RetCode res = RetCode_OK;
             int lnmax;
             std::string tkn;
@@ -755,7 +757,7 @@ class std_logger_cfg_loader : public logger_cfg_loader {
 
         RetCode parse_lggr(std::string &lggrname,
                            std::string &lgsign,
-                           vlg::str_tok &toknz) {
+                           str_tok &toknz) {
             std::string tkn;
             logger *lggr = nullptr;
             bool lggr_parsed = false;
@@ -822,7 +824,7 @@ class std_logger_cfg_loader : public logger_cfg_loader {
             RetCode res = RetCode_OK;
             unsigned long lnum = 1;
             std::string tkn, apname, lggrname, lgsign;
-            vlg::str_tok tknz(data);
+            str_tok tknz(data);
             while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_DOT CR_TK_EQUAL, true)) {
                 CR_SKIP_SP_TABS(tkn)
                 CR_DO_CMD_ON_NEWLINE(tkn, lnum++; continue)
@@ -914,11 +916,11 @@ struct logger_impl {
         lvl_ = level;
     }
 
-    TraceLVL    lvl_;
-    uint16_t    sign_len_;
-    char        sign_[LG_MAX_SIGN_LEN+1];
-    uint16_t    apnds_n_;
-    appender    *apnds_[LG_MAX_APNDS];
+    TraceLVL lvl_;
+    uint16_t sign_len_;
+    char sign_[LG_MAX_SIGN_LEN+1];
+    uint16_t apnds_n_;
+    appender *apnds_[LG_MAX_APNDS];
 };
 
 #define LGGRREP_SPREADVA_PLN(msg, args)\
@@ -944,20 +946,20 @@ for(uint16_t i = 0; i < impl_->apnds_n_; i++){\
 
 RetCode logger::set_logger_cfg_file_dir(const char *dir)
 {
-    strncpy(log_cfg_file_dir,dir, LOG_CFG_FILE_DIR_LEN);
+    log_cfg_file_dir = dir;
     return RetCode_OK;
 }
 
 RetCode logger::set_logger_cfg_file_path_name(const char *file_path)
 {
-    strncpy(log_cfg_file_name_path,file_path, LOG_CFG_FILE_NAME_PATH_LEN);
+    log_cfg_file_name_path = file_path;
     return RetCode_OK;
 }
 
 RetCode logger::load_logger_config()
 {
-    return strlen(log_cfg_file_name_path) ?
-           load_logger_config(log_cfg_file_name_path) :
+    return log_cfg_file_name_path.size() ?
+           load_logger_config(log_cfg_file_name_path.c_str()) :
            load_logger_config("logger.cfg");
 }
 
@@ -986,7 +988,6 @@ logger *logger::get_logger(const char *logger_name)
 
 RetCode logger::get_logger(const char *logger_name, logger **lggr)
 {
-    logger *l_ptr = nullptr;
     if(!logger_name || !logger_name[0]) {
         return RetCode_BADARG;
     }
@@ -999,13 +1000,8 @@ RetCode logger::get_logger(const char *logger_name, logger **lggr)
     }
 }
 
-logger::logger(TraceLVL level,
-               const char *sign,
-               appender *apnds[],
-               uint16_t apnds_n) : impl_(new logger_impl(level,
-                                                             sign,
-                                                             apnds,
-                                                             apnds_n))
+logger::logger(TraceLVL level, const char *sign, appender *apnds[], uint16_t apnds_n) :
+    impl_(new logger_impl(level, sign, apnds, apnds_n))
 {}
 
 logger::~logger()
@@ -1236,18 +1232,18 @@ size_t logger::fatm(uint32_t id, const char *msg)
 
 size_t logger::trc_nclass(uint32_t id,
                           const nclass *obj,
-                          bool print_class_name,
+                          bool print_nclass_name,
                           const char *msg,
                           ...)
 {
     size_t blen = 0;
     char msg_b[LG_BUF_LEN_16K];
-    if(level() <= vlg::TL_TRC) {
+    if(level() <= TL_TRC) {
         va_list args;
         va_start(args, msg);
         blen = vsprintf(msg_b, msg, args);
         va_end(args);
-        obj->pretty_dump_to_buffer(&msg_b[blen], print_class_name);
+        obj->pretty_dump_to_buffer(&msg_b[blen], print_nclass_name);
         blen = dbgm(id, msg_b);
     }
     return blen;
@@ -1256,18 +1252,18 @@ size_t logger::trc_nclass(uint32_t id,
 
 size_t logger::dbg_nclass(uint32_t id,
                           const nclass *obj,
-                          bool print_class_name,
+                          bool print_nclass_name,
                           const char *msg,
                           ...)
 {
     size_t blen = 0;
     char msg_b[LG_BUF_LEN_16K];
-    if(level() <= vlg::TL_DBG) {
+    if(level() <= TL_DBG) {
         va_list args;
         va_start(args, msg);
         blen = vsprintf(msg_b, msg, args);
         va_end(args);
-        obj->pretty_dump_to_buffer(&msg_b[blen], print_class_name);
+        obj->pretty_dump_to_buffer(&msg_b[blen], print_nclass_name);
         blen = dbgm(id, msg_b);
     }
     return blen;
@@ -1275,18 +1271,18 @@ size_t logger::dbg_nclass(uint32_t id,
 
 size_t logger::inf_nclass(uint32_t id,
                           const nclass *obj,
-                          bool print_class_name,
+                          bool print_nclass_name,
                           const char *msg,
                           ...)
 {
     size_t blen = 0;
     char msg_b[LG_BUF_LEN_16K];
-    if(level() <= vlg::TL_INF) {
+    if(level() <= TL_INF) {
         va_list args;
         va_start(args, msg);
         blen = vsprintf(msg_b, msg, args);
         va_end(args);
-        obj->pretty_dump_to_buffer(&msg_b[blen], print_class_name);
+        obj->pretty_dump_to_buffer(&msg_b[blen], print_nclass_name);
         blen = infm(id, msg_b);
     }
     return blen;
@@ -1294,18 +1290,18 @@ size_t logger::inf_nclass(uint32_t id,
 
 size_t logger::wrn_nclass(uint32_t id,
                           const nclass *obj,
-                          bool print_class_name,
+                          bool print_nclass_name,
                           const char *msg,
                           ...)
 {
     size_t blen = 0;
     char msg_b[LG_BUF_LEN_16K];
-    if(level() <= vlg::TL_WRN) {
+    if(level() <= TL_WRN) {
         va_list args;
         va_start(args, msg);
         blen = vsprintf(msg_b, msg, args);
         va_end(args);
-        obj->pretty_dump_to_buffer(&msg_b[blen], print_class_name);
+        obj->pretty_dump_to_buffer(&msg_b[blen], print_nclass_name);
         blen = wrnm(id, msg_b);
     }
     return blen;
@@ -1313,18 +1309,18 @@ size_t logger::wrn_nclass(uint32_t id,
 
 size_t logger::err_nclass(uint32_t id,
                           const nclass *obj,
-                          bool print_class_name,
+                          bool print_nclass_name,
                           const char *msg,
                           ...)
 {
     size_t blen = 0;
     char msg_b[LG_BUF_LEN_16K];
-    if(level() <= vlg::TL_ERR) {
+    if(level() <= TL_ERR) {
         va_list args;
         va_start(args, msg);
         blen = vsprintf(msg_b, msg, args);
         va_end(args);
-        obj->pretty_dump_to_buffer(&msg_b[blen], print_class_name);
+        obj->pretty_dump_to_buffer(&msg_b[blen], print_nclass_name);
         blen = errm(id, msg_b);
     }
     return blen;
@@ -1332,18 +1328,18 @@ size_t logger::err_nclass(uint32_t id,
 
 size_t logger::cri_nclass(uint32_t id,
                           const nclass *obj,
-                          bool print_class_name,
+                          bool print_nclass_name,
                           const char *msg,
                           ...)
 {
     size_t blen = 0;
     char msg_b[LG_BUF_LEN_16K];
-    if(level() <= vlg::TL_CRI) {
+    if(level() <= TL_CRI) {
         va_list args;
         va_start(args, msg);
         blen = vsprintf(msg_b, msg, args);
         va_end(args);
-        obj->pretty_dump_to_buffer(&msg_b[blen], print_class_name);
+        obj->pretty_dump_to_buffer(&msg_b[blen], print_nclass_name);
         blen = crim(id, msg_b);
     }
     return blen;
@@ -1351,18 +1347,18 @@ size_t logger::cri_nclass(uint32_t id,
 
 size_t logger::fat_nclass(uint32_t id,
                           const nclass *obj,
-                          bool print_class_name,
+                          bool print_nclass_name,
                           const char *msg,
                           ...)
 {
     size_t blen = 0;
     char msg_b[LG_BUF_LEN_16K];
-    if(level() <= vlg::TL_FAT) {
+    if(level() <= TL_FAT) {
         va_list args;
         va_start(args, msg);
         blen = vsprintf(msg_b, msg, args);
         va_end(args);
-        obj->pretty_dump_to_buffer(&msg_b[blen], print_class_name);
+        obj->pretty_dump_to_buffer(&msg_b[blen], print_nclass_name);
         blen = fatm(id, msg_b);
     }
     return blen;

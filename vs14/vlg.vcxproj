@@ -45,6 +45,7 @@
     <ClCompile Include="..\src\vlg\conn_impl.cpp" />
     <ClCompile Include="..\src\vlg\dl.cpp" />
     <ClCompile Include="..\src\vlg\logger.cpp" />
+    <ClCompile Include="..\src\vlg\model.cpp" />
     <ClCompile Include="..\src\vlg\parse.cpp" />
     <ClCompile Include="..\src\vlg\proto.cpp" />
     <ClCompile Include="..\src\vlg\prs_impl.cpp" />

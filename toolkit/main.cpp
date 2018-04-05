@@ -19,7 +19,7 @@
  *
  */
 
-#include "vlg_toolkit_mainwindow.h"
+#include "tkt_mainwindow.h"
 #include <QApplication>
 
 #define QUOTE_(x) #x
