@@ -19,8 +19,7 @@
  *
  */
 
-#ifndef VLG_TOOLKIT_SBS_VLG_CLASS_MODEL_H
-#define VLG_TOOLKIT_SBS_VLG_CLASS_MODEL_H
+#pragma once
 #include "tkt_glob.h"
 
 #define VLG_TKT_INT_CELL_COLOR_RST_MSEC 500
@@ -199,5 +198,3 @@ class vlg_toolkit_sbs_vlg_class_model : public QAbstractTableModel {
         //used by view - index in the list is the row in the view
         QList<VLG_SBS_DATA_ENTRY> data_;
 };
-
-#endif // VLG_TOOLKIT_SBS_VLG_CLASS_MODEL_H

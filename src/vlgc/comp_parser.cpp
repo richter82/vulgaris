@@ -111,6 +111,7 @@ RetCode LoadTypesMap(std::unordered_set<std::string> &map)
     map.insert(VLG_RWORD_T_FLOAT_32);
     map.insert(VLG_RWORD_T_FLOAT_64);
     map.insert(VLG_RWORD_T_ASCII);
+    map.insert(VLG_RWORD_T_BYTE);
     return vlg::RetCode_OK;
 }
 
@@ -153,6 +154,9 @@ Type VLG_COMP_StrToTYPE(const std::string &str)
     }
     if(str == VLG_RWORD_T_ASCII) {
         return  Type_ASCII;
+    }
+    if(str == VLG_RWORD_T_BYTE) {
+        return  Type_BYTE;
     }
     return Type_UNDEFINED;
 }

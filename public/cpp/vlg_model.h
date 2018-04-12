@@ -19,8 +19,7 @@
  *
  */
 
-#ifndef VLG_CPP_MDL_H_
-#define VLG_CPP_MDL_H_
+#pragma once
 #include "vlg.h"
 
 namespace vlg {
@@ -273,5 +272,3 @@ struct nentity_manager {
 };
 
 }
-
-#endif

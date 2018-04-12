@@ -19,9 +19,7 @@
  *
  */
 
-#ifndef VLG_TOOLKIT_TX_VLG_CLASS_MODEL_H
-#define VLG_TOOLKIT_TX_VLG_CLASS_MODEL_H
-
+#pragma once
 #include "tkt_glob.h"
 
 class vlg_toolkit_tx_vlg_class_model;
@@ -88,5 +86,3 @@ class vlg_toolkit_tx_vlg_class_model : public QAbstractTableModel {
         int rownum_;
         QHash<int, QString>     hdr_rowidx_rowname_;  //rowidx --> row_hdr_name
 };
-
-#endif // VLG_TOOLKIT_TX_VLG_CLASS_MODEL_H

@@ -114,8 +114,7 @@ RetCode VLG_COMP_Gen_Rep__H_(std::map<std::string, entity_desc_comp *> &entityma
                              entity_desc_comp &edesc,
                              FILE *file)
 {
-    fprintf(file, OPN_CMMNT_LN "representation\n" CLS_CMMNT_LN);
-    fprintf(file, "protected:\n");
+    fprintf(file, OPN_CMMNT_LN "rep.\n" CLS_CMMNT_LN);
     auto &mmbrmap = edesc.get_map_id_MMBRDSC();
     for(auto mdesc = mmbrmap.begin(); mdesc != mmbrmap.end(); mdesc++) {
         std::string type_str;
@@ -310,21 +309,18 @@ RetCode VLG_COMP_Gen_GenMeths__H_(compile_unit &cunit,
                 }
             } else {
                 //primitive type
-                fprintf(file, EXPORT_SYMBOL"void %s(size_t idx, %s val);\n",
-                        meth_name.c_str(), type_str.c_str());
+                fprintf(file, EXPORT_SYMBOL"void %s(size_t idx, %s val);\n", meth_name.c_str(), type_str.c_str());
             }
         }
         /******************************************
         Zero Method
         ******************************************/
-        fprintf(file, EXPORT_SYMBOL"bool is_zero_%s() const;\n",
-                mdesc->second->get_member_name());
+        fprintf(file, EXPORT_SYMBOL"bool is_zero_%s() const;\n", mdesc->second->get_member_name());
         /******************************************
         Zero Method idx.
         ******************************************/
         if(mdesc->second->get_nmemb() > 1) {
-            fprintf(file, EXPORT_SYMBOL"bool is_zero_%s_idx(size_t idx) const;\n",
-                    mdesc->second->get_member_name());
+            fprintf(file, EXPORT_SYMBOL"bool is_zero_%s_idx(size_t idx) const;\n", mdesc->second->get_member_name());
         }
     }
     return vlg::RetCode_OK;
@@ -371,33 +367,25 @@ RetCode VLG_COMP_Gen_Class__H_(compile_unit &cunit, FILE *file)
     std::map<std::string, entity_desc_comp *> &entitymap = cunit.get_entity_map();
     for(auto edsc = entitymap.begin(); edsc != entitymap.end(); edsc++) {
         if(edsc->second->get_nentity_type() == NEntityType_NCLASS) {
-            fprintf(file, OPN_CMMNT_LN
-                    "nclass: %s - ID: %u\n"
+            fprintf(file, OPN_CMMNT_LN"nclass: %s - ID: %u\n"
                     CLS_CMMNT_LN, edsc->second->get_nentity_name(),
                     edsc->second->get_entityid());
             std::string nmsp;
             RET_ON_KO(VLG_COMP_CPP_Calc_NMspc(*edsc->second, nmsp))
             fprintf(file, "namespace %s{\n", nmsp.c_str());
             RET_ON_KO(put_newline(file))
-            fprintf(file, "#define %s_ENTITY_ID %u\n", edsc->second->get_nentity_name(),
-                    edsc->second->get_entityid());
+            fprintf(file, "#define %s_ENTITY_ID %u\n", edsc->second->get_nentity_name(), edsc->second->get_entityid());
             RET_ON_KO(put_newline(file))
-            fprintf(file, "class %s : public vlg::nclass{\nfriend struct vlg::nentity_manager;\n",
-                    edsc->second->get_nentity_name());
-            fprintf(file, "friend void* %s_alloc_func(size_t type_size, const void *copy);\n",
-                    edsc->second->get_nentity_name());
-            fprintf(file, "public:\n");
+            fprintf(file, "struct %s : public vlg::nclass{\n", edsc->second->get_nentity_name());
             fprintf(file, EXPORT_SYMBOL"%s();\n", edsc->second->get_nentity_name());
             fprintf(file, EXPORT_SYMBOL"virtual ~%s();\n", edsc->second->get_nentity_name());
             RET_ON_KO(put_newline(file))
-            fprintf(file, "public:\n");
             RET_ON_KO(VLG_COMP_Gen_ClassVirtualMeths__H_(entitymap, *edsc->second, file))
             RET_ON_KO(put_newline(file))
             RET_ON_KO(VLG_COMP_Gen_GenMeths__H_(cunit, *edsc->second, file))
             RET_ON_KO(put_newline(file))
             RET_ON_KO(VLG_COMP_Gen_Rep__H_(entitymap, *edsc->second, file))
             //zero obj
-            fprintf(file, "\npublic:\n");
             fprintf(file, "static const %s ZERO_OBJ;\n", edsc->second->get_nentity_name());
             fprintf(file, "};\n");
             fprintf(file, "}");

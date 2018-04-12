@@ -19,8 +19,7 @@
  *
  */
 
-#ifndef VLG_CPP_PEER_H_
-#define VLG_CPP_PEER_H_
+#pragma once
 #include "vlg.h"
 
 namespace vlg {
@@ -154,5 +153,3 @@ struct peer {
 
 
 }
-
-#endif

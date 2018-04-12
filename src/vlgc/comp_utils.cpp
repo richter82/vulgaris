@@ -82,6 +82,8 @@ static size_t  get_in_arch_type_size_x86_64_unix_CPP_GCC(Type type)
             return 8;
         case Type_ASCII:
             return 1;
+        case Type_BYTE:
+            return 1;
         default:
             return 0;
     }
@@ -116,6 +118,8 @@ static size_t  get_in_arch_type_size_x86_64_win_CPP_MSVC(Type type)
         case Type_FLOAT64:
             return 8;
         case Type_ASCII:
+            return 1;
+        case Type_BYTE:
             return 1;
         default:
             return 0;
@@ -232,6 +236,8 @@ size_t  get_network_type_size(Type type)
         case Type_FLOAT64:
             return 8;
         case Type_ASCII:
+            return 1;
+        case Type_BYTE:
             return 1;
         default:
             return 0;
@@ -551,8 +557,7 @@ std::set<member_desc_comp *> &key_desc_comp::get_key_member_set_m()
 }
 
 
-RetCode get_zero_val_for_VLG_TYPE(Type type,
-                                  std::string &out)
+RetCode get_zero_val_for_VLG_TYPE(Type type, std::string &out)
 {
     switch(comp_cfg.lang) {
         case VLG_COMP_LANG_C:
@@ -590,6 +595,9 @@ RetCode get_zero_val_for_VLG_TYPE(Type type,
                 case Type_ASCII:
                     out.assign("\'\\0\'");
                     return vlg::RetCode_OK;
+                case Type_BYTE:
+                    out.assign("0");
+                    return vlg::RetCode_OK;
                 default:
                     return vlg::RetCode_KO;
             }
@@ -619,6 +627,9 @@ RetCode get_zero_val_for_VLG_TYPE(Type type,
                     return vlg::RetCode_OK;
                 case Type_ASCII:
                     out.assign("(char)0x0000");
+                    return vlg::RetCode_OK;
+                case Type_BYTE:
+                    out.assign("0");
                     return vlg::RetCode_OK;
                 default:
                     return vlg::RetCode_KO;
@@ -672,6 +683,11 @@ RetCode target_type_from_builtin_VLG_TYPE(member_desc_comp &mdsc,
                 case Type_ASCII:
                     out.assign(VLG_COMP_CPP_TYPE_CHAR);
                     return vlg::RetCode_OK;
+                case Type_BYTE:
+                    out.assign(VLG_COMP_CPP_TYPE_UNSIGN
+                               CR_TK_SP
+                               VLG_COMP_CPP_TYPE_CHAR);
+                    return vlg::RetCode_OK;
                 default:
                     return vlg::RetCode_KO;
             }
@@ -710,6 +726,9 @@ RetCode target_type_from_builtin_VLG_TYPE(member_desc_comp &mdsc,
                                VLG_COMP_JAVA_TYPE_STRING :
                                VLG_COMP_JAVA_TYPE_CHAR);
                     return vlg::RetCode_OK;
+                case Type_BYTE:
+                    out.assign(VLG_COMP_JAVA_TYPE_BYTE);
+                    return vlg::RetCode_OK;
                 default:
                     return vlg::RetCode_KO;
             }
@@ -739,6 +758,7 @@ RetCode target_type_from_VLG_TYPE(member_desc_comp &mdsc,
         case Type_FLOAT32:
         case Type_FLOAT64:
         case Type_ASCII:
+        case Type_BYTE:
             RET_ON_KO(target_type_from_builtin_VLG_TYPE(mdsc, out))
             return vlg::RetCode_OK;
         default:
@@ -790,6 +810,9 @@ RetCode printf_percent_from_VLG_TYPE(member_desc_comp &mdsc,
             return vlg::RetCode_OK;
         case Type_ASCII:
             out.assign("c");
+            return vlg::RetCode_OK;
+        case Type_BYTE:
+            out.assign("x");
             return vlg::RetCode_OK;
         default:
             return vlg::RetCode_KO;

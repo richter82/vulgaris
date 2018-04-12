@@ -19,9 +19,7 @@
  *
  */
 
-#ifndef VLG_TOOLKIT_SBS_WINDOW_H
-#define VLG_TOOLKIT_SBS_WINDOW_H
-
+#pragma once
 #include "tkt_vlg_model.h"
 #include "tkt_sbs_vlg_nclass_model.h"
 
@@ -113,5 +111,3 @@ class vlg_toolkit_sbs_window : public QMainWindow {
         Ui::vlg_toolkit_sbs_window *ui;
 
 };
-
-#endif // VLG_TOOLKIT_SBS_WINDOW_H

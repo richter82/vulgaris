@@ -29,6 +29,16 @@ TraceLVL get_trace_level_enum(const char *str);
 const char *get_trace_level_string(TraceLVL lvl);
 }
 
+std::string hexStr(const char *data, int len)
+{
+    std::stringstream ss;
+    ss << std::hex;
+    for(int i=0; i<len; ++i) {
+        ss << std::setw(2) << std::setfill('0') << (int)data[i];
+    }
+    return ss.str();
+}
+
 void FillQstring_FldValue(const char *fld_ptr,
                           const vlg::member_desc &mdesc,
                           QString &out)
@@ -91,6 +101,10 @@ void FillQstring_FldValue(const char *fld_ptr,
             out = QString("%1").arg(val);
         }
         break;
+        case vlg::Type_BYTE: {
+            out = QString::fromUtf8(fld_ptr, 1);
+        }
+        break;
         default:
             return;
     }
@@ -137,8 +151,12 @@ void FillFldValue_Qstring(const QVariant &value,
             if(mdesc.get_field_nmemb() > 1) {
                 strncpy(fld_ptr, value.toString().toLatin1().data(), mdesc.get_field_nmemb());
             } else {
-                *(char *)fld_ptr = value.toChar().toLatin1();
+                *(char *)fld_ptr = value.toString().toLatin1().at(0);
             }
+            break;
+        case vlg::Type_BYTE:
+            memset(fld_ptr, 0, mdesc.get_field_nmemb());
+            memcpy(fld_ptr, value.toByteArray().constData(), min(value.toByteArray().size(), mdesc.get_field_nmemb()));
             break;
         default:
             break;

@@ -19,8 +19,7 @@
  *
  */
 
-#ifndef VLG_CPP_PERSISTENCE_H_
-#define VLG_CPP_PERSISTENCE_H_
+#pragma once
 #include "vlg.h"
 
 namespace vlg {
@@ -118,5 +117,3 @@ struct persistence_query {
 };
 
 }
-
-#endif

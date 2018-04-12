@@ -19,8 +19,7 @@
  *
  */
 
-#ifndef VLG_COMPILER_H_
-#define VLG_COMPILER_H_
+#pragma once
 #include "glob.h"
 
 //VPTR SIZE x86_64
@@ -76,6 +75,7 @@ RECOGNIZED TYPES
 #define VLG_RWORD_T_FLOAT_32        "float_32"
 #define VLG_RWORD_T_FLOAT_64        "float_64"
 #define VLG_RWORD_T_ASCII           "ascii"
+#define VLG_RWORD_T_BYTE            "byte"
 
 /***********************************
 COMPILER STRINGS
@@ -237,80 +237,80 @@ struct member_desc_comp {
     /*
     Member section
     */
-    unsigned short  get_member_id()         const;
-    MemberType      get_member_type()       const;
-    const char      *get_member_name()      const;
-    const char      *get_member_desc()      const;
+    unsigned short get_member_id() const;
+    MemberType get_member_type() const;
+    const char *get_member_name() const;
+    const char *get_member_desc() const;
 
     /*
     Field section
     */
-    Type            get_field_type()        const;
+    Type get_field_type() const;
 
-    size_t          get_field_offset(VLG_COMP_ARCH arch,
-                                     VLG_COMP_OS os,
-                                     VLG_COMP_LANG lang,
-                                     VLG_COMP_TCOMP tcomp)      const;
+    size_t get_field_offset(VLG_COMP_ARCH arch,
+                            VLG_COMP_OS os,
+                            VLG_COMP_LANG lang,
+                            VLG_COMP_TCOMP tcomp) const;
 
-    size_t          get_field_type_size(VLG_COMP_ARCH arch,
-                                        VLG_COMP_OS os,
-                                        VLG_COMP_LANG lang,
-                                        VLG_COMP_TCOMP tcomp)   const;
+    size_t get_field_type_size(VLG_COMP_ARCH arch,
+                               VLG_COMP_OS os,
+                               VLG_COMP_LANG lang,
+                               VLG_COMP_TCOMP tcomp) const;
 
-    size_t          get_nmemb()                 const;
-    unsigned int    get_field_nclassid()        const;
-    const char      *get_field_usr_str_type()   const;
-    NEntityType     get_field_entity_type()     const;
+    size_t get_nmemb() const;
+    unsigned int get_field_nclassid() const;
+    const char *get_field_usr_str_type() const;
+    NEntityType get_field_entity_type() const;
 
 
-    void                set_field_offset(size_t,
-                                         VLG_COMP_ARCH arch,
-                                         VLG_COMP_OS os,
-                                         VLG_COMP_LANG lang,
-                                         VLG_COMP_TCOMP tcomp);
+    void set_field_offset(size_t,
+                          VLG_COMP_ARCH arch,
+                          VLG_COMP_OS os,
+                          VLG_COMP_LANG lang,
+                          VLG_COMP_TCOMP tcomp);
 
-    void                set_field_type_size(size_t,
-                                            VLG_COMP_ARCH arch,
-                                            VLG_COMP_OS os,
-                                            VLG_COMP_LANG lang,
-                                            VLG_COMP_TCOMP tcomp);
+    void set_field_type_size(size_t,
+                             VLG_COMP_ARCH arch,
+                             VLG_COMP_OS os,
+                             VLG_COMP_LANG lang,
+                             VLG_COMP_TCOMP tcomp);
 
     //Enum specific
-    long                get_enum_value()          const;
+    long get_enum_value() const;
 
 
-    unsigned short  mmbrid_;
-    MemberType      mmbr_type_;
-    const char      *mmbr_name_;
-    const char      *mmbr_desc_;
+    unsigned short mmbrid_;
+    MemberType mmbr_type_;
+    const char *mmbr_name_;
+    const char *mmbr_desc_;
 
     //field type when applicable
-    Type            fild_type_;
+    Type fild_type_;
 
-    std::map<unsigned int, size_t>  fild_offset_map_;
-    std::map<unsigned int, size_t>  fild_type_size_map_;
+    std::map<unsigned int, size_t> fild_offset_map_;
+    std::map<unsigned int, size_t> fild_type_size_map_;
 
     //1 for single element
     //N for arrays, as calloc()
-    size_t          nmemb_;
+    size_t nmemb_;
 
     // valid only if fild_type
-    unsigned int    fild_nclassid_;
+    unsigned int fild_nclassid_;
 
     // is set to VLG_TYPE_Entity &&
     // fild_entitytype_ == VLG_ENTITY_TYPE_Class
     // equals to nclassname when
-    const char      *fild_usr_str_type_;
+    const char *fild_usr_str_type_;
 
     // fild_type_ == VLG_TYPE_Entity
     // is set to VLG_TYPE_Entity
     // valid only if fild_type
     // is set to VLG_TYPE_Entity
-    NEntityType      fild_entitytype_;
+    NEntityType fild_entitytype_;
 
     //enum specific
     //value assumed by this enum
-    long            enum_value_;
+    long enum_value_;
 };
 
 /***********************************
@@ -322,19 +322,19 @@ class key_desc_comp {
                                bool primary);
 
     public:
-        RetCode      init(std::set<member_desc_comp *> &member_set);
-        RetCode      add_member_desc(member_desc_comp *const member_descriptor);
+        RetCode init(std::set<member_desc_comp *> &member_set);
+        RetCode add_member_desc(member_desc_comp *const member_descriptor);
 
-        unsigned short  get_key_id() const;
-        bool            is_primary() const;
-        const std::set<member_desc_comp *>  &get_key_member_set() const;
-        std::set<member_desc_comp *>        &get_key_member_set_m();
+        unsigned short get_key_id() const;
+        bool is_primary() const;
+        const std::set<member_desc_comp *> &get_key_member_set() const;
+        std::set<member_desc_comp *> &get_key_member_set_m();
 
 
     private:
-        unsigned short                  keyid_;
-        bool                            primary_;
-        std::set<member_desc_comp *>    fildset_;  //members being part of this key.
+        unsigned short keyid_;
+        bool primary_;
+        std::set<member_desc_comp *> fildset_;  //members being part of this key.
 };
 
 /***********************************
@@ -351,74 +351,73 @@ struct entity_desc_comp {
                                   unsigned int fild_num,
                                   bool persistent);
 
-        RetCode  extend(std::map<std::string, member_desc_comp *> &mmbrmap,
-                        std::map<unsigned short, key_desc_comp *> &keymap);
+        RetCode extend(std::map<std::string, member_desc_comp *> &mmbrmap,
+                       std::map<unsigned short, key_desc_comp *> &keymap);
 
-        RetCode  extend(std::map<std::string, member_desc_comp *> &mmbrmap);
+        RetCode extend(std::map<std::string, member_desc_comp *> &mmbrmap);
 
-        RetCode  add_key_desc(key_desc_comp *keydesc);
+        RetCode add_key_desc(key_desc_comp *keydesc);
 
-        unsigned int    get_entityid()  const;
+        unsigned int get_entityid()  const;
 
-        size_t          get_size(VLG_COMP_ARCH arch,
-                                 VLG_COMP_OS os,
-                                 VLG_COMP_LANG lang,
-                                 VLG_COMP_TCOMP tcomp)  const;
+        size_t get_size(VLG_COMP_ARCH arch,
+                        VLG_COMP_OS os,
+                        VLG_COMP_LANG lang,
+                        VLG_COMP_TCOMP tcomp)  const;
 
-        size_t          get_entity_max_align(VLG_COMP_ARCH arch,
-                                             VLG_COMP_OS os,
-                                             VLG_COMP_LANG lang,
-                                             VLG_COMP_TCOMP tcomp)  const;
+        size_t get_entity_max_align(VLG_COMP_ARCH arch,
+                                    VLG_COMP_OS os,
+                                    VLG_COMP_LANG lang,
+                                    VLG_COMP_TCOMP tcomp)  const;
 
-        NEntityType         get_nentity_type()      const;
-        const char          *get_entity_namespace() const;
-        const char          *get_nentity_name()     const;
-        vlg::alloc_func     get_entity_alloc_f()    const;
-        unsigned int        get_field_num()         const;
-        bool                is_persistent()         const;
+        NEntityType get_nentity_type() const;
+        const char *get_entity_namespace() const;
+        const char *get_nentity_name() const;
+        vlg::alloc_func get_entity_alloc_f() const;
+        unsigned int get_field_num() const;
+        bool is_persistent() const;
 
-        std::map<unsigned short, member_desc_comp *>    &get_map_id_MMBRDSC();
+        std::map<unsigned short, member_desc_comp *> &get_map_id_MMBRDSC();
         const std::map<std::string, member_desc_comp *> &get_map_name_MMBRDSC() const;
 
-        const std::map<unsigned short, key_desc_comp *>  &get_map_keyid_KDESC() const;
-        std::map<unsigned short, key_desc_comp *>        &get_map_keyid_KDESC_mod();
+        const std::map<unsigned short, key_desc_comp *> &get_map_keyid_KDESC() const;
+        std::map<unsigned short, key_desc_comp *> &get_map_keyid_KDESC_mod();
 
-        const member_desc_comp  *get_member_desc_by_id(unsigned int mmbrid) const;
-        const member_desc_comp  *get_member_desc_by_name(const char *name)  const;
+        const member_desc_comp *get_member_desc_by_id(unsigned int mmbrid) const;
+        const member_desc_comp *get_member_desc_by_name(const char *name)  const;
 
-        void                enum_member_desc(enum_member_desc_comp_func func)
-        const;
+        void enum_member_desc(enum_member_desc_comp_func func) const;
 
-        void                    set_entity_size(size_t,
-                                                VLG_COMP_ARCH arch,
-                                                VLG_COMP_OS os,
-                                                VLG_COMP_LANG lang,
-                                                VLG_COMP_TCOMP tcomp);
+        void set_entity_size(size_t,
+                             VLG_COMP_ARCH arch,
+                             VLG_COMP_OS os,
+                             VLG_COMP_LANG lang,
+                             VLG_COMP_TCOMP tcomp);
 
-        void                    set_entity_max_align(size_t,
-                                                     VLG_COMP_ARCH arch,
-                                                     VLG_COMP_OS os,
-                                                     VLG_COMP_LANG lang,
-                                                     VLG_COMP_TCOMP tcomp);
+        void set_entity_max_align(size_t,
+                                  VLG_COMP_ARCH arch,
+                                  VLG_COMP_OS os,
+                                  VLG_COMP_LANG lang,
+                                  VLG_COMP_TCOMP tcomp);
 
     public:
-        unsigned int                    entityid_;
+        unsigned int entityid_;
 
-        std::map<unsigned int, size_t>  entity_size_map_;
-        std::map<unsigned int, size_t>  entity_max_align_map_;
+        std::map<unsigned int, size_t> entity_size_map_;
+        std::map<unsigned int, size_t> entity_max_align_map_;
 
-        NEntityType         entitytype_;
-        const char          *nmspace_;
-        const char          *entityname_;
-        vlg::alloc_func     afun_;
-        unsigned int        fild_num_;
+        NEntityType entitytype_;
+        const char *nmspace_;
+        const char *entityname_;
+        vlg::alloc_func afun_;
+        unsigned int fild_num_;
 
-        std::map<unsigned short, member_desc_comp *>    mmbrid_mdesc_;
-        std::map<std::string, member_desc_comp *>       mmbrnm_mdesc_;  //mmbrname --> mmbrdesc
+        std::map<unsigned short, member_desc_comp *> mmbrid_mdesc_;
+        std::map<std::string, member_desc_comp *> mmbrnm_mdesc_;  //mmbrname --> mmbrdesc
 
         //persistence
-        bool                                        persistent_;
-        std::map<unsigned short, key_desc_comp *>   keyid_kdesc_;
+        bool persistent_;
+        std::map<unsigned short, key_desc_comp *> keyid_kdesc_;
 };
 
 /***********************************
@@ -452,41 +451,41 @@ class compile_unit {
 /***********************************
 GLOB FUNCTIONS
 ***********************************/
-RetCode    open_input_file(const char *fname,
-                           FILE **fdesc);
+RetCode open_input_file(const char *fname,
+                        FILE **fdesc);
 
-RetCode    open_output_file(const char *fname,
-                            FILE **fdesc);
+RetCode open_output_file(const char *fname,
+                         FILE **fdesc);
 
-RetCode    parse_data(const char *fname,
-                      std::string &data,
-                      std::map<std::string, std::string> &definemap,
-                      std::map<std::string, entity_desc_comp *> &entitymap,
-                      char **modname,
-                      char **modver);
+RetCode parse_data(const char *fname,
+                   std::string &data,
+                   std::map<std::string, std::string> &definemap,
+                   std::map<std::string, entity_desc_comp *> &entitymap,
+                   char **modname,
+                   char **modver);
 
 /*
 Returns the potential next valid offset (to be used in next iteration).
 Set in cur_offset the offset that must be used for the current field.
 */
-size_t  get_next_valid_offset(size_t &cur_offset,
-                              size_t type_align,
-                              size_t type_size,
-                              size_t nmemb,
-                              size_t max_align,
-                              size_t packing,
-                              bool scalar);
+size_t get_next_valid_offset(size_t &cur_offset,
+                             size_t type_align,
+                             size_t type_size,
+                             size_t nmemb,
+                             size_t max_align,
+                             size_t packing,
+                             bool scalar);
 
 /*
 Return the size of the field adjusted to align/paking value.
 cur_offset must contain last value returned by get_next_valid_offset.
 */
-size_t  adjust_entity_size(size_t cur_offset,
-                           size_t max_align,
-                           VLG_COMP_ARCH arch,
-                           VLG_COMP_OS os,
-                           VLG_COMP_LANG lang,
-                           VLG_COMP_TCOMP tcomp);
+size_t adjust_entity_size(size_t cur_offset,
+                          size_t max_align,
+                          VLG_COMP_ARCH arch,
+                          VLG_COMP_OS os,
+                          VLG_COMP_LANG lang,
+                          VLG_COMP_TCOMP tcomp);
 
 /***********************************
 GLOB FUNCTIONS / COMPILING
@@ -495,32 +494,32 @@ GLOB FUNCTIONS / COMPILING
 /*
 On machine-architecture dependant type size (in bytes)
 */
-size_t  get_in_arch_type_size(Type type,
-                              VLG_COMP_ARCH arch,
-                              VLG_COMP_OS os,
-                              VLG_COMP_LANG lang,
-                              VLG_COMP_TCOMP tcomp);
+size_t get_in_arch_type_size(Type type,
+                             VLG_COMP_ARCH arch,
+                             VLG_COMP_OS os,
+                             VLG_COMP_LANG lang,
+                             VLG_COMP_TCOMP tcomp);
 
 /*
 On Network-protocol dependant type size (in bytes)
 */
-size_t  get_network_type_size(Type type);
+size_t get_network_type_size(Type type);
 
-RetCode    compile_CPP(compile_unit &cunit);
-RetCode    compile_Java(compile_unit &cunit);
+RetCode compile_CPP(compile_unit &cunit);
+RetCode compile_Java(compile_unit &cunit);
 
-RetCode    get_zero_val_for_VLG_TYPE(Type type, std::string &out);
+RetCode get_zero_val_for_VLG_TYPE(Type type, std::string &out);
 
-RetCode    target_type_from_builtin_VLG_TYPE(member_desc_comp &mdsc,
-                                             std::string &out);
+RetCode target_type_from_builtin_VLG_TYPE(member_desc_comp &mdsc,
+                                          std::string &out);
 
-RetCode    target_type_from_VLG_TYPE(member_desc_comp &mdsc,
-                                     std::map<std::string, entity_desc_comp *> &entitymap,
-                                     std::string &out);
+RetCode target_type_from_VLG_TYPE(member_desc_comp &mdsc,
+                                  std::map<std::string, entity_desc_comp *> &entitymap,
+                                  std::string &out);
 
-RetCode    printf_percent_from_VLG_TYPE(member_desc_comp &mdsc,
-                                        std::string &out,
-                                        bool strict_linux = false);
+RetCode printf_percent_from_VLG_TYPE(member_desc_comp &mdsc,
+                                     std::string &out,
+                                     bool strict_linux = false);
 
 RetCode get_local_date(char *out);
 RetCode put_newline(FILE *file);
@@ -530,4 +529,3 @@ RetCode render_hdr(compile_unit &cunit,
                    FILE *file);
 
 }
-#endif

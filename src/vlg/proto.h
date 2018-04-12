@@ -19,8 +19,7 @@
  *
  */
 
-#ifndef VLG_PROTO_H_
-#define VLG_PROTO_H_
+#pragma once
 #include "glob.h"
 
 /*****************************************
@@ -424,5 +423,3 @@ void build_PKT_SBSSPR(SubscriptionResponse sbresl,
                       g_bbuf *obb);
 
 }
-
-#endif

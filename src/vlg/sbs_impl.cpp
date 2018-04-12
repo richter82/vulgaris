@@ -365,7 +365,6 @@ RetCode incoming_subscription_impl::send_start_response()
 
 RetCode incoming_subscription_impl::send_event(std::shared_ptr<subscription_event> &sbs_evt)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RetCode rcode = RetCode_OK;
     g_bbuf *gbb = new g_bbuf();
     build_PKT_SBSEVT(sbsid_,
@@ -389,18 +388,15 @@ RetCode incoming_subscription_impl::send_event(std::shared_ptr<subscription_even
     RET_ON_KO(conn_->pkt_sending_q_.put(&gbb))
     selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, conn_sh_);
     set_sbs_to_ack_evt_id(sbs_evt->impl_->sbs_evtid_);
-    IFLOG(dbg(TH_ID, LS_SBS"[sbsid:%d, incoming_subscription event:%u set to ack]", sbsid_, srv_sbs_to_ack_evtid_))
     rcode = conn_->peer_->selector_.evt_enqueue_and_notify(evt);
     if(rcode) {
         set_status(SubscriptionStatus_ERROR);
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
 RetCode incoming_subscription_impl::store_sbs_evt(std::shared_ptr<subscription_event> &sbs_evt)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RetCode rcode = RetCode_OK;
     std::unique_ptr<char> pkey;
     b_qu *nclass_key_value_evt_q = nullptr;
@@ -439,27 +435,22 @@ RetCode incoming_subscription_impl::store_sbs_evt(std::shared_ptr<subscription_e
         //these events are always enqueued in glob queue
         srv_sbs_evt_glob_q_.put(&sbs_evt);
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
 RetCode incoming_subscription_impl::consume_sbs_evt(std::shared_ptr<subscription_event> &sbs_evt)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RetCode rcode = RetCode_OK;
     std::shared_ptr<subscription_event> sev_wrpr_1, sev_wrpr_2;
     if(!(rcode = srv_sbs_evt_glob_q_.get(0, 0, &sev_wrpr_1))) {
         std::unique_ptr<char> pkey;
         sev_wrpr_1->impl_->sbs_data_->get_primary_key_value_as_string(pkey);
-        IFLOG(trc(TH_ID, LS_TRL "[new event[%u] available][key:%s]",
-                  __func__, sev_wrpr_1->impl_->sbs_evtid_, pkey.get()))
         if(sev_wrpr_1->impl_->sbs_evttype_ == SubscriptionEventType_LIVE) {
             auto it = srv_sbs_nclasskey_evt_q_hm_.find(pkey.get());
             if(it != srv_sbs_nclasskey_evt_q_hm_.end()) {
                 if(!(rcode = it->second->get(0, 0, &sev_wrpr_2))) {
                     if(sev_wrpr_1.get() != sev_wrpr_2.get()) { //check for same obj.
-                        IFLOG(cri(TH_ID, LS_CLO
-                                  "[inconsistence: [sev_wrpr_1:%p != sev_wrpr_2:%p] - [key:%s] - aborting]",
+                        IFLOG(cri(TH_ID, LS_CLO "[inconsistence: [sev_wrpr_1:%p != sev_wrpr_2:%p] - [key:%s] - aborting]",
                                   __func__, sev_wrpr_1, sev_wrpr_2, pkey.get()))
                         return RetCode_GENERR;
                     }
@@ -480,13 +471,11 @@ RetCode incoming_subscription_impl::consume_sbs_evt(std::shared_ptr<subscription
     } else {
         IFLOG(trc(TH_ID, LS_TRL "[no new event available]", __func__))
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
 RetCode incoming_subscription_impl::submit_live_event(std::shared_ptr<subscription_event> &sbs_evt)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RetCode rcode = RetCode_OK;
     if((rcode = ipubl_->accept_distribution(*sbs_evt))) {
         IFLOG(trc(TH_ID, LS_TRL"[unauthorized event:%d skipped for subscriber:%d]",
@@ -495,20 +484,16 @@ RetCode incoming_subscription_impl::submit_live_event(std::shared_ptr<subscripti
         scoped_wr_lock wrl(lock_srv_sbs_rep_deferred_);
         if(srv_sbs_last_evt_ack_ && initial_query_ended_) {
             //immediate sending
-            IFLOG(trc(TH_ID, LS_TRL "[send new live event:%d].", __func__, sbs_evt->impl_->sbs_evtid_))
             if((rcode = send_event(sbs_evt))) {
                 IFLOG(err(TH_ID, LS_TRL "[new live event:%d failed to send]", __func__, sbs_evt->impl_->sbs_evtid_))
             }
         } else {
             //deferred sending
-            IFLOG(trc(TH_ID, LS_TRL"[an event:%d, has not been ack by client yet, storing new live event:%d]",
-                      __func__, srv_sbs_to_ack_evtid_, sbs_evt->impl_->sbs_evtid_))
             if((rcode = store_sbs_evt(sbs_evt))) {
                 IFLOG(cri(TH_ID, LS_TRL "[event storing failed:%d].", __func__, rcode))
             }
         }
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
@@ -516,10 +501,7 @@ RetCode incoming_subscription_impl::submit_live_event(std::shared_ptr<subscripti
 
 RetCode incoming_subscription_impl::receive_event_ack(const vlg_hdr_rec *hdr)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
-    IFLOG(dbg(TH_ID, LS_SBS"[sbsid:%d - incoming_subscription event:%u ack received]", sbsid_, srv_sbs_to_ack_evtid_))
     RetCode rcode = RetCode_OK;
-
     scoped_wr_lock wrl(lock_srv_sbs_rep_deferred_);
     set_sbs_last_ack_evt_id();
     std::shared_ptr<subscription_event> sbs_evt;
@@ -533,8 +515,6 @@ RetCode incoming_subscription_impl::receive_event_ack(const vlg_hdr_rec *hdr)
     ***********************************/
     if((!rcode || rcode == RetCode_ENMEND) && !(rcode = consume_sbs_evt(sbs_evt))) {
         //there is a new event to send.
-        IFLOG(trc(TH_ID, LS_TRL "[last event:%d, has been ack by client, there is a new stored event to send:%d].",
-                  __func__, srv_sbs_last_ack_evtid_, sbs_evt->impl_->sbs_evtid_))
         if((rcode = send_event(sbs_evt))) {
             IFLOG(err(TH_ID, LS_TRL "[new event:%d failed to send]", __func__, sbs_evt->impl_->sbs_evtid_))
         }
@@ -543,14 +523,12 @@ RetCode incoming_subscription_impl::receive_event_ack(const vlg_hdr_rec *hdr)
                   __func__, srv_sbs_last_ack_evtid_))
         rcode = RetCode_OK;
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
 RetCode incoming_subscription_impl::submit_dwnl_event()
 {
     RetCode rcode = RetCode_OK;
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     per_nclass_id_conn_set *sdr = nullptr;
     subscription_event_impl *sbs_dwnl_evt_impl = nullptr;
     nclass *dwnl_obj = nullptr;
@@ -611,13 +589,11 @@ RetCode incoming_subscription_impl::submit_dwnl_event()
     } else {
         IFLOG(cri(TH_ID, LS_TRL "[download query failed][res:%d]", __func__, rcode))
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
 RetCode incoming_subscription_impl::execute_initial_query()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RetCode rcode = RetCode_OK;
     const nentity_desc *nclass_desc = conn_->peer_->nem_.get_nentity_descriptor(nclassid_);
     if(nclass_desc) {
@@ -626,25 +602,19 @@ RetCode incoming_subscription_impl::execute_initial_query()
             if((driv = conn_->peer_->pers_mng_.available_driver(nclassid_))) {
                 persistence_connection_impl *conn = nullptr;
                 if((conn = driv->available_connection(nclassid_))) {
-                    std::string qry_s;
-                    qry_s.assign("select * from ");
-                    qry_s.append(nclass_desc->get_nentity_name());
+                    std::stringstream ss;
+                    ss << "select * from " << nclass_desc->get_nentity_name();
                     if(dwltyp_ == SubscriptionDownloadType_PARTIAL) {
-                        char ts_buff[TMSTMP_BUFF_SZ];
-                        qry_s.append(" where (" P_F_TS0" = ");
-                        snprintf(ts_buff, TMSTMP_BUFF_SZ, "%u", open_tmstp0_);
-                        qry_s.append(ts_buff);
-                        qry_s.append(" and " P_F_TS1" > ");
-                        snprintf(ts_buff, TMSTMP_BUFF_SZ, "%u", open_tmstp1_);
-                        qry_s.append(ts_buff);
-                        qry_s.append(") or (");
-                        qry_s.append(P_F_TS0" > ");
-                        snprintf(ts_buff, TMSTMP_BUFF_SZ, "%u", open_tmstp0_);
-                        qry_s.append(ts_buff);
-                        qry_s.append(")");
+                        ss << " where (" P_F_TS0" = "
+                           << open_tmstp0_
+                           << " and " P_F_TS1" > "
+                           << open_tmstp1_
+                           << ") or (" P_F_TS0" > "
+                           << open_tmstp0_
+                           << ")";
                     }
-                    qry_s.append(";");
-                    rcode = conn->execute_query(qry_s.c_str(), conn_->peer_->nem_, initial_query_);
+                    ss << ";";
+                    rcode = conn->execute_query(ss.str().c_str(), conn_->peer_->nem_, initial_query_);
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "[no available persistence-connection for nclass_id:%u]", __func__, nclassid_))
                     rcode = RetCode_KO;
@@ -668,7 +638,6 @@ RetCode incoming_subscription_impl::execute_initial_query()
         initial_query_ = nullptr;
         IFLOG(err(TH_ID, LS_CLO "[sbsid:%d - download query FAILED][res:%d].", __func__, sbsid_, rcode))
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
@@ -803,7 +772,6 @@ RetCode outgoing_subscription_impl::send_start_request()
 
 RetCode outgoing_subscription_impl::send_event_ack(unsigned int evtid)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RetCode rcode = RetCode_OK;
     g_bbuf *gbb = new g_bbuf();
     build_PKT_SBSACK(sbsid_, evtid, gbb);
@@ -814,7 +782,6 @@ RetCode outgoing_subscription_impl::send_event_ack(unsigned int evtid)
     if(rcode) {
         set_status(SubscriptionStatus_ERROR);
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
@@ -823,9 +790,7 @@ RetCode outgoing_subscription_impl::send_event_ack(unsigned int evtid)
 RetCode outgoing_subscription_impl::receive_event(const vlg_hdr_rec *pkt_hdr,
                                                   g_bbuf *pkt_body)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RetCode rcode = RetCode_OK;
-
     nclass *nobj = nullptr;
     if(pkt_hdr->row_2.sevttp.sevttp != SubscriptionEventType_DOWNLOAD_END) {
         if((rcode = conn_->peer_->nem_.new_nclass_instance(nclassid_, &nobj))) {
@@ -860,14 +825,11 @@ RetCode outgoing_subscription_impl::receive_event(const vlg_hdr_rec *pkt_hdr,
         evt_to_ack();
         evt_ack(evtid);
     }
-
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
 RetCode outgoing_subscription_impl::evt_ack(unsigned int evtid)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RetCode rcode = RetCode_OK;
     if(cli_evt_sts_ != SBSEvt_ToAck) {
         IFLOG(wrn(TH_ID, LS_CLO "[status:%d]", __func__, cli_evt_sts_))
@@ -880,31 +842,24 @@ RetCode outgoing_subscription_impl::evt_ack(unsigned int evtid)
             evt_reset();
         }
     }
-    IFLOG(trc(TH_ID, LS_CLO "[sbsid:%d - event ack sent]", __func__, sbsid_))
     return rcode;
 }
 
-RetCode outgoing_subscription_impl::evt_reset()
+inline RetCode outgoing_subscription_impl::evt_reset()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     cli_evt_sts_ = SBSEvt_Reset;
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     return RetCode_OK;
 }
 
-RetCode outgoing_subscription_impl::evt_ready()
+inline RetCode outgoing_subscription_impl::evt_ready()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     cli_evt_sts_ = SBSEvt_Ready;
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     return RetCode_OK;
 }
 
-RetCode outgoing_subscription_impl::evt_to_ack()
+inline RetCode outgoing_subscription_impl::evt_to_ack()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     cli_evt_sts_ = SBSEvt_ToAck;
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     return RetCode_OK;
 }
 

@@ -19,9 +19,7 @@
  *
  */
 
-#ifndef NEWCONNDIALOG_H
-#define NEWCONNDIALOG_H
-
+#pragma once
 #include "ui_tkt_newconndlg.h"
 #include "tkt_glob.h"
 
@@ -35,5 +33,3 @@ class vlg_toolkit_NewConnDlg : public QDialog {
     public:
         Ui::NewConnDialog *ui;
 };
-
-#endif // NEWCONNDIALOG_H

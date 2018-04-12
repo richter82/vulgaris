@@ -19,8 +19,7 @@
  *
  */
 
-#ifndef VLG_PEER_AUTOMA_H_
-#define VLG_PEER_AUTOMA_H_
+#pragma once
 #include "glob.h"
 
 namespace vlg {
@@ -110,5 +109,3 @@ struct peer_automa {
 
 
 }
-
-#endif

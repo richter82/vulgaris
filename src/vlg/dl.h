@@ -19,50 +19,19 @@
 *
 */
 
-#ifndef CR_DL_H_
-#define CR_DL_H_
+#pragma once
 
 namespace vlg {
 
-/**
-dynamic lib loading
-*/
 #if defined WIN32 && defined _MSC_VER
-
-/**
-@param path
-@return
-*/
-void       *dynamic_lib_open(const wchar_t *path);
-
+void *dynamic_lib_open(const wchar_t *path);
 #else
-
-/**
-@param path
-@return
-*/
-void       *dynamic_lib_open(const char *path);
-
+void *dynamic_lib_open(const char *path);
 #endif
 
-/**
-@param handle
-@return
-*/
-int         dynamic_lib_close(void *handle);
-
-/**
-@param handle
-@return
-*/
-void       *dynamic_lib_load_symbol(void *handle,
-                                    const char *sym);
-
-/**
-@return
-*/
+int dynamic_lib_close(void *handle);
+void *dynamic_lib_load_symbol(void *handle, const char *sym);
 const char *dynamic_lib_error();
 
 }
 
-#endif

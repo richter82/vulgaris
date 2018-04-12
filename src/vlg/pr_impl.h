@@ -19,8 +19,7 @@
  *
  */
 
-#ifndef VLG_PEER_H_
-#define VLG_PEER_H_
+#pragma once
 #include "pr_aut.h"
 #include "selector.h"
 #include "prs_impl.h"
@@ -214,5 +213,3 @@ struct peer_impl : public peer_automa {
 };
 
 }
-
-#endif

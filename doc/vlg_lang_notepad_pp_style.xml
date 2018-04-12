@@ -1,5 +1,5 @@
 <NotepadPlus>
-    <UserLang name="blz2" ext="blz" udlVersion="2.1">
+    <UserLang name="vlg" ext="vlg" udlVersion="2.1">
         <Settings>
             <Global caseIgnored="no" allowFoldOfComments="no" foldCompact="no" forcePureLC="0" decimalSeparator="0" />
             <Prefix Keywords1="no" Keywords2="no" Keywords3="no" Keywords4="no" Keywords5="no" Keywords6="no" Keywords7="no" Keywords8="no" />
@@ -25,7 +25,7 @@
             <Keywords name="Folders in comment, middle"></Keywords>
             <Keywords name="Folders in comment, close"></Keywords>
             <Keywords name="Keywords1">@define&#x000D;&#x000A;@include&#x000D;&#x000A;@id&#x000D;&#x000A;@persistent&#x000D;&#x000A;@key&#x000D;&#x000A;@fldset&#x000D;&#x000A;@key_end&#x000D;&#x000A;@namespace&#x000D;&#x000A;@namespace_end&#x000D;&#x000A;@model_name&#x000D;&#x000A;@model_version</Keywords>
-            <Keywords name="Keywords2">bool&#x000D;&#x000A;int_16&#x000D;&#x000A;uint_16&#x000D;&#x000A;int_32&#x000D;&#x000A;uint_32&#x000D;&#x000A;int_64&#x000D;&#x000A;uint_64&#x000D;&#x000A;float_32&#x000D;&#x000A;float_64&#x000D;&#x000A;ascii</Keywords>
+            <Keywords name="Keywords2">bool&#x000D;&#x000A;int_16&#x000D;&#x000A;uint_16&#x000D;&#x000A;int_32&#x000D;&#x000A;uint_32&#x000D;&#x000A;int_64&#x000D;&#x000A;uint_64&#x000D;&#x000A;float_32&#x000D;&#x000A;float_64&#x000D;&#x000A;ascii&#x000D;&#x000A;byte</Keywords>
             <Keywords name="Keywords3">primary</Keywords>
             <Keywords name="Keywords4"></Keywords>
             <Keywords name="Keywords5">enum&#x000D;&#x000A;nclass</Keywords>

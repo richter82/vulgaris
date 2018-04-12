@@ -129,6 +129,10 @@ RetCode nclass::restore(const nentity_manager *nem,
                             return RetCode_MALFORM;
                         }
                         SF_GBB_READ_H(ibb, read(fld_sz, fld_cptr), return gbb_read_res)
+#if 0
+                    } else if(mmbrd->get_field_vlg_type() == Type_BYTE && mmbrd->get_field_nmemb() > 1) {
+                        SF_GBB_READ_H(ibb, read(mmbrd->get_field_type_size() * mmbrd->get_field_nmemb(), fld_cptr), return gbb_read_res)
+#endif
                     } else {
                         if(mmbrd->get_field_nmemb() > 1) {
                             RET_ON_KO(FldSeqA_Restore(this, nem, enctyp, mmbrd, ibb))

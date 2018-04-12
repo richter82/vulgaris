@@ -286,7 +286,8 @@ void vlg_toolkit_sbs_window::OnNewTxRequested()
     /*if last param set to 'this' child will be always on TOP*/
     vlg_toolkit_tx_window *new_tx_window = new vlg_toolkit_tx_window(sbs_.get_connection(),
                                                                      *edesc,
-                                                                     NULL);
+                                                                     item,
+                                                                     nullptr);
 
     new_tx_window->setAttribute(Qt::WA_DeleteOnClose, true);
     new_tx_window->setWindowTitle(QString("[TX][CONNID:%1][NCLASS:%2]").arg(

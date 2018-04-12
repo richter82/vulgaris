@@ -19,8 +19,7 @@
  *
  */
 
-#ifndef CR_CONCURRENT_H_
-#define CR_CONCURRENT_H_
+#pragma once
 #include "structs.h"
 #include <vector>
 
@@ -336,5 +335,3 @@ class p_exec_srv {
 };
 
 }
-
-#endif

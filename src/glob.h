@@ -19,8 +19,7 @@
  *
  */
 
-#ifndef VLG_GLOB_INT_H_
-#define VLG_GLOB_INT_H_
+#pragma once
 
 #if defined WIN32 && defined _MSC_VER
 #include <WS2tcpip.h>
@@ -45,11 +44,14 @@
 #include "vlg_transaction.h"
 #include "vlg_subscription.h"
 
-#include <set>
-#include <unordered_set>
-#include <map>
-#include <unordered_map>
+#include <sstream>
+#include <iomanip>
+#include <vector>
 #include <list>
+#include <set>
+#include <map>
+#include <unordered_set>
+#include <unordered_map>
 #include <algorithm>
 
 #if defined WIN32 && defined _MSC_VER
@@ -100,11 +102,7 @@
 #define LS_SBO "S>|"
 #define LS_SBI "S<|"
 
-#define LS_EXUNX    " @EXPECT THE UNEXPECTED! "
-
-#if defined WIN32 && defined _MSC_VER
-#define snprintf sprintf_s
-#endif
+#define LS_EXUNX " @EXPECT THE UNEXPECTED! "
 
 #define RET_ON_KO(fun)\
 {\
@@ -147,9 +145,6 @@
 }
 
 namespace vlg {
-void *grow_buff_or_die(void *buffer,
-                       size_t current_size,
-                       size_t amount);
 
 const extern std_shared_ptr_obj_mng<nclass> ncls_std_shp_omng;
 const extern std_shared_ptr_obj_mng<incoming_connection> conn_std_shp_omng;
@@ -167,7 +162,35 @@ if(vlg::v_log_){\
 #define CTOR_TRC IFLOG(trc(TH_ID, LS_CTR "[%p]", __func__, this))
 #define DTOR_TRC IFLOG(trc(TH_ID, LS_DTR "[%p]", __func__, this))
 
+inline void *grow_buff_or_die(void *buffer, size_t current_size, size_t amount)
+{
+    void *nout = nullptr;
+    if(buffer) {
+        CMD_ON_NUL(nout = realloc(buffer, current_size + amount), EXIT_ACTION)
+    } else {
+        CMD_ON_NUL(nout = malloc(amount), EXIT_ACTION)
+    }
+    return nout;
 }
 
+inline void assign_hex_str(const char *data, size_t len, std::string &assign_to)
+{
+    std::stringstream ss;
+    ss << std::hex;
+    for(size_t i = 0; i<len; ++i) {
+        ss << std::setw(2) << std::setfill('0') << (int)data[i];
+    }
+    assign_to.assign(ss.str());
+}
 
-#endif
+inline void append_hex_str(const char *data, size_t len, std::string &append_to)
+{
+    std::stringstream ss;
+    ss << std::hex;
+    for(size_t i = 0; i<len; ++i) {
+        ss << std::setw(2) << std::setfill('0') << (int)data[i];
+    }
+    append_to.append(ss.str());
+}
+
+}

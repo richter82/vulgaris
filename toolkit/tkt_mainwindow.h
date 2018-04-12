@@ -19,9 +19,7 @@
  *
  */
 
-#ifndef VLG_TOOLKIT_MAINWINDOW_H
-#define VLG_TOOLKIT_MAINWINDOW_H
-
+#pragma once
 #include "tkt_core_util.h"
 #include "tkt_vlg_model.h"
 #include "tkt_newconndlg.h"
@@ -160,5 +158,3 @@ class vlg_toolkit_MainWindow : public QMainWindow {
         QTimer flash_info_msg_tim_;
         int flash_info_msg_val_;
 };
-
-#endif // VLG_TOOLKIT_MAINWINDOW_H

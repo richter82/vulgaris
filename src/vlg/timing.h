@@ -19,8 +19,7 @@
  *
  */
 
-#ifndef CR_TIME_H_
-#define CR_TIME_H_
+#pragma once
 #include "vlg.h"
 
 #if defined WIN32 && defined _MSC_VER
@@ -32,55 +31,19 @@ typedef long long   rt_time_t;
 #if defined WIN32 && defined _MSC_VER
 struct timeval;
 struct timespec;
-/**
-@param tv
-@param tz
-@return
-*/
-int         gettimeofday(struct timeval *tv,
-                         struct timezone *tz);
+
+int gettimeofday(struct timeval *tv, struct timezone *tz);
 #else
 #include <sys/time.h>
 #endif
 
 namespace vlg {
 
-/**
-real time measurement initialization
-*/
-void        rt_init_timers();
-
-/**
-@param t
-*/
-void        rt_mark_time(rt_time_t *t);
-
-/**
-@param t1
-@param t2
-@return
-*/
-rt_time_t   rt_diff_time(rt_time_t t1,
-                         rt_time_t t2);
-
-/**
-get nanosecond timestamp
-
-@return
-*/
-uint64_t    get_timestamp();
-
-/**
-get nanosecond timestamp in timespec format (as pthread).
-
-@return
-*/
-int         get_timestamp_ts(struct timespec *tv);
-
-/**
-@param msec
-*/
-void        mssleep(long msec);
+void rt_init_timers();
+void rt_mark_time(rt_time_t *t);
+rt_time_t rt_diff_time(rt_time_t t1, rt_time_t t2);
+uint64_t get_timestamp();
+int get_timestamp_ts(struct timespec *tv);
+void mssleep(long msec);
 
 }
-#endif

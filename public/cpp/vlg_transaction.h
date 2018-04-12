@@ -19,8 +19,7 @@
  *
  */
 
-#ifndef VLG_CPP_TRANSACTION_H_
-#define VLG_CPP_TRANSACTION_H_
+#pragma once
 #include "vlg.h"
 
 namespace vlg {
@@ -152,5 +151,3 @@ struct outgoing_transaction {
 };
 
 }
-
-#endif

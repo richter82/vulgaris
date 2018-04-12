@@ -25,17 +25,6 @@
 
 namespace vlg {
 
-void *grow_buff_or_die(void *buf, size_t cur_size, size_t amnt)
-{
-    void *nout = nullptr;
-    if(buf) {
-        CMD_ON_NUL(nout = realloc(buf, cur_size+amnt), EXIT_ACTION)
-    } else {
-        CMD_ON_NUL(nout = malloc(amnt), EXIT_ACTION)
-    }
-    return nout;
-}
-
 // grow_byte_buffer
 
 g_bbuf::g_bbuf() :

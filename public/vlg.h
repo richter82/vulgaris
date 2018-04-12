@@ -203,7 +203,8 @@ typedef enum  {
     Type_UINT64,                    // unsigned integer 16 bit
     Type_FLOAT32,                   // floating point 32 bit
     Type_FLOAT64,                   // floating point 64 bit
-    Type_ASCII,                     // signed ASCII char 8 bit
+    Type_ASCII,                     // ASCII char 7 bit
+    Type_BYTE,                      // raw byte
 } Type;
 
 const char *string_from_Type(Type bt);
