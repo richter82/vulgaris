@@ -19,10 +19,11 @@
  *
  */
 
-#ifndef VLG_TOOLKIT_GLOB_H
-#define VLG_TOOLKIT_GLOB_H
-
+#pragma once
 #pragma warning (disable: 4100)
+
+#include <sstream>
+#include <iomanip>
 
 #include <QtCore>
 #include <QVector>
@@ -61,5 +62,3 @@ void FillFldValue_Qstring(const QVariant &value,
                           char *fld_ptr);
 
 struct VLG_SBS_COL_DATA_ENTRY;
-
-#endif // VLG_TOOLKIT_GLOB_H

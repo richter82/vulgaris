@@ -19,8 +19,7 @@
  *
  */
 
-#ifndef VLG_SEL_H_
-#define VLG_SEL_H_
+#pragma once
 #include "proto.h"
 #include "acceptor.h"
 
@@ -150,5 +149,3 @@ struct selector : public p_th {
 };
 
 }
-
-#endif

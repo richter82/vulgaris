@@ -19,9 +19,7 @@
  *
  */
 
-#ifndef VLG_CONNECTION_H_
-#define VLG_CONNECTION_H_
-
+#pragma once
 #include "glob.h"
 
 namespace vlg {
@@ -125,31 +123,26 @@ struct incoming_connection_impl : public conn_impl {
     explicit incoming_connection_impl(incoming_connection &publ, peer &p);
     virtual ~incoming_connection_impl();
 
-    // CONNECTIVITY
     RetCode server_send_connect_res(std::shared_ptr<incoming_connection> &inco_conn);
 
     RetCode new_incoming_transaction(std::shared_ptr<incoming_transaction> &incoming_transaction,
                                      std::shared_ptr<incoming_connection> &inco_conn);
 
-    // SUBSCRIPTION
     RetCode new_incoming_subscription(std::shared_ptr<incoming_subscription> &incoming_sbs,
                                       std::shared_ptr<incoming_connection> &inco_conn);
 
     RetCode release_subscription(incoming_subscription_impl *subscription);
 
-    // vlg PROTOCOL RCVNG INTERFACE
     RetCode recv_connection_request(const vlg_hdr_rec *pkt_hdr,
                                     std::shared_ptr<incoming_connection> &inco_conn);
 
     RetCode recv_test_request(const vlg_hdr_rec *pkt_hdr);
     RetCode recv_disconnection(const vlg_hdr_rec *pkt_hdr);
 
-    //TX
     RetCode recv_tx_request(const vlg_hdr_rec *pkt_hdr,
                             g_bbuf *pkt_body,
                             std::shared_ptr<incoming_connection> &inco_conn);
 
-    //SBS
     RetCode recv_sbs_start_request(const vlg_hdr_rec *pkt_hdr,
                                    std::shared_ptr<incoming_connection> &inco_conn);
 
@@ -159,8 +152,6 @@ struct incoming_connection_impl : public conn_impl {
     unsigned int next_sbsid();
 
     //rep
-
-    //srv tx repo
     s_hm inco_flytx_map_;
 
     //srv subscription repo
@@ -185,10 +176,8 @@ struct outgoing_connection_impl : public conn_impl {
     explicit outgoing_connection_impl(outgoing_connection &publ);
     virtual ~outgoing_connection_impl();
 
-    // CONNECTIVITY
     RetCode client_connect(sockaddr_in &params);
 
-    /* this function must be called from same thread that called ClientConnect()*/
     RetCode await_for_connection_result(ConnectivityEventResult &con_evt_res,
                                         ConnectivityEventType &connectivity_evt_type,
                                         time_t sec = -1,
@@ -197,25 +186,17 @@ struct outgoing_connection_impl : public conn_impl {
     RetCode notify_connection(ConnectivityEventResult con_evt_res,
                               ConnectivityEventType connectivity_evt_type);
 
-    // TRANSACTIONAL
     RetCode next_tx_id(tx_id &txid);
-
-    //client only
     RetCode detach_subscription(outgoing_subscription_impl *subscription);
-
     RetCode release_subscription(outgoing_subscription_impl *subscription);
-
-    //PROTOCOL RCVNG INTERFACE
 
     RetCode recv_connection_response(const vlg_hdr_rec *pkt_hdr);
     RetCode recv_test_request(const vlg_hdr_rec *pkt_hdr);
     RetCode recv_disconnection(const vlg_hdr_rec *pkt_hdr);
 
-    //TX
     RetCode recv_tx_response(const vlg_hdr_rec *pkt_hdr,
                              g_bbuf *pkt_body);
 
-    //SBS
     RetCode recv_sbs_start_response(const vlg_hdr_rec *pkt_hdr);
 
     RetCode recv_sbs_evt(const vlg_hdr_rec *pkt_hdr,
@@ -227,8 +208,6 @@ struct outgoing_connection_impl : public conn_impl {
     unsigned int next_reqid();
 
     //rep
-
-    //cli tx repo
     s_hm outg_flytx_map_;
 
     //cli subscription repo
@@ -240,5 +219,3 @@ struct outgoing_connection_impl : public conn_impl {
 };
 
 }
-
-#endif

@@ -19,8 +19,7 @@
  *
  */
 
-#ifndef VLG_SUBSCRIPTION_H_
-#define VLG_SUBSCRIPTION_H_
+#pragma once
 #include "glob.h"
 
 namespace vlg {
@@ -205,5 +204,3 @@ struct outgoing_subscription_impl : public sbs_impl {
 };
 
 }
-
-#endif

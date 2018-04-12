@@ -19,8 +19,7 @@
  *
  */
 
-#ifndef VLG_TRANSACTION_H_
-#define VLG_TRANSACTION_H_
+#pragma once
 #include "glob.h"
 
 namespace vlg {
@@ -104,5 +103,3 @@ struct outgoing_transaction_impl : public tx_impl {
 };
 
 }
-
-#endif

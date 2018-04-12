@@ -19,8 +19,7 @@
 *
 */
 
-#ifndef CR_STRUCTS_MT_H_
-#define CR_STRUCTS_MT_H_
+#pragma once
 #include "vlg.h"
 #define HAVE_STRUCT_TIMESPEC
 #include <pthread.h>
@@ -480,5 +479,3 @@ class std_unique_ptr_obj_mng : public obj_mng {
 };
 
 }
-
-#endif

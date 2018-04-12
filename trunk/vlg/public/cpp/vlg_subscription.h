@@ -19,8 +19,7 @@
  *
  */
 
-#ifndef VLG_CPP_SUBSCRIPTION_H_
-#define VLG_CPP_SUBSCRIPTION_H_
+#pragma once
 #include "vlg.h"
 
 namespace vlg {
@@ -172,5 +171,3 @@ struct outgoing_subscription {
 };
 
 }
-
-#endif

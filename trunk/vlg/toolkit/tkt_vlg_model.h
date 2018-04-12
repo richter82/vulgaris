@@ -19,9 +19,7 @@
  *
  */
 
-#ifndef VLG_TOOLKIT_VLG_MODEL_H
-#define VLG_TOOLKIT_VLG_MODEL_H
-
+#pragma once
 #include "tkt_glob.h"
 
 //------------------------------------------------------------------------------
@@ -36,21 +34,21 @@ enum VLG_MODEL_ITEM_TYPE {
 
 class model_item {
     public:
-        model_item(VLG_MODEL_ITEM_TYPE    item_type,
-                   const vlg::nentity_desc      *edesc,
-                   const vlg::member_desc      *mdesc,
-                   model_item             *parent = NULL);
+        model_item(VLG_MODEL_ITEM_TYPE item_type,
+                   const vlg::nentity_desc *edesc,
+                   const vlg::member_desc *mdesc,
+                   model_item *parent = NULL);
 
         ~model_item();
 
-        void                cfgHeader();
-        void                appendChild(model_item *child);
-        model_item         *child(int row);
-        int                 childCount()        const;
-        int                 columnCount()       const;
-        QVariant            data(int column)    const;
-        int                 row() const;
-        model_item         *parent();
+        void cfgHeader();
+        void appendChild(model_item *child);
+        model_item *child(int row);
+        int childCount()  const;
+        int columnCount() const;
+        QVariant data(int column) const;
+        int row() const;
+        model_item *parent();
 
         VLG_MODEL_ITEM_TYPE item_type() const;
 
@@ -58,16 +56,16 @@ class model_item {
         const vlg::member_desc *mdesc() const;
 
     private:
-        QList<QString>          header_;
+        QList<QString> header_;
 
     private:
-        QList<model_item *>  childItems_;
-        model_item          *parentItem_;
+        QList<model_item *> childItems_;
+        model_item *parentItem_;
 
     private:
-        VLG_MODEL_ITEM_TYPE       item_type_;
-        const vlg::nentity_desc     *edesc_;
-        const vlg::member_desc     *mdesc_;
+        VLG_MODEL_ITEM_TYPE item_type_;
+        const vlg::nentity_desc *edesc_;
+        const vlg::member_desc *mdesc_;
 };
 
 
@@ -107,8 +105,6 @@ class vlg_toolkit_vlg_model : public QAbstractItemModel {
 
         //bem source for this model.
     private:
-        vlg::nentity_manager      &bem_;
-        model_item          *rootItem_;
+        vlg::nentity_manager &bem_;
+        model_item *rootItem_;
 };
-
-#endif // VLG_TOOLKIT_VLG_MODEL_H

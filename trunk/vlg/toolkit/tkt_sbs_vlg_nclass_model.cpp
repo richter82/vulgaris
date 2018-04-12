@@ -168,7 +168,7 @@ bool enum_generate_sbs_model_rep(const vlg::member_desc &mmbrd,
         }
     } else {
         //primitive type
-        if(mmbrd.get_field_vlg_type() == vlg::Type_ASCII) {
+        if(mmbrd.get_field_vlg_type() == vlg::Type_ASCII || mmbrd.get_field_vlg_type() == vlg::Type_BYTE) {
             if(rud->prfx_->length()) {
                 hdr_col_nm.append(idx_prfx);
                 hdr_col_nm.append("_");
@@ -248,7 +248,6 @@ bool enum_update_class_row(const vlg::member_desc &mmbrd,
                     obj_f_ptr_new = rud->obj_ptr_ +
                                     mmbrd.get_field_offset() +
                                     mmbrd.get_field_type_size()*i;
-
                     //old value ptr
                     obj_f_ptr_prev = rud->obj_ptr_prev_ +
                                      mmbrd.get_field_offset() +
@@ -256,10 +255,7 @@ bool enum_update_class_row(const vlg::member_desc &mmbrd,
 
                     if(memcmp(obj_f_ptr_new, obj_f_ptr_prev, mmbrd.get_field_type_size())) {
                         FillQstring_FldValue(obj_f_ptr_new, mmbrd, val);
-                        qindex = rud->mdl_.index(rud->rowidx_,
-                                                 rud->curcolidx_,
-                                                 QModelIndex());
-
+                        qindex = rud->mdl_.index(rud->rowidx_, rud->curcolidx_, QModelIndex());
                         rud->mdl_.setData(qindex, val, Qt::EditRole);
                     }
                     rud->curcolidx_++;
@@ -267,16 +263,11 @@ bool enum_update_class_row(const vlg::member_desc &mmbrd,
             } else {
                 //new value ptr
                 obj_f_ptr_new = rud->obj_ptr_ + mmbrd.get_field_offset();
-
                 //old value ptr
                 obj_f_ptr_prev = rud->obj_ptr_prev_ + mmbrd.get_field_offset();
-
                 if(memcmp(obj_f_ptr_new, obj_f_ptr_prev, mmbrd.get_field_type_size())) {
                     FillQstring_FldValue(obj_f_ptr_new, mmbrd, val);
-                    qindex = rud->mdl_.index(rud->rowidx_,
-                                             rud->curcolidx_,
-                                             QModelIndex());
-
+                    qindex = rud->mdl_.index(rud->rowidx_, rud->curcolidx_, QModelIndex());
                     rud->mdl_.setData(qindex, val, Qt::EditRole);
                 }
                 rud->curcolidx_++;
@@ -302,39 +293,30 @@ bool enum_update_class_row(const vlg::member_desc &mmbrd,
         }
     } else {
         //primitive type
-        if(mmbrd.get_field_vlg_type() == vlg::Type_ASCII) {
+        if(mmbrd.get_field_vlg_type() == vlg::Type_ASCII || mmbrd.get_field_vlg_type() == vlg::Type_BYTE) {
             //new value ptr
             obj_f_ptr_new = rud->obj_ptr_ + mmbrd.get_field_offset();
-
             //old value ptr
             obj_f_ptr_prev = rud->obj_ptr_prev_ + mmbrd.get_field_offset();
-
-            if(memcmp(obj_f_ptr_new, obj_f_ptr_prev,
-                      mmbrd.get_field_type_size()*mmbrd.get_field_nmemb())) {
-                val = QString::fromLatin1(obj_f_ptr_new, (int)mmbrd.get_field_nmemb());
-                qindex = rud->mdl_.index(rud->rowidx_,
-                                         rud->curcolidx_,
-                                         QModelIndex());
-
+            if(memcmp(obj_f_ptr_new, obj_f_ptr_prev, mmbrd.get_field_type_size()*mmbrd.get_field_nmemb())) {
+                if(mmbrd.get_field_vlg_type() == vlg::Type_ASCII) {
+                    val = QString::fromLatin1(obj_f_ptr_new, (int)mmbrd.get_field_nmemb());
+                } else {
+                    val = QString::fromUtf8(obj_f_ptr_new, (int)mmbrd.get_field_nmemb());
+                }
+                qindex = rud->mdl_.index(rud->rowidx_, rud->curcolidx_, QModelIndex());
                 rud->mdl_.setData(qindex, val, Qt::EditRole);
             }
             rud->curcolidx_++;
         } else if(mmbrd.get_field_nmemb() > 1) {
             for(unsigned int i = 0; i<mmbrd.get_field_nmemb(); i++) {
                 //new value ptr
-                obj_f_ptr_new = rud->obj_ptr_ + mmbrd.get_field_offset() +
-                                mmbrd.get_field_type_size()*i;
-
+                obj_f_ptr_new = rud->obj_ptr_ + mmbrd.get_field_offset() + mmbrd.get_field_type_size()*i;
                 //old value ptr
-                obj_f_ptr_prev = rud->obj_ptr_prev_ + mmbrd.get_field_offset() +
-                                 mmbrd.get_field_type_size()*i;
-
+                obj_f_ptr_prev = rud->obj_ptr_prev_ + mmbrd.get_field_offset() + mmbrd.get_field_type_size()*i;
                 if(memcmp(obj_f_ptr_new, obj_f_ptr_prev, mmbrd.get_field_type_size())) {
                     FillQstring_FldValue(obj_f_ptr_new, mmbrd, val);
-                    qindex = rud->mdl_.index(rud->rowidx_,
-                                             rud->curcolidx_,
-                                             QModelIndex());
-
+                    qindex = rud->mdl_.index(rud->rowidx_, rud->curcolidx_, QModelIndex());
                     rud->mdl_.setData(qindex, val, Qt::EditRole);
                 }
                 rud->curcolidx_++;
@@ -342,16 +324,11 @@ bool enum_update_class_row(const vlg::member_desc &mmbrd,
         } else {
             //value
             obj_f_ptr_new = rud->obj_ptr_ + mmbrd.get_field_offset();
-
             //old value ptr
             obj_f_ptr_prev = rud->obj_ptr_prev_ + mmbrd.get_field_offset();
-
             if(memcmp(obj_f_ptr_new, obj_f_ptr_prev, mmbrd.get_field_type_size())) {
                 FillQstring_FldValue(obj_f_ptr_new, mmbrd, val);
-                qindex = rud->mdl_.index(rud->rowidx_,
-                                         rud->curcolidx_,
-                                         QModelIndex());
-
+                qindex = rud->mdl_.index(rud->rowidx_, rud->curcolidx_, QModelIndex());
                 rud->mdl_.setData(qindex, val, Qt::EditRole);
             }
             rud->curcolidx_++;
@@ -435,13 +412,12 @@ QVariant vlg_toolkit_sbs_vlg_class_model::data(const QModelIndex &index,
         if(obj) {
             const vlg::member_desc *obj_fld_mdesc = NULL;
             const char *obj_fld_ptr = NULL;
-            if((obj_fld_ptr = obj->get_field_address_by_column_number(index.column(),
-                                                                      bem_,
-                                                                      &obj_fld_mdesc))) {
+            if((obj_fld_ptr = obj->get_field_address_by_column_number(index.column(), bem_, &obj_fld_mdesc))) {
                 QString out;
-                if((obj_fld_mdesc->get_field_vlg_type() == vlg::Type_ASCII) &&
-                        obj_fld_mdesc->get_field_nmemb() > 1) {
+                if((obj_fld_mdesc->get_field_vlg_type() == vlg::Type_ASCII) && obj_fld_mdesc->get_field_nmemb() > 1) {
                     out = QString::fromLatin1(obj_fld_ptr, (int)obj_fld_mdesc->get_field_nmemb());
+                } else if((obj_fld_mdesc->get_field_vlg_type() == vlg::Type_BYTE) && obj_fld_mdesc->get_field_nmemb() > 1) {
+                    out = QString::fromUtf8(obj_fld_ptr, (int)obj_fld_mdesc->get_field_nmemb());
                 } else {
                     FillQstring_FldValue(obj_fld_ptr, *obj_fld_mdesc, out);
                 }

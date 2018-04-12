@@ -19,8 +19,7 @@
  *
  */
 
-#ifndef VLG_ACCEPTOR_H_
-#define VLG_ACCEPTOR_H_
+#pragma once
 #include "glob.h"
 
 namespace vlg {
@@ -45,5 +44,3 @@ struct acceptor {
 };
 
 }
-
-#endif

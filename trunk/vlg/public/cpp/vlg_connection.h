@@ -19,8 +19,7 @@
  *
  */
 
-#ifndef VLG_CPP_CONNECTION_H_
-#define VLG_CPP_CONNECTION_H_
+#pragma once
 #include "vlg.h"
 
 namespace vlg {
@@ -156,5 +155,3 @@ struct outgoing_connection {
 };
 
 }
-
-#endif

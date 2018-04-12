@@ -19,8 +19,7 @@
 *
 */
 
-#ifndef CR_CFG_H_
-#define CR_CFG_H_
+#pragma once
 #include "vlg.h"
 #include <list>
 
@@ -73,5 +72,3 @@ class cfg_ldr {
 };
 
 }
-
-#endif

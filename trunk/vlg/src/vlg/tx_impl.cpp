@@ -161,11 +161,11 @@ RetCode tx_impl::set_flying()
 
 inline void tx_impl::trace_tx_closure(const char *tx_res_str)
 {
-    char tim_buf[32];
+    std::stringstream ss;
     rt_time_t fin_mark_tim, dt_mark_tim;
     rt_mark_time(&fin_mark_tim);
     dt_mark_tim = rt_diff_time(start_mark_tim_, fin_mark_tim);
-    snprintf(tim_buf, 32, "%14llu", dt_mark_tim);
+    ss << std::setw(14) << dt_mark_tim;
     if(ipubl_) {
         if(request_obj_) {
             IFLOG(inf_nclass(TH_ID,
@@ -250,7 +250,7 @@ inline void tx_impl::trace_tx_closure(const char *tx_res_str)
               tx_res_,
               result_code_,
               rescls_,
-              tim_buf))
+              ss.str().c_str()))
 }
 
 RetCode tx_impl::set_closed()

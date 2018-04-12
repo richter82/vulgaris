@@ -19,9 +19,7 @@
  *
  */
 
-#ifndef VLG_TOOLKIT_MODEL_TAB_H
-#define VLG_TOOLKIT_MODEL_TAB_H
-
+#pragma once
 #include "tkt_glob.h"
 #include "tkt_vlg_model.h"
 
@@ -69,5 +67,3 @@ class vlg_toolkit_model_tab : public QWidget {
     private:
         Ui::vlg_toolkit_model_tab *ui;
 };
-
-#endif // VLG_TOOLKIT_MODEL_TAB_H

@@ -52,8 +52,7 @@ bool enum_generate_tx_model_rep(const vlg::member_desc &mmbrd,
     int sprintf_dbg = 0;
 
     if(rud->array_fld_) {
-        sprintf_dbg = sprintf(idx_b, "%s%d", idx_prfx.length() ? "_" : "",
-                              rud->fld_idx_);
+        sprintf_dbg = sprintf(idx_b, "%s%d", idx_prfx.length() ? "_" : "", rud->fld_idx_);
         idx_prfx.append(idx_b);
     }
 
@@ -103,13 +102,11 @@ bool enum_generate_tx_model_rep(const vlg::member_desc &mmbrd,
                 } else {
                     edsc->enum_member_descriptors(enum_generate_tx_model_rep, &rrud);
                 }
-            } else {
-                //ERROR
             }
         }
     } else {
         //primitive type
-        if(mmbrd.get_field_vlg_type() == vlg::Type_ASCII) {
+        if(mmbrd.get_field_vlg_type() == vlg::Type_ASCII || mmbrd.get_field_vlg_type() == vlg::Type_BYTE) {
             if(rud->prfx_->length()) {
                 hdr_row_nm.append(idx_prfx);
                 hdr_row_nm.append("_");
@@ -237,9 +234,10 @@ QVariant vlg_toolkit_tx_vlg_class_model::data(const QModelIndex &index,
                                                                              bem_,
                                                                              &obj_fld_mdesc))) {
                 QString out;
-                if((obj_fld_mdesc->get_field_vlg_type() == vlg::Type_ASCII) &&
-                        obj_fld_mdesc->get_field_nmemb() > 1) {
+                if((obj_fld_mdesc->get_field_vlg_type() == vlg::Type_ASCII) && obj_fld_mdesc->get_field_nmemb() > 1) {
                     out = QString::fromLatin1(obj_fld_ptr, (int)obj_fld_mdesc->get_field_nmemb());
+                } else if((obj_fld_mdesc->get_field_vlg_type() == vlg::Type_BYTE) && obj_fld_mdesc->get_field_nmemb() > 1) {
+                    out = QString::fromUtf8(obj_fld_ptr, (int)obj_fld_mdesc->get_field_nmemb());
                 } else {
                     FillQstring_FldValue(obj_fld_ptr, *obj_fld_mdesc, out);
                 }

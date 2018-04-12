@@ -19,9 +19,7 @@
  *
  */
 
-#ifndef VLG_TOOLKIT_CONNECTION_H
-#define VLG_TOOLKIT_CONNECTION_H
-
+#pragma once
 #include "tkt_tx_window.h"
 #include "tkt_sbs_window.h"
 
@@ -137,5 +135,3 @@ class vlg_toolkit_Connection : public QWidget {
         void on_new_tx_button_clicked();
         void on_new_sbs_button_clicked();
 };
-
-#endif // VLG_TOOLKIT_CONNECTION_H

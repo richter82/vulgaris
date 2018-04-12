@@ -1,5 +1,5 @@
 /******************************************************************************
-Blaze protocol specification
+Vulgaris protocol specification
 
 STATUS:		alpha
 VER:		0.5
@@ -13,9 +13,9 @@ mail:		giuseppe.baccini@gmail.com
 GENERAL PROTOCOL DESCRIPTION
 -----------------------------------------------------------------------------
 
-Blaze protocol is a networking application level protocol, designed to handle 
+Vulgaris protocol is a networking application level protocol, designed to handle 
 transactional and subscription requests over a TCP/IP network. 
-Blaze protocol relies on TCP transportation protocol.
+Vulgaris protocol relies on TCP transportation protocol.
 Protocol header is formed by a sequence of 32 bit words.
 All integer fields in the header are always represented in big-endian format. 
 All integer and float fields in the body are always represented in 

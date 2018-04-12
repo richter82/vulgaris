@@ -19,9 +19,7 @@
  *
  */
 
-#ifndef VLG_TOOLKIT_TX_WINDOW_H
-#define VLG_TOOLKIT_TX_WINDOW_H
-
+#pragma once
 #include "tkt_vlg_model.h"
 #include "tkt_tx_vlg_nclass_model.h"
 
@@ -73,7 +71,8 @@ class vlg_toolkit_tx_window : public QMainWindow {
     public:
         explicit vlg_toolkit_tx_window(vlg::outgoing_connection &conn,
                                        const vlg::nentity_desc &edesc,
-                                       QWidget *parent = 0);
+                                       const vlg::nclass *opt_img = nullptr,
+                                       QWidget *parent = nullptr);
         ~vlg_toolkit_tx_window();
 
     protected:
@@ -109,5 +108,3 @@ class vlg_toolkit_tx_window : public QMainWindow {
     private:
         Ui::vlg_toolkit_tx_window *ui;
 };
-
-#endif // VLG_TOOLKIT_TX_WINDOW_H

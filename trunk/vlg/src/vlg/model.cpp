@@ -52,6 +52,8 @@ const char *string_from_Type(Type bt)
             return "vlg::Type_FLOAT64";
         case Type_ASCII:
             return "vlg::Type_ASCII";
+        case Type_BYTE:
+            return "vlg::Type_BYTE";
     }
     return "";
 }
@@ -97,8 +99,8 @@ struct key_desc_impl {
         return RetCode_OK;
     }
 
-    unsigned short                keyid_;
-    bool                          primary_;
+    unsigned short keyid_;
+    bool primary_;
     std::set<const member_desc *> fieldset_;
 };
 
@@ -611,10 +613,8 @@ RetCode nentity_manager::extend(const char *model_name)
     return impl_->extend(model_name);
 }
 
-RetCode nentity_manager::new_nclass_instance(unsigned int nclass_id,
-                                             nclass **new_nclass_obj) const
+RetCode nentity_manager::new_nclass_instance(unsigned int nclass_id, nclass **new_nclass_obj) const
 {
-    IFLOG(trc(TH_ID, LS_OPN "[nclass_id:%u]", __func__, nclass_id))
     auto it = impl_->entid_edesc_.find(nclass_id);
     if(it != impl_->entid_edesc_.end()) {
         *new_nclass_obj = (nclass *)it->second->get_nclass_allocation_function()();
@@ -672,33 +672,27 @@ char *nclass::get_field_address_by_name(const char *fldname)
     return nullptr;
 }
 
-char *nclass::get_field_address_by_id_and_index(unsigned int fldid,
-                                                unsigned int index)
+char *nclass::get_field_address_by_id_and_index(unsigned int fldid, unsigned int index)
 {
     const member_desc *md = get_nentity_descriptor().get_member_desc_by_id(fldid);
     if(md) {
-        char *cptr = reinterpret_cast<char *>(this) + md->get_field_offset() +
-                     md->get_field_type_size()*index;
+        char *cptr = reinterpret_cast<char *>(this) + md->get_field_offset() + md->get_field_type_size()*index;
         return cptr;
     }
     return nullptr;
 }
 
-char *nclass::get_field_address_by_name_and_index(const char *fldname,
-                                                  unsigned int index)
+char *nclass::get_field_address_by_name_and_index(const char *fldname, unsigned int index)
 {
     const member_desc *md = get_nentity_descriptor().get_member_desc_by_name(fldname);
     if(md) {
-        char *cptr = reinterpret_cast<char *>(this) + md->get_field_offset() +
-                     md->get_field_type_size()*index;
+        char *cptr = reinterpret_cast<char *>(this) + md->get_field_offset() + md->get_field_type_size()*index;
         return cptr;
     }
     return nullptr;
 }
 
-RetCode nclass::set_field_by_id(unsigned int fldid,
-                                const void *ptr,
-                                size_t maxlen)
+RetCode nclass::set_field_by_id(unsigned int fldid, const void *ptr, size_t maxlen)
 {
     const nentity_desc &ed = get_nentity_descriptor();
     const member_desc *md = ed.get_member_desc_by_id(fldid);
@@ -712,9 +706,7 @@ RetCode nclass::set_field_by_id(unsigned int fldid,
     return RetCode_NOTFOUND;
 }
 
-RetCode nclass::set_field_by_name(const char *fldname,
-                                  const void *ptr,
-                                  size_t maxlen)
+RetCode nclass::set_field_by_name(const char *fldname, const void *ptr, size_t maxlen)
 {
     const nentity_desc &ed = get_nentity_descriptor();
     const member_desc *md = ed.get_member_desc_by_name(fldname);
@@ -762,8 +754,7 @@ RetCode nclass::set_field_by_name_index(const char *fldname,
     return RetCode_NOTFOUND;
 }
 
-RetCode nclass::is_field_zero_by_id(unsigned int fldid,
-                                    bool &res) const
+RetCode nclass::is_field_zero_by_id(unsigned int fldid, bool &res) const
 {
     const nentity_desc &ed = get_nentity_descriptor();
     const member_desc *md = ed.get_member_desc_by_id(fldid);
@@ -778,8 +769,7 @@ RetCode nclass::is_field_zero_by_id(unsigned int fldid,
     return RetCode_NOTFOUND;
 }
 
-RetCode nclass::is_field_zero_by_name(const char *fldname,
-                                      bool &res) const
+RetCode nclass::is_field_zero_by_name(const char *fldname, bool &res) const
 {
     const nentity_desc &ed = get_nentity_descriptor();
     const member_desc *md = ed.get_member_desc_by_name(fldname);
@@ -914,17 +904,16 @@ struct ENM_FND_IDX_REC_UD {
         res_valid_(res_valid) {
     }
 
-    const nentity_manager    &nem_;
-    char                    *obj_ptr_;
-    const member_desc       *fld_mmbrd_;
-    unsigned int            col_num_;
-    unsigned int            *current_col_num_;
-    char                    **obj_fld_ptr_;
-    bool                    *res_valid_;
+    const nentity_manager &nem_;
+    char *obj_ptr_;
+    const member_desc *fld_mmbrd_;
+    unsigned int col_num_;
+    unsigned int *current_col_num_;
+    char **obj_fld_ptr_;
+    bool *res_valid_;
 };
 
-bool enum_edesc_fnd_idx(const member_desc &mmbrd,
-                        void *ptr)
+bool enum_edesc_fnd_idx(const member_desc &mmbrd, void *ptr)
 {
     ENM_FND_IDX_REC_UD *rud = (ENM_FND_IDX_REC_UD *)ptr;
     if(mmbrd.get_field_vlg_type() == Type_ENTITY) {
@@ -964,7 +953,6 @@ bool enum_edesc_fnd_idx(const member_desc &mmbrd,
                         rrud.obj_ptr_ = rud->obj_ptr_ +
                                         mmbrd.get_field_offset() +
                                         mmbrd.get_field_type_size()*i;
-
                         edsc->enum_member_descriptors(enum_edesc_fnd_idx, &rrud);
                         if(*(rud->res_valid_)) {
                             rud->fld_mmbrd_ = rrud.fld_mmbrd_;
@@ -973,7 +961,6 @@ bool enum_edesc_fnd_idx(const member_desc &mmbrd,
                     }
                 } else {
                     rrud.obj_ptr_ = rud->obj_ptr_ + mmbrd.get_field_offset();
-
                     edsc->enum_member_descriptors(enum_edesc_fnd_idx, &rrud);
                     if(*(rud->res_valid_)) {
                         rud->fld_mmbrd_ = rrud.fld_mmbrd_;
@@ -986,7 +973,7 @@ bool enum_edesc_fnd_idx(const member_desc &mmbrd,
         }
     } else {
         //primitive type
-        if(mmbrd.get_field_vlg_type() == Type_ASCII) {
+        if(mmbrd.get_field_vlg_type() == Type_ASCII || mmbrd.get_field_vlg_type() == Type_BYTE) {
             if(rud->col_num_ == *(rud->current_col_num_)) {
                 *(rud->obj_fld_ptr_) = rud->obj_ptr_ + mmbrd.get_field_offset();
                 rud->fld_mmbrd_ = &mmbrd;
@@ -1051,49 +1038,6 @@ char *nclass::get_field_address_by_column_number(unsigned int col_num,
 /*************************************************************
 -Class Persistence meths BEG
 **************************************************************/
-inline int FillBuff_FldValue(const void *fld_ptr,
-                             Type btype,
-                             size_t nmemb,
-                             char *out,
-                             int max_out_len)
-{
-    switch(btype) {
-        case Type_BOOL:
-            return snprintf(out, max_out_len, "%d", *(bool *)fld_ptr);
-        case Type_INT16:
-            return snprintf(out, max_out_len, "%d", *(short *)fld_ptr);
-        case Type_UINT16:
-            return snprintf(out, max_out_len, "%u", *(unsigned short *)fld_ptr);
-        case Type_INT32:
-            return snprintf(out, max_out_len, "%d", *(int *)fld_ptr);
-        case Type_UINT32:
-            return snprintf(out, max_out_len, "%u", *(unsigned int *)fld_ptr);
-        case Type_INT64:
-#if defined(__GNUG__) && defined(__linux)
-            return snprintf(out, max_out_len, "%ld", *(int64_t *)fld_ptr);
-#else
-            return snprintf(out, max_out_len, "%lld", *(int64_t *)fld_ptr);
-#endif
-        case Type_UINT64:
-#if defined(__GNUG__) && defined(__linux)
-            return snprintf(out, max_out_len, "%lu", *(uint64_t *)fld_ptr);
-#else
-            return snprintf(out, max_out_len, "%llu", *(uint64_t *)fld_ptr);
-#endif
-        case Type_FLOAT32:
-            return snprintf(out, max_out_len, "%f", *(float *)fld_ptr);
-        case Type_FLOAT64:
-            return snprintf(out, max_out_len, "%f", *(double *)fld_ptr);
-        case Type_ASCII:
-            if(nmemb > 1) {
-                return snprintf(out, max_out_len, "%s", (char *)fld_ptr);
-            } else {
-                return snprintf(out, max_out_len, "%c", *(char *)fld_ptr);
-            }
-        default:
-            return -1;
-    }
-}
 
 struct prim_key_buff_value_rec_ud {
     prim_key_buff_value_rec_ud(const char *self,
@@ -1117,45 +1061,32 @@ inline void FillStr_FldValue(const void *fld_ptr,
                              size_t nmemb,
                              std::string *out)
 {
-    int max_out_len = 256;
-    char buff[256] = { '\0' };
+    std::stringstream ss;
     switch(btype) {
         case Type_BOOL:
-            snprintf(buff, max_out_len, "%d", *(bool *)fld_ptr);
+            ss << *(bool *)fld_ptr;
             break;
         case Type_INT16:
-            snprintf(buff, max_out_len, "%d", *(short *)fld_ptr);
+            ss << *(short *)fld_ptr;
             break;
         case Type_UINT16:
-            snprintf(buff, max_out_len, "%u", *(unsigned short *)fld_ptr);
+            ss << *(unsigned short *)fld_ptr;
             break;
         case Type_INT32:
-            snprintf(buff, max_out_len, "%d", *(int *)fld_ptr);
+            ss << *(int *)fld_ptr;
             break;
         case Type_UINT32:
-            snprintf(buff, max_out_len, "%u", *(unsigned int *)fld_ptr);
+            ss << *(unsigned int *)fld_ptr;
             break;
         case Type_INT64:
-#if defined(__GNUG__) && defined(__linux)
-            snprintf(buff, max_out_len, "%ld", *(int64_t *)fld_ptr);
-            break;
-#else
-            snprintf(buff, max_out_len, "%lld", *(int64_t *)fld_ptr);
-            break;
-#endif
+            ss << *(int64_t *)fld_ptr;
         case Type_UINT64:
-#if defined(__GNUG__) && defined(__linux)
-            snprintf(buff, max_out_len, "%lu", *(uint64_t *)fld_ptr);
-            break;
-#else
-            snprintf(buff, max_out_len, "%llu", *(uint64_t *)fld_ptr);
-            break;
-#endif
+            ss << *(uint64_t *)fld_ptr;
         case Type_FLOAT32:
-            snprintf(buff, max_out_len, "%f", *(float *)fld_ptr);
+            ss << *(float *)fld_ptr;
             break;
         case Type_FLOAT64:
-            snprintf(buff, max_out_len, "%f", *(double *)fld_ptr);
+            ss << *(double *)fld_ptr;
             break;
         case Type_ASCII:
             if(nmemb > 1) {
@@ -1165,10 +1096,13 @@ inline void FillStr_FldValue(const void *fld_ptr,
                 *out += *(char *)fld_ptr;
                 return;
             }
+        case Type_BYTE:
+            append_hex_str((char *)fld_ptr, nmemb, *out);
+            break;
         default:
             return;
     }
-    out->append(buff);
+    out->append(ss.str());
 }
 
 struct prim_key_str_value_rec_ud {

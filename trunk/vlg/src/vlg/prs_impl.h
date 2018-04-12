@@ -19,8 +19,7 @@
 *
 */
 
-#ifndef VLG_MDL_UTL_H_
-#define VLG_MDL_UTL_H_
+#pragma once
 #include "glob.h"
 
 #define VLG_DRV_NAME_LEN 64
@@ -354,5 +353,3 @@ struct persistence_manager_impl {
 
 
 }
-
-#endif

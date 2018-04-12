@@ -101,44 +101,43 @@ RetCode VLG_COMP_Gen_Serialize_new__CPP_(std::map<std::string, entity_desc_comp 
                 //for strings we send only significative bytes
                 fprintf(file, CR_3IND"if(!is_zero_%s()){\n", mdesc->second->get_member_name());
                 fprintf(file, CR_4IND"size_t fsize = strnlen(%s, %zu);\n",
-                        mdesc->second->get_member_name(),
-                        get_network_type_size(mdesc->second->get_field_type())
+                        mdesc->second->get_member_name(), get_network_type_size(mdesc->second->get_field_type())
                         * mdesc->second->get_nmemb());
                 //allocating space for: field index, field length, field size
                 fprintf(file, CR_4IND"obb->grow(MMBID_B_SZ+FLDLN_B_SZ+fsize);\n");
-                fprintf(file, CR_4IND"obb->append_ushort(%d);\n",
-                        mdesc->second->get_member_id());
-                fprintf(file,
-                        CR_4IND"obb->append_uint((unsigned int)fsize);\n");
-                fprintf(file, CR_4IND"obb->append(%s, 0, fsize);\n"
-                        CR_3IND"}\n", mdesc->second->get_member_name());
+                fprintf(file, CR_4IND"obb->append_ushort(%d);\n", mdesc->second->get_member_id());
+                fprintf(file, CR_4IND"obb->append_uint((unsigned int)fsize);\n");
+                fprintf(file, CR_4IND"obb->append(%s, 0, fsize);\n" CR_3IND"}\n", mdesc->second->get_member_name());
+#if 0
+            } else if(mdesc->second->get_field_type() == Type_BYTE && mdesc->second->get_nmemb() > 1) {
+                //for byte buffers we send the entire buffer if not zero.
+                fprintf(file, CR_3IND"if(!is_zero_%s()){\n", mdesc->second->get_member_name());
+                fprintf(file, CR_4IND"obb->grow(MMBID_B_SZ+%zu);\n", get_network_type_size(mdesc->second->get_field_type()));
+                fprintf(file, CR_4IND"obb->append_ushort(%d);\n", mdesc->second->get_member_id());
+                fprintf(file, CR_4IND"obb->append(&%s, 0, %zu);\n" CR_3IND"}\n", mdesc->second->get_member_name(),
+                        (get_network_type_size(mdesc->second->get_field_type()) * mdesc->second->get_nmemb()));
+#endif
             } else {
                 if(mdesc->second->get_nmemb() == 1) {
                     //primitive type nmemb == 1
                     fprintf(file, CR_3IND"if(!is_zero_%s()){\n", mdesc->second->get_member_name());
-                    fprintf(file, CR_4IND"obb->grow(MMBID_B_SZ+%zu);\n",
-                            get_network_type_size(mdesc->second->get_field_type()));
-                    fprintf(file, CR_4IND"obb->append_ushort(%d);\n",
-                            mdesc->second->get_member_id());
-                    fprintf(file, CR_4IND"obb->append(&%s, 0, %zu);\n"
-                            CR_3IND"}\n", mdesc->second->get_member_name(),
+                    fprintf(file, CR_4IND"obb->grow(MMBID_B_SZ+%zu);\n", get_network_type_size(mdesc->second->get_field_type()));
+                    fprintf(file, CR_4IND"obb->append_ushort(%d);\n", mdesc->second->get_member_id());
+                    fprintf(file, CR_4IND"obb->append(&%s, 0, %zu);\n" CR_3IND"}\n", mdesc->second->get_member_name(),
                             get_network_type_size(mdesc->second->get_field_type()));
                 } else {
                     //primitive type nmemb > 1
                     fprintf(file, CR_3IND"if(!is_zero_%s()){\n", mdesc->second->get_member_name());
-                    fprintf(file, CR_4IND"obb->append_ushort(%d);\n",
-                            mdesc->second->get_member_id());
+                    fprintf(file, CR_4IND"obb->append_ushort(%d);\n", mdesc->second->get_member_id());
                     fprintf(file, CR_4IND"size_t alen_offst = obb->position();\n");
                     fprintf(file, CR_4IND"obb->advance_pos_write(ARRAY_B_SZ); size_t alen = obb->position();\n");
                     fprintf(file, CR_4IND"for(int i = 0; i<%zu; i++){\n", mdesc->second->get_nmemb());
                     fprintf(file, CR_5IND"if(!is_zero_%s_idx(i)){\n", mdesc->second->get_member_name());
                     fprintf(file, CR_6IND"obb->append_ushort(i);\n");
-                    fprintf(file, CR_6IND"obb->append(&%s[i], 0, %zu); }\n",
-                            mdesc->second->get_member_name(),
+                    fprintf(file, CR_6IND"obb->append(&%s[i], 0, %zu); }\n", mdesc->second->get_member_name(),
                             get_network_type_size(mdesc->second->get_field_type()));
                     fprintf(file, CR_5IND"}\n");
-                    fprintf(file,
-                            CR_5IND"alen = (obb->position() - alen); obb->put(&alen, alen_offst, ARRAY_B_SZ);\n");
+                    fprintf(file, CR_5IND"alen = (obb->position() - alen); obb->put(&alen, alen_offst, ARRAY_B_SZ);\n");
                     fprintf(file, CR_4IND"}\n");
                 }
             }
@@ -152,23 +151,18 @@ RetCode VLG_COMP_Gen_Serialize_new__CPP_(std::map<std::string, entity_desc_comp 
                         //primitive type nmemb == 1
                         fprintf(file, CR_3IND"if(!is_zero_%s()){\n", mdesc->second->get_member_name());
                         fprintf(file, CR_4IND"obb->grow(MMBID_B_SZ+%zu);\n", fsize);
-                        fprintf(file, CR_4IND"obb->append_ushort(%d);\n",
-                                mdesc->second->get_member_id());
-                        fprintf(file, CR_4IND"obb->append(&%s, 0, %zu);\n"
-                                CR_3IND"}\n", mdesc->second->get_member_name(), fsize);
+                        fprintf(file, CR_4IND"obb->append_ushort(%d);\n", mdesc->second->get_member_id());
+                        fprintf(file, CR_4IND"obb->append(&%s, 0, %zu);\n" CR_3IND"}\n", mdesc->second->get_member_name(), fsize);
                     } else {
                         //primitive type nmemb > 1
                         fprintf(file, CR_3IND"if(!is_zero_%s()){\n", mdesc->second->get_member_name());
-                        fprintf(file, CR_4IND"obb->append_ushort(%d); //put fidx.\n",
-                                mdesc->second->get_member_id());
+                        fprintf(file, CR_4IND"obb->append_ushort(%d); //put fidx.\n", mdesc->second->get_member_id());
                         fprintf(file, CR_4IND"size_t alen_offst = obb->position();\n");
-                        fprintf(file,
-                                CR_4IND"obb->advance_pos_write(ARRAY_B_SZ); size_t alen = obb->position();\n");
+                        fprintf(file, CR_4IND"obb->advance_pos_write(ARRAY_B_SZ); size_t alen = obb->position();\n");
                         fprintf(file, CR_4IND"for(int i = 0; i<%zu; i++){\n", mdesc->second->get_nmemb());
                         fprintf(file, CR_5IND"if(!is_zero_%s_idx(i)){\n", mdesc->second->get_member_name());
                         fprintf(file, CR_6IND"obb->append_ushort(i);\n");
-                        fprintf(file, CR_6IND"obb->append(&%s[i], 0, %zu); }\n",
-                                mdesc->second->get_member_name(), fsize);
+                        fprintf(file, CR_6IND"obb->append(&%s[i], 0, %zu); }\n", mdesc->second->get_member_name(), fsize);
                         fprintf(file, CR_5IND"}\n");
                         fprintf(file, CR_5IND"alen = (obb->position() - alen); obb->put(&alen, alen_offst, ARRAY_B_SZ);\n");
                         fprintf(file, CR_4IND"}\n");
@@ -177,21 +171,17 @@ RetCode VLG_COMP_Gen_Serialize_new__CPP_(std::map<std::string, entity_desc_comp 
                     //struct, class
                     if(mdesc->second->get_nmemb() == 1) {
                         fprintf(file, CR_3IND"if(!is_zero_%s()){\n", mdesc->second->get_member_name());
-                        fprintf(file, CR_4IND"obb->append_ushort(%d);\n",
-                                mdesc->second->get_member_id());
-                        fprintf(file, CR_4IND"%s.serialize(enctyp, nullptr, obb); }\n",
-                                mdesc->second->get_member_name());
+                        fprintf(file, CR_4IND"obb->append_ushort(%d);\n", mdesc->second->get_member_id());
+                        fprintf(file, CR_4IND"%s.serialize(enctyp, nullptr, obb); }\n", mdesc->second->get_member_name());
                     } else {
                         fprintf(file, CR_3IND"if(!is_zero_%s()){\n", mdesc->second->get_member_name());
-                        fprintf(file, CR_4IND"obb->append_ushort(%d);\n",
-                                mdesc->second->get_member_id());
+                        fprintf(file, CR_4IND"obb->append_ushort(%d);\n", mdesc->second->get_member_id());
                         fprintf(file, CR_4IND"size_t alen_offst = obb->position();\n");
                         fprintf(file, CR_4IND"obb->advance_pos_write(ARRAY_B_SZ); size_t alen = obb->position();\n");
                         fprintf(file, CR_4IND"for(int i = 0; i<%zu; i++){\n", mdesc->second->get_nmemb());
                         fprintf(file, CR_5IND"if(!is_zero_%s_idx(i)){\n", mdesc->second->get_member_name());
                         fprintf(file, CR_6IND"obb->append_ushort(i);\n");
-                        fprintf(file, CR_6IND"%s[i].serialize(enctyp, nullptr, obb); }\n",
-                                mdesc->second->get_member_name());
+                        fprintf(file, CR_6IND"%s[i].serialize(enctyp, nullptr, obb); }\n", mdesc->second->get_member_name());
                         fprintf(file, CR_5IND"}\n");
                         fprintf(file, CR_5IND"alen = (obb->position() - alen); obb->put(&alen, alen_offst, ARRAY_B_SZ);\n");
                         fprintf(file, CR_4IND"}\n");
@@ -216,10 +206,7 @@ RetCode VLG_COMP_Gen_ScalarMember_Buff_CPP_(member_desc_comp *mdsc,
                                             FILE *file)
 {
     if(mdsc->get_nmemb() > 1) {
-        fprintf(file,  CR_2IND
-                "if(!is_zero_%s()){\n"
-                CR_2IND
-                CR_2IND
+        fprintf(file, CR_2IND"if(!is_zero_%s()){\n" CR_2IND CR_2IND
                 "blen += sprintf(&buff[blen], \"%s=[\");\n",
                 mdsc->get_member_name(),
                 mdsc->get_member_name());
@@ -232,29 +219,23 @@ RetCode VLG_COMP_Gen_ScalarMember_Buff_CPP_(member_desc_comp *mdsc,
             std::string tmp_lnx;
             fprintf(file, "%s", VLG_COMP_DPND_strict_linux);
             RET_ON_KO(printf_percent_from_VLG_TYPE(*mdsc, tmp_lnx, true))
-            fprintf(file,  CR_2IND
-                    CR_2IND
-                    CR_2IND
+            fprintf(file, CR_2IND CR_2IND CR_2IND
                     "blen += sprintf(&buff[blen], \"%%%s\", %s[i]);\n",
                     tmp_lnx.c_str(),
                     mdsc->get_member_name());
             fprintf(file, "#else\n");
-            fprintf(file,  CR_2IND
-                    CR_2IND
-                    CR_2IND
+            fprintf(file, CR_2IND CR_2IND CR_2IND
                     "blen += sprintf(&buff[blen], \"%%%s\", %s[i]);\n",
                     tmp.c_str(),
                     mdsc->get_member_name());
             fprintf(file, "#endif\n");
         } else {
-            fprintf(file,  CR_2IND
-                    CR_2IND
-                    CR_2IND
+            fprintf(file, CR_2IND CR_2IND CR_2IND
                     "blen += sprintf(&buff[blen], \"%%%s\", %s[i]);\n",
                     tmp.c_str(),
                     mdsc->get_member_name());
         }
-        fprintf(file,  CR_2IND
+        fprintf(file, CR_2IND
                 CR_2IND
                 CR_2IND
                 "if(%zu>i+1) blen += sprintf(&buff[blen], \",\");\n",
@@ -265,7 +246,7 @@ RetCode VLG_COMP_Gen_ScalarMember_Buff_CPP_(member_desc_comp *mdsc,
         fprintf(file,  CR_2IND
                 CR_2IND
                 "blen += sprintf(&buff[blen], \"]\");\n");
-        fprintf(file,  CR_2IND"}\n");
+        fprintf(file, CR_2IND"}\n");
     } else {
         if(mdsc->get_field_type() == Type_INT64 ||
                 mdsc->get_field_type() == Type_UINT64) {
@@ -470,8 +451,7 @@ RetCode VLG_COMP_Gen_EntityNotZeroMode_Buff__CPP_(std::map<std::string, entity_d
         if(mdesc->second->get_field_type() != Type_ENTITY) {
             // built in type
             if(mdesc->second->get_field_type() == Type_ASCII && mdesc->second->get_nmemb() > 1) {
-                fprintf(file,
-                        CR_2IND"if(!is_zero_%s()) blen += sprintf(&buff[blen], \"%s=[%%s]\", %s);\n",
+                fprintf(file, CR_2IND"if(!is_zero_%s()) blen += sprintf(&buff[blen], \"%s=[%%s]\", %s);\n",
                         mdesc->second->get_member_name(),
                         mdesc->second->get_member_name(),
                         mdesc->second->get_member_name());
@@ -520,8 +500,7 @@ RetCode VLG_COMP_Gen_EntityNotZeroMode_FILE__CPP_(std::map<std::string, entity_d
         if(mdesc->second->get_field_type() != Type_ENTITY) {
             // built in type
             if(mdesc->second->get_field_type() == Type_ASCII && mdesc->second->get_nmemb() > 1) {
-                fprintf(file,
-                        CR_2IND"if(!is_zero_%s()) blen += fprintf(f, \"%s=[%%s]\", %s);\n",
+                fprintf(file, CR_2IND"if(!is_zero_%s()) blen += fprintf(f, \"%s=[%%s]\", %s);\n",
                         mdesc->second->get_member_name(),
                         mdesc->second->get_member_name(),
                         mdesc->second->get_member_name());
@@ -562,12 +541,10 @@ RetCode VLG_COMP_Gen_EntitytPrintToBuff__CPP_(std::map<std::string, entity_desc_
                                               FILE *file)
 {
     fprintf(file, CR_1IND "size_t blen = 0;\n");
-    fprintf(file, CR_1IND "if(print_name) blen += sprintf(&buff[blen], \"%s\");\n",
-            ent_desc.get_nentity_name());
+    fprintf(file, CR_1IND "if(print_name) blen += sprintf(&buff[blen], \"%s\");\n", ent_desc.get_nentity_name());
     //class opening curl brace
     fprintf(file, CR_1IND "blen += sprintf(&buff[blen], \"{\");\n");
-    RET_ON_KO(VLG_COMP_Gen_EntityNotZeroMode_Buff__CPP_(entitymap,
-                                                        ent_desc, file))
+    RET_ON_KO(VLG_COMP_Gen_EntityNotZeroMode_Buff__CPP_(entitymap, ent_desc, file))
     //class closing curl brace
     fprintf(file, CR_1IND "blen += sprintf(&buff[blen], \"}\");\n");
     fprintf(file, CR_1IND "return blen;\n");
@@ -582,12 +559,10 @@ RetCode VLG_COMP_Gen_EntityPrintToFile__CPP_(std::map<std::string, entity_desc_c
                                              FILE *file)
 {
     fprintf(file, CR_1IND "size_t blen = 0;\n");
-    fprintf(file, CR_1IND "if(print_name) blen += fprintf(f, \"%s\");\n",
-            ent_desc.get_nentity_name());
+    fprintf(file, CR_1IND "if(print_name) blen += fprintf(f, \"%s\");\n", ent_desc.get_nentity_name());
     //class opening curl brace
     fprintf(file, CR_1IND "blen += fprintf(f, \"{\");\n");
-    RET_ON_KO(VLG_COMP_Gen_EntityNotZeroMode_FILE__CPP_(entitymap,
-                                                        ent_desc, file))
+    RET_ON_KO(VLG_COMP_Gen_EntityNotZeroMode_FILE__CPP_(entitymap, ent_desc, file))
     //class closing curl brace
     fprintf(file, CR_1IND "blen += fprintf(f, \"}\");\n");
     fprintf(file, CR_1IND "return blen;\n");
@@ -599,7 +574,7 @@ GEN- VLG_COMP_Gen_Allc__CPP_
 ***********************************/
 RetCode VLG_COMP_Gen_Allc__CPP_(compile_unit &cunit, FILE *file)
 {
-    fprintf(file, OPN_CMMNT_LN"CLASS ALLOCATORS\n" CLS_CMMNT_LN);
+    fprintf(file, OPN_CMMNT_LN"NCLASS ALLOCATORS\n" CLS_CMMNT_LN);
     auto &entitymap = cunit.get_entity_map();
     for(auto edsc = entitymap.begin(); edsc != entitymap.end(); edsc++) {
         if(edsc->second->get_nentity_type() != NEntityType_NCLASS) {
@@ -1035,8 +1010,7 @@ RetCode VLG_COMP_Gen_GenMeths__CPP_(compile_unit &cunit,
         /******************************************
         Zero Method
         ******************************************/
-        fprintf(file, EXPORT_SYMBOL"bool %s::is_zero_%s() const\n",
-                edsc.get_nentity_name(),
+        fprintf(file, EXPORT_SYMBOL"bool %s::is_zero_%s() const\n", edsc.get_nentity_name(),
                 mdesc->second->get_member_name());
         if(mdesc->second->get_field_type() == Type_ENTITY) {
             auto inner_edsc = entitymap.end();
@@ -1230,8 +1204,7 @@ RetCode VLG_COMP_Class_Dtor__CPP_(compile_unit &cunit,
                                   entity_desc_comp *edsc,
                                   FILE *file)
 {
-    fprintf(file, EXPORT_SYMBOL"%s::~%s(){}\n", edsc->get_nentity_name(),
-            edsc->get_nentity_name());
+    fprintf(file, EXPORT_SYMBOL"%s::~%s(){}\n", edsc->get_nentity_name(), edsc->get_nentity_name());
     return vlg::RetCode_OK;
 }
 
@@ -1372,8 +1345,7 @@ RetCode VLG_COMP_Gen_ModelVersion__CPP_(compile_unit &cunit,
     fprintf(file, "extern \"C\"{\n");
     fprintf(file, "const char* get_mdl_ver_%s()\n", cunit.model_name());
     fprintf(file, "{\n");
-    fprintf(file,
-            CR_1IND"return \"model.%s.ver.%s.compiler.ver.%d.%d.%d.%d.date:%s\";\n",
+    fprintf(file, CR_1IND"return \"model.%s.ver.%s.compiler.ver.%d.%d.%d.%d.date:%s\";\n",
             cunit.model_name(),
             cunit.model_version(),
             comp_ver[0],

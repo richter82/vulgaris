@@ -19,8 +19,7 @@
  *
  */
 
-#ifndef CR_PARSE_H_
-#define CR_PARSE_H_
+#pragma once
 #include "vlg.h"
 
 namespace vlg {
@@ -179,5 +178,3 @@ bool string_is_number(const char *str);
 RetCode load_file(FILE *fdesc, std::string &data);
 
 }
-
-#endif

@@ -19,9 +19,7 @@
  *
  */
 
-#ifndef VLG_TOOLKIT_CORE_UTIL_H
-#define VLG_TOOLKIT_CORE_UTIL_H
-
+#pragma once
 #include "tkt_glob.h"
 
 class vlg_toolkit_MainWindow;
@@ -95,5 +93,3 @@ QPlainTextEditApnd &apnd_;
 */
 
 }
-
-#endif // VLG_TOOLKIT_CORE_UTIL_H

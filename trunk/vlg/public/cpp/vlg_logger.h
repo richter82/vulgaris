@@ -19,8 +19,7 @@
  *
  */
 
-#ifndef VLG_LOG_H_
-#define VLG_LOG_H_
+#pragma once
 #include "vlg.h"
 
 namespace vlg {
@@ -185,5 +184,3 @@ struct logger {
 };
 
 }
-
-#endif

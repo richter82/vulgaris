@@ -17,20 +17,24 @@ enum SEX
 #---DOG
 nclass ROLE 
 {
-	@id			700
+	@id 700
+	
 	uint_64 	role_id 		
-	ascii[32+1]	role_name
+	ascii[32]	role_name
 	bool		can_act_as_admin	"can be admin"
 }
 
 #---USER
 nclass USER
 {
-	@id							800
+	@id 800
 	
 	uint_32						user_id				"id"
-	ascii[NAME_LEN+1]			name				"name"
-	ascii[NAME_LEN+1]			surname				"surname"
+	ascii[NAME_LEN]				name				"name"
+	ascii[NAME_LEN]				surname				"surname"
+	ascii						a1					
+	byte[64]					raw_txt				"raw_txt"
+	byte						raw_b
 	SEX							sex					"sex"
 	ascii[64]					email				"surname"
 	float_32					height				"height"
@@ -57,4 +61,16 @@ nclass USER
 	@id			3
 	@fldset 	{email}
 	@key_end
+}
+
+@define MSG_MAX_LEN 256
+
+#---MSG
+nclass MSG
+{
+	@id 900
+	
+	uint_32[4] 				int_ary
+	ascii[16]				str_ary
+	byte[MSG_MAX_LEN] 		raw_msg
 }
