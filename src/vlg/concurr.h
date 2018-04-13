@@ -12,16 +12,14 @@ namespace vlg {
 
 /** @brief runnable interface.
 */
-class runnable {
-    public:
-        virtual ~runnable() {}
-        virtual void *run() = 0;
+struct runnable {
+    virtual ~runnable() {}
+    virtual void *run() = 0;
 };
 
 /** @brief A convenient wrapper for pthread.
 */
-class p_th : public runnable {
-    public:
+struct p_th : public runnable {
         explicit p_th();
         explicit p_th(runnable *target);
         explicit p_th(pthread_attr_t *attr);
@@ -80,9 +78,7 @@ enum PTASK_STATUS {
 /** @brief  This class logically represent a task that can be executed
             by a p_executor.
 */
-class p_tsk {
-    public:
-
+struct p_tsk {
         explicit p_tsk();
         explicit p_tsk(unsigned int id);
         virtual ~p_tsk();
@@ -159,10 +155,8 @@ enum PEXECUTOR_STATUS {
 
 /** @brief This class represent an thread-executor used by a p_executor_service.
 */
-class p_exec_srv;
-class p_exectr : public p_th {
-    public:
-
+struct p_exec_srv;
+struct p_exectr : public p_th {
         explicit p_exectr(p_exec_srv &eserv);
         ~p_exectr();
 
@@ -181,7 +175,6 @@ class p_exectr : public p_th {
 };
 
 /** @brief An enum representing the status a p_executor_service can assume.
-
 */
 enum PEXEC_SERVICE_STATUS {
     PEXEC_SERVICE_STATUS_ZERO,
@@ -198,9 +191,7 @@ enum PEXEC_SERVICE_STATUS {
 /** @brief This class represent an thread-executor-service that can be used
            to execute asynchronously a set of p_task(s).
 */
-class p_exec_srv {
-    public:
-
+struct p_exec_srv {
         explicit p_exec_srv(unsigned int id,
                             bool dispose_task = false);
 

@@ -28,8 +28,6 @@ enum VLG_SQLITE_DATATYPE {
 #define SQLITE_VAL_BUFF 256
 #define SQLITE_FIDX_BUFF 16
 
-class pers_conn_sqlite;
-
 //utils
 
 const char *SQLITE_TypeStr_From_VLGType(Type type)
@@ -234,8 +232,7 @@ struct SQLTE_ENM_SELECT_REC_UD {
 bool enum_mmbrs_fill_entity(const member_desc &mmbrd, void *ud);
 
 //pers_conn_sqlite
-class pers_conn_sqlite : public persistence_connection_impl {
-    public:
+struct pers_conn_sqlite : public persistence_connection_impl {
         pers_conn_sqlite(persistence_connection_pool &conn_pool);
 
         inline RetCode sqlite_connect(const char *filename,
@@ -254,7 +251,9 @@ class pers_conn_sqlite : public persistence_connection_impl {
                                                 const nclass &in,
                                                 sqlite3_stmt *stmt);
 
-        inline RetCode sqlite_bind_obj_fields(const nclass &in,
+        inline RetCode sqlite_bind_obj_fields(unsigned int ts_0,
+                                              unsigned int ts_1,
+                                              const nclass &in,
                                               const nentity_manager &nem,
                                               sqlite3_stmt *stmt,
                                               unsigned int *bnd_col_idx = NULL);
@@ -417,7 +416,7 @@ class pers_conn_sqlite : public persistence_connection_impl {
                         IFLOG(err(TH_ID, LS_CLO "[sqlite_prepare_stmt failed][res:%d]", __func__, rcode))
                     } else {
                         //bind
-                        if((rcode = sql_conn_.sqlite_bind_obj_fields(*in_obj_, *in_nem_, stmt))) {
+                        if((rcode = sql_conn_.sqlite_bind_obj_fields(*in_out_ts0_, *in_out_ts1_, *in_obj_, *in_nem_, stmt))) {
                             IFLOG(err(TH_ID, LS_CLO "[sqlite_bind_obj_fields failed][res:%d]", __func__, rcode))
                             RetCode rels_rcode = RetCode_OK;
                             if((rels_rcode = sql_conn_.sqlite_release_stmt(stmt))) {
@@ -452,13 +451,13 @@ class pers_conn_sqlite : public persistence_connection_impl {
                     } else {
                         //bind
                         unsigned int bnd_col_idx = 0;
-                        if((rcode = sql_conn_.sqlite_bind_obj_fields(*in_obj_, *in_nem_, stmt, &bnd_col_idx))) {
+                        if((rcode = sql_conn_.sqlite_bind_obj_fields(*in_out_ts0_, *in_out_ts1_, *in_obj_, *in_nem_, stmt, &bnd_col_idx))) {
                             IFLOG(err(TH_ID, LS_CLO "[sqlite_bind_obj_fields failed][res:%d]", __func__, rcode))
                             RetCode rels_rcode = RetCode_OK;
                             if((rels_rcode = sql_conn_.sqlite_release_stmt(stmt))) {
                                 IFLOG(err(TH_ID, LS_TRL "[res:%d][sqlite_release_stmt failed]", __func__, rels_rcode))
                             }
-                        } else if((rcode = sql_conn_.sqlite_bind_where_clause(in_key_, bnd_col_idx+1, *in_obj_, stmt))) {
+                        } else if((rcode = sql_conn_.sqlite_bind_where_clause(in_key_, bnd_col_idx, *in_obj_, stmt))) {
                             IFLOG(err(TH_ID, LS_CLO "[sqlite_bind_where_clause failed][res:%d]", __func__, rcode))
                             RetCode rels_rcode = RetCode_OK;
                             if((rels_rcode = sql_conn_.sqlite_release_stmt(stmt))) {
@@ -730,12 +729,16 @@ bool enum_bind_obj_fields(const member_desc &mmbrd, void *ud)
     return true;
 }
 
-RetCode pers_conn_sqlite::sqlite_bind_obj_fields(const nclass &in,
+RetCode pers_conn_sqlite::sqlite_bind_obj_fields(unsigned int ts_0,
+                                                 unsigned int ts_1,
+                                                 const nclass &in,
                                                  const nentity_manager &nem,
                                                  sqlite3_stmt *stmt,
                                                  unsigned int *bnd_col_idx)
 {
-    k_bind_w_c kbwc = { 1, stmt, (const char *) &in, &nem };
+    k_bind_w_c kbwc = { 3, stmt, (const char *) &in, &nem };
+    sqlite3_bind_int(stmt, 1, ts_0);
+    sqlite3_bind_int(stmt, 2, ts_1);
     in.get_nentity_descriptor().enum_member_descriptors(enum_bind_obj_fields, &kbwc);
     if(bnd_col_idx) {
         *bnd_col_idx = kbwc.col_idx;
@@ -1041,11 +1044,6 @@ bool enum_mmbrs_fill_entity(const member_desc &mmbrd, void *ud)
                     rrud.obj_ptr = rud->obj_ptr + mmbrd.get_field_offset();
                     edsc->enum_member_descriptors(enum_mmbrs_fill_entity, &rrud);
                 }
-            } else {
-                *rud->last_error_code = RetCode_GENERR;
-                rud->last_error_msg->assign("enum_mmbrs_fill_entity: entity not found in nem [");
-                rud->last_error_msg->append(mmbrd.get_field_user_type());
-                rud->last_error_msg->append("]");
             }
         }
     } else {
@@ -1103,12 +1101,9 @@ RetCode pers_conn_sqlite::do_select(unsigned int key,
     std::string last_error_str;
     std::string select_stmt;
     std::string columns;
-    std::string where_claus;
+    std::string where_claus(P_F_DEL"=0 AND ");
     int sqlite_rc = 0;
-    columns.assign("");
-    where_claus.assign(P_F_DEL"=0 AND ");
     std::string prfx;
-    prfx.assign("");
     bool frst_fld = true, frst_key = true, frst_key_mmbr = true;
     int column_idx = 3; //column idx, [ts0, ts1, del] we start from 3.
     sqlite_gr_buf *enm_buff = new sqlite_gr_buf();
@@ -1328,20 +1323,9 @@ RetCode pers_conn_sqlite::do_update(unsigned int key,
     RetCode last_error_code = RetCode_OK;
     std::string last_error_str;
     std::string update_stmt;
-    std::string set_section;
-    std::string where_claus;
-    char ts_buff[TMSTMP_BUFF_SZ];
-    set_section.assign(P_F_TS0"=");
-    snprintf(ts_buff, TMSTMP_BUFF_SZ, "%u", ts0);
-    set_section.append(ts_buff);
-    set_section.append(", ");
-    set_section.append(P_F_TS1"=");
-    snprintf(ts_buff, TMSTMP_BUFF_SZ, "%u", ts1);
-    set_section.append(ts_buff);
-    set_section.append(", ");
-    where_claus.assign(P_F_DEL"=0 AND ");
+    std::string set_section(P_F_TS0"=?," P_F_TS1"=?,");
+    std::string where_claus(P_F_DEL"=0 AND ");
     std::string prfx;
-    prfx.assign("");
     bool frst_fld = true, frst_key = true, frst_key_mmbr = true;
     sqlite_gr_buf *enm_buff = new sqlite_gr_buf();
     SQLTE_ENM_UPDATE_REC_UD rud = { nem,
@@ -1581,11 +1565,6 @@ bool enum_mmbrs_insert(const member_desc &mmbrd, void *ud)
                     rrud.obj_ptr = rud->obj_ptr + mmbrd.get_field_offset();
                     edsc->enum_member_descriptors(enum_mmbrs_insert, &rrud);
                 }
-            } else {
-                *rud->last_error_code = RetCode_GENERR;
-                rud->last_error_msg->assign("enum_mmbrs_insert: entity not found in nem [");
-                rud->last_error_msg->append(mmbrd.get_field_user_type());
-                rud->last_error_msg->append("]");
             }
         }
     } else {
@@ -1643,21 +1622,11 @@ RetCode pers_conn_sqlite::do_insert(const nentity_manager &nem,
     RetCode rcode = RetCode_OK;
     RetCode last_error_code = RetCode_OK;
     std::string last_error_str;
-    std::string insert_stmt;
-    std::string values;
-    char ts_buff[TMSTMP_BUFF_SZ];
-    snprintf(ts_buff, TMSTMP_BUFF_SZ, "%u", ts0);
-    values.assign(ts_buff);
-    values.append(", ");
-    snprintf(ts_buff, TMSTMP_BUFF_SZ, "%u", ts1);
-    values.append(ts_buff);
-    values.append(", ");
-    values.append("0, "); //del
-    insert_stmt.assign("INSERT INTO ");
+    std::string insert_stmt("INSERT INTO ");
+    std::string values("?,?,0,");
     insert_stmt.append(in.get_nentity_descriptor().get_nentity_name());
     insert_stmt.append("(" P_F_TS0", " P_F_TS1", " P_F_DEL", ");
     std::string prfx;
-    prfx.assign("");
     bool frst_fld = true;
     sqlite_gr_buf *enm_buff = new sqlite_gr_buf();
     SQLTE_ENM_INSERT_REC_UD rud = {nem,
@@ -1680,6 +1649,8 @@ RetCode pers_conn_sqlite::do_insert(const nentity_manager &nem,
     std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_INSERT));
     task->in_nem_ = &nem;
     task->in_obj_ = &in;
+    task->in_out_ts0_ = &ts0;
+    task->in_out_ts1_ = &ts1;
     task->in_fail_is_error_ = fail_is_error;
     task->stmt_bf_ = &insert_stmt;
     IFLOG(dbg(TH_ID, LS_STM "[insert_stmt:%s]", __func__, insert_stmt.c_str()))

@@ -1,23 +1,8 @@
 /*
-*
-* (C) 2017 - giuseppe.baccini@gmail.com
-*
-*
-* This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 3 of the License, or
-* (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program; if not, write to the Free Software Foundation,
-* Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-*
-*/
+ * vulgaris
+ * (C) 2018 - giuseppe.baccini@gmail.com
+ *
+ */
 
 #pragma once
 #include "vlg.h"
@@ -90,28 +75,18 @@ struct obj_mng {
     hash_func hash_func_;
 };
 
-/** @brief Pointer Object Manager class.
+/** @brief Pointer Object Manager.
 */
-class ptr_obj_mng : public obj_mng {
-        friend const ptr_obj_mng &sngl_ptr_obj_mng();
-    public:
-
-        ptr_obj_mng();
-
-    private:
-        static ptr_obj_mng *instance_;
+struct ptr_obj_mng : public obj_mng {
+    ptr_obj_mng();
+    static ptr_obj_mng *instance_;
 };
 
-/** @brief c-string Object Manager class.
+/** @brief c-string Object Manager.
 */
-class cstr_obj_mng : public obj_mng {
-        friend const cstr_obj_mng &sngl_cstr_obj_mng();
-    public:
-
-        cstr_obj_mng();
-
-    private:
-        static cstr_obj_mng *instance_;
+struct cstr_obj_mng : public obj_mng {
+    cstr_obj_mng();
+    static cstr_obj_mng *instance_;
 };
 
 const ptr_obj_mng &sngl_ptr_obj_mng();
@@ -143,9 +118,7 @@ struct scoped_wr_lock {
 
 /** @brief mx class.
 */
-class mx {
-    public:
-
+struct mx {
         explicit mx(int pshared = PTHREAD_PROCESS_PRIVATE);
         ~mx();
 
@@ -212,7 +185,7 @@ struct brep {
         uint32_t elemcount_;
 };
 
-class s_hm;
+struct s_hm;
 
 typedef void(*s_hm_enm_func)(const s_hm &map,
                              const void *key,
@@ -237,12 +210,10 @@ const unsigned int HMSz_257177 = 257177U;
 const unsigned int HMSz_517411 = 517411U;
 const unsigned int HMSz_1031117 = 1031117U;
 
-/** @brief Basic thread safe Hash-Map class.
+/** @brief Basic thread safe Hash-Map.
 */
 struct hm_node;
-class s_hm : public brep {
-    public:
-
+struct s_hm : public brep {
         explicit s_hm(uint32_t hash_size,
                       size_t elem_size,
                       size_t key_size,
@@ -264,8 +235,6 @@ class s_hm : public brep {
                       pthread_rwlockattr_t *attr = nullptr);
 
         ~s_hm();
-
-    public:
 
         RetCode clear();
 
@@ -321,7 +290,6 @@ class s_hm : public brep {
         void enm(const s_hm &map, s_hm_enm_func enum_f, void *ud) const;
         void enmbr(const s_hm &map, s_hm_enm_func_br enum_f, void *ud) const;
 
-    private:
         const obj_mng elem_manager_, key_manager_;
         uint32_t hash_size_;
         hm_node **buckets_;
@@ -332,9 +300,7 @@ class s_hm : public brep {
 /** @brief Basic Blocking-Queue class.
 */
 struct lnk_node;
-class b_qu : public brep {
-    public:
-
+struct b_qu : public brep {
         explicit b_qu(size_t elemsize,
                       uint32_t capacity = 0);
 
@@ -342,8 +308,6 @@ class b_qu : public brep {
                       uint32_t capacity = 0);
 
         ~b_qu();
-
-    public:
 
         bool is_empty() const {
             return elems_cnt() == 0;
@@ -398,7 +362,6 @@ class b_qu : public brep {
         void dq(void *copy);
         RetCode enq(const void *ptr);
 
-    private:
         obj_mng manager_;
         bool inifinite_cpcty_;
         uint32_t capacity_;
