@@ -1,21 +1,6 @@
 /*
- *
- * (C) 2017 - giuseppe.baccini@gmail.com
- *
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * vulgaris
+ * (C) 2018 - giuseppe.baccini@gmail.com
  *
  */
 
@@ -144,7 +129,7 @@ class p_tsk {
         @param sec
         @param nsec
 
-        @return RetCode_OK when target_status has been reached or outdated.
+        @return RetCode_OK when target_status has been reached.
                 RetCode_BDSTTS if this task has not been submitted.
                 RetCode_TMOUT if sec/nsec have been elapsed after invocation.
         */
@@ -321,10 +306,10 @@ class p_exec_srv {
         @param nsec
         @return
         */
-        RetCode await_for_status_reached_or_outdated(PEXEC_SERVICE_STATUS test,
-                                                     PEXEC_SERVICE_STATUS &current,
-                                                     time_t sec = -1,
-                                                     long nsec = 0);
+        RetCode await_for_status_reached(PEXEC_SERVICE_STATUS test,
+                                         PEXEC_SERVICE_STATUS &current,
+                                         time_t sec = -1,
+                                         long nsec = 0);
     private:
         unsigned int id_;
         PEXEC_SERVICE_STATUS status_;

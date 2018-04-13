@@ -1,21 +1,6 @@
 /*
- *
- * (C) 2017 - giuseppe.baccini@gmail.com
- *
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * vulgaris
+ * (C) 2018 - giuseppe.baccini@gmail.com
  *
  */
 
@@ -89,14 +74,12 @@ selector::~selector()
 RetCode selector::init(unsigned int srv_executors,
                        unsigned int cli_executors)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RET_ON_KO(srv_acceptor_.set_sockaddr_in(srv_sockaddr_in_))
     RET_ON_KO(inco_exec_srv_.init(srv_executors))
     RET_ON_KO(outg_exec_srv_.init(cli_executors))
     RET_ON_KO(create_UDP_notify_srv_sock())
     RET_ON_KO(connect_UDP_notify_cli_sock())
     set_status(SelectorStatus_INIT);
-    IFLOG(trc(TH_ID, LS_CLO, __func__))
     return RetCode_OK;
 }
 
@@ -119,10 +102,10 @@ RetCode selector::set_status(SelectorStatus status)
     return RetCode_OK;
 }
 
-RetCode selector::await_for_status_reached_or_outdated(SelectorStatus test,
-                                                       SelectorStatus &current,
-                                                       time_t sec,
-                                                       long nsec)
+RetCode selector::await_for_status_reached(SelectorStatus test,
+                                           SelectorStatus &current,
+                                           time_t sec,
+                                           long nsec)
 {
     scoped_mx smx(mon_);
     if(status_ <SelectorStatus_INIT) {
@@ -139,7 +122,7 @@ RetCode selector::await_for_status_reached_or_outdated(SelectorStatus test,
         }
     }
     current = status_;
-    IFLOG(log(rcode ? TL_WRN : TL_DBG, TH_ID, LS_CLO "test:%d [reached or outdated] current:%d", __func__,
+    IFLOG(log(rcode ? TL_WRN : TL_DBG, TH_ID, LS_CLO "test:%d [reached] current:%d", __func__,
               test,
               status_))
     return rcode;
@@ -216,13 +199,6 @@ RetCode selector::connect_UDP_notify_cli_sock()
     return RetCode_OK;
 }
 
-RetCode selector::evt_enqueue_and_notify(const selector_event *evt)
-{
-    RetCode rcode = RetCode_OK;
-    rcode = asynch_notify(evt);
-    return rcode;
-}
-
 RetCode selector::interrupt()
 {
     selector_event *interrupt = new selector_event(VLG_SELECTOR_Evt_Interrupt, nullptr);
@@ -265,14 +241,13 @@ RetCode selector::start_exec_services()
 {
     RetCode res = RetCode_OK;
     PEXEC_SERVICE_STATUS current = PEXEC_SERVICE_STATUS_ZERO;
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(peer_.personality_ == PeerPersonality_PURE_SERVER || peer_.personality_ == PeerPersonality_BOTH) {
         IFLOG(dbg(TH_ID, LS_TRL "[starting server side executor service]", __func__))
         if((res = inco_exec_srv_.start())) {
             IFLOG(cri(TH_ID, LS_CLO "[starting server side, last_err:%d]", __func__, res))
             SET_ERROR_AND_RETURRetCodeKO_ACT
         }
-        inco_exec_srv_.await_for_status_reached_or_outdated(PEXEC_SERVICE_STATUS_STARTED, current);
+        inco_exec_srv_.await_for_status_reached(PEXEC_SERVICE_STATUS_STARTED, current);
         IFLOG(dbg(TH_ID, LS_TRL "[server side executor service started]", __func__))
     }
     if(peer_.personality_ == PeerPersonality_PURE_CLIENT || peer_.personality_ == PeerPersonality_BOTH) {
@@ -281,17 +256,15 @@ RetCode selector::start_exec_services()
             IFLOG(cri(TH_ID, LS_CLO "[starting client side, last_err:%d]", __func__, res))
             SET_ERROR_AND_RETURRetCodeKO_ACT
         }
-        outg_exec_srv_.await_for_status_reached_or_outdated(PEXEC_SERVICE_STATUS_STARTED, current);
+        outg_exec_srv_.await_for_status_reached(PEXEC_SERVICE_STATUS_STARTED, current);
         IFLOG(dbg(TH_ID, LS_TRL "[client side executor service started]", __func__))
     }
-    IFLOG(trc(TH_ID, LS_CLO, __func__))
     return res;
 }
 
 RetCode selector::start_conn_objs()
 {
     RetCode res = RetCode_OK;
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(peer_.personality_ == PeerPersonality_PURE_SERVER || peer_.personality_ == PeerPersonality_BOTH) {
         if((res = srv_acceptor_.create_server_socket(srv_listen_socket_))) {
             IFLOG(cri(TH_ID, LS_CLO "[starting acceptor, last_err:%d]", __func__, res))
@@ -307,7 +280,6 @@ RetCode selector::start_conn_objs()
     FD_SET(udp_ntfy_srv_socket_, &read_FDs_);
     FD_SET(udp_ntfy_srv_socket_, &excep_FDs_);
     nfds_ = ((int)udp_ntfy_srv_socket_ > nfds_) ? (int)udp_ntfy_srv_socket_ : nfds_;
-    IFLOG(trc(TH_ID, LS_CLO, __func__))
     return res;
 }
 
@@ -981,14 +953,11 @@ RetCode selector::server_socket_shutdown()
     }
 #endif
 #endif
-    IFLOG(trc(TH_ID, LS_CLO, __func__))
     return RetCode_OK;
 }
 
 RetCode selector::stop_and_clean()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
-    RetCode rcode = RetCode_OK;
     if(peer_.personality_ == PeerPersonality_PURE_SERVER || peer_.personality_ == PeerPersonality_BOTH) {
         std::for_each(inco_connid_conn_map_.begin(), inco_connid_conn_map_.end(), [](auto &it) {
             if(it.second->get_status() != ConnectionStatus_DISCONNECTED) {
@@ -1022,25 +991,23 @@ RetCode selector::stop_and_clean()
     FD_ZERO(&read_FDs_);
     FD_ZERO(&write_FDs_);
     FD_ZERO(&excep_FDs_);
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
-    return rcode;
+    return RetCode_OK;
 }
 
 void *selector::run()
 {
     SelectorStatus current = SelectorStatus_UNDEF;
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(status_ != SelectorStatus_INIT && status_ != SelectorStatus_REQUEST_READY) {
         IFLOG(err(TH_ID, LS_CLO "[status_=%d, exp:2][BAD STATUS]", __func__, status_))
         SET_ERROR_AND_RETURNZERO_ACT;
     }
     do {
         IFLOG(dbg(TH_ID, LS_SEL"+wait for go-ready request+"))
-        await_for_status_reached_or_outdated(SelectorStatus_REQUEST_READY, current);
+        await_for_status_reached(SelectorStatus_REQUEST_READY, current);
         IFLOG(dbg(TH_ID, LS_SEL"+go ready requested, going ready+"))
         set_status(SelectorStatus_READY);
         IFLOG(dbg(TH_ID, LS_SEL"+wait for go-select request+"))
-        await_for_status_reached_or_outdated(SelectorStatus_REQUEST_SELECT, current);
+        await_for_status_reached(SelectorStatus_REQUEST_SELECT, current);
         IFLOG(dbg(TH_ID, LS_SEL"+go-select requested, going select+"))
         set_status(SelectorStatus_SELECT);
         timeval sel_timeout = sel_timeout_;

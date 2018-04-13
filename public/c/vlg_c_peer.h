@@ -1,22 +1,7 @@
 /*
- *
- * (C) 2017 - giuseppe.baccini@gmail.com
- *
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
+ * vulgaris
+ * (C) 2018 - giuseppe.baccini@gmail.com
+ * 
  */
 
 #ifndef VLG_C_PEER_H_
@@ -90,7 +75,7 @@ void peer_set_configured(peer *p, int configured);
 void peer_set_status_change_handler(peer *p, peer_status_change handler, void *ud);
 void peer_set_peer_on_incoming_connection_handler(peer *p, peer_on_incoming_connection_handler handler, void *ud);
 PeerStatus peer_get_status(peer *p);
-RetCode peer_await_for_status_reached_or_outdated(peer *p, PeerStatus test, PeerStatus *current, time_t sec, long nsec);
+RetCode peer_await_for_status_reached(peer *p, PeerStatus test, PeerStatus *current, time_t sec, long nsec);
 RetCode peer_await_for_status_change(peer *p, PeerStatus *peer_status, time_t sec, long nsec);
 RetCode peer_start(peer *p, int argc, char *argv[], int spawn_new_thread);
 RetCode peer_stop(peer *p, int force_disconnect);

@@ -1,21 +1,6 @@
 /*
- *
- * (C) 2017 - giuseppe.baccini@gmail.com
- *
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * vulgaris
+ * (C) 2018 - giuseppe.baccini@gmail.com
  *
  */
 
@@ -32,11 +17,9 @@ class peer_automa_th : public p_th {
         }
 
         virtual void *run() {
-            IFLOG(trc(TH_ID, LS_OPN, __func__))
             IFLOG(inf(TH_ID, LS_APL"#peer automa on this thread#"))
             peer_.running_cycle();
-            int stop_res = stop();
-            IFLOG(trc(TH_ID, LS_CLO"[res:%d]", __func__, stop_res))
+            stop();
             return 0;
         }
 
@@ -44,8 +27,6 @@ class peer_automa_th : public p_th {
         unsigned int id_;
         peer_automa &peer_;
 };
-
-// VLG_PEER_LFCYC
 
 void peer_automa::peer_param_clbk_ud(int pnum,
                                      const char *param,
@@ -59,8 +40,6 @@ void peer_automa::peer_param_clbk_ud(int pnum,
     }
     IFLOG(pln(" -%-20s %s", param, value ? value : ""))
 }
-
-// VLG_PEER_LFCYC CTORS - INIT - DESTROY
 
 static unsigned int peer_id = 0;
 
@@ -95,36 +74,30 @@ RetCode peer_automa::set_params_file_path_name(const char *file_path)
 
 RetCode peer_automa::early_init()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     if((peer_last_error_ = on_automa_early_init())) {
         IFLOG(err(TH_ID, LS_APL "#early init FAIL#"))
         return peer_last_error_;
     }
     peer_status_ = PeerStatus_EARLY;
     IFLOG(inf(TH_ID, LS_APL"#early init#"))
-    IFLOG(trc(TH_ID, LS_CLO, __func__))
     return RetCode_OK;
 }
 
-// STATUS
-
 RetCode peer_automa::set_status(PeerStatus peer_status)
 {
-    IFLOG(dbg(TH_ID, LS_OPN "[status:%d]", __func__, peer_status))
+    IFLOG(trc(TH_ID, LS_OPN "[status:%d]", __func__, peer_status))
     scoped_mx smx(peer_mon_);
     peer_status_ = peer_status;
     publ_.on_status_change(peer_status_);
     peer_mon_.notify_all();
-    IFLOG(dbg(TH_ID, LS_CLO, __func__))
     return RetCode_OK;
 }
 
-RetCode peer_automa::await_for_status_reached_or_outdated(PeerStatus test,
-                                                          PeerStatus &current,
-                                                          time_t sec,
-                                                          long nsec)
+RetCode peer_automa::await_for_status_reached(PeerStatus test,
+                                              PeerStatus &current,
+                                              time_t sec,
+                                              long nsec)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     scoped_mx smx(peer_mon_);
     if(peer_status_ < PeerStatus_INITIALIZED) {
         IFLOG(err(TH_ID, LS_CLO, __func__))
@@ -141,7 +114,7 @@ RetCode peer_automa::await_for_status_reached_or_outdated(PeerStatus test,
         }
     }
     current = peer_status_;
-    IFLOG(dbg(TH_ID, LS_CLO "test:%d [reached or outdated] current:%d",
+    IFLOG(dbg(TH_ID, LS_CLO "test:%d [reached] current:%d",
               __func__,
               test,
               peer_status_))
@@ -152,7 +125,6 @@ RetCode peer_automa::await_for_status_change(PeerStatus &peer_status,
                                              time_t sec,
                                              long nsec)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     scoped_mx smx(peer_mon_);
     if(peer_status_ < PeerStatus_INITIALIZED) {
         IFLOG(err(TH_ID, LS_CLO, __func__))
@@ -178,13 +150,10 @@ RetCode peer_automa::await_for_status_change(PeerStatus &peer_status,
 
 // MACHINE STATE
 
-//ACTIONS
-
 RetCode peer_automa::start(int argc,
                            char *argv[],
                            bool spawn_new_thread)
 {
-    IFLOG(trc(TH_ID, LS_OPN "[peer_id:%d]", __func__, peer_id_))
     if(peer_status_ != PeerStatus_EARLY && peer_status_ != PeerStatus_STOPPED) {
         IFLOG(err(TH_ID, LS_CLO "[res:%d]", __func__, RetCode_BADSTTS))
         return RetCode_BADSTTS;
@@ -232,13 +201,11 @@ RetCode peer_automa::start(int argc,
         IFLOG(inf(TH_ID, LS_APL"#peer automa on caller thread#"))
         peer_last_error_ = running_cycle();
     }
-    IFLOG(trc(TH_ID, LS_CLO, __func__))
     return RetCode_OK;
 }
 
 RetCode peer_automa::stop(bool force_disconnect)
 {
-    IFLOG(trc(TH_ID, LS_OPN "[peer_id:%d]", __func__, peer_id_))
     if(peer_status_ != PeerStatus_RUNNING) {
         IFLOG(err(TH_ID, LS_CLO "[res:%d]", __func__, RetCode_BADSTTS))
         return RetCode_BADSTTS;
@@ -253,7 +220,6 @@ RetCode peer_automa::stop(bool force_disconnect)
 
 RetCode peer_automa::running_cycle()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RetCode handlers_res = RetCode_OK;
     PeerStatus p_status = PeerStatus_ZERO;
     bool move_running = true;
@@ -299,7 +265,6 @@ RetCode peer_automa::running_cycle()
                 return RetCode_EXIT;
         }
     } while(peer_status_ != PeerStatus_STOPPED);
-    IFLOG(trc(TH_ID, LS_CLO, __func__))
     return RetCode_OK;
 }
 

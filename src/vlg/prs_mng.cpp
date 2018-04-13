@@ -195,7 +195,6 @@ RetCode persistence_manager_impl::load_pers_driver_dyna(const char *drivers[],
         }
         get_instance().drivname_driv_hm_[drivers[i]] = driv;
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
@@ -211,7 +210,6 @@ RetCode persistence_manager_impl::load_pers_driver_dyna(std::set<std::string> &d
         }
         get_instance().drivname_driv_hm_[it->c_str()] = driv;
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
@@ -219,7 +217,6 @@ RetCode persistence_manager_impl::load_pers_driver(persistence_driver *drivers[]
                                                    int drivers_num)
 {
     IFLOG(trc(TH_ID, LS_OPN "[drivers_num:%d]", __func__, drivers_num))
-    RetCode rcode = RetCode_OK;
     for(int i = 0; i < drivers_num; i++) {
         if(get_instance().drivname_driv_hm_.find(drivers[i]->get_driver_name()) != get_instance().drivname_driv_hm_.end()) {
             IFLOG(wrn(TH_ID, LS_TRL "[driver already loaded, skipping:%s]", __func__, drivers[i]))
@@ -227,8 +224,7 @@ RetCode persistence_manager_impl::load_pers_driver(persistence_driver *drivers[]
         }
         get_instance().drivname_driv_hm_[drivers[i]->get_driver_name()] = drivers[i];
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
-    return rcode;
+    return RetCode_OK;
 }
 
 persistence_manager_impl::persistence_manager_impl()
@@ -243,7 +239,6 @@ RetCode persistence_manager_impl::map_classid_driver(unsigned int nclass_id,
 
 RetCode persistence_manager_impl::start_all_drivers()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RetCode rcode = RetCode_OK;
     for(auto it = drivname_driv_hm_.begin(); it != drivname_driv_hm_.end(); it++) {
         if((rcode = it->second->start_all_pools())) {
@@ -540,13 +535,11 @@ RetCode persistence_manager_impl::load_cfg(const char *filename)
     std::string data;
     RET_ON_KO(load_file(fdesc, data))
     RET_ON_KO(parse_data(data))
-    IFLOG(trc(TH_ID, LS_CLO, __func__))
     return RetCode_OK;
 }
 
 RetCode persistence_manager_impl::load_cfg()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RetCode rcode = RetCode_OK;
     if(strlen(pers_cfg_file_path_name)) {
         rcode = load_cfg(pers_cfg_file_path_name);

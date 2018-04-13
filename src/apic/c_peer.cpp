@@ -1,22 +1,7 @@
 /*
- *
- * (C) 2017 - giuseppe.baccini@gmail.com
- *
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
+ * vulgaris
+ * (C) 2018 - giuseppe.baccini@gmail.com
+ * 
  */
 
 #include "vlg_peer.h"
@@ -728,13 +713,13 @@ extern "C" {
         static_cast<c_peer *>(p)->sic_wr_ud_ = ud;
     }
 
-    RetCode peer_await_for_status_reached_or_outdated(peer *p,
-                                                      PeerStatus test,
-                                                      PeerStatus *current,
-                                                      time_t sec,
-                                                      long nsec)
+    RetCode peer_await_for_status_reached(peer *p,
+                                          PeerStatus test,
+                                          PeerStatus *current,
+                                          time_t sec,
+                                          long nsec)
     {
-        return p->await_for_status_reached_or_outdated(test, *current, sec, nsec);
+        return p->await_for_status_reached(test, *current, sec, nsec);
     }
 
     RetCode peer_await_for_status_change(peer *p,

@@ -1,21 +1,6 @@
 /*
- *
- * (C) 2017 - giuseppe.baccini@gmail.com
- *
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * vulgaris
+ * (C) 2018 - giuseppe.baccini@gmail.com
  *
  */
 
@@ -71,12 +56,11 @@ tx_impl::tx_impl(outgoing_transaction &publ) :
     opubl_(&publ)
 {}
 
-RetCode tx_impl::await_for_status_reached_or_outdated(TransactionStatus test,
-                                                      TransactionStatus &current,
-                                                      time_t sec,
-                                                      long nsec)
+RetCode tx_impl::await_for_status_reached(TransactionStatus test,
+                                          TransactionStatus &current,
+                                          time_t sec,
+                                          long nsec)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     scoped_mx smx(mon_);
     if(status_ < TransactionStatus_INITIALIZED) {
         IFLOG(err(TH_ID, LS_CLO, __func__))
@@ -93,7 +77,7 @@ RetCode tx_impl::await_for_status_reached_or_outdated(TransactionStatus test,
         }
     }
     current = status_;
-    IFLOG(log(rcode ? TL_WRN : TL_DBG, TH_ID, LS_CLO "test:%d [reached or outdated] current:%d",
+    IFLOG(log(rcode ? TL_WRN : TL_DBG, TH_ID, LS_CLO "test:%d [reached] current:%d",
               __func__,
               test,
               status_))
@@ -102,7 +86,6 @@ RetCode tx_impl::await_for_status_reached_or_outdated(TransactionStatus test,
 
 RetCode tx_impl::await_for_closure(time_t sec, long nsec)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     scoped_mx smx(mon_);
     if(status_ < TransactionStatus_INITIALIZED) {
         IFLOG(err(TH_ID, LS_CLO, __func__))
@@ -144,7 +127,6 @@ void tx_impl::set_result_obj(const nclass &val)
 
 RetCode tx_impl::set_flying()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(status_ != TransactionStatus_INITIALIZED) {
         IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
@@ -154,7 +136,6 @@ RetCode tx_impl::set_flying()
               txid_.txsvid,
               txid_.txcnid,
               txid_.txprid))
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     set_status(TransactionStatus_FLYING);
     return RetCode_OK;
 }
@@ -255,7 +236,6 @@ inline void tx_impl::trace_tx_closure(const char *tx_res_str)
 
 RetCode tx_impl::set_closed()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(status_ != TransactionStatus_FLYING) {
         IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
@@ -268,13 +248,11 @@ RetCode tx_impl::set_closed()
     } else {
         opubl_->on_close();
     }
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     return RetCode_OK;
 }
 
 RetCode tx_impl::set_aborted()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     tx_res_ = TransactionResult_ABORTED;
     const char *tx_res_str = TX_RES_ABORTED;
     trace_tx_closure(tx_res_str);
@@ -284,13 +262,11 @@ RetCode tx_impl::set_aborted()
     } else {
         opubl_->on_close();
     }
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     return RetCode_OK;
 }
 
 RetCode tx_impl::set_status(TransactionStatus status)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     scoped_mx smx(mon_);
     status_ = status;
     if(ipubl_) {
@@ -299,7 +275,6 @@ RetCode tx_impl::set_status(TransactionStatus status)
         opubl_->on_status_change(status_);
     }
     mon_.notify_all();
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     return RetCode_OK;
 }
 
@@ -330,7 +305,6 @@ void incoming_transaction_impl::set_request_obj_on_request(nclass &val)
 
 RetCode incoming_transaction_impl::send_response()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RetCode rcode = RetCode_OK;
     if(status_ != TransactionStatus_FLYING) {
         IFLOG(err(TH_ID, LS_CLO, __func__))
@@ -352,11 +326,10 @@ RetCode incoming_transaction_impl::send_response()
     gbb->flip();
     RET_ON_KO(conn_->pkt_sending_q_.put(&gbb))
     selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, conn_sh_);
-    rcode = conn_->peer_->selector_.evt_enqueue_and_notify(evt);
+    rcode = conn_->peer_->selector_.asynch_notify(evt);
     if(rcode) {
         set_status(TransactionStatus_ERROR);
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
@@ -377,14 +350,12 @@ outgoing_transaction_impl::~outgoing_transaction_impl()
 
 RetCode outgoing_transaction_impl::re_new()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(status_ == TransactionStatus_FLYING) {
         IFLOG(err(TH_ID, LS_CLO "[transaction is flying, cannot renew]", __func__))
         return RetCode_BADSTTS;
     }
     conn_->impl_->next_tx_id(txid_);
     set_status(TransactionStatus_INITIALIZED);
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     return RetCode_OK;
 }
 
@@ -399,7 +370,6 @@ void outgoing_transaction_impl::set_result_obj_on_response(nclass &val)
 
 RetCode outgoing_transaction_impl::send()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RetCode rcode = RetCode_OK;
     if(status_ != TransactionStatus_INITIALIZED) {
         IFLOG(err(TH_ID, LS_CLO, __func__))
@@ -441,10 +411,9 @@ RetCode outgoing_transaction_impl::send()
     gbb->flip();
     RET_ON_KO(conn_->impl_->pkt_sending_q_.put(&gbb))
     selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, conn_->impl_.get());
-    if((rcode = conn_->impl_->peer_->selector_.evt_enqueue_and_notify(evt))) {
+    if((rcode = conn_->impl_->peer_->selector_.asynch_notify(evt))) {
         set_status(TransactionStatus_ERROR);
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 

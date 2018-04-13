@@ -1,21 +1,6 @@
 /*
- *
- * (C) 2017 - giuseppe.baccini@gmail.com
- *
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * vulgaris
+ * (C) 2018 - giuseppe.baccini@gmail.com
  *
  */
 
@@ -189,7 +174,7 @@ void *p_exectr::run()
         set_status(PEXECUTOR_STATUS_ERROR);
         return (void *)1;
     }
-    eserv_.await_for_status_reached_or_outdated(PEXEC_SERVICE_STATUS_STARTED, eserv_status);
+    eserv_.await_for_status_reached(PEXEC_SERVICE_STATUS_STARTED, eserv_status);
     if(eserv_status != PEXEC_SERVICE_STATUS_STARTED) {
         IFLOG(err(TH_ID, LS_TRL "[aborting] [status:%d]", __func__, eserv_.get_status()))
         return (void *)1;
@@ -282,7 +267,6 @@ RetCode p_exec_srv::init(unsigned int executor_num)
         }
         RET_ON_KO(set_status(PEXEC_SERVICE_STATUS_INIT))
     }
-    IFLOG(trc(TH_ID, LS_CLO, __func__))
     return RetCode_OK;
 }
 
@@ -292,13 +276,11 @@ RetCode p_exec_srv::set_status(PEXEC_SERVICE_STATUS status)
     scoped_mx smx(mon_);
     status_ = status;
     mon_.notify_all();
-    IFLOG(trc(TH_ID, LS_CLO, __func__))
     return RetCode_OK;
 }
 
 RetCode p_exec_srv::start()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(status_ != PEXEC_SERVICE_STATUS_INIT && status_ != PEXEC_SERVICE_STATUS_STOPPED) {
         IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
@@ -308,14 +290,13 @@ RetCode p_exec_srv::start()
         exec_pool_[i]->start();
     }
     RET_ON_KO(set_status(PEXEC_SERVICE_STATUS_STARTED))
-    IFLOG(trc(TH_ID, LS_CLO, __func__))
     return RetCode_OK;
 }
 
-RetCode p_exec_srv::await_for_status_reached_or_outdated(PEXEC_SERVICE_STATUS test,
-                                                         PEXEC_SERVICE_STATUS &current,
-                                                         time_t sec,
-                                                         long nsec)
+RetCode p_exec_srv::await_for_status_reached(PEXEC_SERVICE_STATUS test,
+                                             PEXEC_SERVICE_STATUS &current,
+                                             time_t sec,
+                                             long nsec)
 {
     RetCode rcode = RetCode_OK;
     scoped_mx smx(mon_);
@@ -333,7 +314,7 @@ RetCode p_exec_srv::await_for_status_reached_or_outdated(PEXEC_SERVICE_STATUS te
         }
     }
     current = status_;
-    IFLOG(log(rcode ? TL_WRN : TL_DBG, TH_ID, LS_CLO "test:%d [reached or outdated] current:%d",
+    IFLOG(log(rcode ? TL_WRN : TL_DBG, TH_ID, LS_CLO "test:%d [reached] current:%d",
               __func__,
               test,
               status_))
@@ -377,17 +358,13 @@ RetCode p_exec_srv::await_termination(time_t sec, long nsec)
 
 RetCode p_exec_srv::shutdown()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RET_ON_KO(set_status(PEXEC_SERVICE_STATUS_STOPPING))
-    IFLOG(trc(TH_ID, LS_CLO, __func__))
     return RetCode_OK;
 }
 
 RetCode p_exec_srv::terminated()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RET_ON_KO(set_status(PEXEC_SERVICE_STATUS_STOPPED))
-    IFLOG(trc(TH_ID, LS_CLO, __func__))
     return RetCode_OK;
 }
 

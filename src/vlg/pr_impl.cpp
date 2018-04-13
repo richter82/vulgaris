@@ -1,21 +1,6 @@
 /*
- *
- * (C) 2017 - giuseppe.baccini@gmail.com
- *
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * vulgaris
+ * (C) 2018 - giuseppe.baccini@gmail.com
  *
  */
 
@@ -133,7 +118,6 @@ RetCode peer_impl::set_params_file_dir(const char *dir)
 
 RetCode peer_impl::init()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RetCode rcode = RetCode_OK;
     RET_ON_KO(selector_.init(srv_exectrs_, cli_exectrs_))
     RET_ON_KO(srv_sbs_exec_serv_.init(srv_sbs_exectrs_))
@@ -169,7 +153,6 @@ RetCode peer_impl::init()
 
 RetCode peer_impl::init_dyna()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RetCode rcode = RetCode_OK;
     IFLOG(dbg(TH_ID, LS_TRL "[extending model]", __func__))
     if(model_map_.size() > 0) {
@@ -226,7 +209,6 @@ RetCode peer_impl::next_connid(unsigned int &connid)
 
 RetCode peer_impl::extend_model(nentity_manager &nem)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RetCode rcode = RetCode_OK;
     if((rcode = nem_.extend(nem))) {
         IFLOG(cri(TH_ID, LS_MDL "[failed to extend nem][res:%d]", __func__, rcode))
@@ -246,13 +228,10 @@ RetCode peer_impl::extend_model(const char *model_name)
     return rcode;
 }
 
-RetCode peer_impl::new_incoming_connection(std::shared_ptr<incoming_connection> &new_connection,
-                                           unsigned int connid)
+RetCode peer_impl::new_incoming_connection(std::shared_ptr<incoming_connection> &new_connection, unsigned int connid)
 {
-    IFLOG(trc(TH_ID, LS_OPN "[connid:%d]", __func__, connid))
     incoming_connection &publ = inco_conn_factory_->make_incoming_connection(publ_);
     new_connection.reset(&publ);
-    IFLOG(trc(TH_ID, LS_CLO, __func__))
     return RetCode_OK;
 }
 
@@ -403,7 +382,7 @@ RetCode peer_impl::on_automa_start()
             IFLOG(cri(TH_ID, LS_CLO "[starting subscription executor service][res:%d]", __func__, rcode))
             return rcode;
         }
-        srv_sbs_exec_serv_.await_for_status_reached_or_outdated(PEXEC_SERVICE_STATUS_STARTED, current_exc_srv);
+        srv_sbs_exec_serv_.await_for_status_reached(PEXEC_SERVICE_STATUS_STARTED, current_exc_srv);
     }
     //persitence driv. bgn
     if(pers_enabled_) {
@@ -436,9 +415,9 @@ RetCode peer_impl::on_automa_start()
         return RetCode_PTHERR;
     }
     IFLOG(dbg(TH_ID, LS_TRL "[wait selector go init]", __func__))
-    RET_ON_KO(selector_.await_for_status_reached_or_outdated(SelectorStatus_INIT, current,
-                                                             VLG_INT_AWT_TIMEOUT,
-                                                             0))
+    RET_ON_KO(selector_.await_for_status_reached(SelectorStatus_INIT, current,
+                                                 VLG_INT_AWT_TIMEOUT,
+                                                 0))
     if(!rcode) {
         rcode = publ_.on_starting();
     }
@@ -457,10 +436,10 @@ RetCode peer_impl::on_automa_move_running()
     IFLOG(dbg(TH_ID, LS_TRL "[request selector go ready]", __func__))
     selector_.set_status(SelectorStatus_REQUEST_READY);
     IFLOG(dbg(TH_ID, LS_TRL "[wait selector go ready]", __func__))
-    RET_ON_KO(selector_.await_for_status_reached_or_outdated(SelectorStatus_READY,
-                                                             current,
-                                                             VLG_INT_AWT_TIMEOUT,
-                                                             0))
+    RET_ON_KO(selector_.await_for_status_reached(SelectorStatus_READY,
+                                                 current,
+                                                 VLG_INT_AWT_TIMEOUT,
+                                                 0))
     IFLOG(dbg(TH_ID, LS_TRL "[request selector go selecting]", __func__))
     selector_.set_status(SelectorStatus_REQUEST_SELECT);
     if(!rcode) {
@@ -482,7 +461,7 @@ RetCode peer_impl::on_automa_stop()
     selector_.set_status(SelectorStatus_REQUEST_STOP);
     selector_.interrupt();
     SelectorStatus current = SelectorStatus_UNDEF;
-    selector_.await_for_status_reached_or_outdated(SelectorStatus_STOPPED, current);
+    selector_.await_for_status_reached(SelectorStatus_STOPPED, current);
     IFLOG(dbg(TH_ID, LS_TRL "[selector stopped]", __func__))
     selector_.set_status(SelectorStatus_INIT);
     srv_sbs_exec_serv_.shutdown();
@@ -508,7 +487,6 @@ RetCode peer_impl::recv_and_route_pkt(outgoing_connection &conn,
                                       vlg_hdr_rec *hdr,
                                       g_bbuf *body)
 {
-    IFLOG(trc(TH_ID, LS_OPN "[connid:%d]", __func__, conn.get_id()))
     RetCode rcode = RetCode_OK;
     switch(hdr->phdr.pkttyp) {
         case VLG_PKT_TSTREQ_ID:
@@ -542,7 +520,6 @@ RetCode peer_impl::recv_and_route_pkt(outgoing_connection &conn,
         default:
             break;
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
@@ -550,7 +527,6 @@ RetCode peer_impl::recv_and_route_pkt(std::shared_ptr<incoming_connection> &inco
                                       vlg_hdr_rec *hdr,
                                       g_bbuf *body)
 {
-    IFLOG(trc(TH_ID, LS_OPN "[connid:%d]", __func__, inco_conn->get_id()))
     RetCode rcode = RetCode_OK;
     switch(hdr->phdr.pkttyp) {
         case VLG_PKT_CONREQ_ID:
@@ -580,7 +556,6 @@ RetCode peer_impl::recv_and_route_pkt(std::shared_ptr<incoming_connection> &inco
         default:
             break;
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
@@ -614,10 +589,8 @@ void per_nclass_id_conn_set::next_time_stamp(unsigned int &ts0,
 
 RetCode peer_impl::add_subscriber(incoming_subscription_impl *sbsdesc)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
-    RetCode rcode = RetCode_OK;
     per_nclass_id_conn_set *sdrec = nullptr;
-    if((rcode = srv_sbs_nclassid_condesc_set_.get(&sbsdesc->nclassid_, &sdrec))) {
+    if(srv_sbs_nclassid_condesc_set_.get(&sbsdesc->nclassid_, &sdrec)) {
         sdrec = new per_nclass_id_conn_set();
         RET_ON_KO(srv_sbs_nclassid_condesc_set_.put(&sbsdesc->nclassid_, &sdrec))
     }
@@ -625,32 +598,27 @@ RetCode peer_impl::add_subscriber(incoming_subscription_impl *sbsdesc)
     IFLOG(dbg(TH_ID, LS_SBS"[added subscriber: connid:%d, nclass_id:%d]",
               sbsdesc->conn_->connid_,
               sbsdesc->nclassid_))
-    rcode = RetCode_OK;
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
-    return rcode;
+    return RetCode_OK;
 }
 
 RetCode peer_impl::remove_subscriber(incoming_subscription_impl *sbsdesc)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
-    RetCode rcode = RetCode_OK;
     per_nclass_id_conn_set *sdrec = nullptr;
-    if((rcode = srv_sbs_nclassid_condesc_set_.get(&sbsdesc->nclassid_, &sdrec))) {
+    if(srv_sbs_nclassid_condesc_set_.get(&sbsdesc->nclassid_, &sdrec)) {
         IFLOG(cri(TH_ID, LS_CLO"[subscriber: connid:%d not found for nclass_id:%d]",
                   __func__,
                   sbsdesc->conn_->connid_,
                   sbsdesc->nclassid_))
         return RetCode_GENERR;
     }
-    if((rcode = sdrec->connid_condesc_set_.remove(&sbsdesc->conn_->connid_, nullptr))) {
+    if(sdrec->connid_condesc_set_.remove(&sbsdesc->conn_->connid_, nullptr)) {
         IFLOG(cri(TH_ID, LS_CLO"[subscriber: connid:%d not found for nclass_id:%d]",
                   __func__,
                   sbsdesc->conn_->connid_,
                   sbsdesc->nclassid_))
         return RetCode_GENERR;
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
-    return rcode;
+    return RetCode_OK;
 }
 
 // VLG_PEER_SBS_TASK
@@ -726,10 +694,8 @@ class peer_sbs_task : public p_tsk {
         s_hm &connid_condesc_set_;  //connid --> condesc [uint --> sh_ptr]
 };
 
-RetCode peer_impl::get_per_nclassid_helper_rec(unsigned int nclass_id,
-                                               per_nclass_id_conn_set **out)
+RetCode peer_impl::get_per_nclassid_helper_rec(unsigned int nclass_id, per_nclass_id_conn_set **out)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RetCode rcode = RetCode_OK;
     per_nclass_id_conn_set *sdrec = nullptr;
     if((rcode = srv_sbs_nclassid_condesc_set_.get(&nclass_id, &sdrec))) {
@@ -737,14 +703,12 @@ RetCode peer_impl::get_per_nclassid_helper_rec(unsigned int nclass_id,
         rcode = srv_sbs_nclassid_condesc_set_.put(&nclass_id, &sdrec);
     }
     *out = sdrec;
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
 RetCode peer_impl::submit_sbs_evt_task(subscription_event_impl &sbs_evt,
                                        s_hm &connid_condesc_set)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RetCode rcode = RetCode_OK;
     p_tsk *sbs_tsk = new peer_sbs_task(*this,
                                        sbs_evt,
@@ -752,7 +716,6 @@ RetCode peer_impl::submit_sbs_evt_task(subscription_event_impl &sbs_evt,
     if((rcode = srv_sbs_exec_serv_.submit(sbs_tsk))) {
         IFLOG(cri(TH_ID, LS_TRL "[submit failed][res:%d]", __func__, rcode))
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 

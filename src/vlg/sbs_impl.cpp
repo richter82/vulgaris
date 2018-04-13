@@ -151,7 +151,6 @@ RetCode sbs_impl::set_error()
 
 RetCode sbs_impl::set_status(SubscriptionStatus status)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     scoped_mx smx(mon_);
     status_ = status;
     if(ipubl_) {
@@ -160,16 +159,14 @@ RetCode sbs_impl::set_status(SubscriptionStatus status)
         opubl_->on_status_change(status_);
     }
     mon_.notify_all();
-    IFLOG(trc(TH_ID, LS_CLO, __func__))
     return RetCode_OK;
 }
 
-RetCode sbs_impl::await_for_status_reached_or_outdated(SubscriptionStatus test,
-                                                       SubscriptionStatus &current,
-                                                       time_t sec,
-                                                       long nsec)
+RetCode sbs_impl::await_for_status_reached(SubscriptionStatus test,
+                                           SubscriptionStatus &current,
+                                           time_t sec,
+                                           long nsec)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     scoped_mx smx(mon_);
     if(status_ < SubscriptionStatus_INITIALIZED) {
         IFLOG(err(TH_ID, LS_CLO, __func__))
@@ -186,7 +183,7 @@ RetCode sbs_impl::await_for_status_reached_or_outdated(SubscriptionStatus test,
         }
     }
     current = status_;
-    IFLOG(log(rcode ? TL_WRN : TL_DBG, TH_ID, LS_CLO "test:%d [reached or outdated] current:%d",
+    IFLOG(log(rcode ? TL_WRN : TL_DBG, TH_ID, LS_CLO "test:%d [reached] current:%d",
               __func__,
               test,
               status_))
@@ -198,7 +195,6 @@ RetCode sbs_impl::await_for_start_result(SubscriptionResponse &sbs_start_result,
                                          time_t sec,
                                          long nsec)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     scoped_mx smx(mon_);
     if(status_ < SubscriptionStatus_INITIALIZED) {
         IFLOG(err(TH_ID, LS_CLO, __func__))
@@ -233,7 +229,6 @@ RetCode sbs_impl::await_for_stop_result(SubscriptionResponse &sbs_stop_result,
                                         time_t sec,
                                         long nsec)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     scoped_mx smx(mon_);
     if(status_ < SubscriptionStatus_INITIALIZED) {
         IFLOG(err(TH_ID, LS_CLO, __func__))
@@ -265,17 +260,14 @@ RetCode sbs_impl::await_for_stop_result(SubscriptionResponse &sbs_stop_result,
 
 RetCode sbs_impl::notify_for_start_stop_result()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     scoped_mx smx(mon_);
     start_stop_evt_occur_ = true;
     mon_.notify_all();
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     return RetCode_OK;
 }
 
 RetCode sbs_impl::stop()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(status_ != SubscriptionStatus_STARTED) {
         IFLOG(err(TH_ID, LS_CLO "[status:%d]", __func__, status_))
         return RetCode_BADSTTS;
@@ -287,11 +279,10 @@ RetCode sbs_impl::stop()
     gbb->flip();
     RET_ON_KO(conn_->pkt_sending_q_.put(&gbb))
     selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, conn_);
-    rcode = conn_->peer_->selector_.evt_enqueue_and_notify(evt);
+    rcode = conn_->peer_->selector_.asynch_notify(evt);
     if(rcode) {
         set_status(SubscriptionStatus_ERROR);
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
@@ -344,7 +335,6 @@ inline void incoming_subscription_impl::set_sbs_last_ack_evt_id()
 
 RetCode incoming_subscription_impl::send_start_response()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RetCode rcode = RetCode_OK;
     g_bbuf *gbb = new g_bbuf();
     build_PKT_SBSRES(sbresl_,
@@ -355,11 +345,10 @@ RetCode incoming_subscription_impl::send_start_response()
     gbb->flip();
     RET_ON_KO(conn_->pkt_sending_q_.put(&gbb))
     selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, conn_sh_);
-    rcode = conn_->peer_->selector_.evt_enqueue_and_notify(evt);
+    rcode = conn_->peer_->selector_.asynch_notify(evt);
     if(rcode) {
         set_status(SubscriptionStatus_ERROR);
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
@@ -388,7 +377,7 @@ RetCode incoming_subscription_impl::send_event(std::shared_ptr<subscription_even
     RET_ON_KO(conn_->pkt_sending_q_.put(&gbb))
     selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, conn_sh_);
     set_sbs_to_ack_evt_id(sbs_evt->impl_->sbs_evtid_);
-    rcode = conn_->peer_->selector_.evt_enqueue_and_notify(evt);
+    rcode = conn_->peer_->selector_.asynch_notify(evt);
     if(rcode) {
         set_status(SubscriptionStatus_ERROR);
     }
@@ -666,7 +655,6 @@ outgoing_subscription_impl::~outgoing_subscription_impl()
 
 RetCode outgoing_subscription_impl::set_req_sent()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     IFLOG(inf(TH_ID,
               LS_SBO"[CONNID:%010u-REQID:%010u][SBSTYP:%d, SBSMOD:%d, FLOTYP:%d, DWLTYP:%d, ENCTYP:%d, NCLSSID:%d, TMSTP0:%u, TMSTP1:%u]",
               conn_->connid_,
@@ -679,14 +667,12 @@ RetCode outgoing_subscription_impl::set_req_sent()
               nclassid_,
               open_tmstp0_,
               open_tmstp1_))
-    IFLOG(trc(TH_ID, LS_CLO, __func__))
     set_status(SubscriptionStatus_REQUEST_SENT);
     return RetCode_OK;
 }
 
 RetCode outgoing_subscription_impl::start()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(status_ != SubscriptionStatus_INITIALIZED && status_ != SubscriptionStatus_STOPPED) {
         IFLOG(err(TH_ID, LS_CLO "[status:%d]", __func__, status_))
         return RetCode_BADSTTS;
@@ -699,7 +685,6 @@ RetCode outgoing_subscription_impl::start()
     if((rcode = send_start_request())) {
         IFLOG(err(TH_ID, LS_TRL "[send request failed][res:%d]", __func__, rcode))
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
@@ -724,7 +709,6 @@ RetCode outgoing_subscription_impl::start(SubscriptionType sbscr_type,
               nclass_id,
               start_timestamp_0,
               start_timestamp_1))
-    RetCode rcode = RetCode_OK;
     if(status_ != SubscriptionStatus_INITIALIZED && status_ != SubscriptionStatus_STOPPED) {
         IFLOG(err(TH_ID, LS_CLO "[status:%d]", __func__, status_))
         return RetCode_BADSTTS;
@@ -737,14 +721,11 @@ RetCode outgoing_subscription_impl::start(SubscriptionType sbscr_type,
     nclassid_ = nclass_id;
     open_tmstp0_ = start_timestamp_0;
     open_tmstp1_ = start_timestamp_1;
-    rcode = start();
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
-    return rcode;
+    return start();
 }
 
 RetCode outgoing_subscription_impl::send_start_request()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RetCode rcode = RetCode_OK;
     set_req_sent();
     start_stop_evt_occur_ = false;
@@ -763,10 +744,9 @@ RetCode outgoing_subscription_impl::send_start_request()
     gbb->flip();
     RET_ON_KO(conn_->pkt_sending_q_.put(&gbb))
     selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, conn_);
-    if((rcode = conn_->peer_->selector_.evt_enqueue_and_notify(evt))) {
+    if((rcode = conn_->peer_->selector_.asynch_notify(evt))) {
         set_status(SubscriptionStatus_ERROR);
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
@@ -778,7 +758,7 @@ RetCode outgoing_subscription_impl::send_event_ack(unsigned int evtid)
     gbb->flip();
     RET_ON_KO(conn_->pkt_sending_q_.put(&gbb))
     selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, conn_);
-    rcode = conn_->peer_->selector_.evt_enqueue_and_notify(evt);
+    rcode = conn_->peer_->selector_.asynch_notify(evt);
     if(rcode) {
         set_status(SubscriptionStatus_ERROR);
     }

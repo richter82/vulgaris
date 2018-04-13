@@ -1,22 +1,7 @@
 /*
- *
- * (C) 2017 - giuseppe.baccini@gmail.com
- *
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
+ * vulgaris
+ * (C) 2018 - giuseppe.baccini@gmail.com
+ * 
  */
 
 #ifndef VLG_C_SUBSCRIPTION_H_
@@ -68,7 +53,7 @@ void inco_subscription_set_subscription_download_type(incoming_subscription *sbs
 void inco_subscription_set_nclass_encode(incoming_subscription *sbs, Encode nclass_encode);
 void inco_subscription_set_open_timestamp_0(incoming_subscription *sbs, unsigned int ts0);
 void inco_subscription_set_open_timestamp_1(incoming_subscription *sbs, unsigned int ts1);
-RetCode inco_subscription_await_for_status_reached_or_outdated(incoming_subscription *sbs, SubscriptionStatus test, SubscriptionStatus *current, time_t sec, long nsec);
+RetCode inco_subscription_await_for_status_reached(incoming_subscription *sbs, SubscriptionStatus test, SubscriptionStatus *current, time_t sec, long nsec);
 void inco_subscription_set_status_change_handler(incoming_subscription *sbs, inco_subscription_status_change handler, void *ud);
 void inco_subscription_set_accept_distribution_handler(incoming_subscription *sbs, inco_subscription_accept_distribution handler, void *ud);
 void inco_subscription_set_on_stop_handler(incoming_subscription *sbs, inco_subscription_on_stop handler, void *ud);
@@ -110,7 +95,7 @@ void outg_subscription_set_subscription_download_type(outgoing_subscription *sbs
 void outg_subscription_set_nclass_encode(outgoing_subscription *sbs, Encode nclass_encode);
 void outg_subscription_set_open_timestamp_0(outgoing_subscription *sbs, unsigned int ts0);
 void outg_subscription_set_open_timestamp_1(outgoing_subscription *sbs, unsigned int ts1);
-RetCode outg_subscription_await_for_status_reached_or_outdated(outgoing_subscription *sbs, SubscriptionStatus test, SubscriptionStatus *current, time_t sec, long nsec);
+RetCode outg_subscription_await_for_status_reached(outgoing_subscription *sbs, SubscriptionStatus test, SubscriptionStatus *current, time_t sec, long nsec);
 void outg_subscription_set_status_change_handler(outgoing_subscription *sbs, outg_subscription_status_change handler, void *ud);
 void outg_subscription_set_event_notify_handler(outgoing_subscription *sbs, outg_subscription_notify_event handler, void *ud);
 void outg_subscription_set_on_start_handler(outgoing_subscription *sbs, outg_subscription_on_start handler, void *ud);
