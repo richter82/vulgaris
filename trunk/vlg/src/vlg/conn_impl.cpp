@@ -358,7 +358,6 @@ RetCode conn_impl::socket_excptn_hndl(long sock_op_res)
 
 RetCode conn_impl::send_single_pkt(g_bbuf *pkt_bbuf)
 {
-    std::string raw_pkt;
     if(!pkt_bbuf->limit() || !pkt_bbuf) {
         IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADARG;
@@ -382,8 +381,7 @@ RetCode conn_impl::send_single_pkt(g_bbuf *pkt_bbuf)
             remaining -= bsent;
         }
         if(remaining) {
-            if(((rcode = socket_excptn_hndl(bsent)) != RetCode_SCKEAGN) ||
-                    (rcode != RetCode_SCKWBLK)) {
+            if(((rcode = socket_excptn_hndl(bsent)) != RetCode_SCKEAGN) || (rcode != RetCode_SCKWBLK)) {
                 rcode = RetCode_OK;
                 stay = false;
             }
@@ -391,12 +389,14 @@ RetCode conn_impl::send_single_pkt(g_bbuf *pkt_bbuf)
             break;
         }
     }
-    IFLOG(trc(TH_ID, LS_CLO "[socket:%d, sent:%d, remaining:%d][res:%d]",
-              __func__,
-              socket_,
-              tot_bsent,
-              remaining,
-              rcode))
+    if(v_log_ && v_log_->level() <= TL_TRC) {
+        v_log_->trc(TH_ID, LS_CLO "[socket:%d, sent:%d, remaining:%d][res:%d]",
+                    __func__,
+                    socket_,
+                    tot_bsent,
+                    remaining,
+                    rcode);
+    }
     return rcode;
 }
 

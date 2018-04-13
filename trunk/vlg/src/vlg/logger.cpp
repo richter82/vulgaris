@@ -288,14 +288,12 @@ struct appender_impl {
         size_t rended_msg_pln(const char *msg,
                               char *buff,
                               uint16_t *buff_len) {
-            //timestamp
-            char *msg_b = buff;
             uint16_t msg_b_idx = 0;
             //usr message
             if(msg && msg[0]) {
-                msg_b_idx += sprintf(&msg_b[msg_b_idx], "%s", msg);
+                msg_b_idx += sprintf(&buff[msg_b_idx], "%s", msg);
             }
-            msg_b[msg_b_idx++] = '\n';
+            buff[msg_b_idx++] = '\n';
             *buff_len = msg_b_idx;
             return msg_b_idx;
         }
@@ -308,40 +306,39 @@ struct appender_impl {
                           char *buff,
                           uint16_t *buff_len) {
             //timestamp
-            char *msg_b = buff;
             uint16_t msg_b_idx = 0;
             struct timeval tv;
             gettimeofday(&tv, nullptr);
             time_t secs = (time_t)tv.tv_sec;
             struct tm *gmt = localtime(&secs);
-            sprintf(msg_b, "%02d:%02d:%02d.%03ld",
+            sprintf(buff, "%02d:%02d:%02d.%03ld",
                     gmt->tm_hour,
                     gmt->tm_min,
                     gmt->tm_sec,
                     (tv.tv_usec / 1000L));
             msg_b_idx += LG_TIME_BUF_LEN;
-            msg_b[msg_b_idx++] = '|';
+            buff[msg_b_idx++] = '|';
             //trace level string
-            memcpy(&msg_b[msg_b_idx], lvl_str, TL_LVL_STR_LEN);
+            memcpy(&buff[msg_b_idx], lvl_str, TL_LVL_STR_LEN);
             msg_b_idx += TL_LVL_STR_LEN;
-            msg_b[msg_b_idx++] = '|';
+            buff[msg_b_idx++] = '|';
             //signature
             if(sign_len) {
-                memcpy(&msg_b[msg_b_idx], sign, sign_len);
+                memcpy(&buff[msg_b_idx], sign, sign_len);
                 msg_b_idx += sign_len;
-                msg_b[msg_b_idx++] = '|';
+                buff[msg_b_idx++] = '|';
             }
             //id
             if(id) {
-                sprintf(&msg_b[msg_b_idx], "%08u", id);
+                sprintf(&buff[msg_b_idx], "%08u", id);
                 msg_b_idx += LG_ID_LEN;
-                msg_b[msg_b_idx++] = '|';
+                buff[msg_b_idx++] = '|';
             }
             //usr message
             if(msg && msg[0]) {
-                msg_b_idx += sprintf(&msg_b[msg_b_idx], "%s", msg);
+                msg_b_idx += sprintf(&buff[msg_b_idx], "%s", msg);
             }
-            msg_b[msg_b_idx++] = '\n';
+            buff[msg_b_idx++] = '\n';
             *buff_len = msg_b_idx;
             return msg_b_idx;
         }
@@ -370,40 +367,39 @@ struct appender_impl {
                              uint16_t *buff_len,
                              va_list args) {
             //timestamp
-            char *msg_b = buff;
             uint16_t msg_b_idx = 0;
             struct timeval tv;
             gettimeofday(&tv, nullptr);
             time_t secs = (time_t)tv.tv_sec;
             struct tm *gmt = localtime(&secs);
-            sprintf(msg_b, "%02d:%02d:%02d.%03ld",
+            sprintf(buff, "%02d:%02d:%02d.%03ld",
                     gmt->tm_hour,
                     gmt->tm_min,
                     gmt->tm_sec,
                     (tv.tv_usec / 1000L));
             msg_b_idx += LG_TIME_BUF_LEN;
-            msg_b[msg_b_idx++] = '|';
+            buff[msg_b_idx++] = '|';
             //trace level string
-            memcpy(&msg_b[msg_b_idx], lvl_str, TL_LVL_STR_LEN);
+            memcpy(&buff[msg_b_idx], lvl_str, TL_LVL_STR_LEN);
             msg_b_idx += TL_LVL_STR_LEN;
-            msg_b[msg_b_idx++] = '|';
+            buff[msg_b_idx++] = '|';
             //signature
             if(sign_len) {
-                memcpy(&msg_b[msg_b_idx], sign, sign_len);
+                memcpy(&buff[msg_b_idx], sign, sign_len);
                 msg_b_idx += sign_len;
-                msg_b[msg_b_idx++] = '|';
+                buff[msg_b_idx++] = '|';
             }
             //id
             if(id) {
-                sprintf(&msg_b[msg_b_idx], "%08u", id);
+                sprintf(&buff[msg_b_idx], "%08u", id);
                 msg_b_idx += LG_ID_LEN;
-                msg_b[msg_b_idx++] = '|';
+                buff[msg_b_idx++] = '|';
             }
             //usr message
             if(msg && msg[0]) {
-                msg_b_idx += vsprintf(&msg_b[msg_b_idx], msg, args);
+                msg_b_idx += vsprintf(&buff[msg_b_idx], msg, args);
             }
-            msg_b[msg_b_idx++] = '\n';
+            buff[msg_b_idx++] = '\n';
             *buff_len = msg_b_idx;
             return msg_b_idx;
         }

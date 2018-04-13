@@ -29,6 +29,7 @@
 #include "vlg_transaction.h"
 #include "vlg_subscription.h"
 
+#include <fstream>
 #include <sstream>
 #include <iomanip>
 #include <vector>

@@ -27,43 +27,43 @@ tx_id::tx_id()
 int dump_vlg_hdr_rec(const vlg_hdr_rec *hdr, char *out)
 {
     int offst = 0;
-    offst += sprintf(&out[offst], "HDR_REC{PKTHDR[%02x|%x|%02x]", hdr->phdr.prover,
+    offst += sprintf(&out[offst], "HDR_REC{PKTHDR[%x|%x|%x]", hdr->phdr.prover,
                      hdr->phdr.hdrlen,
                      hdr->phdr.pkttyp);
     switch(hdr->phdr.pkttyp) {
         case VLG_PKT_NONE:
         case VLG_PKT_TSTREQ_ID:
             /*TEST REQUEST*/
-            offst += sprintf(&out[offst], "TMSTMP[%010u]", hdr->row_1.tmstmp.tmstmp);
+            offst += sprintf(&out[offst], "TMSTMP[%u]", hdr->row_1.tmstmp.tmstmp);
             if(hdr->phdr.hdrlen == 3) {
-                offst += sprintf(&out[offst], "CONNID[%010u]", hdr->row_2.connid.connid);
+                offst += sprintf(&out[offst], "CONNID[%u]", hdr->row_2.connid.connid);
             }
             break;
         case VLG_PKT_HRTBET_ID:
             /*HEARTBEAT*/
-            offst += sprintf(&out[offst], "TMSTMP[%010u]", hdr->row_1.tmstmp.tmstmp);
+            offst += sprintf(&out[offst], "TMSTMP[%u]", hdr->row_1.tmstmp.tmstmp);
             if(hdr->phdr.hdrlen == 3) {
-                offst += sprintf(&out[offst], "CONNID[%010u]", hdr->row_2.connid.connid);
+                offst += sprintf(&out[offst], "CONNID[%u]", hdr->row_2.connid.connid);
             }
             break;
         case VLG_PKT_CONREQ_ID:
             /*CONNECTION REQUEST*/
-            offst += sprintf(&out[offst], "CLIHBT[%06u]", hdr->row_1.clihbt.hbtsec);
+            offst += sprintf(&out[offst], "CLIHBT[%u]", hdr->row_1.clihbt.hbtsec);
             break;
         case VLG_PKT_CONRES_ID:
             /*CONNECTION RESPONSE*/
-            offst += sprintf(&out[offst], "SRVCRS[%x|%x|%06u]", hdr->row_1.srvcrs.conres,
+            offst += sprintf(&out[offst], "SRVCRS[%x|%x|%u]", hdr->row_1.srvcrs.conres,
                              hdr->row_1.srvcrs.errcod,
                              hdr->row_1.srvcrs.agrhbt);
             if(hdr->phdr.hdrlen == 3) {
-                offst += sprintf(&out[offst], "CONNID[%010u]", hdr->row_2.connid.connid);
+                offst += sprintf(&out[offst], "CONNID[%u]", hdr->row_2.connid.connid);
             }
             break;
         case VLG_PKT_DSCOND_ID:
             /*DISCONNECTED*/
             offst += sprintf(&out[offst], "DISWRD[%x]", hdr->row_1.diswrd.disres);
             if(hdr->phdr.hdrlen == 3) {
-                offst += sprintf(&out[offst], "CONNID[%010u]", hdr->row_2.connid.connid);
+                offst += sprintf(&out[offst], "CONNID[%u]", hdr->row_2.connid.connid);
             }
             break;
         case VLG_PKT_TXRQST_ID:
@@ -71,18 +71,18 @@ int dump_vlg_hdr_rec(const vlg_hdr_rec *hdr, char *out)
             offst += sprintf(&out[offst], "TXREQW[%x|%x|%x]", hdr->row_1.txreqw.txtype,
                              hdr->row_1.txreqw.txactn,
                              hdr->row_1.txreqw.rsclrq);
-            offst += sprintf(&out[offst], "TXPLID[%010u]", hdr->row_2.txplid.txplid);
-            offst += sprintf(&out[offst], "TXSVID[%010u]", hdr->row_3.txsvid.txsvid);
-            offst += sprintf(&out[offst], "TXCNID[%010u]", hdr->row_4.txcnid.txcnid);
-            offst += sprintf(&out[offst], "TXPRID[%010u]", hdr->row_5.txprid.txprid);
-            offst += sprintf(&out[offst], "PKTLEN[%010u]", hdr->row_6.pktlen.pktlen);
-            offst += sprintf(&out[offst], "CLSENC[%07u|%x]", hdr->row_7.clsenc.nclsid,
+            offst += sprintf(&out[offst], "TXPLID[%u]", hdr->row_2.txplid.txplid);
+            offst += sprintf(&out[offst], "TXSVID[%u]", hdr->row_3.txsvid.txsvid);
+            offst += sprintf(&out[offst], "TXCNID[%u]", hdr->row_4.txcnid.txcnid);
+            offst += sprintf(&out[offst], "TXPRID[%u]", hdr->row_5.txprid.txprid);
+            offst += sprintf(&out[offst], "PKTLEN[%u]", hdr->row_6.pktlen.pktlen);
+            offst += sprintf(&out[offst], "CLSENC[%u|%x]", hdr->row_7.clsenc.nclsid,
                              hdr->row_7.clsenc.enctyp);
-            offst += sprintf(&out[offst], "CONNID[%010u]", hdr->row_8.connid.connid);
+            offst += sprintf(&out[offst], "CONNID[%u]", hdr->row_8.connid.connid);
             break;
         case VLG_PKT_TXRESP_ID:
             /*TRANSACTION RESPONSE*/
-            offst += sprintf(&out[offst], "TXRESW[%x|%x|%04x]", hdr->row_1.txresw.txresl,
+            offst += sprintf(&out[offst], "TXRESW[%x|%x|%x]", hdr->row_1.txresw.txresl,
                              hdr->row_1.txresw.vlgcod,
                              hdr->row_1.txresw.rescls);
             offst += sprintf(&out[offst], "TXPLID[%u]", hdr->row_2.txplid.txplid);
@@ -91,63 +91,63 @@ int dump_vlg_hdr_rec(const vlg_hdr_rec *hdr, char *out)
             offst += sprintf(&out[offst], "TXPRID[%u]", hdr->row_5.txprid.txprid);
             if(hdr->phdr.hdrlen == 8) {
                 offst += sprintf(&out[offst], "PKTLEN[%u]", hdr->row_6.pktlen.pktlen);
-                offst += sprintf(&out[offst], "CLSENC[%07u|%x]", hdr->row_7.clsenc.nclsid,
+                offst += sprintf(&out[offst], "CLSENC[%u|%x]", hdr->row_7.clsenc.nclsid,
                                  hdr->row_7.clsenc.enctyp);
             }
             break;
         case VLG_PKT_SBSREQ_ID:
             /*SUBSCRIPTION REQUEST*/
-            offst += sprintf(&out[offst], "SBREQW[%01x|%02x|%02x|%02x]",
+            offst += sprintf(&out[offst], "SBREQW[%x|%x|%x|%x]",
                              hdr->row_1.sbreqw.sbstyp,
                              hdr->row_1.sbreqw.sbsmod,
                              hdr->row_1.sbreqw.flotyp,
                              hdr->row_1.sbreqw.dwltyp);
-            offst += sprintf(&out[offst], "CLSENC[%07u|%x]", hdr->row_2.clsenc.nclsid,
+            offst += sprintf(&out[offst], "CLSENC[%u|%x]", hdr->row_2.clsenc.nclsid,
                              hdr->row_2.clsenc.enctyp);
-            offst += sprintf(&out[offst], "CONNID[%010u]", hdr->row_3.connid.connid);
-            offst += sprintf(&out[offst], "RQSTID[%010u]", hdr->row_4.rqstid.rqstid);
+            offst += sprintf(&out[offst], "CONNID[%u]", hdr->row_3.connid.connid);
+            offst += sprintf(&out[offst], "RQSTID[%u]", hdr->row_4.rqstid.rqstid);
             if(hdr->phdr.hdrlen == 7) {
-                offst += sprintf(&out[offst], "TMSTMP[0][%010u]", hdr->row_5.tmstmp.tmstmp);
-                offst += sprintf(&out[offst], "TMSTMP[1][%010u]", hdr->row_6.tmstmp.tmstmp);
+                offst += sprintf(&out[offst], "TMSTMP[0][%u]", hdr->row_5.tmstmp.tmstmp);
+                offst += sprintf(&out[offst], "TMSTMP[1][%u]", hdr->row_6.tmstmp.tmstmp);
             }
             break;
         case VLG_PKT_SBSRES_ID:
             /*SUBSCRIPTION RESPONSE*/
             offst += sprintf(&out[offst], "SBRESW[%x|%x]", hdr->row_1.sbresw.sbresl,
                              hdr->row_1.sbresw.vlgcod);
-            offst += sprintf(&out[offst], "RQSTID[%010u]", hdr->row_2.rqstid.rqstid);
+            offst += sprintf(&out[offst], "RQSTID[%u]", hdr->row_2.rqstid.rqstid);
             if(hdr->phdr.hdrlen == 4) {
-                offst += sprintf(&out[offst], "SBSRID[%010u]", hdr->row_3.sbsrid.sbsrid);
+                offst += sprintf(&out[offst], "SBSRID[%u]", hdr->row_3.sbsrid.sbsrid);
             }
             break;
         case VLG_PKT_SBSEVT_ID:
             /*SUBSCRIPTION EVENT*/
-            offst += sprintf(&out[offst], "SBSRID[%010u]", hdr->row_1.sbsrid.sbsrid);
-            offst += sprintf(&out[offst], "SEVTTP[%02x|%x|%04x|]", hdr->row_2.sevttp.sevttp,
+            offst += sprintf(&out[offst], "SBSRID[%u]", hdr->row_1.sbsrid.sbsrid);
+            offst += sprintf(&out[offst], "SEVTTP[%x|%x|%x|]", hdr->row_2.sevttp.sevttp,
                              hdr->row_2.sevttp.sbeact,
                              hdr->row_2.sevttp.vlgcod);
-            offst += sprintf(&out[offst], "SEVTID[%010u]", hdr->row_3.sevtid.sevtid);
-            offst += sprintf(&out[offst], "TMSTMP[0][%010u]", hdr->row_4.tmstmp.tmstmp);
-            offst += sprintf(&out[offst], "TMSTMP[1][%010u]", hdr->row_5.tmstmp.tmstmp);
+            offst += sprintf(&out[offst], "SEVTID[%u]", hdr->row_3.sevtid.sevtid);
+            offst += sprintf(&out[offst], "TMSTMP[0][%u]", hdr->row_4.tmstmp.tmstmp);
+            offst += sprintf(&out[offst], "TMSTMP[1][%u]", hdr->row_5.tmstmp.tmstmp);
             if(hdr->phdr.hdrlen == 7) {
                 offst += sprintf(&out[offst], "PKTLEN[%u]", hdr->row_6.pktlen.pktlen);
             }
             break;
         case VLG_PKT_SBSACK_ID:
             /*SUBSCRIPTION EVENT ACK*/
-            offst += sprintf(&out[offst], "SBSRID[%010u]", hdr->row_1.sbsrid.sbsrid);
-            offst += sprintf(&out[offst], "SEVTID[%010u]", hdr->row_2.sevtid.sevtid);
+            offst += sprintf(&out[offst], "SBSRID[%u]", hdr->row_1.sbsrid.sbsrid);
+            offst += sprintf(&out[offst], "SEVTID[%u]", hdr->row_2.sevtid.sevtid);
             break;
         case VLG_PKT_SBSTOP_ID:
             /*SUBSCRIPTION STOP REQUEST*/
-            offst += sprintf(&out[offst], "SBSRID[%010u]", hdr->row_1.sbsrid.sbsrid);
+            offst += sprintf(&out[offst], "SBSRID[%u]", hdr->row_1.sbsrid.sbsrid);
             break;
         case VLG_PKT_SBSSPR_ID:
             /*SUBSCRIPTION STOP RESPONSE*/
             offst += sprintf(&out[offst], "SBRESW[%x|%x]", hdr->row_1.sbresw.sbresl,
                              hdr->row_1.sbresw.vlgcod);
             if(hdr->phdr.hdrlen == 3) {
-                offst += sprintf(&out[offst], "SBSRID[%010u]", hdr->row_2.sbsrid.sbsrid);
+                offst += sprintf(&out[offst], "SBSRID[%u]", hdr->row_2.sbsrid.sbsrid);
             }
             break;
         default:
@@ -168,7 +168,7 @@ const char *dump_raw_pkt(bool all,
     sprintf(abuff, "RAW_%s[", all ? "PKT" : "BDY");
     out.assign(abuff);
     while(buf_offst < buf_sz) {
-        sprintf(abuff, "|%d|%08x", i++, *(unsigned int *)&buf[buf_offst]);
+        sprintf(abuff, "|%d|%x", i++, *(unsigned int *)&buf[buf_offst]);
         out.append(abuff);
         buf_offst += 4;
     }
