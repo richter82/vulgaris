@@ -1,21 +1,6 @@
 /*
- *
- * (C) 2017 - giuseppe.baccini@gmail.com
- *
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * vulgaris
+ * (C) 2018 - giuseppe.baccini@gmail.com
  *
  */
 
@@ -461,7 +446,6 @@ struct nentity_manager_impl {
     nentity_manager_impl() {}
 
     RetCode extend(const nentity_desc &nent_desc) {
-        IFLOG(trc(TH_ID, LS_OPN, __func__))
         if(nent_desc.get_nentity_type() == NEntityType_NCLASS) {
             entid_edesc_[nent_desc.get_nclass_id()] = &nent_desc;
         }
@@ -620,7 +604,7 @@ RetCode nentity_manager::new_nclass_instance(unsigned int nclass_id, nclass **ne
         *new_nclass_obj = (nclass *)it->second->get_nclass_allocation_function()();
         return RetCode_OK;
     } else {
-        IFLOG(wrn(TH_ID, LS_CLO "[nclass_id:%u][UNKNOWN]", __func__, nclass_id))
+        IFLOG(wrn(TH_ID, LS_CLO "[nclass_id:%u][unknown nclass_id]", __func__, nclass_id))
         return RetCode_BADARG;
     }
 }

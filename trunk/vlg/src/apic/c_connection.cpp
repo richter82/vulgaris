@@ -1,22 +1,7 @@
 /*
- *
- * (C) 2017 - giuseppe.baccini@gmail.com
- *
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
+ * vulgaris
+ * (C) 2018 - giuseppe.baccini@gmail.com
+ * 
  */
 
 #include "vlg_connection.h"
@@ -79,13 +64,13 @@ extern "C" {
         return ic->get_status();
     }
 
-    RetCode inco_connection_await_for_status_reached_or_outdated(incoming_connection *ic,
-                                                                 ConnectionStatus test,
-                                                                 ConnectionStatus *current,
-                                                                 time_t sec,
-                                                                 long nsec)
+    RetCode inco_connection_await_for_status_reached(incoming_connection *ic,
+                                                     ConnectionStatus test,
+                                                     ConnectionStatus *current,
+                                                     time_t sec,
+                                                     long nsec)
     {
-        return ic->await_for_status_reached_or_outdated(test, *current, sec, nsec);
+        return ic->await_for_status_reached(test, *current, sec, nsec);
     }
 
     RetCode inco_connection_await_for_status_change(incoming_connection *ic,
@@ -227,13 +212,13 @@ extern "C" {
         return oc->get_status();
     }
 
-    RetCode outg_connection_await_for_status_reached_or_outdated(outgoing_connection *oc,
-                                                                 ConnectionStatus test,
-                                                                 ConnectionStatus *current,
-                                                                 time_t sec,
-                                                                 long nsec)
+    RetCode outg_connection_await_for_status_reached(outgoing_connection *oc,
+                                                     ConnectionStatus test,
+                                                     ConnectionStatus *current,
+                                                     time_t sec,
+                                                     long nsec)
     {
-        return oc->await_for_status_reached_or_outdated(test, *current, sec, nsec);
+        return oc->await_for_status_reached(test, *current, sec, nsec);
     }
 
     RetCode outg_connection_await_for_status_change(outgoing_connection *oc,

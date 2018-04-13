@@ -1,21 +1,6 @@
 /*
- *
- * (C) 2017 - giuseppe.baccini@gmail.com
- *
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * vulgaris
+ * (C) 2018 - giuseppe.baccini@gmail.com
  *
  */
 
@@ -73,26 +58,23 @@ struct selector : public p_th {
     RetCode on_peer_start_actions();
     RetCode on_peer_move_running_actions();
 
-    RetCode await_for_status_reached_or_outdated(SelectorStatus test,
-                                                 SelectorStatus &current,
-                                                 time_t sec = -1,
-                                                 long nsec = 0);
+    RetCode await_for_status_reached(SelectorStatus test,
+                                     SelectorStatus &current,
+                                     time_t sec = -1,
+                                     long nsec = 0);
 
-    RetCode evt_enqueue_and_notify(const selector_event *evt);
+    RetCode asynch_notify(const selector_event *evt);
+    RetCode consume_asynch_events();
+
     RetCode interrupt();
 
     RetCode set_status(SelectorStatus status);
-
-    SOCKET get_UDP_notify_srv_sock();
-    SOCKET get_UDP_notify_cli_sock();
 
     virtual void *run();
 
     RetCode create_UDP_notify_srv_sock();
     RetCode connect_UDP_notify_cli_sock();
     bool is_still_valid_connection(const selector_event *evt);
-    RetCode asynch_notify(const selector_event *evt);
-    RetCode consume_asynch_events();
 
     RetCode start_exec_services();
     RetCode process_inco_sock_inco_events();

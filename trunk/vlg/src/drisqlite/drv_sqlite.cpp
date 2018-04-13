@@ -1,21 +1,6 @@
 /*
- *
- * (C) 2017 - giuseppe.baccini@gmail.com
- *
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * vulgaris
+ * (C) 2018 - giuseppe.baccini@gmail.com
  *
  */
 
@@ -602,13 +587,11 @@ inline RetCode pers_conn_sqlite::sqlite_connect(const char *filename, int flags)
     } else {
         status_ = PersistenceConnectionStatus_CONNECTED;
     }
-    IFLOG(trc(TH_ID, LS_CLO, __func__))
     return rcode;
 }
 
 inline RetCode pers_conn_sqlite::sqlite_disconnect()
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RetCode rcode = RetCode_OK;
     int last_rc = sqlite3_close_v2(db_);
     if(last_rc) {
@@ -620,7 +603,6 @@ inline RetCode pers_conn_sqlite::sqlite_disconnect()
     } else {
         status_ = PersistenceConnectionStatus_DISCONNECTED;
     }
-    IFLOG(trc(TH_ID, LS_CLO, __func__))
     return rcode;
 }
 
@@ -819,15 +801,14 @@ inline RetCode pers_conn_sqlite::do_connect()
         IFLOG(cri(TH_ID, LS_CLO "[thread unavailable]", __func__, RetCode_UNVRSC))
         return RetCode_UNVRSC;
     }
-    persistence_task_sqlite *task = new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_CONNECT);
-    if((rcode = worker_->submit_task(task))) {
+    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_CONNECT));
+    if((rcode = worker_->submit_task(task.get()))) {
         IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
+        return rcode;
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);
     }
-    rcode = task->op_res_;
-    delete task;
-    return rcode;
+    return task->op_res_;
 }
 
 //--------------------- CREATE -------------------------------------------------
@@ -983,7 +964,6 @@ RetCode pers_conn_sqlite::do_create_table(const nentity_manager &nem,
                                           const nentity_desc &edesc,
                                           bool drop_if_exist)
 {
-    IFLOG(trc(TH_ID, LS_OPN "[drop_if_exist:%d]", __func__, drop_if_exist))
     RetCode rcode = RetCode_OK;
     RetCode last_error_code = RetCode_OK;
     std::string last_error_str;
@@ -1012,20 +992,18 @@ RetCode pers_conn_sqlite::do_create_table(const nentity_manager &nem,
     edesc.enum_key_descriptors(enum_keys_create_table, &rud);
 
     create_stmt.append(");");
-    persistence_task_sqlite *task = new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_CREATETABLE);
+    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_CREATETABLE));
     task->in_edesc_ = &edesc;
     task->in_drop_if_exist_ = drop_if_exist;
     task->stmt_bf_ = &create_stmt;
     IFLOG(dbg(TH_ID, LS_STM "[create_stmt:%s]", __func__, create_stmt.c_str()))
-    if((rcode = worker_->submit_task(task))) {
+    if((rcode = worker_->submit_task(task.get()))) {
         IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
+        return rcode;
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);
     }
-    rcode = task->op_res_;
-    delete task;
-    IFLOG(trc(TH_ID, LS_CLO, __func__))
-    return rcode;
+    return task->op_res_;
 }
 
 //--------------------- SELECT -------------------------------------------------
@@ -1167,7 +1145,7 @@ RetCode pers_conn_sqlite::do_select(unsigned int key,
     select_stmt.append(" WHERE ");
     select_stmt.append(where_claus);
     select_stmt.append(";");
-    persistence_task_sqlite *task = new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_SELECT);
+    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_SELECT));
     task->in_nem_ = &nem;
     task->in_key_ = key;
     task->in_out_ts0_ = &ts0_out;
@@ -1177,18 +1155,17 @@ RetCode pers_conn_sqlite::do_select(unsigned int key,
     task->sel_rud_ = &rud;
 
     IFLOG(trc(TH_ID, LS_QRY "[select_stmt:%s]", __func__, select_stmt.c_str()))
-    if((rcode = worker_->submit_task(task))) {
+    if((rcode = worker_->submit_task(task.get()))) {
         IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
+        return rcode;
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);
     }
 
-    rcode = task->op_res_;
-    delete task;
     if(enm_buff) {
         delete enm_buff;
     }
-    return rcode;
+    return task->op_res_;
 }
 
 //--------------------- UPDATE -------------------------------------------------
@@ -1399,7 +1376,7 @@ RetCode pers_conn_sqlite::do_update(unsigned int key,
     update_stmt.append(" WHERE ");
     update_stmt.append(where_claus);
     update_stmt.append(";");
-    persistence_task_sqlite *task = new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_UPDATE);
+    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_UPDATE));
     task->in_nem_ = &nem;
     task->in_key_ = key;
     task->in_obj_ = &in;
@@ -1407,17 +1384,17 @@ RetCode pers_conn_sqlite::do_update(unsigned int key,
     task->in_out_ts1_ = &ts1;
     task->stmt_bf_ = &update_stmt;
     IFLOG(dbg(TH_ID, LS_STM "[update_stmt:%s]", __func__, update_stmt.c_str()))
-    if((rcode = worker_->submit_task(task))) {
+    if((rcode = worker_->submit_task(task.get()))) {
         IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
+        return rcode;
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);
     }
-    rcode = task->op_res_;
-    delete task;
+
     if(enm_buff) {
         delete enm_buff;
     }
-    return rcode;
+    return task->op_res_;
 }
 
 //--------------------- DELETE -------------------------------------------------
@@ -1494,7 +1471,7 @@ RetCode pers_conn_sqlite::do_delete(unsigned int key,
         delete_stmt.append(where_claus);
         delete_stmt.append(";");
     }
-    persistence_task_sqlite *task = new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_DELETE);
+    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_DELETE));
     task->in_nem_ = &nem;
     task->in_key_ = key;
     task->in_out_ts0_ = &ts0;
@@ -1503,17 +1480,17 @@ RetCode pers_conn_sqlite::do_delete(unsigned int key,
     task->in_obj_ = &in;
     task->stmt_bf_ = &delete_stmt;
     IFLOG(dbg(TH_ID, LS_STM "[delete_stmt:%s]", __func__, delete_stmt.c_str()))
-    if((rcode = worker_->submit_task(task))) {
+    if((rcode = worker_->submit_task(task.get()))) {
         IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
+        return rcode;
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);
     }
-    rcode = task->op_res_;
-    delete task;
+
     if(enm_buff) {
         delete enm_buff;
     }
-    return rcode;
+    return task->op_res_;
 }
 
 //--------------------- INSERT -------------------------------------------------
@@ -1700,23 +1677,23 @@ RetCode pers_conn_sqlite::do_insert(const nentity_manager &nem,
     insert_stmt.append(") VALUES (");
     insert_stmt.append(values);
     insert_stmt.append(");");
-    persistence_task_sqlite *task = new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_INSERT);
+    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_INSERT));
     task->in_nem_ = &nem;
     task->in_obj_ = &in;
     task->in_fail_is_error_ = fail_is_error;
     task->stmt_bf_ = &insert_stmt;
     IFLOG(dbg(TH_ID, LS_STM "[insert_stmt:%s]", __func__, insert_stmt.c_str()))
-    if((rcode = worker_->submit_task(task))) {
+    if((rcode = worker_->submit_task(task.get()))) {
         IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
+        return rcode;
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);
     }
-    rcode = task->op_res_;
-    delete task;
+
     if(enm_buff) {
         delete enm_buff;
     }
-    return rcode;
+    return task->op_res_;
 }
 
 //--------------------- QUERY -------------------------------------------------
@@ -1726,34 +1703,32 @@ RetCode pers_conn_sqlite::do_execute_query(const nentity_manager &nem,
                                            std::unique_ptr<persistence_query_impl> &qry_out)
 {
     RetCode rcode = RetCode_OK;
-    IFLOG(dbg(TH_ID, LS_QRY "[query-sql:%s]", __func__, sql))
-    persistence_task_sqlite *task = new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_EXECUTEQUERY);
+    IFLOG(trc(TH_ID, LS_QRY "[query-sql:%s]", __func__, sql))
+    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_EXECUTEQUERY));
     task->in_nem_ = &nem;
     task->in_sql_ = sql;
-    if((rcode = worker_->submit_task(task))) {
+    if((rcode = worker_->submit_task(task.get()))) {
         IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
+        return rcode;
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);
     }
-    rcode = task->op_res_;
     qry_out.reset(task->in_out_query_);
-    delete task;
-    return rcode;
+    return task->op_res_;
 }
 
 RetCode pers_conn_sqlite::do_release_query(persistence_query_impl &qry)
 {
     RetCode rcode = RetCode_OK;
-    persistence_task_sqlite *task = new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_RELEASEQUERY);
+    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_RELEASEQUERY));
     task->in_out_query_ = &qry;
-    if((rcode = worker_->submit_task(task))) {
+    if((rcode = worker_->submit_task(task.get()))) {
         IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
+        return rcode;
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);
     }
-    rcode = task->op_res_;
-    delete task;
-    return rcode;
+    return task->op_res_;
 }
 
 RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_impl &qry,
@@ -1790,23 +1765,22 @@ RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_impl &qry,
                                     enm_buff
                                   };
 
-    persistence_task_sqlite *task = new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_NEXTENTITYFROMQUERY);
+    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_NEXTENTITYFROMQUERY));
     task->in_out_query_ = &qry;
     task->in_out_ts0_ = &ts0_out;
     task->in_out_ts1_ = &ts1_out;
     task->in_out_obj_ = &out;
     task->sel_rud_ = &rud;
-    if((rcode = worker_->submit_task(task))) {
+    if((rcode = worker_->submit_task(task.get()))) {
         IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
+        return rcode;
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);
     }
-    rcode = task->op_res_;
-    delete task;
     if(enm_buff) {
         delete enm_buff;
     }
-    return rcode;
+    return task->op_res_;
 }
 
 //--------------------- EXEC STMT ----------------------------------------------
@@ -1815,16 +1789,15 @@ RetCode pers_conn_sqlite::do_execute_statement(const char *sql)
 {
     RetCode rcode = RetCode_OK;
     IFLOG(trc(TH_ID, LS_STM "[sql:%s]", __func__, sql))
-    persistence_task_sqlite *task = new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_EXECUTESTATEMENT);
+    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_EXECUTESTATEMENT));
     task->in_sql_= sql;
-    if((rcode = worker_->submit_task(task))) {
+    if((rcode = worker_->submit_task(task.get()))) {
         IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
+        return rcode;
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);
     }
-    rcode = task->op_res_;
-    delete task;
-    return rcode;
+    return task->op_res_;
 }
 
 // VLG_PERS_DRIV_SQLITE - DRIVER
@@ -1872,7 +1845,6 @@ RetCode pers_driv_sqlite::new_connection(persistence_connection_pool &conn_pool,
 
 RetCode pers_driv_sqlite::close_connection(persistence_connection_impl &conn)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RetCode res = static_cast<pers_conn_sqlite &>(conn).sqlite_disconnect();
     IFLOG(trc(TH_ID, LS_CLO "[id:%d]", __func__, conn.id_))
     return res;

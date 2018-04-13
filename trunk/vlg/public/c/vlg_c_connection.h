@@ -1,22 +1,7 @@
 /*
- *
- * (C) 2017 - giuseppe.baccini@gmail.com
- *
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
+ * vulgaris
+ * (C) 2018 - giuseppe.baccini@gmail.com
+ * 
  */
 
 #ifndef VLG_C_CONNECTION_H_
@@ -42,7 +27,7 @@ unsigned int inco_connection_get_connection_id(incoming_connection *ic);
 unsigned short inco_connection_get_client_heartbeat(incoming_connection *ic);
 unsigned short inco_connection_get_server_agreed_heartbeat(incoming_connection *ic);
 ConnectionStatus inco_connection_get_status(incoming_connection *ic);
-RetCode inco_connection_await_for_status_reached_or_outdated(incoming_connection *ic, ConnectionStatus test, ConnectionStatus *current, time_t sec, long nsec);
+RetCode inco_connection_await_for_status_reached(incoming_connection *ic, ConnectionStatus test, ConnectionStatus *current, time_t sec, long nsec);
 RetCode inco_connection_await_for_status_change(incoming_connection *ic, ConnectionStatus *status, time_t sec, long nsec);
 void inco_connection_set_status_change_handler(incoming_connection *ic, inco_connection_status_change handler, void *ud);
 RetCode inco_connection_disconnect(incoming_connection *ic, ProtocolCode reason_code);
@@ -78,7 +63,7 @@ unsigned short outg_connection_get_client_heartbeat(outgoing_connection *oc);
 unsigned short outg_connection_get_server_agreed_heartbeat(outgoing_connection *oc);
 ProtocolCode outg_connection_get_disconnection_reason_code(outgoing_connection *oc);
 ConnectionStatus outg_connection_get_status(outgoing_connection *oc);
-RetCode outg_connection_await_for_status_reached_or_outdated(outgoing_connection *oc, ConnectionStatus test, ConnectionStatus *current, time_t sec, long nsec);
+RetCode outg_connection_await_for_status_reached(outgoing_connection *oc, ConnectionStatus test, ConnectionStatus *current, time_t sec, long nsec);
 RetCode outg_connection_await_for_status_change(outgoing_connection *oc, ConnectionStatus *status, time_t sec, long nsec);
 void outg_connection_set_status_change_handler(outgoing_connection *oc, outg_connection_status_change handler, void *ud);
 RetCode outg_connection_connect(outgoing_connection *oc, struct sockaddr_in *conn_params);

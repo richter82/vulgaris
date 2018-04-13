@@ -1,21 +1,6 @@
 /*
- *
- * (C) 2017 - giuseppe.baccini@gmail.com
- *
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * vulgaris
+ * (C) 2018 - giuseppe.baccini@gmail.com
  *
  */
 
@@ -35,8 +20,8 @@ struct SPC_REC {
     RetCode res;
 };
 
-bool peer_enum_em_classes_create_schema(const nentity_desc &nentity_desc,
-                                        void *ud)
+bool peer_enum_nem_nclasses_create_schema(const nentity_desc &nentity_desc,
+                                          void *ud)
 {
     SPC_REC *pud = static_cast<SPC_REC *>(ud);
     if(nentity_desc.is_persistent()) {
@@ -73,7 +58,6 @@ bool peer_enum_em_classes_create_schema(const nentity_desc &nentity_desc,
 
 RetCode peer_impl::create_persistent_schema(PersistenceAlteringMode mode)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO NOT_PERS_ENBL_PEER, __func__))
         return RetCode_KO;
@@ -82,7 +66,7 @@ RetCode peer_impl::create_persistent_schema(PersistenceAlteringMode mode)
     ud.peer = this;
     ud.mode = mode;
     ud.res = RetCode_OK;
-    nem_.enum_nclass_descriptors(peer_enum_em_classes_create_schema, &ud);
+    nem_.enum_nclass_descriptors(peer_enum_nem_nclasses_create_schema, &ud);
     IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, ud.res))
     return ud.res;
 }
@@ -131,7 +115,6 @@ RetCode peer_impl::obj_load(unsigned short key,
                             unsigned int &ts1_out,
                             nclass &in_out)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO NOT_PERS_ENBL_PEER, __func__))
         return RetCode_KO;
@@ -162,13 +145,11 @@ RetCode peer_impl::obj_load(unsigned short key,
         IFLOG(err(TH_ID, LS_TRL "[nclass descriptor not found][nclass_id:%u]", __func__, nclass_id))
         rcode = RetCode_KO;
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
 RetCode peer_impl::obj_save(const nclass &in)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO NOT_PERS_ENBL_PEER, __func__))
         return RetCode_KO;
@@ -206,14 +187,12 @@ RetCode peer_impl::obj_save(const nclass &in)
         IFLOG(err(TH_ID, LS_TRL "[nclass descriptor not found][nclass_id:%u]", __func__, nclass_id))
         rcode = RetCode_KO;
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
 RetCode peer_impl::obj_update(unsigned short key,
                               const nclass &in)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO NOT_PERS_ENBL_PEER, __func__))
         return RetCode_KO;
@@ -251,14 +230,12 @@ RetCode peer_impl::obj_update(unsigned short key,
         IFLOG(err(TH_ID, LS_TRL "[nclass descriptor not found][nclass_id:%u]", __func__, nclass_id))
         rcode = RetCode_KO;
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
 RetCode peer_impl::obj_update_or_save(unsigned short key,
                                       const nclass &in)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO NOT_PERS_ENBL_PEER, __func__))
         return RetCode_KO;
@@ -296,7 +273,6 @@ RetCode peer_impl::obj_update_or_save(unsigned short key,
         IFLOG(err(TH_ID, LS_TRL "[nclass descriptor not found][nclass_id:%u]", __func__, nclass_id))
         rcode = RetCode_KO;
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
@@ -304,7 +280,6 @@ RetCode peer_impl::obj_remove(unsigned short key,
                               PersistenceDeletionMode mode,
                               const nclass &in)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO NOT_PERS_ENBL_PEER, __func__))
         return RetCode_KO;
@@ -342,7 +317,6 @@ RetCode peer_impl::obj_remove(unsigned short key,
         IFLOG(err(TH_ID, LS_TRL "[nclass descriptor not found][nclass_id:%u]", __func__, nclass_id))
         rcode = RetCode_KO;
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
@@ -353,7 +327,6 @@ RetCode peer_impl::obj_distribute(SubscriptionEventType evt_type,
                                   Action act,
                                   const nclass &in)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     RetCode rcode = RetCode_OK;
     per_nclass_id_conn_set *sdr = nullptr;
     unsigned int ts0 = 0, ts1 = 0;
@@ -383,7 +356,6 @@ RetCode peer_impl::obj_distribute(SubscriptionEventType evt_type,
 
 RetCode peer_impl::obj_save_and_distribute(const nclass &in)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO NOT_PERS_ENBL_PEER, __func__))
         return RetCode_KO;
@@ -437,14 +409,12 @@ RetCode peer_impl::obj_save_and_distribute(const nclass &in)
         }
     }
     //**** SBS MNG END
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
 RetCode peer_impl::obj_update_and_distribute(unsigned short key,
                                              const nclass &in)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO NOT_PERS_ENBL_PEER, __func__))
         return RetCode_KO;
@@ -497,14 +467,12 @@ RetCode peer_impl::obj_update_and_distribute(unsigned short key,
         }
     }
     //**** SBS MNG END
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
 RetCode peer_impl::obj_update_or_save_and_distribute(unsigned short key,
                                                      const nclass &in)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO NOT_PERS_ENBL_PEER, __func__))
         return RetCode_KO;
@@ -557,7 +525,6 @@ RetCode peer_impl::obj_update_or_save_and_distribute(unsigned short key,
         }
     }
     //**** SBS MNG END
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
@@ -565,7 +532,6 @@ RetCode peer_impl::obj_remove_and_distribute(unsigned short key,
                                              PersistenceDeletionMode mode,
                                              const nclass &in)
 {
-    IFLOG(trc(TH_ID, LS_OPN, __func__))
     if(!pers_enabled_) {
         IFLOG(err(TH_ID, LS_CLO NOT_PERS_ENBL_PEER, __func__))
         return RetCode_KO;
@@ -618,7 +584,6 @@ RetCode peer_impl::obj_remove_and_distribute(unsigned short key,
         }
     }
     //**** SBS MNG END
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 

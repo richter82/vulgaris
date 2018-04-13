@@ -1,22 +1,7 @@
 /*
- *
- * (C) 2017 - giuseppe.baccini@gmail.com
- *
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
+ * vulgaris
+ * (C) 2018 - giuseppe.baccini@gmail.com
+ * 
  */
 
 #ifndef VLG_C_TRANSACTION_H_
@@ -58,7 +43,7 @@ void inco_transaction_set_transaction_result_nclass_encode(incoming_transaction 
 void inco_transaction_set_current_obj(incoming_transaction *tx, nclass *obj);
 void inco_transaction_set_result_obj(incoming_transaction *tx, nclass *obj);
 TransactionStatus inco_transaction_get_status(incoming_transaction *tx);
-RetCode inco_transaction_await_for_status_reached_or_outdated(incoming_transaction *tx, TransactionStatus test, TransactionStatus *current, time_t sec, long nsec);
+RetCode inco_transaction_await_for_status_reached(incoming_transaction *tx, TransactionStatus test, TransactionStatus *current, time_t sec, long nsec);
 RetCode inco_transaction_await_for_closure(incoming_transaction *tx, time_t sec, long nsec);
 void inco_transaction_set_transaction_status_change_handler(incoming_transaction *tx, inco_transaction_status_change handler, void *ud);
 void inco_transaction_set_transaction_closure_handler(incoming_transaction *tx, inco_transaction_closure handler, void *ud);
@@ -105,7 +90,7 @@ void outg_transaction_set_transaction_result_nclass_required(outgoing_transactio
 void outg_transaction_set_request_obj(outgoing_transaction *tx, nclass *obj);
 void outg_transaction_set_current_obj(outgoing_transaction *tx, nclass *obj);
 TransactionStatus outg_transaction_get_status(outgoing_transaction *tx);
-RetCode outg_transaction_await_for_status_reached_or_outdated(outgoing_transaction *tx, TransactionStatus test, TransactionStatus *current, time_t sec, long nsec);
+RetCode outg_transaction_await_for_status_reached(outgoing_transaction *tx, TransactionStatus test, TransactionStatus *current, time_t sec, long nsec);
 RetCode outg_transaction_await_for_closure(outgoing_transaction *tx, time_t sec, long nsec);
 void outg_transaction_set_transaction_status_change_handler(outgoing_transaction *tx, outg_transaction_status_change handler, void *ud);
 void outg_transaction_set_transaction_closure_handler(outgoing_transaction *tx, outg_transaction_closure handler, void *ud);
