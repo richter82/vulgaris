@@ -1,4 +1,4 @@
--srv_sin_port		20003
+-srv_sin_port		20004
 -cli_exectrs		2
 -srv_exectrs		2
 -srv_sbs_exectrs	2

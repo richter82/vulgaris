@@ -21,7 +21,8 @@
   <PropertyGroup Label="Globals">
     <ProjectName>test_cpeer</ProjectName>
     <ProjectGuid>{E4A176B0-862C-4B40-9F73-76B3435279DD}</ProjectGuid>
-    <RootNamespace>blz_test_model</RootNamespace>
+    <RootNamespace>
+    </RootNamespace>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>

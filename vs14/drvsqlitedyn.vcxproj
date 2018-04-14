@@ -21,7 +21,8 @@
   <PropertyGroup Label="Globals">
     <ProjectName>drvsqlite_dyn</ProjectName>
     <ProjectGuid>{A1A1B12B-86CE-4BB4-B784-201EF3F0329B}</ProjectGuid>
-    <RootNamespace>blz_drv_sqlite</RootNamespace>
+    <RootNamespace>
+    </RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

@@ -21,7 +21,8 @@
   <PropertyGroup Label="Globals">
     <ProjectName>vlgc</ProjectName>
     <ProjectGuid>{C547BD3F-6B6D-44DF-B6D6-8EECB1F56752}</ProjectGuid>
-    <RootNamespace>blz_compiler</RootNamespace>
+    <RootNamespace>
+    </RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

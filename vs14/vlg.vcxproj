@@ -62,7 +62,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D8E08F30-6822-4398-9C58-9589811537D8}</ProjectGuid>
-    <RootNamespace>blz_peer_lib</RootNamespace>
+    <RootNamespace>
+    </RootNamespace>
     <Keyword>Win32Proj</Keyword>
     <ProjectName>vlg</ProjectName>
   </PropertyGroup>
