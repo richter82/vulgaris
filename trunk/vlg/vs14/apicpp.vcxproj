@@ -37,7 +37,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{86051208-762D-4D3D-A490-59DF7ECE67EA}</ProjectGuid>
-    <RootNamespace>blz_model</RootNamespace>
+    <RootNamespace>
+    </RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

@@ -27,7 +27,8 @@
   <PropertyGroup Label="Globals">
     <ProjectName>test_smplmdl</ProjectName>
     <ProjectGuid>{258D0D7E-F056-4CB8-A5DF-A77D35B802A0}</ProjectGuid>
-    <RootNamespace>blz_test_model_dll</RootNamespace>
+    <RootNamespace>
+    </RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

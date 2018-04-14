@@ -21,7 +21,8 @@
   <PropertyGroup Label="Globals">
     <ProjectName>test_peer_dyn</ProjectName>
     <ProjectGuid>{0D87A4AD-DEC6-45EB-A1FC-037B56EB9358}</ProjectGuid>
-    <RootNamespace>blz_test_model</RootNamespace>
+    <RootNamespace>
+    </RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
