@@ -64,7 +64,7 @@ struct persistence_task : public p_tsk {
     unsigned int *in_out_ts1_;
     persistence_query_impl *in_out_query_;
     bool in_fail_is_error_;
-    std::string *stmt_bf_;
+    const char *stmt_bf_;
 };
 
 struct persistence_connection_pool {

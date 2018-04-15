@@ -132,7 +132,8 @@ struct incoming_connection_impl : public conn_impl {
                                    std::shared_ptr<incoming_connection> &inco_conn);
 
     RetCode recv_sbs_evt_ack(const vlg_hdr_rec *hdr);
-    RetCode recv_sbs_stop_request(const vlg_hdr_rec *pkt_hdr);
+    RetCode recv_sbs_stop_request(const vlg_hdr_rec *pkt_hdr,
+                                  std::shared_ptr<incoming_connection> &inco_conn);
 
     unsigned int next_sbsid();
 
