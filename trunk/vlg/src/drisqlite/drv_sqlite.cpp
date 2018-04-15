@@ -144,46 +144,6 @@ static int entity_fill_fld(const member_desc &mmbrd,
     }
 }
 
-// sqlite_gr_buf
-
-struct sqlite_gr_buf {
-    sqlite_gr_buf();
-    ~sqlite_gr_buf();
-
-    //a convenience buffer used to render entity fld values
-    inline void init();
-    inline char *get_val_buff();
-    inline char *get_val_buff_RSZ(size_t req_size);
-    size_t val_buf_sz_;
-    char *val_buf_;
-};
-
-sqlite_gr_buf::sqlite_gr_buf() :
-    val_buf_sz_(SQLITE_VAL_BUFF),
-    val_buf_((char *)grow_buff_or_die(0, 0, SQLITE_VAL_BUFF))
-{}
-
-sqlite_gr_buf::~sqlite_gr_buf()
-{
-    if(val_buf_) {
-        free(val_buf_);
-    }
-}
-
-inline char *sqlite_gr_buf::get_val_buff()
-{
-    return val_buf_;
-}
-
-inline char *sqlite_gr_buf::get_val_buff_RSZ(size_t req_size)
-{
-    if(req_size > val_buf_sz_) {
-        val_buf_ = (char *)grow_buff_or_die(val_buf_, val_buf_sz_, (req_size - val_buf_sz_));
-        val_buf_sz_ = req_size;
-    }
-    return val_buf_;
-}
-
 //pers_query_sqlite
 
 struct pers_query_sqlite : public persistence_query_impl {
@@ -207,29 +167,74 @@ pers_query_sqlite::pers_query_sqlite(unsigned int id,
 struct SQLTE_ENM_SELECT_REC_UD {
     const nentity_manager &nem;
     char *obj_ptr;
-    std::string *prfx;
-    std::string *columns;
-    std::string *where_claus;
-
-    bool *first_fld;
-    bool array_fld;
-    unsigned int fld_idx;   //used to render column name when the field is an array
-
-    bool *first_key;
-    bool *first_key_mmbr;
-
-    RetCode *last_error_code;
-    std::string *last_error_msg;
-
     //used in enum_mmbrs_fill_entity
     int *colmn_idx;
     sqlite3_stmt *stmt;
-    int *sqlite_rc;
-
-    sqlite_gr_buf *enm_buff;
 };
 
-bool enum_mmbrs_fill_entity(const member_desc &mmbrd, void *ud);
+// enum_mmbrs_fill_entity
+bool enum_mmbrs_fill_entity(const member_desc &mmbrd, void *ud)
+{
+    SQLTE_ENM_SELECT_REC_UD *rud = static_cast<SQLTE_ENM_SELECT_REC_UD *>(ud);
+    char *obj_f_ptr = nullptr;
+    if(mmbrd.get_field_vlg_type() == Type_ENTITY) {
+        if(mmbrd.get_field_nentity_type() == NEntityType_NENUM) {
+            //treat enum as number
+            if(mmbrd.get_field_nmemb() > 1) {
+                for(unsigned int i = 0; i<mmbrd.get_field_nmemb(); i++) {
+                    //value
+                    obj_f_ptr = rud->obj_ptr + mmbrd.get_field_offset() + mmbrd.get_field_type_size()*i;
+                    *(int *)obj_f_ptr = sqlite3_column_int(rud->stmt, (*(rud->colmn_idx))++);
+                }
+            } else {
+                //value
+                obj_f_ptr = rud->obj_ptr + mmbrd.get_field_offset();
+                *(int *)obj_f_ptr = sqlite3_column_int(rud->stmt, (*(rud->colmn_idx))++);
+            }
+        } else {
+            //class, struct is a recursive step.
+            SQLTE_ENM_SELECT_REC_UD rrud = *rud;
+            const nentity_desc *edsc = rud->nem.get_nentity_descriptor(mmbrd.get_field_user_type());
+            if(edsc) {
+                if(mmbrd.get_field_nmemb() > 1) {
+                    for(unsigned int i = 0; i<mmbrd.get_field_nmemb(); i++) {
+                        rrud.obj_ptr = rud->obj_ptr + mmbrd.get_field_offset() + mmbrd.get_field_type_size()*i;
+                        edsc->enum_member_descriptors(enum_mmbrs_fill_entity, &rrud);
+                    }
+                } else {
+                    rrud.obj_ptr = rud->obj_ptr + mmbrd.get_field_offset();
+                    edsc->enum_member_descriptors(enum_mmbrs_fill_entity, &rrud);
+                }
+            }
+        }
+    } else {
+        //primitive type
+        if(mmbrd.get_field_vlg_type() == Type_ASCII) {
+            //value
+            obj_f_ptr = rud->obj_ptr + mmbrd.get_field_offset();
+            strncpy(obj_f_ptr,
+                    (const char *)sqlite3_column_text(rud->stmt, (*(rud->colmn_idx))++),
+                    mmbrd.get_field_type_size()*mmbrd.get_field_nmemb());
+        } else if(mmbrd.get_field_vlg_type() == Type_BYTE) {
+            //value
+            obj_f_ptr = rud->obj_ptr + mmbrd.get_field_offset();
+            memcpy(obj_f_ptr,
+                   (const char *)sqlite3_column_blob(rud->stmt, (*(rud->colmn_idx))++),
+                   mmbrd.get_field_type_size()*mmbrd.get_field_nmemb());
+        } else if(mmbrd.get_field_nmemb() > 1) {
+            for(unsigned int i = 0; i<mmbrd.get_field_nmemb(); i++) {
+                //value
+                obj_f_ptr = rud->obj_ptr + mmbrd.get_field_offset() + mmbrd.get_field_type_size()*i;
+                entity_fill_fld(mmbrd, (*(rud->colmn_idx))++, rud->stmt, obj_f_ptr);
+            }
+        } else {
+            //value
+            obj_f_ptr = rud->obj_ptr + mmbrd.get_field_offset();
+            entity_fill_fld(mmbrd, (*(rud->colmn_idx))++, rud->stmt, obj_f_ptr);
+        }
+    }
+    return true;
+}
 
 //pers_conn_sqlite
 struct pers_conn_sqlite : public persistence_connection_impl {
@@ -325,7 +330,7 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                 persistence_task_sqlite(pers_conn_sqlite &sql_conn, VLG_PERS_TASK_OP op_code) :
                     persistence_task(op_code),
                     sql_conn_(sql_conn),
-                    sel_rud_(nullptr) {
+                    sel_stmt_(nullptr) {
                 }
 
             protected:
@@ -341,7 +346,7 @@ struct pers_conn_sqlite : public persistence_connection_impl {
 
                 virtual RetCode do_create_table() {
                     RetCode rcode = RetCode_OK;
-                    if((rcode = sql_conn_.sqlite_exec_stmt(stmt_bf_->c_str(), false))) {
+                    if((rcode = sql_conn_.sqlite_exec_stmt(stmt_bf_, false))) {
                         if(in_drop_if_exist_) {
                             std::string drop_stmt;
                             drop_stmt.assign("DROP TABLE ");
@@ -352,7 +357,7 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                                 IFLOG(err(TH_ID, LS_CLO "[drop failed][res:%d].", __func__, rcode))
                                 return rcode;
                             }
-                            if((rcode = sql_conn_.sqlite_exec_stmt(stmt_bf_->c_str()))) {
+                            if((rcode = sql_conn_.sqlite_exec_stmt(stmt_bf_))) {
                                 IFLOG(err(TH_ID, LS_CLO "[create after drop failed][res:%d]", __func__, rcode))
                                 return rcode;
                             }
@@ -367,9 +372,10 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                 virtual RetCode do_select() {
                     RetCode rcode = RetCode_OK;
                     sqlite3_stmt *stmt = nullptr;
+                    int sqlite_rc = 0;
 
                     //prepare
-                    if((rcode = sql_conn_.sqlite_prepare_stmt(stmt_bf_->c_str(), &stmt))) {
+                    if((rcode = sql_conn_.sqlite_prepare_stmt(stmt_bf_, &stmt))) {
                         IFLOG(err(TH_ID, LS_CLO "[sqlite_prepare_stmt failed][res:%d]", __func__, rcode))
                     } else {
                         //bind
@@ -379,20 +385,25 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                             if((rels_rcode = sql_conn_.sqlite_release_stmt(stmt))) {
                                 IFLOG(err(TH_ID, LS_TRL "[res:%d][sqlite_release_stmt failed]", __func__, rels_rcode))
                             }
-                        } else if(!(rcode = sql_conn_.sqlite_step_stmt(stmt, *sel_rud_->sqlite_rc))) {
-                            if(*sel_rud_->sqlite_rc == SQLITE_ROW) {
+                        } else if(!(rcode = sql_conn_.sqlite_step_stmt(stmt, sqlite_rc))) {
+                            if(sqlite_rc == SQLITE_ROW) {
                                 read_timestamp_and_del_from_record(stmt,
-                                                                   *sel_rud_->sqlite_rc,
+                                                                   sqlite_rc,
                                                                    in_out_ts0_,
                                                                    in_out_ts1_,
                                                                    nullptr);
-                                sel_rud_->stmt = stmt;
-                                in_out_obj_->get_nentity_descriptor().enum_member_descriptors(enum_mmbrs_fill_entity, sel_rud_);
+                                int column_idx = 3; //column idx, [ts0, ts1, del] we start from 3.
+                                SQLTE_ENM_SELECT_REC_UD rud = { *in_nem_,
+                                                                reinterpret_cast<char *>(&in_out_obj_),
+                                                                &column_idx,
+                                                                stmt
+                                                              };
+                                in_out_obj_->get_nentity_descriptor().enum_member_descriptors(enum_mmbrs_fill_entity, &rud);
                                 rcode = RetCode_DBROW;
-                            } else if(*sel_rud_->sqlite_rc == SQLITE_DONE) {
+                            } else if(sqlite_rc == SQLITE_DONE) {
                                 rcode = RetCode_NODATA;
                             } else {
-                                IFLOG(err(TH_ID, LS_TRL "[rc:%d][sqlite_step_stmt: unhandled sqlite code]", __func__, *sel_rud_->sqlite_rc))
+                                IFLOG(err(TH_ID, LS_TRL "[rc:%d][sqlite_step_stmt: unhandled sqlite code]", __func__, sqlite_rc))
                                 rcode = RetCode_DBERR;
                             }
                             RetCode rels_rcode = RetCode_OK;
@@ -412,7 +423,7 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                     int sqlite_rc = 0;
 
                     //prepare
-                    if((rcode = sql_conn_.sqlite_prepare_stmt(stmt_bf_->c_str(), &stmt))) {
+                    if((rcode = sql_conn_.sqlite_prepare_stmt(stmt_bf_, &stmt))) {
                         IFLOG(err(TH_ID, LS_CLO "[sqlite_prepare_stmt failed][res:%d]", __func__, rcode))
                     } else {
                         //bind
@@ -446,7 +457,7 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                     int sqlite_rc = 0;
 
                     //prepare
-                    if((rcode = sql_conn_.sqlite_prepare_stmt(stmt_bf_->c_str(), &stmt))) {
+                    if((rcode = sql_conn_.sqlite_prepare_stmt(stmt_bf_, &stmt))) {
                         IFLOG(err(TH_ID, LS_CLO "[sqlite_prepare_stmt failed][res:%d]", __func__, rcode))
                     } else {
                         //bind
@@ -484,9 +495,10 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                 virtual RetCode do_delete() {
                     RetCode rcode = RetCode_OK;
                     sqlite3_stmt *stmt = nullptr;
+                    int sqlite_rc = 0;
 
                     //prepare
-                    if((rcode = sql_conn_.sqlite_prepare_stmt(stmt_bf_->c_str(), &stmt))) {
+                    if((rcode = sql_conn_.sqlite_prepare_stmt(stmt_bf_, &stmt))) {
                         IFLOG(err(TH_ID, LS_CLO "[sqlite_prepare_stmt failed][res:%d]", __func__, rcode))
                     } else {
                         //bind
@@ -496,11 +508,11 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                             if((rels_rcode = sql_conn_.sqlite_release_stmt(stmt))) {
                                 IFLOG(err(TH_ID, LS_TRL "[res:%d][sqlite_release_stmt failed]", __func__, rels_rcode))
                             }
-                        } else if(!(rcode = sql_conn_.sqlite_step_stmt(stmt, *sel_rud_->sqlite_rc))) {
-                            if(*sel_rud_->sqlite_rc == SQLITE_DONE) {
+                        } else if(!(rcode = sql_conn_.sqlite_step_stmt(stmt, sqlite_rc))) {
+                            if(sqlite_rc == SQLITE_DONE) {
                                 rcode = RetCode_OK;
                             } else {
-                                IFLOG(err(TH_ID, LS_TRL "[rc:%d][sqlite_step_stmt: unhandled sqlite code]", __func__, *sel_rud_->sqlite_rc))
+                                IFLOG(err(TH_ID, LS_TRL "[rc:%d][sqlite_step_stmt: unhandled sqlite code]", __func__, sqlite_rc))
                                 rcode = RetCode_DBERR;
                             }
                             RetCode rels_rcode = RetCode_OK;
@@ -533,20 +545,26 @@ struct pers_conn_sqlite : public persistence_connection_impl {
 
                 virtual RetCode do_next_entity_from_query() {
                     RetCode rcode = RetCode_OK;
-                    pers_query_sqlite *qry_sqlite = static_cast<pers_query_sqlite *>(in_out_query_);
-                    if(!(rcode = sql_conn_.sqlite_step_stmt(qry_sqlite->stmt_, *sel_rud_->sqlite_rc))) {
-                        if(*sel_rud_->sqlite_rc == SQLITE_ROW) {
-                            read_timestamp_and_del_from_record(qry_sqlite->stmt_,
-                                                               *sel_rud_->sqlite_rc,
+                    int sqlite_rc = 0;
+                    if(!(rcode = sql_conn_.sqlite_step_stmt(sel_stmt_, sqlite_rc))) {
+                        if(sqlite_rc == SQLITE_ROW) {
+                            read_timestamp_and_del_from_record(sel_stmt_,
+                                                               sqlite_rc,
                                                                in_out_ts0_,
                                                                in_out_ts1_,
                                                                nullptr);
-                            in_out_obj_->get_nentity_descriptor().enum_member_descriptors(enum_mmbrs_fill_entity, sel_rud_);
+                            int column_idx = 3; //column idx, [ts0, ts1, del] we start from 3.
+                            SQLTE_ENM_SELECT_REC_UD rud = { *in_nem_,
+                                                            reinterpret_cast<char *>(in_out_obj_),
+                                                            &column_idx,
+                                                            sel_stmt_
+                                                          };
+                            in_out_obj_->get_nentity_descriptor().enum_member_descriptors(enum_mmbrs_fill_entity, &rud);
                             rcode = RetCode_DBROW;
-                        } else if(*sel_rud_->sqlite_rc == SQLITE_DONE) {
+                        } else if(sqlite_rc == SQLITE_DONE) {
                             rcode = RetCode_QRYEND;
                         } else {
-                            IFLOG(err(TH_ID, LS_TRL "[rc:%d][sqlite_step_stmt unhandled sqlite code]", __func__, *sel_rud_->sqlite_rc))
+                            IFLOG(err(TH_ID, LS_TRL "[rc:%d][sqlite_step_stmt unhandled sqlite code]", __func__, sqlite_rc))
                             rcode = RetCode_DBERR;
                         }
                     } else {
@@ -563,7 +581,7 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                 pers_conn_sqlite &sql_conn_;
 
             public:
-                SQLTE_ENM_SELECT_REC_UD *sel_rud_;
+                sqlite3_stmt *sel_stmt_;
         };
 };
 
@@ -998,7 +1016,7 @@ RetCode pers_conn_sqlite::do_create_table(const nentity_manager &nem,
     std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_CREATETABLE));
     task->in_edesc_ = &edesc;
     task->in_drop_if_exist_ = drop_if_exist;
-    task->stmt_bf_ = &create_stmt;
+    task->stmt_bf_ = create_stmt.c_str();
     IFLOG(dbg(TH_ID, LS_STM "[create_stmt:%s]", __func__, create_stmt.c_str()))
     if((rcode = worker_->submit_task(task.get()))) {
         IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
@@ -1011,73 +1029,14 @@ RetCode pers_conn_sqlite::do_create_table(const nentity_manager &nem,
 
 //--------------------- SELECT -------------------------------------------------
 
-// enum_mmbrs_fill_entity
-bool enum_mmbrs_fill_entity(const member_desc &mmbrd, void *ud)
-{
-    SQLTE_ENM_SELECT_REC_UD *rud = static_cast<SQLTE_ENM_SELECT_REC_UD *>(ud);
-    char *obj_f_ptr = nullptr;
-    if(mmbrd.get_field_vlg_type() == Type_ENTITY) {
-        if(mmbrd.get_field_nentity_type() == NEntityType_NENUM) {
-            //treat enum as number
-            if(mmbrd.get_field_nmemb() > 1) {
-                for(unsigned int i = 0; i<mmbrd.get_field_nmemb(); i++) {
-                    //value
-                    obj_f_ptr = rud->obj_ptr + mmbrd.get_field_offset() + mmbrd.get_field_type_size()*i;
-                    *(int *)obj_f_ptr = sqlite3_column_int(rud->stmt, (*(rud->colmn_idx))++);
-                }
-            } else {
-                //value
-                obj_f_ptr = rud->obj_ptr + mmbrd.get_field_offset();
-                *(int *)obj_f_ptr = sqlite3_column_int(rud->stmt, (*(rud->colmn_idx))++);
-            }
-        } else {
-            //class, struct is a recursive step.
-            SQLTE_ENM_SELECT_REC_UD rrud = *rud;
-            const nentity_desc *edsc = rud->nem.get_nentity_descriptor(mmbrd.get_field_user_type());
-            if(edsc) {
-                if(mmbrd.get_field_nmemb() > 1) {
-                    for(unsigned int i = 0; i<mmbrd.get_field_nmemb(); i++) {
-                        rrud.obj_ptr = rud->obj_ptr + mmbrd.get_field_offset() + mmbrd.get_field_type_size()*i;
-                        edsc->enum_member_descriptors(enum_mmbrs_fill_entity, &rrud);
-                    }
-                } else {
-                    rrud.obj_ptr = rud->obj_ptr + mmbrd.get_field_offset();
-                    edsc->enum_member_descriptors(enum_mmbrs_fill_entity, &rrud);
-                }
-            }
-        }
-    } else {
-        //primitive type
-        if(mmbrd.get_field_vlg_type() == Type_ASCII) {
-            //value
-            obj_f_ptr = rud->obj_ptr + mmbrd.get_field_offset();
-            strncpy(obj_f_ptr,
-                    (const char *)sqlite3_column_text(rud->stmt, (*(rud->colmn_idx))++),
-                    mmbrd.get_field_type_size()*mmbrd.get_field_nmemb());
-        } else if(mmbrd.get_field_vlg_type() == Type_BYTE) {
-            //value
-            obj_f_ptr = rud->obj_ptr + mmbrd.get_field_offset();
-            memcpy(obj_f_ptr,
-                   (const char *)sqlite3_column_blob(rud->stmt, (*(rud->colmn_idx))++),
-                   mmbrd.get_field_type_size()*mmbrd.get_field_nmemb());
-        } else if(mmbrd.get_field_nmemb() > 1) {
-            for(unsigned int i = 0; i<mmbrd.get_field_nmemb(); i++) {
-                //value
-                obj_f_ptr = rud->obj_ptr + mmbrd.get_field_offset() + mmbrd.get_field_type_size()*i;
-                entity_fill_fld(mmbrd, (*(rud->colmn_idx))++, rud->stmt, obj_f_ptr);
-            }
-        } else {
-            //value
-            obj_f_ptr = rud->obj_ptr + mmbrd.get_field_offset();
-            entity_fill_fld(mmbrd, (*(rud->colmn_idx))++, rud->stmt, obj_f_ptr);
-        }
-    }
-    return true;
-}
+struct SQLTE_ENM_KSET_SELECT_REC_UD {
+    std::string *where_claus;
+    bool *first_key;
+};
 
 bool enum_keyset_select_table(const member_desc &mmbrd, void *ud)
 {
-    SQLTE_ENM_SELECT_REC_UD &rud = *static_cast<SQLTE_ENM_SELECT_REC_UD *>(ud);
+    SQLTE_ENM_KSET_SELECT_REC_UD &rud = *static_cast<SQLTE_ENM_KSET_SELECT_REC_UD *>(ud);
     //coma handling
     if(*(rud.first_key)) {
         *(rud.first_key) = false;
@@ -1096,69 +1055,51 @@ RetCode pers_conn_sqlite::do_select(unsigned int key,
                                     unsigned int &ts1_out,
                                     nclass &in_out)
 {
+    static std::unordered_map<std::string, std::string> sel_stmt_m;
     RetCode rcode = RetCode_OK;
-    RetCode last_error_code = RetCode_OK;
-    std::string last_error_str;
-    std::string select_stmt;
-    std::string columns;
-    std::string where_claus(P_F_DEL"=0 AND ");
-    int sqlite_rc = 0;
-    std::string prfx;
-    bool frst_fld = true, frst_key = true, frst_key_mmbr = true;
-    int column_idx = 3; //column idx, [ts0, ts1, del] we start from 3.
-    sqlite_gr_buf *enm_buff = new sqlite_gr_buf();
-    SQLTE_ENM_SELECT_REC_UD rud = {nem,
-                                   reinterpret_cast<char *>(&in_out),
-                                   &prfx,
-                                   &columns,
-                                   &where_claus,
-                                   &frst_fld,
-                                   false,
-                                   0,
-                                   &frst_key,
-                                   &frst_key_mmbr,
-                                   &last_error_code,
-                                   &last_error_str,
-                                   &column_idx,
-                                   0,
-                                   &sqlite_rc,
-                                   enm_buff
-                                  };
+    const char *sel_stmt = nullptr;
+    std::stringstream ss;
+    ss << in_out.get_id() << '_' << key;
+    auto it = sel_stmt_m.find(ss.str());
+    if(it != sel_stmt_m.end()) {
+        sel_stmt = it->second.c_str();
+    } else {
+        std::string select_stmt;
+        std::string where_claus(P_F_DEL"=0 AND ");
+        bool frst_key = true;
+        SQLTE_ENM_KSET_SELECT_REC_UD rud = { &where_claus, &frst_key };
 
-    const key_desc *kdsc = in_out.get_nentity_descriptor().get_key_desc_by_id(key);
-    if(!kdsc) {
-        IFLOG(err(TH_ID, LS_CLO "[key:%d not found]", __func__, key))
-        return RetCode_BADARG;
+        const key_desc *kdsc = in_out.get_nentity_descriptor().get_key_desc_by_id(key);
+        if(!kdsc) {
+            IFLOG(err(TH_ID, LS_CLO "[key:%d not found]", __func__, key))
+            return RetCode_BADARG;
+        }
+
+        kdsc->enum_member_descriptors(enum_keyset_select_table, &rud);
+
+        select_stmt.assign("SELECT ");
+        select_stmt.append("*");
+        select_stmt.append(" FROM ");
+        select_stmt.append(in_out.get_nentity_descriptor().get_nentity_name());
+        select_stmt.append(" WHERE ");
+        select_stmt.append(where_claus);
+        select_stmt.append(";");
     }
 
-    kdsc->enum_member_descriptors(enum_keyset_select_table, &rud);
-
-    select_stmt.assign("SELECT ");
-    select_stmt.append("*");
-    select_stmt.append(" FROM ");
-    select_stmt.append(in_out.get_nentity_descriptor().get_nentity_name());
-    select_stmt.append(" WHERE ");
-    select_stmt.append(where_claus);
-    select_stmt.append(";");
     std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_SELECT));
     task->in_nem_ = &nem;
     task->in_key_ = key;
     task->in_out_ts0_ = &ts0_out;
     task->in_out_ts1_ = &ts1_out;
     task->in_out_obj_ = &in_out;
-    task->stmt_bf_ = &select_stmt;
-    task->sel_rud_ = &rud;
+    task->stmt_bf_ = sel_stmt;
 
-    IFLOG(trc(TH_ID, LS_QRY "[select_stmt:%s]", __func__, select_stmt.c_str()))
+    IFLOG(trc(TH_ID, LS_QRY "[select_stmt:%s]", __func__, sel_stmt))
     if((rcode = worker_->submit_task(task.get()))) {
         IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
         return rcode;
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);
-    }
-
-    if(enm_buff) {
-        delete enm_buff;
     }
     return task->op_res_;
 }
@@ -1181,8 +1122,6 @@ struct SQLTE_ENM_UPDATE_REC_UD {
 
     RetCode *last_error_code;
     std::string *last_error_msg;
-
-    sqlite_gr_buf *enm_buff;
 };
 
 bool enum_mmbrs_update(const member_desc &mmbrd, void *ud)
@@ -1319,64 +1258,69 @@ RetCode pers_conn_sqlite::do_update(unsigned int key,
                                     unsigned int ts1,
                                     const nclass &in)
 {
+    static std::unordered_map<std::string, std::string> upd_stmt_m;
     RetCode rcode = RetCode_OK;
-    RetCode last_error_code = RetCode_OK;
-    std::string last_error_str;
-    std::string update_stmt;
-    std::string set_section(P_F_TS0"=?," P_F_TS1"=?,");
-    std::string where_claus(P_F_DEL"=0 AND ");
-    std::string prfx;
-    bool frst_fld = true, frst_key = true, frst_key_mmbr = true;
-    sqlite_gr_buf *enm_buff = new sqlite_gr_buf();
-    SQLTE_ENM_UPDATE_REC_UD rud = { nem,
-                                    reinterpret_cast<const char *>(&in),
-                                    &prfx,
-                                    &set_section,
-                                    &where_claus,
-                                    &frst_fld,
-                                    false,
-                                    0,
-                                    &frst_key,
-                                    &frst_key_mmbr,
-                                    &last_error_code,
-                                    &last_error_str,
-                                    enm_buff
-                                  };
+    const char *upd_stmt = nullptr;
+    std::stringstream ss;
+    ss << in.get_id() << '_' << key;
+    auto it = upd_stmt_m.find(ss.str());
+    if(it != upd_stmt_m.end()) {
+        upd_stmt = it->second.c_str();
+    } else {
+        RetCode last_error_code = RetCode_OK;
+        std::string update_stmt;
+        std::string last_error_str;
+        std::string set_section(P_F_TS0"=?," P_F_TS1"=?,");
+        std::string where_claus(P_F_DEL"=0 AND ");
+        std::string prfx;
+        bool frst_fld = true, frst_key = true, frst_key_mmbr = true;
+        SQLTE_ENM_UPDATE_REC_UD rud = { nem,
+                                        reinterpret_cast<const char *>(&in),
+                                        &prfx,
+                                        &set_section,
+                                        &where_claus,
+                                        &frst_fld,
+                                        false,
+                                        0,
+                                        &frst_key,
+                                        &frst_key_mmbr,
+                                        &last_error_code,
+                                        &last_error_str
+                                      };
 
-    const key_desc *kdsc = in.get_nentity_descriptor().get_key_desc_by_id(key);
-    if(!kdsc) {
-        IFLOG(err(TH_ID, LS_CLO "[key:%d not found]", __func__, key))
-        return RetCode_BADARG;
+        const key_desc *kdsc = in.get_nentity_descriptor().get_key_desc_by_id(key);
+        if(!kdsc) {
+            IFLOG(err(TH_ID, LS_CLO "[key:%d not found]", __func__, key))
+            return RetCode_BADARG;
+        }
+
+        kdsc->enum_member_descriptors(enum_keyset_update_table, &rud);
+        in.get_nentity_descriptor().enum_member_descriptors(enum_mmbrs_update, &rud);
+
+        update_stmt.assign("UPDATE ");
+        update_stmt.append(in.get_nentity_descriptor().get_nentity_name());
+        update_stmt.append(" SET ");
+        update_stmt.append(set_section);
+        update_stmt.append(" WHERE ");
+        update_stmt.append(where_claus);
+        update_stmt.append(";");
+        auto nit = upd_stmt_m.insert(std::pair<std::string, std::string>(ss.str(), update_stmt));
+        upd_stmt = nit.first->second.c_str();
     }
 
-    kdsc->enum_member_descriptors(enum_keyset_update_table, &rud);
-
-    in.get_nentity_descriptor().enum_member_descriptors(enum_mmbrs_update, &rud);
-
-    update_stmt.assign("UPDATE ");
-    update_stmt.append(in.get_nentity_descriptor().get_nentity_name());
-    update_stmt.append(" SET ");
-    update_stmt.append(set_section);
-    update_stmt.append(" WHERE ");
-    update_stmt.append(where_claus);
-    update_stmt.append(";");
     std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_UPDATE));
     task->in_nem_ = &nem;
     task->in_key_ = key;
     task->in_obj_ = &in;
     task->in_out_ts0_ = &ts0;
     task->in_out_ts1_ = &ts1;
-    task->stmt_bf_ = &update_stmt;
-    IFLOG(dbg(TH_ID, LS_STM "[update_stmt:%s]", __func__, update_stmt.c_str()))
+    task->stmt_bf_ = upd_stmt;
+    IFLOG(dbg(TH_ID, LS_STM "[update_stmt:%s]", __func__, upd_stmt))
     if((rcode = worker_->submit_task(task.get()))) {
         IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
         return rcode;
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);
-    }
-
-    if(enm_buff) {
-        delete enm_buff;
     }
     return task->op_res_;
 }
@@ -1391,7 +1335,6 @@ struct SQLTE_ENM_DELETE_REC_UD {
     bool *first_key_mmbr;
     RetCode *last_error_code;
     std::string *last_error_msg;
-    sqlite_gr_buf *enm_buff;
 };
 
 bool enum_keyset_delete_table(const member_desc &mmbrd, void *ud)
@@ -1413,48 +1356,58 @@ RetCode pers_conn_sqlite::do_delete(unsigned int key,
                                     const nentity_manager &nem,
                                     unsigned int ts0,
                                     unsigned int ts1,
-                                    PersistenceDeletionMode  mode,
+                                    PersistenceDeletionMode mode,
                                     const nclass &in)
 {
+    static std::unordered_map<std::string, std::string> del_stmt_m;
     RetCode rcode = RetCode_OK;
-    RetCode last_error_code = RetCode_OK;
-    std::string last_error_str;
-    std::string delete_stmt;
-    std::string where_claus;
-    where_claus.assign("");
-    bool frst_key = true, frst_key_mmbr = true;
-    sqlite_gr_buf *enm_buff = new sqlite_gr_buf();
-    SQLTE_ENM_DELETE_REC_UD rud = { nem,
-                                    reinterpret_cast<const char *>(&in),
-                                    &where_claus,
-                                    &frst_key,
-                                    &frst_key_mmbr,
-                                    &last_error_code,
-                                    &last_error_str,
-                                    enm_buff
-                                  };
-
-    const key_desc *kdsc = in.get_nentity_descriptor().get_key_desc_by_id(key);
-    if(!kdsc) {
-        IFLOG(err(TH_ID, LS_CLO "[key:%d not found]", __func__, key))
-        return RetCode_BADARG;
-    }
-
-    kdsc->enum_member_descriptors(enum_keyset_delete_table, &rud);
-
-    if(mode == PersistenceDeletionMode_PHYSICAL) {
-        delete_stmt.assign("DELETE FROM ");
-        delete_stmt.append(in.get_nentity_descriptor().get_nentity_name());
-        delete_stmt.append(" WHERE ");
-        delete_stmt.append(where_claus);
-        delete_stmt.append(";");
+    const char *del_stmt = nullptr;
+    std::stringstream ss;
+    ss << in.get_id() << '_' << key << '_' << mode;
+    auto it = del_stmt_m.find(ss.str());
+    if(it != del_stmt_m.end()) {
+        del_stmt = it->second.c_str();
     } else {
-        delete_stmt.assign("UPDATE ");
-        delete_stmt.append(in.get_nentity_descriptor().get_nentity_name());
-        delete_stmt.append(" SET DEL=1 WHERE ");
-        delete_stmt.append(where_claus);
-        delete_stmt.append(";");
+        RetCode last_error_code = RetCode_OK;
+        std::string last_error_str;
+        std::string delete_stmt;
+        std::string where_claus;
+        where_claus.assign("");
+        bool frst_key = true, frst_key_mmbr = true;
+        SQLTE_ENM_DELETE_REC_UD rud = { nem,
+                                        reinterpret_cast<const char *>(&in),
+                                        &where_claus,
+                                        &frst_key,
+                                        &frst_key_mmbr,
+                                        &last_error_code,
+                                        &last_error_str
+                                      };
+
+        const key_desc *kdsc = in.get_nentity_descriptor().get_key_desc_by_id(key);
+        if(!kdsc) {
+            IFLOG(err(TH_ID, LS_CLO "[key:%d not found]", __func__, key))
+            return RetCode_BADARG;
+        }
+
+        kdsc->enum_member_descriptors(enum_keyset_delete_table, &rud);
+
+        if(mode == PersistenceDeletionMode_PHYSICAL) {
+            delete_stmt.assign("DELETE FROM ");
+            delete_stmt.append(in.get_nentity_descriptor().get_nentity_name());
+            delete_stmt.append(" WHERE ");
+            delete_stmt.append(where_claus);
+            delete_stmt.append(";");
+        } else {
+            delete_stmt.assign("UPDATE ");
+            delete_stmt.append(in.get_nentity_descriptor().get_nentity_name());
+            delete_stmt.append(" SET DEL=1 WHERE ");
+            delete_stmt.append(where_claus);
+            delete_stmt.append(";");
+        }
+        auto nit = del_stmt_m.insert(std::pair<std::string, std::string>(ss.str(), delete_stmt));
+        del_stmt = nit.first->second.c_str();
     }
+
     std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_DELETE));
     task->in_nem_ = &nem;
     task->in_key_ = key;
@@ -1462,17 +1415,13 @@ RetCode pers_conn_sqlite::do_delete(unsigned int key,
     task->in_out_ts1_ = &ts1;
     task->in_mode_ = mode;
     task->in_obj_ = &in;
-    task->stmt_bf_ = &delete_stmt;
-    IFLOG(dbg(TH_ID, LS_STM "[delete_stmt:%s]", __func__, delete_stmt.c_str()))
+    task->stmt_bf_ = del_stmt;
+    IFLOG(dbg(TH_ID, LS_STM "[delete_stmt:%s]", __func__, del_stmt))
     if((rcode = worker_->submit_task(task.get()))) {
         IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
         return rcode;
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);
-    }
-
-    if(enm_buff) {
-        delete enm_buff;
     }
     return task->op_res_;
 }
@@ -1492,8 +1441,6 @@ struct SQLTE_ENM_INSERT_REC_UD {
 
     RetCode *last_error_code;
     std::string *last_error_msg;
-
-    sqlite_gr_buf *enm_buff;
 };
 
 bool enum_mmbrs_insert(const member_desc &mmbrd, void *ud)
@@ -1619,50 +1566,56 @@ RetCode pers_conn_sqlite::do_insert(const nentity_manager &nem,
                                     const nclass &in,
                                     bool fail_is_error)
 {
+    static std::unordered_map<std::string, std::string> ins_stmt_m;
     RetCode rcode = RetCode_OK;
-    RetCode last_error_code = RetCode_OK;
-    std::string last_error_str;
-    std::string insert_stmt("INSERT INTO ");
-    std::string values("?,?,0,");
-    insert_stmt.append(in.get_nentity_descriptor().get_nentity_name());
-    insert_stmt.append("(" P_F_TS0", " P_F_TS1", " P_F_DEL", ");
-    std::string prfx;
-    bool frst_fld = true;
-    sqlite_gr_buf *enm_buff = new sqlite_gr_buf();
-    SQLTE_ENM_INSERT_REC_UD rud = {nem,
-                                   reinterpret_cast<const char *>(&in),
-                                   &insert_stmt,
-                                   &prfx,
-                                   &values,
-                                   &frst_fld,
-                                   false,
-                                   0,
-                                   &last_error_code,
-                                   &last_error_str,
-                                   enm_buff
-                                  };
+    const char *ins_stmt = nullptr;
+    std::stringstream ss;
+    ss << in.get_id();
+    auto it = ins_stmt_m.find(ss.str());
+    if(it != ins_stmt_m.end()) {
+        ins_stmt = it->second.c_str();
+    } else {
+        RetCode last_error_code = RetCode_OK;
+        std::string last_error_str;
+        std::string insert_stmt("INSERT INTO ");
+        std::string values("?,?,0,");
+        insert_stmt.append(in.get_nentity_descriptor().get_nentity_name());
+        insert_stmt.append("(" P_F_TS0", " P_F_TS1", " P_F_DEL", ");
+        std::string prfx;
+        bool frst_fld = true;
+        SQLTE_ENM_INSERT_REC_UD rud = {nem,
+                                       reinterpret_cast<const char *>(&in),
+                                       &insert_stmt,
+                                       &prfx,
+                                       &values,
+                                       &frst_fld,
+                                       false,
+                                       0,
+                                       &last_error_code,
+                                       &last_error_str
+                                      };
 
-    in.get_nentity_descriptor().enum_member_descriptors(enum_mmbrs_insert, &rud);
-    insert_stmt.append(") VALUES (");
-    insert_stmt.append(values);
-    insert_stmt.append(");");
+        in.get_nentity_descriptor().enum_member_descriptors(enum_mmbrs_insert, &rud);
+        insert_stmt.append(") VALUES (");
+        insert_stmt.append(values);
+        insert_stmt.append(");");
+        auto nit = ins_stmt_m.insert(std::pair<std::string, std::string>(ss.str(), insert_stmt));
+        ins_stmt = nit.first->second.c_str();
+    }
+
     std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_INSERT));
     task->in_nem_ = &nem;
     task->in_obj_ = &in;
     task->in_out_ts0_ = &ts0;
     task->in_out_ts1_ = &ts1;
     task->in_fail_is_error_ = fail_is_error;
-    task->stmt_bf_ = &insert_stmt;
-    IFLOG(dbg(TH_ID, LS_STM "[insert_stmt:%s]", __func__, insert_stmt.c_str()))
+    task->stmt_bf_ = ins_stmt;
+    IFLOG(dbg(TH_ID, LS_STM "[insert_stmt:%s]", __func__, ins_stmt))
     if((rcode = worker_->submit_task(task.get()))) {
         IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
         return rcode;
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);
-    }
-
-    if(enm_buff) {
-        delete enm_buff;
     }
     return task->op_res_;
 }
@@ -1709,49 +1662,20 @@ RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_impl &qry,
 {
     pers_query_sqlite *qry_sqlite = static_cast<pers_query_sqlite *>(&qry);
     RetCode rcode = RetCode_OK;
-    RetCode last_error_code = RetCode_OK;
-    std::string last_error_str;
-    std::string select_stmt;
-    std::string columns;
-    std::string where_claus;
-    int sqlite_rc = 0;
-    bool frst_fld = true, frst_key = true, frst_key_mmbr = true;
-    int column_idx = 3; //column idx, [ts0, ts1, del] we start from 3.
-    sqlite_gr_buf *enm_buff = new sqlite_gr_buf();
-    SQLTE_ENM_SELECT_REC_UD rud = { qry.nem_,
-                                    reinterpret_cast<char *>(&out),
-                                    nullptr,
-                                    &columns,
-                                    &where_claus,
-                                    &frst_fld,
-                                    false,
-                                    0,
-                                    &frst_key,
-                                    &frst_key_mmbr,
-                                    &last_error_code,
-                                    &last_error_str,
-                                    &column_idx,
-                                    qry_sqlite->stmt_,
-                                    &sqlite_rc,
-                                    enm_buff
-                                  };
-
     std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_NEXTENTITYFROMQUERY));
-    task->in_out_query_ = &qry;
     task->in_out_ts0_ = &ts0_out;
     task->in_out_ts1_ = &ts1_out;
     task->in_out_obj_ = &out;
-    task->sel_rud_ = &rud;
+    task->sel_stmt_ = qry_sqlite->stmt_;
+    task->in_nem_ = &qry_sqlite->nem_;
     if((rcode = worker_->submit_task(task.get()))) {
         IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
         return rcode;
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);
     }
-    if(enm_buff) {
-        delete enm_buff;
-    }
-    return task->op_res_;
+    rcode = task->op_res_;
+    return rcode;
 }
 
 //--------------------- EXEC STMT ----------------------------------------------
@@ -1776,7 +1700,7 @@ RetCode pers_conn_sqlite::do_execute_statement(const char *sql)
 // pers_driv_sqlite
 
 struct pers_driv_sqlite : public persistence_driver {
-    static pers_driv_sqlite *get_instance();
+    static pers_driv_sqlite &get_instance();
     explicit pers_driv_sqlite();
 
     virtual RetCode new_connection(persistence_connection_pool &conn_pool,
@@ -1786,18 +1710,17 @@ struct pers_driv_sqlite : public persistence_driver {
     virtual const char *get_driver_name();
 };
 
-pers_driv_sqlite *drv_sqlite_instance = nullptr;
+std::unique_ptr<pers_driv_sqlite> drv_sqlite_instance;
 
-pers_driv_sqlite *pers_driv_sqlite::get_instance()
+pers_driv_sqlite &pers_driv_sqlite::get_instance()
 {
     if(!drv_sqlite_instance) {
-        drv_sqlite_instance = new pers_driv_sqlite();
+        drv_sqlite_instance.reset(new pers_driv_sqlite());
     }
-    return drv_sqlite_instance;
+    return *drv_sqlite_instance;
 }
 
-pers_driv_sqlite::pers_driv_sqlite() :
-    persistence_driver(VLG_PERS_DRIV_SQLITE_ID)
+pers_driv_sqlite::pers_driv_sqlite() : persistence_driver(VLG_PERS_DRIV_SQLITE_ID)
 {}
 
 RetCode pers_driv_sqlite::new_connection(persistence_connection_pool &conn_pool,
@@ -1842,7 +1765,7 @@ VLG_PERS_DRIV_SQLITE ENTRY POINT
 extern "C" {
     EXP_SYM persistence_driver *get_pers_driv_sqlite()
     {
-        return pers_driv_sqlite::get_instance();
+        return &pers_driv_sqlite::get_instance();
     }
 }
 

@@ -1065,7 +1065,8 @@ RetCode incoming_connection_impl::recv_sbs_evt_ack(const vlg_hdr_rec *pkt_hdr)
     return rcode;
 }
 
-RetCode incoming_connection_impl::recv_sbs_stop_request(const vlg_hdr_rec *pkt_hdr)
+RetCode incoming_connection_impl::recv_sbs_stop_request(const vlg_hdr_rec *pkt_hdr,
+                                                        std::shared_ptr<incoming_connection> &inco_conn)
 {
     RetCode rcode = RetCode_OK;
     unsigned int sbsid = pkt_hdr->row_1.sbsrid.sbsrid;
@@ -1088,7 +1089,7 @@ RetCode incoming_connection_impl::recv_sbs_stop_request(const vlg_hdr_rec *pkt_h
                      gbb);
     gbb->flip();
     RET_ON_KO(pkt_sending_q_.put(&gbb))
-    selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, sbs_sh->impl_->conn_sh_);
+    selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, inco_conn);
     rcode = peer_->selector_.asynch_notify(evt);
     return rcode;
 }

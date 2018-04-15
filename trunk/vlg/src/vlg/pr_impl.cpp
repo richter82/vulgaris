@@ -551,7 +551,7 @@ RetCode peer_impl::recv_and_route_pkt(std::shared_ptr<incoming_connection> &inco
             break;
         case VLG_PKT_SBSTOP_ID:
             /*SUBSCRIPTION STOP REQUEST*****************************************************/
-            rcode = inco_conn->impl_->recv_sbs_stop_request(hdr);
+            rcode = inco_conn->impl_->recv_sbs_stop_request(hdr, inco_conn);
             break;
         default:
             break;
