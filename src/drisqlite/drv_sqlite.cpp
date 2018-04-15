@@ -1037,15 +1037,13 @@ struct SQLTE_ENM_KSET_SELECT_REC_UD {
 bool enum_keyset_select_table(const member_desc &mmbrd, void *ud)
 {
     SQLTE_ENM_KSET_SELECT_REC_UD &rud = *static_cast<SQLTE_ENM_KSET_SELECT_REC_UD *>(ud);
-    //coma handling
     if(*(rud.first_key)) {
         *(rud.first_key) = false;
     } else {
         rud.where_claus->append(" AND ");
     }
     rud.where_claus->append(mmbrd.get_member_name());
-    rud.where_claus->append("=");
-    *rud.where_claus += '?';
+    rud.where_claus->append("=?");
     return true;
 }
 
@@ -1055,15 +1053,22 @@ RetCode pers_conn_sqlite::do_select(unsigned int key,
                                     unsigned int &ts1_out,
                                     nclass &in_out)
 {
+    static pthread_rwlock_t sel_stmt_m_l = PTHREAD_RWLOCK_INITIALIZER;
     static std::unordered_map<std::string, std::string> sel_stmt_m;
     RetCode rcode = RetCode_OK;
     const char *sel_stmt = nullptr;
     std::stringstream ss;
     ss << in_out.get_id() << '_' << key;
-    auto it = sel_stmt_m.find(ss.str());
-    if(it != sel_stmt_m.end()) {
-        sel_stmt = it->second.c_str();
-    } else {
+
+    {
+        scoped_rd_lock rl(sel_stmt_m_l);
+        auto it = sel_stmt_m.find(ss.str());
+        if(it != sel_stmt_m.end()) {
+            sel_stmt = it->second.c_str();
+        }
+    }
+
+    if(!sel_stmt) {
         std::string select_stmt;
         std::string where_claus(P_F_DEL"=0 AND ");
         bool frst_key = true;
@@ -1077,13 +1082,16 @@ RetCode pers_conn_sqlite::do_select(unsigned int key,
 
         kdsc->enum_member_descriptors(enum_keyset_select_table, &rud);
 
-        select_stmt.assign("SELECT ");
-        select_stmt.append("*");
-        select_stmt.append(" FROM ");
+        select_stmt.assign("SELECT * FROM ");
         select_stmt.append(in_out.get_nentity_descriptor().get_nentity_name());
         select_stmt.append(" WHERE ");
         select_stmt.append(where_claus);
         select_stmt.append(";");
+        {
+            scoped_wr_lock wl(sel_stmt_m_l);
+            auto nit = sel_stmt_m.insert(std::pair<std::string, std::string>(ss.str(), select_stmt));
+            sel_stmt = nit.first->second.c_str();
+        }
     }
 
     std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_SELECT));
@@ -1240,15 +1248,13 @@ bool enum_mmbrs_update(const member_desc &mmbrd, void *ud)
 bool enum_keyset_update_table(const member_desc &mmbrd, void *ud)
 {
     SQLTE_ENM_UPDATE_REC_UD &rud = *static_cast<SQLTE_ENM_UPDATE_REC_UD *>(ud);
-    //coma handling
     if(*(rud.first_key)) {
         *(rud.first_key) = false;
     } else {
         rud.where_claus->append(" AND ");
     }
     rud.where_claus->append(mmbrd.get_member_name());
-    rud.where_claus->append("=");
-    *rud.where_claus += '?';
+    rud.where_claus->append("=?");
     return true;
 }
 
@@ -1258,15 +1264,22 @@ RetCode pers_conn_sqlite::do_update(unsigned int key,
                                     unsigned int ts1,
                                     const nclass &in)
 {
+    static pthread_rwlock_t upd_stmt_m_l = PTHREAD_RWLOCK_INITIALIZER;
     static std::unordered_map<std::string, std::string> upd_stmt_m;
     RetCode rcode = RetCode_OK;
     const char *upd_stmt = nullptr;
     std::stringstream ss;
     ss << in.get_id() << '_' << key;
-    auto it = upd_stmt_m.find(ss.str());
-    if(it != upd_stmt_m.end()) {
-        upd_stmt = it->second.c_str();
-    } else {
+
+    {
+        scoped_rd_lock rl(upd_stmt_m_l);
+        auto it = upd_stmt_m.find(ss.str());
+        if(it != upd_stmt_m.end()) {
+            upd_stmt = it->second.c_str();
+        }
+    }
+
+    if(!upd_stmt) {
         RetCode last_error_code = RetCode_OK;
         std::string update_stmt;
         std::string last_error_str;
@@ -1304,8 +1317,12 @@ RetCode pers_conn_sqlite::do_update(unsigned int key,
         update_stmt.append(" WHERE ");
         update_stmt.append(where_claus);
         update_stmt.append(";");
-        auto nit = upd_stmt_m.insert(std::pair<std::string, std::string>(ss.str(), update_stmt));
-        upd_stmt = nit.first->second.c_str();
+
+        {
+            scoped_wr_lock wl(upd_stmt_m_l);
+            auto nit = upd_stmt_m.insert(std::pair<std::string, std::string>(ss.str(), update_stmt));
+            upd_stmt = nit.first->second.c_str();
+        }
     }
 
     std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_UPDATE));
@@ -1340,15 +1357,13 @@ struct SQLTE_ENM_DELETE_REC_UD {
 bool enum_keyset_delete_table(const member_desc &mmbrd, void *ud)
 {
     SQLTE_ENM_DELETE_REC_UD &rud = *static_cast<SQLTE_ENM_DELETE_REC_UD *>(ud);
-    //coma handling
     if(*(rud.first_key)) {
         *(rud.first_key) = false;
     } else {
         rud.where_claus->append(" AND ");
     }
     rud.where_claus->append(mmbrd.get_member_name());
-    rud.where_claus->append("=");
-    *rud.where_claus += '?';
+    rud.where_claus->append("=?");
     return true;
 }
 
@@ -1359,15 +1374,22 @@ RetCode pers_conn_sqlite::do_delete(unsigned int key,
                                     PersistenceDeletionMode mode,
                                     const nclass &in)
 {
+    static pthread_rwlock_t del_stmt_m_l = PTHREAD_RWLOCK_INITIALIZER;
     static std::unordered_map<std::string, std::string> del_stmt_m;
     RetCode rcode = RetCode_OK;
     const char *del_stmt = nullptr;
     std::stringstream ss;
     ss << in.get_id() << '_' << key << '_' << mode;
-    auto it = del_stmt_m.find(ss.str());
-    if(it != del_stmt_m.end()) {
-        del_stmt = it->second.c_str();
-    } else {
+
+    {
+        scoped_rd_lock rl(del_stmt_m_l);
+        auto it = del_stmt_m.find(ss.str());
+        if(it != del_stmt_m.end()) {
+            del_stmt = it->second.c_str();
+        }
+    }
+
+    if(!del_stmt) {
         RetCode last_error_code = RetCode_OK;
         std::string last_error_str;
         std::string delete_stmt;
@@ -1404,8 +1426,12 @@ RetCode pers_conn_sqlite::do_delete(unsigned int key,
             delete_stmt.append(where_claus);
             delete_stmt.append(";");
         }
-        auto nit = del_stmt_m.insert(std::pair<std::string, std::string>(ss.str(), delete_stmt));
-        del_stmt = nit.first->second.c_str();
+
+        {
+            scoped_wr_lock wl(del_stmt_m_l);
+            auto nit = del_stmt_m.insert(std::pair<std::string, std::string>(ss.str(), delete_stmt));
+            del_stmt = nit.first->second.c_str();
+        }
     }
 
     std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_DELETE));
@@ -1566,15 +1592,22 @@ RetCode pers_conn_sqlite::do_insert(const nentity_manager &nem,
                                     const nclass &in,
                                     bool fail_is_error)
 {
+    static pthread_rwlock_t ins_stmt_m_l = PTHREAD_RWLOCK_INITIALIZER;
     static std::unordered_map<std::string, std::string> ins_stmt_m;
     RetCode rcode = RetCode_OK;
     const char *ins_stmt = nullptr;
     std::stringstream ss;
     ss << in.get_id();
-    auto it = ins_stmt_m.find(ss.str());
-    if(it != ins_stmt_m.end()) {
-        ins_stmt = it->second.c_str();
-    } else {
+
+    {
+        scoped_rd_lock rl(ins_stmt_m_l);
+        auto it = ins_stmt_m.find(ss.str());
+        if(it != ins_stmt_m.end()) {
+            ins_stmt = it->second.c_str();
+        }
+    }
+
+    if(!ins_stmt) {
         RetCode last_error_code = RetCode_OK;
         std::string last_error_str;
         std::string insert_stmt("INSERT INTO ");
@@ -1599,8 +1632,12 @@ RetCode pers_conn_sqlite::do_insert(const nentity_manager &nem,
         insert_stmt.append(") VALUES (");
         insert_stmt.append(values);
         insert_stmt.append(");");
-        auto nit = ins_stmt_m.insert(std::pair<std::string, std::string>(ss.str(), insert_stmt));
-        ins_stmt = nit.first->second.c_str();
+
+        {
+            scoped_wr_lock wl(ins_stmt_m_l);
+            auto nit = ins_stmt_m.insert(std::pair<std::string, std::string>(ss.str(), insert_stmt));
+            ins_stmt = nit.first->second.c_str();
+        }
     }
 
     std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_INSERT));
