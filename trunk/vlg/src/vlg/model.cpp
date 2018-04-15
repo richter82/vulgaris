@@ -993,30 +993,45 @@ bool enum_edesc_fnd_idx(const member_desc &mmbrd, void *ptr)
     return true;
 }
 
+struct offst_m_v {
+    size_t foffst;
+    const member_desc *fmdesc;
+};
+
 char *nclass::get_field_address_by_column_number(unsigned int col_num,
                                                  const nentity_manager &nem,
                                                  const member_desc **mdesc)
 {
+    static std::unordered_map<std::string, offst_m_v> offst_m;
     if(!mdesc) {
         return nullptr;
     }
 
-    bool res_valid = false;
-    unsigned int current_plain_idx = 0;
-    char *obj_fld_ptr = nullptr;
-    ENM_FND_IDX_REC_UD fnd_idx_rud((char *)this,
-                                   nem,
-                                   col_num,
-                                   &current_plain_idx,
-                                   &obj_fld_ptr,
-                                   &res_valid);
+    std::stringstream ss;
+    ss << get_id() << '_' << col_num;
+    auto it = offst_m.find(ss.str());
+    if(it != offst_m.end()) {
+        *mdesc = it->second.fmdesc;
+        return reinterpret_cast<char *>(this) + it->second.foffst;
+    } else {
+        bool res_valid = false;
+        unsigned int current_plain_idx = 0;
+        char *obj_fld_ptr = nullptr;
+        ENM_FND_IDX_REC_UD fnd_idx_rud((char *)this,
+                                       nem,
+                                       col_num,
+                                       &current_plain_idx,
+                                       &obj_fld_ptr,
+                                       &res_valid);
 
-    get_nentity_descriptor().enum_member_descriptors(enum_edesc_fnd_idx, &fnd_idx_rud);
-    if(fnd_idx_rud.res_valid_) {
-        *mdesc = fnd_idx_rud.fld_mmbrd_;
-        return obj_fld_ptr;
+        get_nentity_descriptor().enum_member_descriptors(enum_edesc_fnd_idx, &fnd_idx_rud);
+        if(fnd_idx_rud.res_valid_) {
+            offst_m.insert(std::pair<std::string, offst_m_v>(ss.str(), {(size_t)(obj_fld_ptr - (char *)this), fnd_idx_rud.fld_mmbrd_}));
+            *mdesc = fnd_idx_rud.fld_mmbrd_;
+            return obj_fld_ptr;
+        }
+        return nullptr;
     }
-    return nullptr;
 }
 
 /*************************************************************

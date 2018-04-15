@@ -1674,8 +1674,7 @@ RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_impl &qry,
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);
     }
-    rcode = task->op_res_;
-    return rcode;
+    return task->op_res_;;
 }
 
 //--------------------- EXEC STMT ----------------------------------------------
