@@ -106,8 +106,6 @@ struct incoming_subscription_impl : public sbs_impl {
         explicit incoming_subscription_impl(incoming_subscription &publ, std::shared_ptr<incoming_connection> &);
         virtual ~incoming_subscription_impl();
 
-        RetCode set_req_sent();
-
         RetCode execute_initial_query();
         void release_initial_query();
         RetCode safe_submit_dwnl_event();
