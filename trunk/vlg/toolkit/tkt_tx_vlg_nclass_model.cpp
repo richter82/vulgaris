@@ -134,20 +134,15 @@ vlg_toolkit_tx_vlg_class_model::vlg_toolkit_tx_vlg_class_model(const vlg::nentit
                                                                QObject *parent) :
     edesc_(edesc),
     bem_(bem),
-    local_obj_(NULL),
     rownum_(0),
     QAbstractTableModel(parent)
 {
-    bem.new_nclass_instance(edesc.get_nclass_id(), &local_obj_);
+    bem.new_nclass_instance(edesc.get_nclass_id(), local_obj_);
     GenerateModelRep();
 }
 
 vlg_toolkit_tx_vlg_class_model::~vlg_toolkit_tx_vlg_class_model()
-{
-    if(local_obj_) {
-        delete local_obj_;
-    }
-}
+{}
 
 void vlg_toolkit_tx_vlg_class_model::GenerateModelRep()
 {
@@ -169,7 +164,7 @@ void vlg_toolkit_tx_vlg_class_model::IncrRownum()
 
 vlg::nclass *vlg_toolkit_tx_vlg_class_model::local_obj() const
 {
-    return local_obj_;
+    return local_obj_.get();
 }
 
 int vlg_toolkit_tx_vlg_class_model::columnCount(const QModelIndex &parent) const

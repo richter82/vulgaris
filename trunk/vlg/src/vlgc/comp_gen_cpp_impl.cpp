@@ -568,7 +568,7 @@ RetCode VLG_COMP_Gen_Allc__CPP_(compile_unit &cunit, FILE *file)
         std::string nmsp;
         RET_ON_KO(VLG_COMP_CPP_Calc_NMspc(*edsc->second, nmsp))
         fprintf(file, "namespace %s{\n", nmsp.length() ? nmsp.c_str() : "");
-        fprintf(file, "void* %s_alloc_func()\n{\n"
+        fprintf(file, "vlg::nclass* %s_alloc_func()\n{\n"
                 CR_1IND "return new %s%s%s();\n"
                 "}\n",
                 edsc->second->get_nentity_name(),

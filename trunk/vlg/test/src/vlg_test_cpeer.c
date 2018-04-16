@@ -13,14 +13,16 @@
 #include "vlg_drv_sqlite.h"
 #include "vlg_model_sample.h"
 
-const char *cpeer_name_handler(peer *p, void *ud){
+const char *cpeer_name_handler(peer *p, void *usr_data){
     return "c_peer[" __DATE__"]";
 }
 
-const unsigned int *cpeer_version_handler(peer *p, void *ud){
+const unsigned int *cpeer_version_handler(peer *p, void *usr_data){
     static unsigned int peer_c_ver_[4] = {0,0,0,0};
     return peer_c_ver_;
 }
+
+
 
 // MAIN
 int main(int argc, char *argv[])

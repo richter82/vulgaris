@@ -31,9 +31,9 @@ class peer_automa_th : public p_th {
 void peer_automa::peer_param_clbk_ud(int pnum,
                                      const char *param,
                                      const char *value,
-                                     void *ud)
+                                     void *usr_data)
 {
-    peer_automa *peer = static_cast<peer_automa *>(ud);
+    peer_automa *peer = static_cast<peer_automa *>(usr_data);
     RetCode res = peer->on_automa_load_config(pnum, param, value);
     if(res) {
         peer->peer_last_error_ = res;

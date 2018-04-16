@@ -63,11 +63,11 @@ class vlg_toolkit_tx_vlg_class_model : public QAbstractTableModel {
         void IncrRownum();
 
     private:
-        const vlg::nentity_desc       &edesc_;
-        const vlg::nentity_manager    &bem_;
-        vlg::nclass                  *local_obj_;
+        const vlg::nentity_desc &edesc_;
+        const vlg::nentity_manager &bem_;
+        std::unique_ptr<vlg::nclass> local_obj_;
 
         //METADATA REP
         int rownum_;
-        QHash<int, QString>     hdr_rowidx_rowname_;  //rowidx --> row_hdr_name
+        QHash<int, QString> hdr_rowidx_rowname_;  //rowidx --> row_hdr_name
 };

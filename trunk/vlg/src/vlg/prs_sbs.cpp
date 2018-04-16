@@ -21,9 +21,9 @@ struct SPC_REC {
 };
 
 bool peer_enum_nem_nclasses_create_schema(const nentity_desc &nentity_desc,
-                                          void *ud)
+                                          void *usr_data)
 {
-    SPC_REC *pud = static_cast<SPC_REC *>(ud);
+    SPC_REC *pud = static_cast<SPC_REC *>(usr_data);
     if(nentity_desc.is_persistent()) {
         persistence_driver *driv = nullptr;
         if((driv = pud->peer->pers_mng_.available_driver(nentity_desc.get_nclass_id()))) {

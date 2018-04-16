@@ -877,8 +877,8 @@ RetCode incoming_connection_impl::recv_tx_request(const vlg_hdr_rec *pkt_hdr,
             timpl->req_nclassid_ = pkt_hdr->row_7.clsenc.nclsid;
             timpl->req_clsenc_ = pkt_hdr->row_7.clsenc.enctyp;
             timpl->res_clsenc_ = pkt_hdr->row_7.clsenc.enctyp;
-            nclass *req_obj = nullptr;
-            if((rcode = peer_->nem_.new_nclass_instance(timpl->req_nclassid_, &req_obj))) {
+            std::unique_ptr<nclass> req_obj;
+            if((rcode = peer_->nem_.new_nclass_instance(timpl->req_nclassid_, req_obj))) {
                 timpl->tx_res_ = TransactionResult_FAILED;
                 timpl->result_code_ = ProtocolCode_MALFORMED_REQUEST;
                 timpl->rescls_ = false;
@@ -886,7 +886,6 @@ RetCode incoming_connection_impl::recv_tx_request(const vlg_hdr_rec *pkt_hdr,
                 IFLOG(err(TH_ID, LS_TRX"[tx request receive failed - new_nclass_instance:%d, nclass_id:%d]",
                           rcode, timpl->req_nclassid_))
             } else {
-                timpl->set_request_obj_on_request(*req_obj);
                 if((rcode = req_obj->restore(&peer_->nem_, timpl->req_clsenc_, pkt_body))) {
                     timpl->tx_res_ = TransactionResult_FAILED;
                     timpl->result_code_ = ProtocolCode_MALFORMED_REQUEST;
@@ -895,6 +894,7 @@ RetCode incoming_connection_impl::recv_tx_request(const vlg_hdr_rec *pkt_hdr,
                     IFLOG(err(TH_ID, LS_TRX"[tx request receive failed - nclass restore fail:%d, nclass_id:%d]",
                               rcode, timpl->req_nclassid_))
                 }
+                timpl->set_request_obj_on_request(req_obj);
             }
         }
         if(!skip_appl_mng) {
@@ -1305,22 +1305,20 @@ RetCode outgoing_connection_impl::recv_tx_response(const vlg_hdr_rec *pkt_hdr,
     if(pkt_hdr->phdr.hdrlen == 8) {
         trans->res_nclassid_ = pkt_hdr->row_7.clsenc.nclsid;
         trans->res_clsenc_ = pkt_hdr->row_7.clsenc.enctyp;
-        nclass *nobj = nullptr;
-        if((rcode = peer_->nem_.new_nclass_instance(trans->res_nclassid_, &nobj))) {
+        std::unique_ptr<nclass> res_obj;
+        if((rcode = peer_->nem_.new_nclass_instance(trans->res_nclassid_, res_obj))) {
             IFLOG(err(TH_ID, LS_TRX"[tx response receive failed - new_nclass_instance:%d, nclass_id:%d]",
                       rcode,
                       trans->res_nclassid_))
             aborted = true;
         }
-
-        trans->set_result_obj_on_response(*nobj);
-
-        if((rcode = nobj->restore(&peer_->nem_, trans->res_clsenc_, pkt_body))) {
+        if((rcode = res_obj->restore(&peer_->nem_, trans->res_clsenc_, pkt_body))) {
             IFLOG(err(TH_ID, LS_TRX"[tx response receive failed - nclass restore fail:%d, nclass_id:%d]",
                       rcode,
                       trans->res_nclassid_))
             aborted = true;
         }
+        trans->set_result_obj_on_response(res_obj);
     }
 
     if((rcode = outg_flytx_map_.remove(&trans->txid_, nullptr))) {

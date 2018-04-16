@@ -87,7 +87,7 @@ struct peer_automa {
         static void peer_param_clbk_ud(int pnum,
                                        const char *param,
                                        const char *value,
-                                       void *ud);
+                                       void *usr_data);
     public:
         peer &publ_;
 };

@@ -13,26 +13,26 @@ extern "C" {
 
     typedef void(*inco_connection_status_change)(incoming_connection *ic,
                                                  ConnectionStatus status,
-                                                 void *ud);
+                                                 void *usr_data);
 
     typedef void(*inco_connection_on_disconnect_handler)(incoming_connection *ic,
                                                          ConnectivityEventResult con_evt_res,
                                                          ConnectivityEventType c_evt_type,
-                                                         void *ud);
+                                                         void *usr_data);
 
     typedef void(*outg_connection_status_change)(outgoing_connection *oc,
                                                  ConnectionStatus status,
-                                                 void *ud);
+                                                 void *usr_data);
 
     typedef void(*outg_connection_on_connect_handler)(outgoing_connection *oc,
                                                       ConnectivityEventResult con_evt_res,
                                                       ConnectivityEventType c_evt_type,
-                                                      void *ud);
+                                                      void *usr_data);
 
     typedef void(*outg_connection_on_disconnect_handler)(outgoing_connection *oc,
                                                          ConnectivityEventResult con_evt_res,
                                                          ConnectivityEventType c_evt_type,
-                                                         void *ud);
+                                                         void *usr_data);
 }
 
 //inco_connection
@@ -230,10 +230,10 @@ extern "C" {
     }
 
     void outg_connection_set_status_change_handler(outgoing_connection *oc,
-                                                   outg_connection_status_change handler, void *ud)
+                                                   outg_connection_status_change handler, void *usr_data)
     {
         static_cast<c_outg_conn *>(oc)->ocsc_ = handler;
-        static_cast<c_outg_conn *>(oc)->ocsc_ud_ = ud;
+        static_cast<c_outg_conn *>(oc)->ocsc_ud_ = usr_data;
     }
 
     RetCode outg_connection_connect(outgoing_connection *oc, sockaddr_in *connection_params)
@@ -266,17 +266,17 @@ extern "C" {
     }
 
     void outg_connection_set_on_connect_handler(outgoing_connection *oc,
-                                                outg_connection_on_connect_handler hndl, void *ud)
+                                                outg_connection_on_connect_handler hndl, void *usr_data)
     {
         static_cast<c_outg_conn *>(oc)->ococh_ = hndl;
-        static_cast<c_outg_conn *>(oc)->ococh_ud_ = ud;
+        static_cast<c_outg_conn *>(oc)->ococh_ud_ = usr_data;
     }
 
     void outg_connection_set_on_disconnect_handler(outgoing_connection *oc,
-                                                   outg_connection_on_disconnect_handler hndl, void *ud)
+                                                   outg_connection_on_disconnect_handler hndl, void *usr_data)
     {
         static_cast<c_outg_conn *>(oc)->ocodh_ = hndl;
-        static_cast<c_outg_conn *>(oc)->ocodh_ud_ = ud;
+        static_cast<c_outg_conn *>(oc)->ocodh_ud_ = usr_data;
     }
 
     SOCKET outg_connection_get_socket(outgoing_connection *oc)

@@ -36,7 +36,7 @@ int key_desc_is_primary(key_desc *kdesc);
 NENTITY DESC
 ************************************************************************/
 
-typedef int(*enum_member_desc)(const member_desc *mdesc, void *ud);
+typedef int(*enum_member_desc)(const member_desc *mdesc, void *usr_data);
 
 unsigned int nentity_desc_get_nclass_id(nentity_desc *edesc);
 size_t nentity_desc_get_nentity_size(nentity_desc *edesc);
@@ -48,7 +48,7 @@ unsigned int nentity_desc_get_nentity_member_num(nentity_desc *edesc);
 int nentity_desc_is_persistent(nentity_desc *edesc);
 const member_desc *nentity_desc_get_member_desc_by_id(nentity_desc *edesc, unsigned int member_id);
 const member_desc *nentity_desc_get_member_desc_by_name(nentity_desc *edesc, const char *member_name);
-void nentity_desc_enum_member_descriptors(nentity_desc *edesc, enum_member_desc emd_f, void *ud);
+void nentity_desc_enum_member_descriptors(nentity_desc *edesc, enum_member_desc emd_f, void *usr_data);
 
 /************************************************************************
 NCLASS
@@ -94,14 +94,14 @@ RetCode nclass_get_primary_key_value_as_string(nclass *obj, char **newly_alloc_o
 NENTITY_MANAGER
 ************************************************************************/
 
-typedef int(*enum_nentity_desc)(const nentity_desc *edesc, void *ud);
+typedef int(*enum_nentity_desc)(const nentity_desc *edesc, void *usr_data);
 
 const nentity_desc *nentity_manager_get_nentity_descriptor_by_nclassid(nentity_manager *nem, unsigned int nclass_id);
-const nentity_desc *nentity_manager_get_nentity_descriptor_by_name(nentity_manager *nem, const char *entity_name);
-void nentity_manager_enum_nentity_descriptors(nentity_manager *nem, enum_nentity_desc eedf, void *ud);
-void nentity_manager_enum_nenum_descriptors(nentity_manager *nem, enum_nentity_desc eedf, void *ud);
-void nentity_manager_enum_nclass_descriptors(nentity_manager *nem, enum_nentity_desc eedf, void *ud);
-RetCode nentity_manager_new_nclass_instance(nentity_manager *nem, unsigned int nclass_id, nclass **new_nclass_obj);
+const nentity_desc *nentity_manager_get_nentity_descriptor_by_name(nentity_manager *nem, const char *nentity_name);
+void nentity_manager_enum_nentity_descriptors(nentity_manager *nem, enum_nentity_desc eedf, void *usr_data);
+void nentity_manager_enum_nenum_descriptors(nentity_manager *nem, enum_nentity_desc eedf, void *usr_data);
+void nentity_manager_enum_nclass_descriptors(nentity_manager *nem, enum_nentity_desc eedf, void *usr_data);
+RetCode nentity_manager_new_nclass_instance(nentity_manager *nem, unsigned int nclass_id, own_nclass **new_nclass_obj);
 unsigned int nentity_manager_nentity_count(nentity_manager *nem);
 unsigned int nentity_manager_nenum_count(nentity_manager *nem);
 unsigned int nentity_manager_nclass_count(nentity_manager *nem);
