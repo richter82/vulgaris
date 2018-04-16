@@ -539,7 +539,7 @@ inline RetCode selector::consume_inco_sock_events()
                   new_conn_shp->get_id()))
         --sel_res_;
         if(sel_res_) {
-            //in addition to the newly connection, there is also some other message incoming on client sockets.
+            //in addition to the newly connection, there is also some other message incoming on incoming sockets.
             IFLOG(trc(TH_ID, LS_SEL "+some events need to be processed+", __func__))
             if(process_inco_sock_inco_events()) {
                 IFLOG(cri(TH_ID, LS_CLO "[processing incoming socket events]", __func__))
@@ -547,7 +547,7 @@ inline RetCode selector::consume_inco_sock_events()
             }
         }
     } else {
-        //we have to handle incoming messages on client sockets
+        //we have to handle incoming messages on incoming sockets
         IFLOG(trc(TH_ID, LS_SEL "+some events need to be processed+", __func__))
         if(process_inco_sock_inco_events()) {
             IFLOG(cri(TH_ID, LS_CLO "[processing incoming socket events]", __func__))
