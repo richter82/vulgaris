@@ -190,12 +190,12 @@ struct s_hm;
 typedef void(*s_hm_enm_func)(const s_hm &map,
                              const void *key,
                              const void *ptr,
-                             void *ud);
+                             void *usr_data);
 
 typedef void(*s_hm_enm_func_br)(const s_hm &map,
                                 const void *key,
                                 const void *ptr,
-                                void *ud,
+                                void *usr_data,
                                 bool &brk);
 
 const unsigned int HMSz_23 = 23U;
@@ -248,17 +248,16 @@ struct s_hm : public brep {
         RetCode contains_key(const void *key) const;
 
         RetCode enum_elements_safe_read(s_hm_enm_func enum_f,
-                                        void *ud) const;
+                                        void *usr_data) const;
 
         RetCode enum_elements_safe_write(s_hm_enm_func enum_f,
-                                         void *ud) const;
+                                         void *usr_data) const;
 
         RetCode enum_elements_breakable_safe_read(s_hm_enm_func_br enum_f,
-                                                  void *ud) const;
+                                                  void *usr_data) const;
 
-        RetCode enum_elements_breakable_safe_write(s_hm_enm_func_br
-                                                   enum_f,
-                                                   void *ud) const;
+        RetCode enum_elements_breakable_safe_write(s_hm_enm_func_br enum_f,
+                                                   void *usr_data) const;
         /**
         @param key
         @param copy
@@ -287,8 +286,8 @@ struct s_hm : public brep {
         void init(pthread_rwlockattr_t *attr);
         uint32_t gidx(const void *key) const;
         void rm(hm_node *del_mn, uint32_t idx);
-        void enm(const s_hm &map, s_hm_enm_func enum_f, void *ud) const;
-        void enmbr(const s_hm &map, s_hm_enm_func_br enum_f, void *ud) const;
+        void enm(const s_hm &map, s_hm_enm_func enum_f, void *usr_data) const;
+        void enmbr(const s_hm &map, s_hm_enm_func_br enum_f, void *usr_data) const;
 
         const obj_mng elem_manager_, key_manager_;
         uint32_t hash_size_;

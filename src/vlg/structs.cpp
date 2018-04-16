@@ -354,26 +354,26 @@ void s_hm::rm(hm_node *del_mn, uint32_t idx)
 
 void s_hm::enm(const s_hm &map,
                s_hm_enm_func enum_f,
-               void *ud) const
+               void *usr_data) const
 {
     hm_node *it = head_, *prev = nullptr;
     while(it) {
         prev = it;
         it = it->insrt_next_;
-        enum_f(map, prev->key_ptr_, prev->ptr_, ud);
+        enum_f(map, prev->key_ptr_, prev->ptr_, usr_data);
     }
 }
 
 void s_hm::enmbr(const s_hm &map,
                  s_hm_enm_func_br enum_f,
-                 void *ud) const
+                 void *usr_data) const
 {
     hm_node *it = head_, *prev = nullptr;
     bool brk = false;
     while(!brk && it) {
         prev = it;
         it = it->insrt_next_;
-        enum_f(map, prev->key_ptr_, prev->ptr_, ud, brk);
+        enum_f(map, prev->key_ptr_, prev->ptr_, usr_data, brk);
     }
 }
 
@@ -395,34 +395,34 @@ RetCode s_hm::clear()
 }
 
 RetCode s_hm::enum_elements_safe_read(s_hm_enm_func enum_f,
-                                      void *ud) const
+                                      void *usr_data) const
 {
     scoped_rd_lock rl(lock_);
-    enm(*this, enum_f, ud);
+    enm(*this, enum_f, usr_data);
     return RetCode_OK;
 }
 
 RetCode s_hm::enum_elements_safe_write(s_hm_enm_func enum_f,
-                                       void *ud) const
+                                       void *usr_data) const
 {
     scoped_wr_lock wl(lock_);
-    enm(*this, enum_f, ud);
+    enm(*this, enum_f, usr_data);
     return RetCode_OK;
 }
 
 RetCode s_hm::enum_elements_breakable_safe_read(s_hm_enm_func_br enum_f,
-                                                void *ud) const
+                                                void *usr_data) const
 {
     scoped_rd_lock rl(lock_);
-    enmbr(*this, enum_f, ud);
+    enmbr(*this, enum_f, usr_data);
     return RetCode_OK;
 }
 
 RetCode s_hm::enum_elements_breakable_safe_write(
-    s_hm_enm_func_br enum_f, void *ud) const
+    s_hm_enm_func_br enum_f, void *usr_data) const
 {
     scoped_wr_lock wl(lock_);
-    enmbr(*this, enum_f, ud);
+    enmbr(*this, enum_f, usr_data);
     return RetCode_OK;
 }
 

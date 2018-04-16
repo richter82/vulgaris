@@ -1,23 +1,8 @@
 /*
- *
- * (C) 2017 - giuseppe.baccini@gmail.com
- *
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *sbs_event_wrapper
- */
+* vulgaris
+* (C) 2018 - giuseppe.baccini@gmail.com
+*
+*/
 
 #include "pr_impl.h"
 #include "conn_impl.h"
@@ -59,7 +44,7 @@ subscription_event_impl::subscription_event_impl(unsigned int sbsid,
                                                  unsigned int ts0,
                                                  unsigned int ts1,
                                                  Action act,
-                                                 nclass *data) :
+                                                 std::unique_ptr<nclass> &data) :
     sbs_sbsid_(sbsid),
     sbs_evtid_(evtid),
     sbs_evttype_(set),
@@ -67,7 +52,7 @@ subscription_event_impl::subscription_event_impl(unsigned int sbsid,
     sbs_tmstp0_(ts0),
     sbs_tmstp1_(ts1),
     sbs_act_(act),
-    sbs_data_(data ? data : nullptr)
+    sbs_data_(std::move(data))
 {}
 
 sbs_impl::sbs_impl(incoming_subscription &publ, incoming_connection &conn) :
@@ -520,7 +505,7 @@ RetCode incoming_subscription_impl::submit_dwnl_event()
     RetCode rcode = RetCode_OK;
     per_nclass_id_conn_set *sdr = nullptr;
     subscription_event_impl *sbs_dwnl_evt_impl = nullptr;
-    nclass *dwnl_obj = nullptr;
+    std::unique_ptr<nclass> dwnl_obj;
     unsigned int ts0 = 0, ts1 = 0;
     if((rcode = conn_->peer_->get_per_nclassid_helper_rec(nclassid_, &sdr))) {
         IFLOG(cri(TH_ID, LS_CLO "[failed get per-nclass_id helper class][res:%d]", __func__, rcode))
@@ -528,7 +513,7 @@ RetCode incoming_subscription_impl::submit_dwnl_event()
     }
 
     //we need to new instance here because we do not know if query has ended here.
-    conn_->peer_->nem_.new_nclass_instance(nclassid_, &dwnl_obj);
+    conn_->peer_->nem_.new_nclass_instance(nclassid_, dwnl_obj);
 
     if((rcode = initial_query_->load_next_entity(ts0, ts1, *dwnl_obj)) == RetCode_DBROW) {
         sbs_dwnl_evt_impl = new subscription_event_impl(sbsid_,
@@ -554,6 +539,7 @@ RetCode incoming_subscription_impl::submit_dwnl_event()
         }
     } else if(rcode == RetCode_QRYEND) {
         IFLOG(dbg(TH_ID, LS_TRL "[initial query has ended]", __func__))
+        dwnl_obj.release();
         sbs_dwnl_evt_impl = new subscription_event_impl(sbsid_,
                                                         sdr->next_sbs_evt_id(),
                                                         SubscriptionEventType_DOWNLOAD_END,
@@ -561,7 +547,7 @@ RetCode incoming_subscription_impl::submit_dwnl_event()
                                                         0,
                                                         0,
                                                         Action_NONE,
-                                                        nullptr);
+                                                        dwnl_obj);
         std::shared_ptr<subscription_event> sbs_evt(new subscription_event(*sbs_dwnl_evt_impl));
         IFLOG(trc(TH_ID, LS_TRL "[send download-end event:%d]", __func__, sbs_dwnl_evt_impl->sbs_evtid_))
         if((rcode = send_event(sbs_evt))) {
@@ -574,7 +560,6 @@ RetCode incoming_subscription_impl::submit_dwnl_event()
         }
         initial_query_ = nullptr;
         initial_query_ended_ = true;
-        delete dwnl_obj;
     } else {
         IFLOG(cri(TH_ID, LS_TRL "[download query failed][res:%d]", __func__, rcode))
     }
@@ -771,9 +756,9 @@ RetCode outgoing_subscription_impl::receive_event(const vlg_hdr_rec *pkt_hdr,
                                                   g_bbuf *pkt_body)
 {
     RetCode rcode = RetCode_OK;
-    nclass *nobj = nullptr;
+    std::unique_ptr<nclass> nobj;
     if(pkt_hdr->row_2.sevttp.sevttp != SubscriptionEventType_DOWNLOAD_END) {
-        if((rcode = conn_->peer_->nem_.new_nclass_instance(nclassid_, &nobj))) {
+        if((rcode = conn_->peer_->nem_.new_nclass_instance(nclassid_, nobj))) {
             IFLOG(cri(TH_ID, LS_SBS"[incoming_subscription event receive failed: new_nclass_instance fail:%d, nclass_id:%d]",
                       rcode,
                       nclassid_))
@@ -785,7 +770,7 @@ RetCode outgoing_subscription_impl::receive_event(const vlg_hdr_rec *pkt_hdr,
                       nclassid_))
             return rcode;
         } else {
-            IFLOG(inf_nclass(TH_ID, nobj, true, LS_SBI"[ACT:%d] ", pkt_hdr->row_2.sevttp.sbeact))
+            IFLOG(inf_nclass(TH_ID, nobj.get(), true, LS_SBI"[ACT:%d] ", pkt_hdr->row_2.sevttp.sbeact))
         }
     }
 

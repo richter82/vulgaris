@@ -570,7 +570,7 @@ extern "C" {
 namespace vlg {
 #endif
 
-typedef void *(*nclass_alloc)();
+typedef nclass *(*nclass_alloc)();
 
 #if defined(__cplusplus)
 }

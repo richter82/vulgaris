@@ -49,7 +49,7 @@ struct member_desc {
 };
 
 typedef bool(*enum_member_desc)(const member_desc &member_descriptor,
-                                void *ud);
+                                void *usr_data);
 
 /** @brief key_desc describes a key of a nclass type.
  */
@@ -66,13 +66,13 @@ struct key_desc {
     bool is_primary() const;
 
     void enum_member_descriptors(enum_member_desc emd_f,
-                                 void *ud) const;
+                                 void *usr_data) const;
 
     std::unique_ptr<key_desc_impl> impl_;
 };
 
 typedef bool(*enum_key_desc)(const key_desc &key_descriptor,
-                             void *ud);
+                             void *usr_data);
 
 /** @brief nentity_desc describes nentity types.
     nentity_desc can describe both a nclass type or a nenum type.
@@ -83,8 +83,8 @@ struct nentity_desc {
                           size_t nclass_size,
                           size_t nclass_max_align,
                           NEntityType nentity_type,
-                          const char *entity_namespace,
-                          const char *entity_name,
+                          const char *nentity_namespace,
+                          const char *nentity_name,
                           nclass_alloc nclass_allocation_function,
                           unsigned int nentity_member_num,
                           bool persistent);
@@ -107,12 +107,12 @@ struct nentity_desc {
     const member_desc *get_member_desc_by_offset(size_t) const;
 
     void enum_member_descriptors(enum_member_desc emd_f,
-                                 void *ud) const;
+                                 void *usr_data) const;
 
     const key_desc *get_key_desc_by_id(unsigned short) const;
 
     void enum_key_descriptors(enum_key_desc ekd_f,
-                              void *ud) const;
+                              void *usr_data) const;
 
     std::unique_ptr<nentity_desc_impl> impl_;
 };
@@ -220,7 +220,7 @@ typedef const char *(*model_version_func)();
 typedef nentity_manager *(*nentity_manager_func)();
 
 typedef bool (*enum_nentity_desc)(const nentity_desc &nentity_descriptor,
-                                  void *ud);
+                                  void *usr_data);
 
 /** @brief nentity_manager holds nentity_desc objects.
  */
@@ -231,19 +231,19 @@ struct nentity_manager {
     ~nentity_manager();
 
     const nentity_desc *get_nentity_descriptor(unsigned int nclass_id) const;
-    const nentity_desc *get_nentity_descriptor(const char *entity_name) const;
+    const nentity_desc *get_nentity_descriptor(const char *nentity_name) const;
 
     void enum_nentity_descriptors(enum_nentity_desc eedf,
-                                  void *ud) const;
+                                  void *usr_data) const;
 
     void enum_nenum_descriptors(enum_nentity_desc eedf,
-                                void *ud)   const;
+                                void *usr_data)   const;
 
     void enum_nclass_descriptors(enum_nentity_desc eedf,
-                                 void *ud)  const;
+                                 void *usr_data)  const;
 
     RetCode new_nclass_instance(unsigned int nclass_id,
-                                nclass **new_nclass_obj) const;
+                                std::unique_ptr<nclass> &new_nclass_obj) const;
 
     unsigned int nentity_count() const;
     unsigned int nenum_count() const;

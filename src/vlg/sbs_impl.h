@@ -35,7 +35,7 @@ struct subscription_event_impl {
                                      unsigned int ts0,
                                      unsigned int ts1,
                                      Action act,
-                                     nclass *data);
+                                     std::unique_ptr<nclass> &data);
 
     unsigned int sbs_sbsid_;
     unsigned int sbs_evtid_;

@@ -63,7 +63,7 @@ struct incoming_transaction_impl : public tx_impl {
 
     RetCode send_response();
 
-    void set_request_obj_on_request(nclass &);
+    void set_request_obj_on_request(std::unique_ptr<nclass> &);
 
     //associated connection.
     std::shared_ptr<incoming_connection> conn_sh_;
@@ -80,7 +80,7 @@ struct outgoing_transaction_impl : public tx_impl {
     RetCode re_new();
     RetCode send();
 
-    void set_result_obj_on_response(nclass &);
+    void set_result_obj_on_response(std::unique_ptr<nclass> &);
 
     //associated connection.
     //cannot be ref, because bind is after construction.

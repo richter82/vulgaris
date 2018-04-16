@@ -79,13 +79,10 @@ vlg_toolkit_tx_window::vlg_toolkit_tx_window(vlg::outgoing_connection &conn,
     tx_.bind(conn);
     tx_.set_request_nclass_id(edesc.get_nclass_id());
 
-    vlg::nclass *sending_obj = nullptr;
-    conn.get_peer().get_entity_manager_m().new_nclass_instance(edesc.get_nclass_id(), &sending_obj);
     if(opt_img) {
         tx_mdl_.local_obj()->set_from(*opt_img);
     }
-    std::unique_ptr<vlg::nclass> sending_obj_up(sending_obj);
-    tx_.set_request_obj(*sending_obj);
+
     EmitTxStatus(tx_.get_status());
 }
 

@@ -295,9 +295,9 @@ incoming_transaction_impl::~incoming_transaction_impl()
     }
 }
 
-void incoming_transaction_impl::set_request_obj_on_request(nclass &val)
+void incoming_transaction_impl::set_request_obj_on_request(std::unique_ptr<nclass> &val)
 {
-    request_obj_.reset(&val);
+    request_obj_ = std::move(val);
     req_nclassid_ = request_obj_->get_id();
 }
 
@@ -359,9 +359,9 @@ RetCode outgoing_transaction_impl::re_new()
     return RetCode_OK;
 }
 
-void outgoing_transaction_impl::set_result_obj_on_response(nclass &val)
+void outgoing_transaction_impl::set_result_obj_on_response(std::unique_ptr<nclass> &val)
 {
-    result_obj_.reset(&val);
+    result_obj_ = std::move(val);
     res_nclassid_ = result_obj_->get_id();
     rescls_ = true;
 }
