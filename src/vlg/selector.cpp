@@ -642,8 +642,7 @@ inline RetCode selector::FDSET_incoming_sockets()
                       it->second->get_status()))
             SOCKET inco_sock = it->second->get_socket();
             if(it->second->get_status() != ConnectionStatus_DISCONNECTED) {
-                it->second->impl_->socket_shutdown();
-                it->second->impl_->notify_disconnection(ConnectivityEventResult_OK, ConnectivityEventType_NETWORK);
+                it->second->impl_->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_NETWORK);
             }
             if(write_pending_sock_inco_conn_map_.erase(inco_sock)) {
                 IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d][<][iwp-]",
@@ -743,8 +742,7 @@ inline RetCode selector::manage_disconnect_conn(selector_event *conn_evt)
         return RetCode_KO;
     }
     delete sending_pkt;
-    conn_evt->conn_->socket_shutdown();
-    conn_evt->conn_->notify_disconnection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
+    conn_evt->conn_->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
     return rcode;
 }
 
@@ -961,8 +959,7 @@ RetCode selector::stop_and_clean()
     if(peer_.personality_ == PeerPersonality_PURE_SERVER || peer_.personality_ == PeerPersonality_BOTH) {
         std::for_each(inco_connid_conn_map_.begin(), inco_connid_conn_map_.end(), [](auto &it) {
             if(it.second->get_status() != ConnectionStatus_DISCONNECTED) {
-                it.second->impl_->socket_shutdown();
-                it.second->impl_->notify_disconnection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
+                it.second->impl_->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
             }
         });
         inco_connid_conn_map_.clear();
@@ -973,15 +970,13 @@ RetCode selector::stop_and_clean()
     if(peer_.personality_ == PeerPersonality_PURE_CLIENT || peer_.personality_ == PeerPersonality_BOTH) {
         std::for_each(outg_connid_conn_map_.begin(), outg_connid_conn_map_.end(), [](auto &it) {
             if(it.second->status_ != ConnectionStatus_DISCONNECTED) {
-                it.second->socket_shutdown();
-                it.second->notify_disconnection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
+                it.second->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
             }
         });
         outg_connid_conn_map_.clear();
         std::for_each(outg_early_sock_conn_map_.begin(), outg_early_sock_conn_map_.end(), [](auto &it) {
             if(it.second->status_ != ConnectionStatus_DISCONNECTED) {
-                it.second->socket_shutdown();
-                it.second->notify_disconnection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
+                it.second->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
             }
         });
         outg_early_sock_conn_map_.clear();

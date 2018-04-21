@@ -13,6 +13,9 @@ struct conn_impl {
     conn_impl(incoming_connection &ipubl, peer &p);
     conn_impl(outgoing_connection &opubl);
 
+    virtual ~conn_impl() = default;
+    virtual void release_all_children() = 0;
+
     RetCode set_connection_established();
     RetCode set_connection_established(SOCKET socket);
     RetCode set_proto_connected();
@@ -38,7 +41,6 @@ struct conn_impl {
 
     RetCode disconnect(ProtocolCode disres);
 
-    /* this function must be called from same thread that called Disconnect()*/
     RetCode await_for_disconnection_result(ConnectivityEventResult &con_evt_res,
                                            ConnectivityEventType &connectivity_evt_type,
                                            time_t sec = -1,
@@ -50,9 +52,7 @@ struct conn_impl {
     RetCode notify_disconnection(ConnectivityEventResult con_evt_res,
                                  ConnectivityEventType connectivity_evt_type);
 
-
     RetCode set_socket_blocking_mode(bool blocking);
-
     RetCode socket_shutdown();
 
     RetCode send_single_pkt(g_bbuf *pkt_bbuf);
@@ -66,11 +66,13 @@ struct conn_impl {
                       g_bbuf *pkt_body);
 
     RetCode recv_single_hdr_row(unsigned int *hdr_row);
-
     RetCode socket_excptn_hndl(long sock_op_res);
 
     const char *get_host_ip() const;
     unsigned short get_host_port() const;
+
+    RetCode close_connection(ConnectivityEventResult cer,
+                             ConnectivityEventType cet);
 
     //rep
     ConnectionType con_type_;
@@ -107,6 +109,8 @@ struct conn_impl {
 struct incoming_connection_impl : public conn_impl {
     explicit incoming_connection_impl(incoming_connection &publ, peer &p);
     virtual ~incoming_connection_impl();
+
+    virtual void release_all_children() override;
 
     RetCode server_send_connect_res(std::shared_ptr<incoming_connection> &inco_conn);
 
@@ -162,6 +166,8 @@ struct outgoing_connection_impl : public conn_impl {
     explicit outgoing_connection_impl(outgoing_connection &publ);
     virtual ~outgoing_connection_impl();
 
+    virtual void release_all_children() override;
+
     RetCode client_connect(sockaddr_in &params);
 
     RetCode await_for_connection_result(ConnectivityEventResult &con_evt_res,
@@ -173,7 +179,6 @@ struct outgoing_connection_impl : public conn_impl {
                               ConnectivityEventType connectivity_evt_type);
 
     RetCode next_tx_id(tx_id &txid);
-    RetCode detach_subscription(outgoing_subscription_impl *subscription);
     RetCode release_subscription(outgoing_subscription_impl *subscription);
 
     RetCode recv_connection_response(const vlg_hdr_rec *pkt_hdr);

@@ -418,8 +418,8 @@ RetCode s_hm::enum_elements_breakable_safe_read(s_hm_enm_func_br enum_f,
     return RetCode_OK;
 }
 
-RetCode s_hm::enum_elements_breakable_safe_write(
-    s_hm_enm_func_br enum_f, void *usr_data) const
+RetCode s_hm::enum_elements_breakable_safe_write(s_hm_enm_func_br enum_f,
+                                                 void *usr_data) const
 {
     scoped_wr_lock wl(lock_);
     enmbr(*this, enum_f, usr_data);

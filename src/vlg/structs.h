@@ -189,12 +189,12 @@ struct s_hm;
 
 typedef void(*s_hm_enm_func)(const s_hm &map,
                              const void *key,
-                             const void *ptr,
+                             void *ptr,
                              void *usr_data);
 
 typedef void(*s_hm_enm_func_br)(const s_hm &map,
                                 const void *key,
-                                const void *ptr,
+                                void *ptr,
                                 void *usr_data,
                                 bool &brk);
 
