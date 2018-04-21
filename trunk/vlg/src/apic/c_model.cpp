@@ -1,7 +1,7 @@
 /*
  * vulgaris
  * (C) 2018 - giuseppe.baccini@gmail.com
- * 
+ *
  */
 
 #include "glob.h"
@@ -432,9 +432,13 @@ extern "C" {
                                                 unsigned int nclass_id,
                                                 own_nclass **new_nclass_obj)
     {
-        //return nem->new_nclass_instance(nclass_id, new_nclass_obj);
-		//return (own_nclass *) new std::unique_ptr<nclass>(std::move(obj->clone()));
-		return RetCode_OK;
+        std::unique_ptr<nclass> *nnclss_obj = new std::unique_ptr<nclass>();
+        RetCode r_res = nem->new_nclass_instance(nclass_id, *nnclss_obj);
+        if(r_res) {
+            delete nnclss_obj;
+        }
+        *new_nclass_obj = (own_nclass *)nnclss_obj;
+        return r_res;
     }
 
     unsigned int nentity_manager_nentity_count(nentity_manager *nem)

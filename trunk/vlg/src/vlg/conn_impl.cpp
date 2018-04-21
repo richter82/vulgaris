@@ -39,10 +39,9 @@ incoming_transaction_factory::incoming_transaction_factory()
 incoming_transaction_factory::~incoming_transaction_factory()
 {}
 
-incoming_transaction &incoming_transaction_factory::make_incoming_transaction(std::shared_ptr<incoming_connection>
-                                                                              &conn)
+incoming_transaction &incoming_transaction_factory::make_incoming_transaction(std::shared_ptr<incoming_connection> &c)
 {
-    return *new incoming_transaction(conn);
+    return *new incoming_transaction(c);
 }
 
 }
@@ -67,9 +66,9 @@ incoming_subscription_factory::~incoming_subscription_factory()
 {}
 
 incoming_subscription &incoming_subscription_factory::make_incoming_subscription(std::shared_ptr<incoming_connection>
-                                                                                 &conn)
+                                                                                 &c)
 {
-    return *new incoming_subscription(conn);
+    return *new incoming_subscription(c);
 }
 
 }
@@ -227,10 +226,6 @@ RetCode conn_impl::set_socket_disconnected()
 
 RetCode conn_impl::set_proto_error(RetCode cause_res)
 {
-    if(status_ == ConnectionStatus_DISCONNECTED) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
-        return RetCode_BADSTTS;
-    }
     set_status(ConnectionStatus_PROTOCOL_ERROR);
     IFLOG(err(TH_ID, LS_CLO "[res:%d, last_sock_err:%d]", __func__, cause_res, last_socket_err_))
     return RetCode_OK;
@@ -238,10 +233,6 @@ RetCode conn_impl::set_proto_error(RetCode cause_res)
 
 RetCode conn_impl::set_socket_error(RetCode cause_res)
 {
-    if(status_ < ConnectionStatus_INITIALIZED) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
-        return RetCode_BADSTTS;
-    }
     IFLOG(err(TH_ID, LS_CLO "[res:%d, last_sock_err:%d]", __func__, cause_res, last_socket_err_))
     set_status(ConnectionStatus_SOCKET_ERROR);
     return RetCode_OK;
@@ -249,11 +240,7 @@ RetCode conn_impl::set_socket_error(RetCode cause_res)
 
 RetCode conn_impl::set_internal_error(RetCode cause_res)
 {
-    if(status_ < ConnectionStatus_INITIALIZED) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
-        return RetCode_BADSTTS;
-    }
-    IFLOG(cri(TH_ID, LS_CLO "[res:%d, last_sock_err:%d]", __func__, cause_res, last_socket_err_))
+    IFLOG(err(TH_ID, LS_CLO "[res:%d, last_sock_err:%d]", __func__, cause_res, last_socket_err_))
     set_status(ConnectionStatus_ERROR);
     return RetCode_OK;
 }
@@ -288,6 +275,15 @@ unsigned short conn_impl::get_host_port() const
     socklen_t len = sizeof(saddr);
     getpeername(socket_, (sockaddr *)&saddr, &len);
     return ntohs(saddr.sin_port);
+}
+
+RetCode conn_impl::close_connection(ConnectivityEventResult cer,
+                                    ConnectivityEventType cet)
+{
+    socket_shutdown();
+    release_all_children();
+    notify_disconnection(cer, cet);
+    return RetCode_OK;
 }
 
 RetCode conn_impl::set_socket_blocking_mode(bool blocking)
@@ -443,24 +439,20 @@ RetCode conn_impl::recv_single_pkt(vlg_hdr_rec *pkt_hdr,
         case RetCode_OK:
             break;
         case RetCode_SCKCLO:
-            socket_shutdown();
-            notify_disconnection(ConnectivityEventResult_OK, ConnectivityEventType_NETWORK);
+            close_connection(ConnectivityEventResult_OK, ConnectivityEventType_NETWORK);
             break;
         case RetCode_SCKERR:
-            socket_shutdown();
             set_socket_error(rcode);
-            notify_disconnection(ConnectivityEventResult_KO, ConnectivityEventType_NETWORK);
+            close_connection(ConnectivityEventResult_KO, ConnectivityEventType_NETWORK);
             break;
         case RetCode_SCKWBLK:
         case RetCode_DRPPKT:
-            socket_shutdown();
             set_proto_error(rcode);
-            notify_disconnection(ConnectivityEventResult_KO, ConnectivityEventType_PROTOCOL);
+            close_connection(ConnectivityEventResult_KO, ConnectivityEventType_PROTOCOL);
             break;
         default:
-            socket_shutdown();
             set_internal_error(rcode);
-            notify_disconnection(ConnectivityEventResult_KO, ConnectivityEventType_UNDEFINED);
+            close_connection(ConnectivityEventResult_KO, ConnectivityEventType_UNDEFINED);
             break;
     }
     //END first phase
@@ -470,24 +462,20 @@ RetCode conn_impl::recv_single_pkt(vlg_hdr_rec *pkt_hdr,
             case RetCode_OK:
                 break;
             case RetCode_SCKCLO:
-                socket_shutdown();
-                notify_disconnection(ConnectivityEventResult_OK, ConnectivityEventType_NETWORK);
+                close_connection(ConnectivityEventResult_OK, ConnectivityEventType_NETWORK);
                 break;
             case RetCode_SCKERR:
-                socket_shutdown();
                 set_socket_error(rcode);
-                notify_disconnection(ConnectivityEventResult_KO, ConnectivityEventType_NETWORK);
+                close_connection(ConnectivityEventResult_KO, ConnectivityEventType_NETWORK);
                 break;
             case RetCode_SCKWBLK:
             case RetCode_DRPPKT:
-                socket_shutdown();
                 set_proto_error(rcode);
-                notify_disconnection(ConnectivityEventResult_KO, ConnectivityEventType_PROTOCOL);
+                close_connection(ConnectivityEventResult_KO, ConnectivityEventType_PROTOCOL);
                 break;
             default:
-                socket_shutdown();
                 set_internal_error(rcode);
-                notify_disconnection(ConnectivityEventResult_KO, ConnectivityEventType_UNDEFINED);
+                close_connection(ConnectivityEventResult_KO, ConnectivityEventType_UNDEFINED);
                 break;
         }
         //END second phase
@@ -698,6 +686,23 @@ incoming_connection_impl::~incoming_connection_impl()
                   connid_,
                   status_))
     }
+}
+
+static void(release_all_inco_sbs)(const s_hm &map,
+                                  const void *key,
+                                  void *ptr,
+                                  void *usr_data)
+{
+    incoming_connection_impl *iconn = (incoming_connection_impl *)usr_data;
+    std::shared_ptr<incoming_subscription> *isbs_sh = (std::shared_ptr<incoming_subscription> *)ptr;
+    iconn->release_subscription(isbs_sh->get()->impl_.get());
+}
+
+void incoming_connection_impl::release_all_children()
+{
+    inco_sbsid_sbs_map_.enum_elements_safe_write(release_all_inco_sbs, this);
+    inco_sbsid_sbs_map_.clear();
+    inco_nclassid_sbs_map_.clear();
 }
 
 unsigned int incoming_connection_impl::next_sbsid()
@@ -941,17 +946,14 @@ RetCode incoming_connection_impl::release_subscription(incoming_subscription_imp
     if(subscription->status_ == SubscriptionStatus_REQUEST_SENT ||
             subscription->status_ == SubscriptionStatus_STARTED ||
             subscription->status_ == SubscriptionStatus_RELEASED) {
-        IFLOG(wrn(TH_ID, LS_CLO"[connid:%d][subscription:%d is not in a valid state for releasing:%d]",
+        IFLOG(wrn(TH_ID, LS_TRL"[connid:%d][subscription:%d released in status:%d]",
                   __func__,
                   connid_,
                   subscription->sbsid_,
                   subscription->status_))
-        return RetCode_BADSTTS;
     }
     subscription->release_initial_query();
     peer_->remove_subscriber(subscription);
-    inco_sbsid_sbs_map_.remove(&subscription->sbsid_, nullptr);
-    inco_nclassid_sbs_map_.remove(&subscription->nclassid_, nullptr);
     subscription->set_released();
     return rcode;
 }
@@ -979,7 +981,7 @@ RetCode incoming_connection_impl::recv_sbs_start_request(const vlg_hdr_rec *pkt_
     }
 
     IFLOG(inf(TH_ID,
-              LS_SBI"[CONNID:%010u-REQID:%010u][SBSTYP:%d, SBSMOD:%d, FLOTYP:%d, DWLTYP:%d, ENCTYP:%d, NCLSSID:%d, TMSTP0:%u, TMSTP1:%u]",
+              LS_SBI"[CONNID:%u-REQID:%u][SBSTYP:%d, SBSMOD:%d, FLOTYP:%d, DWLTYP:%d, ENCTYP:%d, NCLSSID:%d, TMSTP0:%u, TMSTP1:%u]",
               connid_,
               inc_sbs->reqid_,
               inc_sbs->sbstyp_,
@@ -1070,7 +1072,7 @@ RetCode incoming_connection_impl::recv_sbs_stop_request(const vlg_hdr_rec *pkt_h
 {
     RetCode rcode = RetCode_OK;
     unsigned int sbsid = pkt_hdr->row_1.sbsrid.sbsrid;
-    IFLOG(inf(TH_ID, LS_SBS"[CONNID:%010u-SBSID:%010u][stop request]", connid_, sbsid))
+    IFLOG(inf(TH_ID, LS_SBS"[CONNID:%u-SBSID:%u][stop request]", connid_, sbsid))
     SubscriptionResponse sbresl = SubscriptionResponse_OK;
     ProtocolCode protocode = ProtocolCode_SUCCESS;
     std::shared_ptr<incoming_subscription> sbs_sh;
@@ -1081,6 +1083,8 @@ RetCode incoming_connection_impl::recv_sbs_stop_request(const vlg_hdr_rec *pkt_h
     } else {
         sbs_sh->impl_->set_stopped();
         release_subscription(sbs_sh->impl_.get());
+        inco_sbsid_sbs_map_.remove(&sbs_sh->impl_->sbsid_, nullptr);
+        inco_nclassid_sbs_map_.remove(&sbs_sh->impl_->nclassid_, nullptr);
     }
     g_bbuf *gbb = new g_bbuf();
     build_PKT_SBSSPR(sbresl,
@@ -1133,6 +1137,23 @@ unsigned int outgoing_connection_impl::next_reqid()
 {
     scoped_mx smx(mon_);
     return ++reqid_;
+}
+
+static void(stop_all_outg_sbs)(const s_hm &map,
+                               const void *key,
+                               void *ptr,
+                               void *usr_data)
+{
+    outgoing_connection_impl *oconn = (outgoing_connection_impl *)usr_data;
+    outgoing_subscription_impl *osbs = *(outgoing_subscription_impl **)ptr;
+    osbs->set_stopped();
+}
+
+void outgoing_connection_impl::release_all_children()
+{
+    outg_sbsid_sbs_map_.enum_elements_safe_write(stop_all_outg_sbs, this);
+    outg_sbsid_sbs_map_.clear();
+    outg_reqid_sbs_map_.clear();
 }
 
 // CONNECTIVITY
@@ -1339,36 +1360,6 @@ RetCode outgoing_connection_impl::recv_tx_response(const vlg_hdr_rec *pkt_hdr,
 
 // SUBSCRIPTION
 
-RetCode outgoing_connection_impl::detach_subscription(outgoing_subscription_impl *subscription)
-{
-    if(subscription->conn_ != this) {
-        IFLOG(err(TH_ID, LS_CLO "[connid:%d][subscription:%d is not mine]", __func__,
-                  connid_,
-                  subscription->sbsid_))
-        return RetCode_KO;
-    }
-    if(subscription->status_ == SubscriptionStatus_REQUEST_SENT ||
-            subscription->status_ == SubscriptionStatus_STARTED ||
-            subscription->status_ == SubscriptionStatus_RELEASED) {
-        IFLOG(wrn(TH_ID, LS_CLO"[connid:%d][subscription:%d is not in a valid state for detaching:%d]",
-                  __func__,
-                  connid_,
-                  subscription->sbsid_,
-                  subscription->status_))
-        return RetCode_BADSTTS;
-    }
-    if(con_type_ == ConnectionType_INGOING) {
-        IFLOG(err(TH_ID, LS_CLO "[connid:%d][invalid subscription type]", __func__,
-                  connid_,
-                  subscription->sbsid_))
-        return RetCode_KO;
-    } else {
-        outg_reqid_sbs_map_.remove(&subscription->reqid_, nullptr);
-        outg_sbsid_sbs_map_.remove(&subscription->sbsid_, nullptr);
-    }
-    return RetCode_OK;
-}
-
 RetCode outgoing_connection_impl::release_subscription(outgoing_subscription_impl *subscription)
 {
     if(subscription->conn_ != this) {
@@ -1380,12 +1371,11 @@ RetCode outgoing_connection_impl::release_subscription(outgoing_subscription_imp
     if(subscription->status_ == SubscriptionStatus_REQUEST_SENT ||
             subscription->status_ == SubscriptionStatus_STARTED ||
             subscription->status_ == SubscriptionStatus_RELEASED) {
-        IFLOG(wrn(TH_ID, LS_CLO"[connid:%d][subscription:%d is not in a valid state for releasing:%d]",
+        IFLOG(wrn(TH_ID, LS_TRL"[connid:%d][subscription:%d released in status:%d]",
                   __func__,
                   connid_,
                   subscription->sbsid_,
                   subscription->status_))
-        return RetCode_BADSTTS;
     }
     outg_reqid_sbs_map_.remove(&subscription->reqid_, nullptr);
     outg_sbsid_sbs_map_.remove(&subscription->sbsid_, nullptr);
@@ -1399,7 +1389,7 @@ RetCode outgoing_connection_impl::recv_sbs_start_response(const vlg_hdr_rec *pkt
                           (pkt_hdr->row_1.sbresw.sbresl == SubscriptionResponse_PARTIAL)) ?
                          pkt_hdr->row_3.sbsrid.sbsrid : 0;
     IFLOG(inf(TH_ID,
-              LS_SBI"[CONNID:%010u-REQID:%010u][SBSRES:%d, VLGCOD:%d, SBSID:%u]",
+              LS_SBI"[CONNID:%u-REQID:%u][SBSRES:%d, VLGCOD:%d, SBSID:%u]",
               connid_,
               pkt_hdr->row_2.rqstid.rqstid,
               pkt_hdr->row_1.sbresw.sbresl,
@@ -1433,7 +1423,7 @@ RetCode outgoing_connection_impl::recv_sbs_evt(const vlg_hdr_rec *pkt_hdr,
     RetCode rcode = RetCode_OK;
     bool mng = true;
     IFLOG(dbg(TH_ID, LS_SBS
-              "[CONNID:%010u-SBSID:%010u][EVTID:%d, EVTTYP:%d, PRTCOD:%d, TMSTMP[0]:%d, TMSTMP[1]:%d, ACT:%d]",
+              "[CONNID:%u-SBSID:%u][EVTID:%d, EVTTYP:%d, PRTCOD:%d, TMSTMP[0]:%d, TMSTMP[1]:%d, ACT:%d]",
               connid_,
               pkt_hdr->row_1.sbsrid.sbsrid,
               pkt_hdr->row_3.sevtid.sevtid,
@@ -1459,7 +1449,7 @@ RetCode outgoing_connection_impl::recv_sbs_evt(const vlg_hdr_rec *pkt_hdr,
 RetCode outgoing_connection_impl::recv_sbs_stop_response(const vlg_hdr_rec *pkt_hdr)
 {
     RetCode rcode = RetCode_OK;
-    IFLOG(inf(TH_ID, LS_INC LS_SBS"[CONNID:%010u-SBSID:%010u][SBSRES:%d, VLGCOD:%d]",
+    IFLOG(inf(TH_ID, LS_INC LS_SBS"[CONNID:%u-SBSID:%u][SBSRES:%d, VLGCOD:%d]",
               connid_,
               pkt_hdr->row_2.sbsrid.sbsrid,
               pkt_hdr->row_1.sbresw.sbresl,
@@ -1471,7 +1461,6 @@ RetCode outgoing_connection_impl::recv_sbs_stop_response(const vlg_hdr_rec *pkt_
         subscription->notify_for_start_stop_result();
         if(pkt_hdr->row_1.sbresw.sbresl == SubscriptionResponse_OK) {
             subscription->set_stopped();
-            detach_subscription(subscription);
         }
     }
     return rcode;

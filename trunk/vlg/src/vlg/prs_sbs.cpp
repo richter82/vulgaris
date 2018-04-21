@@ -331,7 +331,7 @@ RetCode peer_impl::obj_distribute(SubscriptionEventType evt_type,
     per_nclass_id_conn_set *sdr = nullptr;
     unsigned int ts0 = 0, ts1 = 0;
     if((rcode = get_per_nclassid_helper_rec(in.get_id(), &sdr))) {
-        IFLOG(cri(TH_ID, LS_TRL "%s() - failed get per-nclass_id helper class [res:%d]", __func__, rcode))
+        IFLOG(cri(TH_ID, LS_TRL "failed get per-nclass_id helper class [res:%d]", __func__, rcode))
     } else {
         sdr->next_time_stamp(ts0, ts1);
         if(sdr->connid_condesc_set_.size()) {
@@ -344,7 +344,7 @@ RetCode peer_impl::obj_distribute(SubscriptionEventType evt_type,
                                                                            act,
                                                                            in);
             if((rcode = submit_sbs_evt_task(*sbs_evt, sdr->connid_condesc_set_))) {
-                IFLOG(err(TH_ID, LS_TRL "%s() - SubmitSbsEvtTask failed with res:%d", __func__, rcode))
+                IFLOG(err(TH_ID, LS_TRL "submit_sbs_evt_task failed with res:%d", __func__, rcode))
             }
         }
     }

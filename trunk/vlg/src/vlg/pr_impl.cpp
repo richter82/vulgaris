@@ -650,7 +650,7 @@ class peer_sbs_task : public p_tsk {
 
         static void enum_srv_connid_connection_map_ashsnd(const s_hm &map,
                                                           const void *key,
-                                                          const void *ptr,
+                                                          void *ptr,
                                                           void *usr_data) {
             RetCode rcode = RetCode_OK;
             srv_connid_condesc_set_ashsnd_rud *rud = static_cast<srv_connid_condesc_set_ashsnd_rud *>(usr_data);

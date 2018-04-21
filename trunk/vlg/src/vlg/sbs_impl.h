@@ -51,6 +51,8 @@ struct sbs_impl {
     explicit sbs_impl(incoming_subscription &publ, incoming_connection &conn);
     explicit sbs_impl(outgoing_subscription &publ);
 
+    virtual ~sbs_impl() = default;
+
     // STATUS
     RetCode set_status(SubscriptionStatus status);
     RetCode set_started();

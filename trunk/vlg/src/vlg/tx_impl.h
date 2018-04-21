@@ -13,6 +13,8 @@ struct tx_impl {
     explicit tx_impl(incoming_transaction &publ, incoming_connection &conn);
     explicit tx_impl(outgoing_transaction &publ);
 
+    virtual ~tx_impl() = default;
+
     void set_request_obj(const nclass &);
     void set_current_obj(const nclass &);
     void set_result_obj(const nclass &);

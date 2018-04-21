@@ -1,7 +1,7 @@
 /*
  * vulgaris
  * (C) 2018 - giuseppe.baccini@gmail.com
- * 
+ *
  */
 
 #ifndef VLG_C_MDL_H_

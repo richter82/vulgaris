@@ -95,17 +95,19 @@ sbs_impl::sbs_impl(outgoing_subscription &publ) :
     opubl_(&publ)
 {}
 
-
 RetCode sbs_impl::set_started()
 {
-    IFLOG(inf(TH_ID, LS_SBS"[CONNID:%010u-SBSID:%010u][started]", conn_->connid_, sbsid_))
+    IFLOG(inf(TH_ID, LS_SBS"[CONNID:%u-SBSID:%u][started]", conn_->connid_, sbsid_))
     set_status(SubscriptionStatus_STARTED);
+    if(opubl_) {
+        opubl_->on_start();
+    }
     return RetCode_OK;
 }
 
 RetCode sbs_impl::set_stopped()
 {
-    IFLOG(inf(TH_ID, LS_SBS"[CONNID:%010u-SBSID:%010u][stopped]", conn_->connid_, sbsid_))
+    IFLOG(inf(TH_ID, LS_SBS"[CONNID:%u-SBSID:%u][stopped]", conn_->connid_, sbsid_))
     set_status(SubscriptionStatus_STOPPED);
     if(ipubl_) {
         ipubl_->on_stop();
@@ -117,14 +119,14 @@ RetCode sbs_impl::set_stopped()
 
 RetCode sbs_impl::set_released()
 {
-    IFLOG(dbg(TH_ID, LS_SBS"[CONNID:%010u-SBSID:%010u][released]", conn_->connid_, sbsid_))
+    IFLOG(dbg(TH_ID, LS_SBS"[CONNID:%u-SBSID:%u][released]", conn_->connid_, sbsid_))
     set_status(SubscriptionStatus_RELEASED);
     return RetCode_OK;
 }
 
 RetCode sbs_impl::set_error()
 {
-    IFLOG(err(TH_ID, LS_SBS"[CONNID:%010u-SBSID:%010u][error]", conn_->connid_, sbsid_))
+    IFLOG(err(TH_ID, LS_SBS"[CONNID:%u-SBSID:%u][error]", conn_->connid_, sbsid_))
     set_status(SubscriptionStatus_ERROR);
     if(ipubl_) {
         ipubl_->on_stop();
@@ -641,7 +643,7 @@ outgoing_subscription_impl::~outgoing_subscription_impl()
 RetCode outgoing_subscription_impl::set_req_sent()
 {
     IFLOG(inf(TH_ID,
-              LS_SBO"[CONNID:%010u-REQID:%010u][SBSTYP:%d, SBSMOD:%d, FLOTYP:%d, DWLTYP:%d, ENCTYP:%d, NCLSSID:%d, TMSTP0:%u, TMSTP1:%u]",
+              LS_SBO"[CONNID:%u-REQID:%u][SBSTYP:%d, SBSMOD:%d, FLOTYP:%d, DWLTYP:%d, ENCTYP:%d, NCLSSID:%d, TMSTP0:%u, TMSTP1:%u]",
               conn_->connid_,
               reqid_,
               sbstyp_,

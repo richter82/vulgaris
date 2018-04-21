@@ -1,7 +1,7 @@
 /*
  * vulgaris
  * (C) 2018 - giuseppe.baccini@gmail.com
- * 
+ *
  */
 
 #include "vlg_subscription.h"
