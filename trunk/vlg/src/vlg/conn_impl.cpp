@@ -1117,13 +1117,17 @@ outgoing_connection_impl::~outgoing_connection_impl()
 {
     if(status_ == ConnectionStatus_ESTABLISHED ||
             status_ == ConnectionStatus_PROTOCOL_HANDSHAKE ||
-            status_ == ConnectionStatus_AUTHENTICATED ||
-            status_ == ConnectionStatus_DISCONNECTING) {
-        IFLOG(cri(TH_ID, LS_DTR
-                  "[connection:%d is not in a safe state:%d] " LS_EXUNX,
+            status_ == ConnectionStatus_AUTHENTICATED) {
+        IFLOG(wrn(TH_ID, LS_DTR
+                  "[connection:%d in status:%d, closing..]",
                   __func__,
                   connid_,
                   status_))
+
+        disconnect(ProtocolCode_UNDEFINED);
+        ConnectivityEventResult ce = ConnectivityEventResult_UNDEFINED;
+        ConnectivityEventType cet = ConnectivityEventType_UNDEFINED;
+        await_for_disconnection_result(ce, cet);
     }
 }
 
@@ -1456,8 +1460,10 @@ RetCode outgoing_connection_impl::recv_sbs_stop_response(const vlg_hdr_rec *pkt_
               pkt_hdr->row_1.sbresw.vlgcod))
     outgoing_subscription_impl *subscription = nullptr;
     if((rcode = outg_sbsid_sbs_map_.get(&pkt_hdr->row_2.sbsrid.sbsrid, &subscription))) {
-        IFLOG(cri(TH_ID, LS_SBS"[error getting subscription from sbsid map][res:%d]", rcode))
+        IFLOG(wrn(TH_ID, LS_SBS"[no subscription from sbsid map]"))
     } else {
+        outg_reqid_sbs_map_.remove(&subscription->reqid_, nullptr);
+        outg_sbsid_sbs_map_.remove(&subscription->sbsid_, nullptr);
         subscription->notify_for_start_stop_result();
         if(pkt_hdr->row_1.sbresw.sbresl == SubscriptionResponse_OK) {
             subscription->set_stopped();

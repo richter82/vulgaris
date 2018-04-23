@@ -136,7 +136,7 @@ RetCode sbs_impl::set_error()
     return RetCode_OK;
 }
 
-RetCode sbs_impl::set_status(SubscriptionStatus status)
+inline RetCode sbs_impl::set_status(SubscriptionStatus status)
 {
     scoped_mx smx(mon_);
     status_ = status;
@@ -296,7 +296,7 @@ incoming_subscription_impl::~incoming_subscription_impl()
     pthread_rwlock_destroy(&lock_srv_sbs_rep_deferred_);
 }
 
-void incoming_subscription_impl::release_initial_query()
+inline void incoming_subscription_impl::release_initial_query()
 {
     if(!initial_query_ended_) {
         if(initial_query_) {
@@ -305,19 +305,6 @@ void incoming_subscription_impl::release_initial_query()
         initial_query_ = nullptr;
         initial_query_ended_ = true;
     }
-}
-
-inline void incoming_subscription_impl::set_sbs_to_ack_evt_id(unsigned int sbs_evtid)
-{
-    srv_sbs_last_evt_ack_ = false;
-    srv_sbs_to_ack_evtid_ = sbs_evtid;
-}
-
-inline void incoming_subscription_impl::set_sbs_last_ack_evt_id()
-{
-    srv_sbs_last_evt_ack_ = true;
-    srv_sbs_last_ack_evtid_ = srv_sbs_to_ack_evtid_;
-    srv_sbs_to_ack_evtid_ = 0;
 }
 
 RetCode incoming_subscription_impl::send_start_response()
@@ -363,7 +350,8 @@ RetCode incoming_subscription_impl::send_event(std::shared_ptr<subscription_even
     gbb->flip();
     RET_ON_KO(conn_->pkt_sending_q_.put(&gbb))
     selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, conn_sh_);
-    set_sbs_to_ack_evt_id(sbs_evt->impl_->sbs_evtid_);
+    srv_sbs_last_evt_ack_ = false;
+    srv_sbs_to_ack_evtid_ = sbs_evt->impl_->sbs_evtid_;
     rcode = conn_->peer_->selector_.asynch_notify(evt);
     if(rcode) {
         set_status(SubscriptionStatus_ERROR);
@@ -479,16 +467,18 @@ RetCode incoming_subscription_impl::receive_event_ack(const vlg_hdr_rec *hdr)
 {
     RetCode rcode = RetCode_OK;
     scoped_wr_lock wrl(lock_srv_sbs_rep_deferred_);
-    set_sbs_last_ack_evt_id();
+    srv_sbs_last_evt_ack_ = true;
+    srv_sbs_last_ack_evtid_ = srv_sbs_to_ack_evtid_;
+    srv_sbs_to_ack_evtid_ = 0;
     std::shared_ptr<subscription_event> sbs_evt;
     if(!initial_query_ended_) {
         rcode = submit_dwnl_event();
     }
-    /***********************************
+    /********************************************************
      if rcode == OK initial query has ended.
      if rcode == RetCode_ENMEND initial query has ended now.
      in both cases we must check for pending live events.
-    ***********************************/
+    ********************************************************/
     if((!rcode || rcode == RetCode_ENMEND) && !(rcode = consume_sbs_evt(sbs_evt))) {
         //there is a new event to send.
         if((rcode = send_event(sbs_evt))) {
@@ -638,7 +628,22 @@ outgoing_subscription_impl::outgoing_subscription_impl(outgoing_subscription &pu
 }
 
 outgoing_subscription_impl::~outgoing_subscription_impl()
-{}
+{
+    if(status_ == SubscriptionStatus_REQUEST_SENT ||
+            status_ == SubscriptionStatus_STARTED) {
+        IFLOG(wrn(TH_ID, LS_DTR
+                  "[subscription:%d in status:%d, stopping..]",
+                  __func__,
+                  sbsid_,
+                  status_))
+        stop();
+        SubscriptionResponse sres = SubscriptionResponse_UNDEFINED;
+        ProtocolCode spc = ProtocolCode_UNDEFINED;
+        await_for_stop_result(sres, spc);
+    }
+    auto &oconn = *dynamic_cast<outgoing_connection_impl *>(conn_);
+    oconn.release_subscription(this);
+}
 
 RetCode outgoing_subscription_impl::set_req_sent()
 {
@@ -665,7 +670,7 @@ RetCode outgoing_subscription_impl::start()
         return RetCode_BADSTTS;
     }
     RetCode rcode = RetCode_OK;
-    auto &oconn = *static_cast<outgoing_connection_impl *>(conn_);
+    auto &oconn = *dynamic_cast<outgoing_connection_impl *>(conn_);
     reqid_ = oconn.next_reqid();
     outgoing_subscription_impl *self = this;
     rcode = oconn.outg_reqid_sbs_map_.put(&reqid_, &self);
@@ -786,10 +791,10 @@ RetCode outgoing_subscription_impl::receive_event(const vlg_hdr_rec *pkt_hdr,
                                                                            pkt_hdr->row_2.sevttp.sbeact,
                                                                            nobj)));
     if(!rcode) {
-        evt_ready();
+        cli_evt_sts_ = SBSEvt_Ready;
         unsigned int evtid = sbs_evt->get_id();
         opubl_->on_incoming_event(sbs_evt);
-        evt_to_ack();
+        cli_evt_sts_ = SBSEvt_ToAck;
         evt_ack(evtid);
     }
     return rcode;
@@ -806,28 +811,10 @@ RetCode outgoing_subscription_impl::evt_ack(unsigned int evtid)
         IFLOG(err(TH_ID, LS_TRL "[event ack sending failed][res:%d]", __func__, rcode))
     } else {
         if(!rcode) {
-            evt_reset();
+            cli_evt_sts_ = SBSEvt_Reset;
         }
     }
     return rcode;
-}
-
-inline RetCode outgoing_subscription_impl::evt_reset()
-{
-    cli_evt_sts_ = SBSEvt_Reset;
-    return RetCode_OK;
-}
-
-inline RetCode outgoing_subscription_impl::evt_ready()
-{
-    cli_evt_sts_ = SBSEvt_Ready;
-    return RetCode_OK;
-}
-
-inline RetCode outgoing_subscription_impl::evt_to_ack()
-{
-    cli_evt_sts_ = SBSEvt_ToAck;
-    return RetCode_OK;
 }
 
 }

@@ -43,10 +43,6 @@ RetCode WSA_destroy()
 
 #endif
 
-/*****************************************
- VLG_ACCEPTOR
-******************************************/
-
 acceptor::acceptor(peer_impl &peer) :
     peer_(peer),
     serv_socket_(INVALID_SOCKET)
