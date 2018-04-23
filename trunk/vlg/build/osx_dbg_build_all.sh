@@ -6,7 +6,6 @@ export CC_DBG_REL_OPT=-g
 export LD_DBG_REL_OPT=-g
 export SOLIB_EXT="dylib"
 echo "@@@@@@ begin DEBUG build @@@@@@"
-make -f makefile_lib_cr all;
 make -f makefile_lib_vlg all; 
 make -f makefile_lib_sqlite all;
 make -f makefile_lib_drvsqlite all;
