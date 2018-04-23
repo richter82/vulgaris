@@ -191,8 +191,7 @@ int vlg_toolkit_Connection::NextCount()
     return ++count_;
 }
 
-void vlg_toolkit_Connection::OnConnStatusChange(vlg::ConnectionStatus
-                                                status)
+void vlg_toolkit_Connection::OnConnStatusChange(vlg::ConnectionStatus status)
 {
     switch(status) {
         case vlg::ConnectionStatus_UNDEFINED:
@@ -281,9 +280,7 @@ void vlg_toolkit_Connection::OnCustomMenuRequested(const QPoint &pos)
             item->edesc()->get_nentity_type() != vlg::NEntityType_NCLASS) {
         return;
     }
-    QMenu *custom_menu = new QMenu(QString("%1").arg(
-                                       item->edesc()->get_nclass_id()),
-                                   this);
+    QMenu *custom_menu = new QMenu(QString("%1").arg(item->edesc()->get_nclass_id()), this);
 
     QAction *ntx = new QAction("New Transaction", this);
     QAction *nsbs = new QAction("New Subscription", this);
@@ -307,8 +304,7 @@ void vlg_toolkit_Connection::on_connect_button_clicked()
     sockaddr_in conn_params;
     memset(&conn_params, 0, sizeof(conn_params));
     conn_params.sin_family = AF_INET;
-    conn_params.sin_addr.s_addr = inet_addr(
-                                      ui->cp_host_addr->text().toLatin1().data());
+    conn_params.sin_addr.s_addr = inet_addr(ui->cp_host_addr->text().toLatin1().data());
     conn_params.sin_port = htons(atoi(ui->cp_host_port->text().toLatin1().data()));
     conn_.connect(conn_params);
 }
@@ -327,15 +323,11 @@ void vlg_toolkit_Connection::on_disconnect_button_clicked()
     }
 }
 
-void vlg_toolkit_Connection::on_extend_model_button_clicked()
-{
-
-}
+void vlg_toolkit_Connection::on_extend_model_button_clicked() {}
 
 void vlg_toolkit_Connection::on_new_tx_button_clicked()
 {
-    QModelIndexList indexes =
-        ui->peer_model_tree_view->selectionModel()->selectedRows();
+    QModelIndexList indexes = ui->peer_model_tree_view->selectionModel()->selectedRows();
     if(!indexes.count()) {
         return;
     }
@@ -364,8 +356,7 @@ void vlg_toolkit_Connection::on_new_tx_button_clicked()
 
 void vlg_toolkit_Connection::on_new_sbs_button_clicked()
 {
-    QModelIndexList indexes =
-        ui->peer_model_tree_view->selectionModel()->selectedRows();
+    QModelIndexList indexes = ui->peer_model_tree_view->selectionModel()->selectedRows();
     if(!indexes.count()) {
         return;
     }

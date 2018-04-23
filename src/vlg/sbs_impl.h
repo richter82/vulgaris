@@ -124,9 +124,6 @@ struct incoming_subscription_impl : public sbs_impl {
         RetCode store_sbs_evt(std::shared_ptr<subscription_event> &sbs_evt);
         RetCode consume_sbs_evt(std::shared_ptr<subscription_event> &sbs_evt);
 
-        void set_sbs_to_ack_evt_id(unsigned int sbs_evtid);
-        void set_sbs_last_ack_evt_id();
-
     public:
         std::shared_ptr<incoming_connection> conn_sh_;
 
@@ -175,14 +172,7 @@ struct outgoing_subscription_impl : public sbs_impl {
 
     private:
         RetCode send_event_ack(unsigned int evtid);
-
-        RetCode evt_reset();
-        RetCode evt_ready();
-        RetCode evt_to_ack();
         RetCode evt_ack(unsigned int evtid);
-
-        void set_sbs_to_ack_evt_id(unsigned int sbs_evtid);
-        void set_sbs_last_ack_evt_id();
 
     public:
         SBSEvt cli_evt_sts_;
