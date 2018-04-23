@@ -1148,7 +1148,6 @@ static void(stop_all_outg_sbs)(const s_hm &map,
                                void *ptr,
                                void *usr_data)
 {
-    outgoing_connection_impl *oconn = (outgoing_connection_impl *)usr_data;
     outgoing_subscription_impl *osbs = *(outgoing_subscription_impl **)ptr;
     osbs->set_stopped();
 }
