@@ -22,8 +22,6 @@ const unsigned int *cpeer_version_handler(peer *p, void *usr_data){
     return peer_c_ver_;
 }
 
-
-
 // MAIN
 int main(int argc, char *argv[])
 {
@@ -39,6 +37,17 @@ int main(int argc, char *argv[])
     persistence_manager_load_persistence_driver(&pd, 1);
 
     peer_start(p, argc, argv, 1);
+
+	{
+		own_nclass *own_usr = NULL;
+		RetCode res = nentity_manager_new_nclass_instance(smplm, 800, &own_usr);
+		if (!res) {
+			nclass *usr = own_nclass_get_ptr(own_usr);
+			nclass_set_field_by_name(usr, "name", "test", 4);
+			printf("name: %s", (const char*)nclass_get_field_by_name(usr, "name"));
+		}
+		own_nclass_release(own_usr);
+	}
 
     int i = 0;
     scanf("%d", &i);

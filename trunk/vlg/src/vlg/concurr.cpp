@@ -368,8 +368,9 @@ RetCode p_exec_srv::submit(p_tsk &task)
         return RetCode_OK;
     }
     RetCode rcode = RetCode_OK;
+    p_tsk *task_ptr = &task;
     scoped_mx smx(mon_);
-    if((rcode = task_queue_.put(0, 10*MSEC_F, &task))) {
+    if((rcode = task_queue_.put(0, 10*MSEC_F, &task_ptr))) {
         task.set_status(PTASK_STATUS_REJECTED);
         switch(rcode) {
             case RetCode_QFULL:
