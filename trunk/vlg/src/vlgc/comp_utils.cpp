@@ -238,7 +238,7 @@ member_desc_comp::member_desc_comp(unsigned short mmbrid,
                                    const char *mmbr_desc,
                                    Type fild_type,
                                    size_t nmemb,
-                                   unsigned int fild_entityid,
+                                   unsigned int fild_nclassid,
                                    const char *fild_usr_str_type,
                                    NEntityType fild_entitytype,
                                    long enum_value) :
@@ -248,9 +248,9 @@ member_desc_comp::member_desc_comp(unsigned short mmbrid,
     mmbr_desc_(mmbr_desc),
     fild_type_(fild_type),
     nmemb_(nmemb),
-    fild_nclassid_(fild_entityid),
+    fild_nclassid_(fild_nclassid),
     fild_usr_str_type_(fild_usr_str_type),
-    fild_entitytype_(fild_entitytype),
+    fild_nentitytype_(fild_entitytype),
     enum_value_(enum_value)
 {}
 
@@ -317,9 +317,9 @@ const char *member_desc_comp::get_field_usr_str_type() const
     return fild_usr_str_type_;
 }
 
-NEntityType member_desc_comp::get_field_entity_type() const
+NEntityType member_desc_comp::get_field_nentity_type() const
 {
-    return fild_entitytype_;
+    return fild_nentitytype_;
 }
 
 long member_desc_comp::get_enum_value() const
@@ -351,17 +351,17 @@ void member_desc_comp::set_field_type_size(size_t val,
 /***********************************
 VLG_ENTITY_DESC_COMP
 ***********************************/
-entity_desc_comp::entity_desc_comp(unsigned int entityid,
+entity_desc_comp::entity_desc_comp(unsigned int nclassid,
                                    NEntityType entitytype,
                                    const char *nmspace,
-                                   const char *nclassname,
+                                   const char *nentityname,
                                    vlg::alloc_func afun,
                                    unsigned int fild_num,
                                    bool persistent) :
-    entityid_(entityid),
-    entitytype_(entitytype),
+    nclassid_(nclassid),
+    nentitytype_(entitytype),
     nmspace_(nmspace),
-    entityname_(nclassname),
+    nentityname_(nentityname),
     afun_(afun),
     fild_num_(fild_num),
     persistent_(persistent)
@@ -393,9 +393,9 @@ RetCode entity_desc_comp::add_key_desc(key_desc_comp *keydesc)
     return vlg::RetCode_OK;
 }
 
-unsigned int entity_desc_comp::get_entityid()  const
+unsigned int entity_desc_comp::get_nclassid()  const
 {
-    return entityid_;
+    return nclassid_;
 }
 
 size_t entity_desc_comp::get_size(VLG_COMP_ARCH arch,
@@ -404,34 +404,34 @@ size_t entity_desc_comp::get_size(VLG_COMP_ARCH arch,
                                   VLG_COMP_TCOMP tcomp) const
 {
     unsigned int key = TCOMP_DEP_GEN_KEY(arch, os, lang, tcomp);
-    return entity_size_map_.find(key)->second;
+    return nclass_size_map_.find(key)->second;
 }
 
-size_t entity_desc_comp::get_entity_max_align(VLG_COMP_ARCH arch,
+size_t entity_desc_comp::get_nclass_max_align(VLG_COMP_ARCH arch,
                                               VLG_COMP_OS os,
                                               VLG_COMP_LANG lang,
                                               VLG_COMP_TCOMP tcomp) const
 {
     unsigned int key = TCOMP_DEP_GEN_KEY(arch, os, lang, tcomp);
-    return entity_max_align_map_.find(key)->second;
+    return nclass_max_align_map_.find(key)->second;
 }
 
 NEntityType entity_desc_comp::get_nentity_type()  const
 {
-    return entitytype_;
+    return nentitytype_;
 }
 
-const char *entity_desc_comp::get_entity_namespace() const
+const char *entity_desc_comp::get_nentity_namespace() const
 {
     return nmspace_;
 }
 
 const char *entity_desc_comp::get_nentity_name()  const
 {
-    return entityname_;
+    return nentityname_;
 }
 
-vlg::alloc_func entity_desc_comp::get_entity_alloc_f() const
+vlg::alloc_func entity_desc_comp::get_nclass_alloc_f() const
 {
     return afun_;
 }
@@ -481,24 +481,24 @@ void entity_desc_comp::enum_member_desc(enum_member_desc_comp_func func) const
     return ;
 }
 
-void entity_desc_comp::set_entity_size(size_t val,
+void entity_desc_comp::set_nclass_size(size_t val,
                                        VLG_COMP_ARCH arch,
                                        VLG_COMP_OS os,
                                        VLG_COMP_LANG lang,
                                        VLG_COMP_TCOMP tcomp)
 {
     unsigned int key = TCOMP_DEP_GEN_KEY(arch, os, lang, tcomp);
-    entity_size_map_[key] = val;
+    nclass_size_map_[key] = val;
 }
 
-void entity_desc_comp::set_entity_max_align(size_t val,
+void entity_desc_comp::set_nclass_max_align(size_t val,
                                             VLG_COMP_ARCH arch,
                                             VLG_COMP_OS os,
                                             VLG_COMP_LANG lang,
                                             VLG_COMP_TCOMP tcomp)
 {
     unsigned int key = TCOMP_DEP_GEN_KEY(arch, os, lang, tcomp);
-    entity_max_align_map_[key] = val;
+    nclass_max_align_map_[key] = val;
 }
 
 /***********************************
@@ -885,7 +885,7 @@ size_t get_next_valid_offset(size_t &cur_offset,
     return cur_offset + fldsize;
 }
 
-size_t adjust_entity_size(size_t cur_offset,
+size_t adjust_nclass_size(size_t cur_offset,
                           size_t max_align,
                           VLG_COMP_ARCH arch,
                           VLG_COMP_OS os,
@@ -1026,7 +1026,7 @@ RetCode compile_unit::parse()
     RET_ON_KO(parse_data(fname_,
                          data,
                          define_map_,
-                         entity_map_,
+                         nentity_map_,
                          &model_name_,
                          &model_version_))
     return vlg::RetCode_OK;
@@ -1067,9 +1067,9 @@ std::map<std::string, std::string> &compile_unit::get_define_map()
     return define_map_;
 }
 
-std::map<std::string, entity_desc_comp *> &compile_unit::get_entity_map()
+std::map<std::string, entity_desc_comp *> &compile_unit::get_nentity_map()
 {
-    return entity_map_;
+    return nentity_map_;
 }
 
 }

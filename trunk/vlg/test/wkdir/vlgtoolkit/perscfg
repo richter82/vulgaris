@@ -9,8 +9,8 @@
 
 connection_pool_config_begin
 
-anag	sqlite	uri:[url:"anag.db"	usr:"" psswd:""]	pool_size:3 th_size:3
-items	sqlite	uri:[url:"items.db" usr:"" psswd:""]	pool_size:2 th_size:2
+anag	sqlite	uri:[url:"anag.db"	usr:"" psswd:""]	pool_size:1 th_size:0
+msgs	sqlite	uri:[url:"msgs.db"  usr:"" psswd:""]	pool_size:1 th_size:0
 
 connection_pool_config_end
 
@@ -19,8 +19,8 @@ connection_pool_config_end
 
 map_config_begin
 
+700		anag
 800		anag
-10021	items
-10022	items
+900		msgs
 
 map_config_end

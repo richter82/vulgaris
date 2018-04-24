@@ -192,8 +192,7 @@ enum PEXEC_SERVICE_STATUS {
            to execute asynchronously a set of p_task(s).
 */
 struct p_exec_srv {
-        explicit p_exec_srv(unsigned int id,
-                            bool dispose_task = false);
+        explicit p_exec_srv(bool dispose_task = false);
 
         ~p_exec_srv();
 
@@ -271,7 +270,7 @@ struct p_exec_srv {
         @param task
         @return
         */
-        RetCode submit(p_tsk *task);
+        RetCode submit(p_tsk &task);
 
         /**
         blocks until all tasks have completed execution after a shutdown

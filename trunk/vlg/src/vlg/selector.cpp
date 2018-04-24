@@ -48,8 +48,8 @@ selector::selector(peer_impl &peer) :
     udp_ntfy_cli_socket_(INVALID_SOCKET),
     srv_listen_socket_(INVALID_SOCKET),
     srv_acceptor_(peer),
-    inco_exec_srv_(peer.peer_id_, true),
-    outg_exec_srv_(peer.peer_id_, true)
+    inco_exec_srv_(true),
+    outg_exec_srv_(true)
 {
     memset(&udp_ntfy_sa_in_, 0, sizeof(udp_ntfy_sa_in_));
     udp_ntfy_sa_in_.sin_family = AF_INET;
@@ -311,10 +311,9 @@ RetCode selector::process_inco_sock_inco_events()
                 std::unique_ptr<g_bbuf> pkt_body(new g_bbuf());
                 //read data from socket.
                 if(!(rcode = it->second->impl_->recv_single_pkt(pkt_hdr.get(), pkt_body.get()))) {
-                    p_tsk *task = nullptr;
                     pkt_body->flip();
-                    task = new peer_recv_task_inco_conn(it->second, pkt_hdr, pkt_body);
-                    if((sub_res = inco_exec_srv_.submit(task))) {
+                    p_tsk *task = new peer_recv_task_inco_conn(it->second, pkt_hdr, pkt_body);
+                    if((sub_res = inco_exec_srv_.submit(*task))) {
                         IFLOG(cri(TH_ID, LS_TRL"[socket:%d, connid:%d][submit failed][res:%d]",
                                   __func__,
                                   srv_cli_sock,
@@ -421,7 +420,6 @@ RetCode selector::process_outg_sock_outg_events()
 
 RetCode selector::process_outg_sock_inco_events()
 {
-    p_tsk *task = nullptr;
     unsigned int connid = 0;
     RetCode rcode = RetCode_OK, sub_res = RetCode_OK;
     //**** HANDLE INCOMING EVENTS BEGIN****
@@ -445,8 +443,8 @@ RetCode selector::process_outg_sock_inco_events()
                 //read data from socket.
                 if(!(rcode = it->second->recv_single_pkt(pkt_hdr.get(), pkt_body.get()))) {
                     pkt_body->flip();
-                    task = new peer_recv_task_outg_conn(*it->second->opubl_, pkt_hdr, pkt_body);
-                    if((sub_res = outg_exec_srv_.submit(task))) {
+                    p_tsk *task = new peer_recv_task_outg_conn(*it->second->opubl_, pkt_hdr, pkt_body);
+                    if((sub_res = outg_exec_srv_.submit(*task))) {
                         IFLOG(cri(TH_ID, LS_TRL "[socket:%d][submit failed][res:%d]",
                                   __func__,
                                   it->first,
@@ -488,8 +486,8 @@ RetCode selector::process_outg_sock_inco_events()
                 //read data from socket.
                 if(!(rcode = it->second->recv_single_pkt(pkt_hdr.get(), pkt_body.get()))) {
                     pkt_body->flip();
-                    task = new peer_recv_task_outg_conn(*it->second->opubl_, pkt_hdr, pkt_body);
-                    if((sub_res = outg_exec_srv_.submit(task))) {
+                    p_tsk *task = new peer_recv_task_outg_conn(*it->second->opubl_, pkt_hdr, pkt_body);
+                    if((sub_res = outg_exec_srv_.submit(*task))) {
                         IFLOG(cri(TH_ID, LS_TRL "[socket:%d, connid:%d][submit failed][res:%d]",
                                   __func__,
                                   it->second->socket_,

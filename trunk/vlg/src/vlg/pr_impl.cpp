@@ -104,7 +104,7 @@ peer_impl::peer_impl(peer &publ) :
     pers_mng_(persistence_manager_impl::get_instance()),
     pers_schema_create_(false),
     drop_existing_schema_(false),
-    srv_sbs_exec_serv_(peer_id_, true),
+    srv_sbs_exec_serv_(true),
     srv_sbs_nclassid_condesc_set_(HMSz_1031, sngl_ptr_obj_mng(), sizeof(unsigned int)),
     inco_conn_factory_(nullptr)
 {
@@ -713,7 +713,7 @@ RetCode peer_impl::submit_sbs_evt_task(subscription_event_impl &sbs_evt,
     p_tsk *sbs_tsk = new peer_sbs_task(*this,
                                        sbs_evt,
                                        connid_condesc_set);
-    if((rcode = srv_sbs_exec_serv_.submit(sbs_tsk))) {
+    if((rcode = srv_sbs_exec_serv_.submit(*sbs_tsk))) {
         IFLOG(cri(TH_ID, LS_TRL "[submit failed][res:%d]", __func__, rcode))
     }
     return rcode;

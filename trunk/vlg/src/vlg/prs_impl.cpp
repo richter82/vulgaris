@@ -85,7 +85,9 @@ persistence_connection_pool::persistence_connection_pool(persistence_driver &dri
     url_.assign(url ? url : "");
     usr_.assign(usr ? usr : "");
     psswd_.assign(psswd ? psswd : "");
-    if(conn_pool_th_max_sz > 0) {
+    if(!conn_pool_th_max_sz) {
+        conn_pool_th_pool_ = new persistence_worker*[1];
+    } else if(conn_pool_th_max_sz > 0) {
         conn_pool_th_pool_ = new persistence_worker*[conn_pool_th_max_sz];
     }
 }
@@ -126,13 +128,17 @@ persistence_connection_impl *persistence_connection_pool::request_connection()
 
 persistence_worker *persistence_connection_pool::get_worker_rr_can_create_start()
 {
+    bool surrogate_th = false;
     if(conn_pool_th_max_sz_ == 0) {
-        return nullptr;
+        conn_pool_th_max_sz_ = 1;
+        surrogate_th = true;
     }
     persistence_worker *wrkr = nullptr;
     if(conn_pool_th_curr_sz_ < conn_pool_th_max_sz_) {
-        wrkr = conn_pool_th_pool_[conn_pool_th_curr_sz_] = new persistence_worker(*this);
-        wrkr->start();
+        wrkr = conn_pool_th_pool_[conn_pool_th_curr_sz_] = new persistence_worker(*this, surrogate_th);
+        if(!surrogate_th) {
+            wrkr->start();
+        }
         conn_pool_th_curr_sz_++;
     } else {
         wrkr = conn_pool_th_pool_[conn_pool_th_curr_idx_];
@@ -154,19 +160,25 @@ persistence_worker *persistence_connection_pool::get_worker_rr()
 
 // persistence_worker
 
-persistence_worker::persistence_worker(persistence_connection_pool &conn_pool) :
+persistence_worker::persistence_worker(persistence_connection_pool &conn_pool, bool surrogate_th) :
     conn_pool_(conn_pool),
-    task_queue_(sngl_ptr_obj_mng())
+    task_queue_(sngl_ptr_obj_mng()),
+    surrogate_th_(surrogate_th)
 {}
 
-RetCode persistence_worker::submit_task(persistence_task *task)
+RetCode persistence_worker::submit(persistence_task &task)
 {
+    if(surrogate_th_) {
+        task.set_execution_result(task.execute());
+        task.set_status(PTASK_STATUS_EXECUTED);
+        return RetCode_OK;
+    }
     RetCode rcode = RetCode_OK;
     if((rcode = task_queue_.put(&task))) {
-        task->set_status(PTASK_STATUS_REJECTED);
+        task.set_status(PTASK_STATUS_REJECTED);
         IFLOG(cri(TH_ID, LS_TRL "[res:%d]", __func__, rcode))
     } else {
-        task->set_status(PTASK_STATUS_SUBMITTED);
+        task.set_status(PTASK_STATUS_SUBMITTED);
     }
     return rcode;
 }

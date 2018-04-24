@@ -45,7 +45,7 @@ RetCode VLG_COMP_JAVA_VLG_Entity_Ctor(compile_unit &cunit,
             "ctor\n"
             "*****************************************************/\n");
     fprintf(file, "public %s(){\n", edsc.get_nentity_name());
-    auto &entitymap = cunit.get_entity_map();
+    auto &entitymap = cunit.get_nentity_map();
     auto &mmbrmap = edsc.get_map_id_MMBRDSC();
     for(auto mdesc = mmbrmap.begin(); mdesc != mmbrmap.end(); mdesc++) {
         if(mdesc->second->get_member_type() != MemberType_FIELD) {
@@ -154,7 +154,7 @@ RetCode ABSR_METH_ENT_COPY__Body_impl(compile_unit &cunit,
             CR_1IND"}\n", edsc.get_nentity_name(), edsc.get_nentity_name());
     fprintf(file, CR_1IND"%s cstout = (%s)out;\n", edsc.get_nentity_name(),
             edsc.get_nentity_name());
-    auto &entitymap = cunit.get_entity_map();
+    auto &entitymap = cunit.get_nentity_map();
     auto &mmbrmap = edsc.get_map_id_MMBRDSC();
     for(auto mdesc = mmbrmap.begin(); mdesc != mmbrmap.end(); mdesc++) {
         if(mdesc->second->get_member_type() != MemberType_FIELD) {
@@ -235,7 +235,7 @@ RetCode ABSR_METH_ENT_ISZERO__Body_impl(compile_unit &cunit,
                                         FILE *file)
 {
     std::string zero_val;
-    auto &entitymap = cunit.get_entity_map();
+    auto &entitymap = cunit.get_nentity_map();
     auto &mmbrmap = edsc.get_map_id_MMBRDSC();
     for(auto mdesc = mmbrmap.begin(); mdesc != mmbrmap.end(); mdesc++) {
         if(mdesc->second->get_member_type() != MemberType_FIELD) {
@@ -306,7 +306,7 @@ RetCode ABSR_METH_ENT_SETZERO__Body_impl(compile_unit &cunit,
                                          FILE *file)
 {
     std::string zero_val;
-    auto &entitymap = cunit.get_entity_map();
+    auto &entitymap = cunit.get_nentity_map();
     auto &mmbrmap = edsc.get_map_id_MMBRDSC();
     for(auto mdesc = mmbrmap.begin(); mdesc != mmbrmap.end(); mdesc++) {
         if(mdesc->second->get_member_type() != MemberType_FIELD) {
@@ -373,7 +373,7 @@ RetCode ABSR_METH_ENT_SET__Body_impl(compile_unit &cunit,
             CR_1IND"}\n", edsc.get_nentity_name(), edsc.get_nentity_name());
     fprintf(file, CR_1IND"%s cstin = (%s)in;\n", edsc.get_nentity_name(),
             edsc.get_nentity_name());
-    auto &entitymap = cunit.get_entity_map();
+    auto &entitymap = cunit.get_nentity_map();
     auto &mmbrmap = edsc.get_map_id_MMBRDSC();
     for(auto mdesc = mmbrmap.begin(); mdesc != mmbrmap.end(); mdesc++) {
         if(mdesc->second->get_member_type() != MemberType_FIELD) {
@@ -463,7 +463,7 @@ RetCode ABSR_METH_ENT_PTOBUF__NotZeroMode(compile_unit &cunit,
                                           FILE *file)
 {
     std::string mb_nm;
-    auto &entitymap = cunit.get_entity_map();
+    auto &entitymap = cunit.get_nentity_map();
     auto &mmbrmap = edsc.get_map_id_MMBRDSC();
     for(auto mdesc = mmbrmap.begin(); mdesc != mmbrmap.end(); mdesc++) {
         if(mdesc->second->get_member_type() != MemberType_FIELD) {
@@ -560,7 +560,7 @@ RetCode ABSR_METH_ENT_PTOBUF__AllFildMode(compile_unit &cunit,
                                           entity_desc_comp &edsc,
                                           FILE *file)
 {
-    auto &entitymap = cunit.get_entity_map();
+    auto &entitymap = cunit.get_nentity_map();
     auto &mmbrmap = edsc.get_map_id_MMBRDSC();
     for(auto mdesc = mmbrmap.begin(); mdesc != mmbrmap.end(); mdesc++) {
         if(mdesc->second->get_member_type() != MemberType_FIELD) {
@@ -676,7 +676,7 @@ RetCode ABSR_METH_ENT_SER__IndexedNotZero(compile_unit &cunit,
     fprintf(file,
             CR_3IND"tlen = out_buf.getPos();  //we are reserving 4 bytes for total entity len.\n");
     std::string mb_nm;
-    auto &entitymap = cunit.get_entity_map();
+    auto &entitymap = cunit.get_nentity_map();
     auto &mmbrmap = edsc.get_map_id_MMBRDSC();
     for(auto mdesc = mmbrmap.begin(); mdesc != mmbrmap.end(); mdesc++) {
         if(mdesc->second->get_member_type() != MemberType_FIELD) {
@@ -938,7 +938,7 @@ RetCode VLG_COMP_JAVA_VLG_Class_abs_meths(compile_unit &cunit,
             "NClass methods\n"
             "*****************************************************/\n");
     fprintf(file,  ABSR_METH_GETENTID"\n");
-    fprintf(file,  CR_1IND"return %d;\n", edsc.get_entityid());
+    fprintf(file,  CR_1IND"return %d;\n", edsc.get_nclassid());
     fprintf(file, "}\n");
     return vlg::RetCode_OK;
 }
@@ -953,7 +953,7 @@ RetCode VLG_COMP_JAVA_getter_setter(compile_unit &cunit,
     fprintf(file,  "/*****************************************************\n"
             "getter / setter / iszero\n"
             "*****************************************************/\n");
-    auto &entitymap = cunit.get_entity_map();
+    auto &entitymap = cunit.get_nentity_map();
     auto &mmbrmap = edsc.get_map_id_MMBRDSC();
     for(auto mdesc = mmbrmap.begin(); mdesc != mmbrmap.end(); mdesc++) {
         if(mdesc->second->get_member_type() != MemberType_FIELD) {
@@ -1132,7 +1132,7 @@ RetCode VLG_COMP_JAVA_rep(compile_unit &cunit,
             continue;
         }
         std::string type_str;
-        RET_ON_KO(target_type_from_VLG_TYPE(*mdesc->second, cunit.get_entity_map(), type_str))
+        RET_ON_KO(target_type_from_VLG_TYPE(*mdesc->second, cunit.get_nentity_map(), type_str))
         if(mdesc->second->get_nmemb() > 1) {
             //primitive type nmemb > 1
             fprintf(file, "public %s%s %s;", type_str.c_str(),
@@ -1199,7 +1199,7 @@ RetCode VLG_COMP_JAVA_NClass(compile_unit &cunit,
             "NClass ID\n"
             "*****************************************************/\n");
     fprintf(efile, "public static final int %s_NClass_ID=%u;\n",
-            edsc.get_nentity_name(), edsc.get_entityid());
+            edsc.get_nentity_name(), edsc.get_nclassid());
     RET_ON_KO(VLG_COMP_JAVA_VLG_Entity_Ctor(cunit, edsc, efile))
     RET_ON_KO(put_newline(efile))
     RET_ON_KO(VLG_COMP_JAVA_VLG_Entity_abs_meths(cunit, edsc, efile))
@@ -1231,9 +1231,9 @@ RetCode VLG_COMP_JAVA_NEntityDesc(compile_unit &cunit,
             CR_2IND"%s //boolean persistent\n"
             CR_1IND");\n",
             edsc.get_nentity_name(),
-            edsc.get_entityid(),
+            edsc.get_nclassid(),
             edsc.get_nentity_type(),
-            edsc.get_entity_namespace(),
+            edsc.get_nentity_namespace(),
             edsc.get_nentity_name(),
             edsc.get_field_num(),
             edsc.is_persistent() ? "true" : "false");
@@ -1247,9 +1247,9 @@ RetCode VLG_COMP_JAVA_NEntityDesc(compile_unit &cunit,
                 CR_2IND"\"%s\", // String mmbr_desc\n"
                 CR_2IND"%d, // int fild_type\n"
                 CR_2IND"%zu, // int nmemb\n"
-                CR_2IND"%u, // int fild_entityid\n"
+                CR_2IND"%u, // int field_nclass_id\n"
                 CR_2IND"\"%s\", // String fild_usr_str_type\n"
-                CR_2IND"%d, // int fild_entitytype\n"
+                CR_2IND"%d, // int field_nentitytype\n"
                 CR_2IND"%ld  // int enum_value\n"
                 CR_1IND");\n",
                 edsc.get_nentity_name(),
@@ -1262,7 +1262,7 @@ RetCode VLG_COMP_JAVA_NEntityDesc(compile_unit &cunit,
                 mdesc->second->get_nmemb(),
                 mdesc->second->get_field_nclassid(),
                 mdesc->second->get_field_usr_str_type() ? mdesc->second->get_field_usr_str_type() : "",
-                mdesc->second->get_field_entity_type(),
+                mdesc->second->get_field_nentity_type(),
                 mdesc->second->get_enum_value());
         fprintf(file, CR_1IND"%s_edesc.addMemberDesc(%s_%s_mdesc);\n",
                 edsc.get_nentity_name(),
@@ -1343,7 +1343,7 @@ RetCode VLG_COMP_JAVA_EntryPoint(compile_unit &cunit,
             CR_2IND"return nem;\n"
             CR_1IND"}\n");
     fprintf(file, CR_1IND"nem = new NEntityManager();\n");
-    auto &entitymap = cunit.get_entity_map();
+    auto &entitymap = cunit.get_nentity_map();
     for(auto edsc = entitymap.begin(); edsc != entitymap.end(); edsc++) {
         RET_ON_KO(VLG_COMP_JAVA_NEntityDesc(cunit, *edsc->second, file))
         fprintf(file, CR_1IND"nem.extend(%s_edesc);\n", edsc->second->get_nentity_name());
@@ -1361,7 +1361,7 @@ ENTRYPOINT- VLG_COMP_Compile_Java
 ***********************************/
 RetCode compile_Java(compile_unit &cunit)
 {
-    auto &entitymap = cunit.get_entity_map();
+    auto &entitymap = cunit.get_nentity_map();
     std::string efile_n;
     FILE *efile = nullptr;
     //render entities
