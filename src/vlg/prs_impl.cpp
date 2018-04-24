@@ -174,7 +174,8 @@ RetCode persistence_worker::submit(persistence_task &task)
         return RetCode_OK;
     }
     RetCode rcode = RetCode_OK;
-    if((rcode = task_queue_.put(&task))) {
+    persistence_task *task_ptr = &task;
+    if((rcode = task_queue_.put(&task_ptr))) {
         task.set_status(PTASK_STATUS_REJECTED);
         IFLOG(cri(TH_ID, LS_TRL "[res:%d]", __func__, rcode))
     } else {
