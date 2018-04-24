@@ -598,16 +598,16 @@ RetCode VLG_COMP_CalcFieldOffset(size_t max_align,
     std::for_each(mmbrmap.begin(), mmbrmap.end(), [&](auto &mdesc) {
         //it is scalar if it is a primitive type or an enum
         bool scalar = (mdesc->get_field_type() != Type_ENTITY) ||
-                      (mdesc->get_field_entity_type() == NEntityType_NENUM);
+                      (mdesc->get_field_nentity_type() == NEntityType_NENUM);
         if(mdesc->get_field_type() == Type_ENTITY &&
-                mdesc->get_field_entity_type() != NEntityType_NENUM) {
+                mdesc->get_field_nentity_type() != NEntityType_NENUM) {
             //we get max align if it is a struct/class
             auto edesc = entitymap.end();
             if((edesc = entitymap.find(mdesc->get_field_usr_str_type())) == entitymap.end()) {
                 EXIT_ACTION
             }
-            type_align = edesc->second->get_entity_max_align(arch, os, lang, tcomp);
-        } else if(mdesc->get_field_entity_type() == NEntityType_NENUM) {
+            type_align = edesc->second->get_nclass_max_align(arch, os, lang, tcomp);
+        } else if(mdesc->get_field_nentity_type() == NEntityType_NENUM) {
             //we treat enum with int align.
             type_align = 4;
         } else {
@@ -656,11 +656,11 @@ RetCode VLG_COMP_CalcFieldsSizeAndEntityMaxAlign(size_t &max_align,
                                                               os,
                                                               lang,
                                                               tcomp);
-                max_align = (fld_entity_desc->second->get_entity_max_align(arch,
+                max_align = (fld_entity_desc->second->get_nclass_max_align(arch,
                                                                            os,
                                                                            lang,
                                                                            tcomp) > max_align) ?
-                            fld_entity_desc->second->get_entity_max_align(arch,
+                            fld_entity_desc->second->get_nclass_max_align(arch,
                                                                           os,
                                                                           lang,
                                                                           tcomp) : max_align;
@@ -702,14 +702,14 @@ RetCode VLG_COMP_CalcTCompDependantValues(size_t max_align,
                                                        os,
                                                        lang,
                                                        tcomp))
-    entitydesc.set_entity_max_align(max_align,
+    entitydesc.set_nclass_max_align(max_align,
                                     arch,
                                     os,
                                     lang,
                                     tcomp);
     size_t fsize = 0;
-    //calculate class fields offsets
-    RET_ON_KO(VLG_COMP_CalcFieldOffset(entitydesc.get_entity_max_align(arch,
+    //calculate nclass fields offsets
+    RET_ON_KO(VLG_COMP_CalcFieldOffset(entitydesc.get_nclass_max_align(arch,
                                                                        os,
                                                                        lang,
                                                                        tcomp),
@@ -720,9 +720,9 @@ RetCode VLG_COMP_CalcTCompDependantValues(size_t max_align,
                                        os,
                                        lang,
                                        tcomp))
-    //adjust entity size
-    fsize = adjust_entity_size(field_offset,
-                               entitydesc.get_entity_max_align(arch,
+    //adjust nclass size
+    fsize = adjust_nclass_size(field_offset,
+                               entitydesc.get_nclass_max_align(arch,
                                                                os,
                                                                lang,
                                                                tcomp),
@@ -731,7 +731,7 @@ RetCode VLG_COMP_CalcTCompDependantValues(size_t max_align,
                                lang,
                                tcomp);
 
-    entitydesc.set_entity_size(fsize,
+    entitydesc.set_nclass_size(fsize,
                                arch,
                                os,
                                lang,
@@ -803,7 +803,7 @@ RetCode VLG_COMP_ParseFild(unsigned long &lnum,
     unsigned int fld_entityid = 0;
     if(fld_type == Type_ENTITY) {
         //user-defined type id
-        fld_entityid = fld_entity_desc->get_entityid();
+        fld_entityid = fld_entity_desc->get_nclassid();
     }
     //at this point we can create a VLG_MEMBER_DESC_COMP for this field
     member_desc_comp *mmbrdesc = new member_desc_comp(mmbrid,
@@ -1047,12 +1047,12 @@ RetCode VLG_COMP_ParseEnum(unsigned long &lnum,
     // VLG_COMP_LANG: CPP
     // VLG_COMP_TCOMP: MSVC
 
-    entitydesc->set_entity_size(4,
+    entitydesc->set_nclass_size(4,
                                 VLG_COMP_ARCH_x86_64,
                                 VLG_COMP_OS_win,
                                 VLG_COMP_LANG_CPP,
                                 VLG_COMP_TCOMP_MSVC);
-    entitydesc->set_entity_max_align(4,
+    entitydesc->set_nclass_max_align(4,
                                      VLG_COMP_ARCH_x86_64,
                                      VLG_COMP_OS_win,
                                      VLG_COMP_LANG_CPP,
@@ -1063,12 +1063,12 @@ RetCode VLG_COMP_ParseEnum(unsigned long &lnum,
     // VLG_COMP_LANG: CPP
     // VLG_COMP_TCOMP: gcc
 
-    entitydesc->set_entity_size(4,
+    entitydesc->set_nclass_size(4,
                                 VLG_COMP_ARCH_x86_64,
                                 VLG_COMP_OS_unix,
                                 VLG_COMP_LANG_CPP,
                                 VLG_COMP_TCOMP_GCC);
-    entitydesc->set_entity_max_align(4,
+    entitydesc->set_nclass_max_align(4,
                                      VLG_COMP_ARCH_x86_64,
                                      VLG_COMP_OS_unix,
                                      VLG_COMP_LANG_CPP,

@@ -27,7 +27,7 @@
 /***********************************
 RECOGNIZED TOKENS
 ***********************************/
-#define VLG_RWRD_PFX                "@"
+#define VLG_RWRD_PFX "@"
 
 /***********************************
 RECOGNIZED RES. WORDS
@@ -215,21 +215,16 @@ struct member_desc_comp {
                      const char *mmbr_desc,
                      Type fild_type,
                      size_t nmemb,
-                     unsigned int fild_entityid,
+                     unsigned int fild_nclassid,
                      const char *fild_usr_str_type,
-                     NEntityType fild_entitytype,
+                     NEntityType fild_nentitytype,
                      long enum_value);
-    /*
-    Member section
-    */
+
     unsigned short get_member_id() const;
     MemberType get_member_type() const;
     const char *get_member_name() const;
     const char *get_member_desc() const;
 
-    /*
-    Field section
-    */
     Type get_field_type() const;
 
     size_t get_field_offset(VLG_COMP_ARCH arch,
@@ -245,7 +240,7 @@ struct member_desc_comp {
     size_t get_nmemb() const;
     unsigned int get_field_nclassid() const;
     const char *get_field_usr_str_type() const;
-    NEntityType get_field_entity_type() const;
+    NEntityType get_field_nentity_type() const;
 
 
     void set_field_offset(size_t,
@@ -260,40 +255,22 @@ struct member_desc_comp {
                              VLG_COMP_LANG lang,
                              VLG_COMP_TCOMP tcomp);
 
-    //Enum specific
     long get_enum_value() const;
-
 
     unsigned short mmbrid_;
     MemberType mmbr_type_;
     const char *mmbr_name_;
     const char *mmbr_desc_;
-
-    //field type when applicable
     Type fild_type_;
 
     std::map<unsigned int, size_t> fild_offset_map_;
     std::map<unsigned int, size_t> fild_type_size_map_;
 
-    //1 for single element
-    //N for arrays, as calloc()
     size_t nmemb_;
-
-    // valid only if fild_type
     unsigned int fild_nclassid_;
-
-    // is set to VLG_TYPE_Entity &&
-    // fild_entitytype_ == VLG_ENTITY_TYPE_Class
-    // equals to nclassname when
     const char *fild_usr_str_type_;
+    NEntityType fild_nentitytype_;
 
-    // fild_type_ == VLG_TYPE_Entity
-    // is set to VLG_TYPE_Entity
-    // valid only if fild_type
-    // is set to VLG_TYPE_Entity
-    NEntityType fild_entitytype_;
-
-    //enum specific
     //value assumed by this enum
     long enum_value_;
 };
@@ -343,22 +320,22 @@ struct entity_desc_comp {
 
         RetCode add_key_desc(key_desc_comp *keydesc);
 
-        unsigned int get_entityid()  const;
+        unsigned int get_nclassid() const;
 
         size_t get_size(VLG_COMP_ARCH arch,
                         VLG_COMP_OS os,
                         VLG_COMP_LANG lang,
                         VLG_COMP_TCOMP tcomp)  const;
 
-        size_t get_entity_max_align(VLG_COMP_ARCH arch,
+        size_t get_nclass_max_align(VLG_COMP_ARCH arch,
                                     VLG_COMP_OS os,
                                     VLG_COMP_LANG lang,
                                     VLG_COMP_TCOMP tcomp)  const;
 
         NEntityType get_nentity_type() const;
-        const char *get_entity_namespace() const;
+        const char *get_nentity_namespace() const;
         const char *get_nentity_name() const;
-        vlg::alloc_func get_entity_alloc_f() const;
+        vlg::alloc_func get_nclass_alloc_f() const;
         unsigned int get_field_num() const;
         bool is_persistent() const;
 
@@ -373,34 +350,33 @@ struct entity_desc_comp {
 
         void enum_member_desc(enum_member_desc_comp_func func) const;
 
-        void set_entity_size(size_t,
+        void set_nclass_size(size_t,
                              VLG_COMP_ARCH arch,
                              VLG_COMP_OS os,
                              VLG_COMP_LANG lang,
                              VLG_COMP_TCOMP tcomp);
 
-        void set_entity_max_align(size_t,
+        void set_nclass_max_align(size_t,
                                   VLG_COMP_ARCH arch,
                                   VLG_COMP_OS os,
                                   VLG_COMP_LANG lang,
                                   VLG_COMP_TCOMP tcomp);
 
     public:
-        unsigned int entityid_;
+        unsigned int nclassid_;
 
-        std::map<unsigned int, size_t> entity_size_map_;
-        std::map<unsigned int, size_t> entity_max_align_map_;
+        std::map<unsigned int, size_t> nclass_size_map_;
+        std::map<unsigned int, size_t> nclass_max_align_map_;
 
-        NEntityType entitytype_;
+        NEntityType nentitytype_;
         const char *nmspace_;
-        const char *entityname_;
+        const char *nentityname_;
         vlg::alloc_func afun_;
         unsigned int fild_num_;
 
         std::map<unsigned short, member_desc_comp *> mmbrid_mdesc_;
-        std::map<std::string, member_desc_comp *> mmbrnm_mdesc_;  //mmbrname --> mmbrdesc
+        std::map<std::string, member_desc_comp *> mmbrnm_mdesc_;
 
-        //persistence
         bool persistent_;
         std::map<unsigned short, key_desc_comp *> keyid_kdesc_;
 };
@@ -423,14 +399,14 @@ class compile_unit {
         const char *model_version() const;
 
         std::map<std::string, std::string> &get_define_map();
-        std::map<std::string, entity_desc_comp *> &get_entity_map();
+        std::map<std::string, entity_desc_comp *> &get_nentity_map();
 
     private:
         char *fname_;
         char *model_name_;
         char *model_version_;
         std::map<std::string, std::string> define_map_;
-        std::map<std::string, entity_desc_comp *> entity_map_;
+        std::map<std::string, entity_desc_comp *> nentity_map_;
 };
 
 /***********************************
@@ -450,7 +426,7 @@ RetCode parse_data(const char *fname,
                    char **modver);
 
 /*
-Returns the potential next valid offset (to be used in next iteration).
+Returns next valid offset (to be used in next iteration).
 Set in cur_offset the offset that must be used for the current field.
 */
 size_t get_next_valid_offset(size_t &cur_offset,
@@ -465,7 +441,7 @@ size_t get_next_valid_offset(size_t &cur_offset,
 Return the size of the field adjusted to align/paking value.
 cur_offset must contain last value returned by get_next_valid_offset.
 */
-size_t adjust_entity_size(size_t cur_offset,
+size_t adjust_nclass_size(size_t cur_offset,
                           size_t max_align,
                           VLG_COMP_ARCH arch,
                           VLG_COMP_OS os,

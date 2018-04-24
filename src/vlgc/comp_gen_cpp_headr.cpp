@@ -16,7 +16,7 @@ extern RetCode VLG_COMP_Gen__CPP_(compile_unit &cunit);
 RetCode VLG_COMP_CPP_Calc_NMspc(entity_desc_comp &edesc,
                                 std::string &out)
 {
-    vlg::str_tok nmtknz(edesc.get_entity_namespace());
+    vlg::str_tok nmtknz(edesc.get_nentity_namespace());
     std::string nmtkn, ent_nmspace;
     ent_nmspace.assign("");
     bool first = true;
@@ -160,7 +160,7 @@ RetCode VLG_COMP_Gen_GenMeths__H_(compile_unit &cunit,
                                   FILE *file)
 {
     fprintf(file, OPN_CMMNT_LN"getter(s) / setter(s) / is_zero(s)\n" CLS_CMMNT_LN);
-    std::map<std::string, entity_desc_comp *> &entitymap = cunit.get_entity_map();
+    std::map<std::string, entity_desc_comp *> &entitymap = cunit.get_nentity_map();
     auto &mmbrmap = edsc.get_map_id_MMBRDSC();
     for(auto mdesc = mmbrmap.begin(); mdesc != mmbrmap.end(); mdesc++) {
         if(mdesc->second->get_member_type() != MemberType_FIELD) {
@@ -316,7 +316,7 @@ GEN- VLG_COMP_Gen_Enum__H_
 ***********************************/
 RetCode VLG_COMP_Gen_Enum__H_(compile_unit &cunit, FILE *file)
 {
-    auto &entitymap = cunit.get_entity_map();
+    auto &entitymap = cunit.get_nentity_map();
     for(auto edsc = entitymap.begin(); edsc != entitymap.end(); edsc++) {
         if(edsc->second->get_nentity_type() == NEntityType_NENUM) {
             fprintf(file, OPN_CMMNT_LN "vlg_enum: %s\n" CLS_CMMNT_LN, edsc->second->get_nentity_name());
@@ -349,17 +349,17 @@ GEN- VLG_COMP_Gen_Class__H_
 ***********************************/
 RetCode VLG_COMP_Gen_Class__H_(compile_unit &cunit, FILE *file)
 {
-    std::map<std::string, entity_desc_comp *> &entitymap = cunit.get_entity_map();
+    std::map<std::string, entity_desc_comp *> &entitymap = cunit.get_nentity_map();
     for(auto edsc = entitymap.begin(); edsc != entitymap.end(); edsc++) {
         if(edsc->second->get_nentity_type() == NEntityType_NCLASS) {
             fprintf(file, OPN_CMMNT_LN"nclass: %s - ID: %u\n"
                     CLS_CMMNT_LN, edsc->second->get_nentity_name(),
-                    edsc->second->get_entityid());
+                    edsc->second->get_nclassid());
             std::string nmsp;
             RET_ON_KO(VLG_COMP_CPP_Calc_NMspc(*edsc->second, nmsp))
             fprintf(file, "namespace %s{\n", nmsp.c_str());
             RET_ON_KO(put_newline(file))
-            fprintf(file, "#define %s_ENTITY_ID %u\n", edsc->second->get_nentity_name(), edsc->second->get_entityid());
+            fprintf(file, "#define %s_ENTITY_ID %u\n", edsc->second->get_nentity_name(), edsc->second->get_nclassid());
             RET_ON_KO(put_newline(file))
             fprintf(file, "struct %s : public vlg::nclass{\n", edsc->second->get_nentity_name());
             fprintf(file, EXPORT_SYMBOL"%s();\n", edsc->second->get_nentity_name());

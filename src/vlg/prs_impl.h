@@ -108,13 +108,14 @@ struct persistence_connection_pool {
 
 // we cannot use a thread-pool because we want 1 thread per connection.
 struct persistence_worker : public p_th {
-    persistence_worker(persistence_connection_pool &conn_pool);
+    persistence_worker(persistence_connection_pool &conn_pool, bool surrogate_th = false);
 
-    RetCode submit_task(persistence_task *task);
+    RetCode submit(persistence_task &task);
     virtual void *run();
 
     persistence_connection_pool &conn_pool_;
     b_qu task_queue_;
+    bool surrogate_th_;
 };
 
 struct persistence_connection_impl {
@@ -236,7 +237,7 @@ struct persistence_driver {
     //returns null if no connection is available.
     persistence_connection_impl *available_connection(unsigned int nclass_id);
 
-    /****USED BY MANAGER****/
+    //used by manager
     RetCode add_pool(const char *conn_pool_name,
                      const char *url,
                      const char *usr,

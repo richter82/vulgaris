@@ -195,42 +195,39 @@ RetCode VLG_COMP_Gen_ScalarMember_Buff_CPP_(member_desc_comp *mdsc,
                 "blen += sprintf(&buff[blen], \"%s=[\");\n",
                 mdsc->get_member_name(),
                 mdsc->get_member_name());
-        fprintf(file, CR_2IND
-                CR_2IND
-                "for(int i=0; i<%zu; i++){\n",
-                mdsc->get_nmemb());
-        if(mdsc->get_field_type() == Type_INT64 ||
-                mdsc->get_field_type() == Type_UINT64) {
-            std::string tmp_lnx;
-            fprintf(file, "%s", VLG_COMP_DPND_strict_linux);
-            RET_ON_KO(printf_percent_from_VLG_TYPE(*mdsc, tmp_lnx, true))
-            fprintf(file, CR_2IND CR_2IND CR_2IND
-                    "blen += sprintf(&buff[blen], \"%%%s\", %s[i]);\n",
-                    tmp_lnx.c_str(),
-                    mdsc->get_member_name());
-            fprintf(file, "#else\n");
-            fprintf(file, CR_2IND CR_2IND CR_2IND
-                    "blen += sprintf(&buff[blen], \"%%%s\", %s[i]);\n",
-                    tmp.c_str(),
-                    mdsc->get_member_name());
-            fprintf(file, "#endif\n");
+        if(mdsc->get_field_type() == Type_BYTE) {
+            fprintf(file, CR_2IND CR_2IND"blen += sprintf(&buff[blen], \"byte\");\n");
         } else {
+            fprintf(file, CR_2IND CR_2IND
+                    "for(int i=0; i<%zu; i++){\n",
+                    mdsc->get_nmemb());
+            if(mdsc->get_field_type() == Type_INT64 ||
+                    mdsc->get_field_type() == Type_UINT64) {
+                std::string tmp_lnx;
+                fprintf(file, "%s", VLG_COMP_DPND_strict_linux);
+                RET_ON_KO(printf_percent_from_VLG_TYPE(*mdsc, tmp_lnx, true))
+                fprintf(file, CR_2IND CR_2IND CR_2IND
+                        "blen += sprintf(&buff[blen], \"%%%s\", %s[i]);\n",
+                        tmp_lnx.c_str(),
+                        mdsc->get_member_name());
+                fprintf(file, "#else\n");
+                fprintf(file, CR_2IND CR_2IND CR_2IND
+                        "blen += sprintf(&buff[blen], \"%%%s\", %s[i]);\n",
+                        tmp.c_str(),
+                        mdsc->get_member_name());
+                fprintf(file, "#endif\n");
+            } else {
+                fprintf(file, CR_2IND CR_2IND CR_2IND
+                        "blen += sprintf(&buff[blen], \"%%%s\", %s[i]);\n",
+                        tmp.c_str(),
+                        mdsc->get_member_name());
+            }
             fprintf(file, CR_2IND CR_2IND CR_2IND
-                    "blen += sprintf(&buff[blen], \"%%%s\", %s[i]);\n",
-                    tmp.c_str(),
-                    mdsc->get_member_name());
+                    "if(%zu>i+1) blen += sprintf(&buff[blen], \",\");\n",
+                    mdsc->get_nmemb());
+            fprintf(file, CR_2IND CR_2IND "}\n");
         }
-        fprintf(file, CR_2IND
-                CR_2IND
-                CR_2IND
-                "if(%zu>i+1) blen += sprintf(&buff[blen], \",\");\n",
-                mdsc->get_nmemb());
-        fprintf(file, CR_2IND
-                CR_2IND
-                "}\n");
-        fprintf(file,  CR_2IND
-                CR_2IND
-                "blen += sprintf(&buff[blen], \"]\");\n");
+        fprintf(file, CR_2IND CR_2IND "blen += sprintf(&buff[blen], \"]\");\n");
         fprintf(file, CR_2IND"}\n");
     } else {
         if(mdsc->get_field_type() == Type_INT64 ||
@@ -560,7 +557,7 @@ GEN- VLG_COMP_Gen_Allc__CPP_
 RetCode VLG_COMP_Gen_Allc__CPP_(compile_unit &cunit, FILE *file)
 {
     fprintf(file, OPN_CMMNT_LN"NCLASS ALLOCATORS\n" CLS_CMMNT_LN);
-    auto &entitymap = cunit.get_entity_map();
+    auto &entitymap = cunit.get_nentity_map();
     for(auto edsc = entitymap.begin(); edsc != entitymap.end(); edsc++) {
         if(edsc->second->get_nentity_type() != NEntityType_NCLASS) {
             continue;
@@ -618,7 +615,7 @@ GEN- VLG_COMP_Gen_Descriptors__CPP_
 RetCode VLG_COMP_Gen_Descriptors__CPP_(compile_unit &cunit,
                                        FILE *file)
 {
-    auto &entitymap = cunit.get_entity_map();
+    auto &entitymap = cunit.get_nentity_map();
     for(auto edsc = entitymap.begin(); edsc != entitymap.end(); edsc++) {
         //create ent desc
         std::string ent_name, allcf;
@@ -634,7 +631,7 @@ RetCode VLG_COMP_Gen_Descriptors__CPP_(compile_unit &cunit,
                 fprintf(file, OPN_CMMNT_LN "ENUM %s DESC\n" CLS_CMMNT_LN, edsc->second->get_nentity_name());
                 fprintf(file, VLG_COMP_CPP_ENTDESC_DECL,
                         edsc->second->get_nentity_name(),
-                        edsc->second->get_entityid(),
+                        edsc->second->get_nclassid(),
                         (size_t)0LLU,  //EntitySize not significant for enum
                         (size_t)0LLU,  //EntityMaxAlign not significant for enum
                         ent_type,
@@ -652,12 +649,12 @@ RetCode VLG_COMP_Gen_Descriptors__CPP_(compile_unit &cunit,
                 allcf.append("_alloc_func");
                 fprintf(file, "%s", VLG_COMP_DPND_x86_64_win_MSVC);
                 fprintf(file, VLG_COMP_CPP_ENTDESC_DECL, edsc->second->get_nentity_name(),
-                        edsc->second->get_entityid(),
+                        edsc->second->get_nclassid(),
                         edsc->second->get_size(VLG_COMP_ARCH_x86_64,
                                                VLG_COMP_OS_win,
                                                VLG_COMP_LANG_CPP,
                                                VLG_COMP_TCOMP_MSVC),
-                        edsc->second->get_entity_max_align(VLG_COMP_ARCH_x86_64,
+                        edsc->second->get_nclass_max_align(VLG_COMP_ARCH_x86_64,
                                                            VLG_COMP_OS_win,
                                                            VLG_COMP_LANG_CPP,
                                                            VLG_COMP_TCOMP_MSVC),
@@ -670,12 +667,12 @@ RetCode VLG_COMP_Gen_Descriptors__CPP_(compile_unit &cunit,
                 fprintf(file, "#endif\n");
                 fprintf(file, "%s", VLG_COMP_DPND_x86_64_unix_GCC);
                 fprintf(file, VLG_COMP_CPP_ENTDESC_DECL, edsc->second->get_nentity_name(),
-                        edsc->second->get_entityid(),
+                        edsc->second->get_nclassid(),
                         edsc->second->get_size(VLG_COMP_ARCH_x86_64,
                                                VLG_COMP_OS_unix,
                                                VLG_COMP_LANG_CPP,
                                                VLG_COMP_TCOMP_GCC),
-                        edsc->second->get_entity_max_align(VLG_COMP_ARCH_x86_64,
+                        edsc->second->get_nclass_max_align(VLG_COMP_ARCH_x86_64,
                                                            VLG_COMP_OS_unix,
                                                            VLG_COMP_LANG_CPP,
                                                            VLG_COMP_TCOMP_GCC),
@@ -707,7 +704,7 @@ RetCode VLG_COMP_Gen_Descriptors__CPP_(compile_unit &cunit,
             const char *mmbr_fld_type = nullptr;
             mmbr_fld_type = string_from_Type(mdesc->second->get_field_type());
             const char *mmbr_fld_ent_type = nullptr;
-            mmbr_fld_ent_type = string_from_NEntityType(mdesc->second->get_field_entity_type());
+            mmbr_fld_ent_type = string_from_NEntityType(mdesc->second->get_field_nentity_type());
             fprintf(file, "%s", VLG_COMP_DPND_x86_64_win_MSVC);
             fprintf(file, VLG_COMP_CPP_MMBRDESC_DECL,  mmbr_tmp_str.c_str(),
                     mdesc->second->get_member_id(),
@@ -776,7 +773,7 @@ RetCode VLG_COMP_Gen_GenMeths__CPP_(compile_unit &cunit,
                                     FILE *file)
 {
     fprintf(file, OPN_CMMNT_LN "Getter(s) / Setter(s) / is_zero(s)\n" CLS_CMMNT_LN);
-    std::map<std::string, entity_desc_comp *> &entitymap = cunit.get_entity_map();
+    std::map<std::string, entity_desc_comp *> &entitymap = cunit.get_nentity_map();
     auto &mmbrmap = edsc.get_map_id_MMBRDSC();
     for(auto mdesc = mmbrmap.begin(); mdesc != mmbrmap.end(); mdesc++) {
         if(mdesc->second->get_member_type() != MemberType_FIELD) {
@@ -1093,7 +1090,7 @@ RetCode VLG_COMP_Class_Ctor__CPP_(compile_unit &cunit,
                                   FILE *file)
 {
     fprintf(file, OPN_CMMNT_LN "CLASS %s CTOR\n" CLS_CMMNT_LN, edsc->get_nentity_name());
-    auto &entitymap = cunit.get_entity_map();
+    auto &entitymap = cunit.get_nentity_map();
     auto &mmbrmap = edsc->get_map_id_MMBRDSC();
     std::string ctor_init_lst, def_val;
     bool first = true, put_coma = false;
@@ -1221,7 +1218,7 @@ RetCode VLG_COMP_Gen_VirtualMeths__CPP_(std::map<std::string, entity_desc_comp *
 {
     fprintf(file, OPN_CMMNT_LN "CLASS %s get_id.\n" CLS_CMMNT_LN, nclass_desc.get_nentity_name());
     fprintf(file, EXPORT_SYMBOL"unsigned int %s::get_id() const\n{\n", nclass_desc.get_nentity_name());
-    fprintf(file, CR_1IND "return %d;\n", nclass_desc.get_entityid());
+    fprintf(file, CR_1IND "return %d;\n", nclass_desc.get_nclassid());
     fprintf(file, "}\n");
     fprintf(file, OPN_CMMNT_LN "CLASS %s get_compiler_version.\n" CLS_CMMNT_LN, nclass_desc.get_nentity_name());
     fprintf(file, EXPORT_SYMBOL"unsigned int %s::get_compiler_version() const\n{\n", nclass_desc.get_nentity_name());
@@ -1293,7 +1290,7 @@ GEN- VLG_COMP_Gen_ClassImpl__CPP_
 ***********************************/
 RetCode VLG_COMP_Gen_ClassImpl__CPP_(compile_unit &cunit, FILE *file)
 {
-    auto &entitymap = cunit.get_entity_map();
+    auto &entitymap = cunit.get_nentity_map();
     for(auto edsc = entitymap.begin(); edsc != entitymap.end(); edsc++) {
         if(edsc->second->get_nentity_type() != NEntityType_NCLASS) {
             continue;
@@ -1382,7 +1379,7 @@ RetCode VLG_COMP_Gen_EntryPoint__CPP_(compile_unit &cunit, FILE *file)
     fprintf(file, OPN_CMMNT_LN "MODEL:%s ENTRYPOINT\n" CLS_CMMNT_LN, cunit.model_name());
     fprintf(file, "extern \"C\"{\n");
     fprintf(file, EXPORT_SYMBOL VLG_COMP_CPP_ENTRY_PT_OPN, cunit.model_name());
-    std::map<std::string, entity_desc_comp *> &entitymap = cunit.get_entity_map();
+    std::map<std::string, entity_desc_comp *> &entitymap = cunit.get_nentity_map();
     for(auto edsc = entitymap.begin(); edsc != entitymap.end(); edsc++) {
         auto &mmbrmap = edsc->second->get_map_id_MMBRDSC();
         for(auto mdesc = mmbrmap.begin(); mdesc != mmbrmap.end(); mdesc++) {
