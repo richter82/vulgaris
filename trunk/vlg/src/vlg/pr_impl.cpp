@@ -59,9 +59,7 @@ RetCode peer_recv_task_inco_conn::execute()
 {
     RetCode rcode = RetCode_OK;
     if((rcode = conn_sh_->impl_->peer_->recv_and_route_pkt(conn_sh_, pkt_hdr_.get(), pkt_body_.get()))) {
-        IFLOG(dbg(TH_ID, LS_EXE "[recv task:%d - execution failed - res:%d]", __func__, get_id(), rcode))
-    } else {
-        IFLOG(trc(TH_ID, LS_EXE "[recv task:%d - executed]", __func__, get_id()))
+        IFLOG(trc(TH_ID, LS_EXE "[recv task:%d - execution failed - res:%d]", __func__, get_id(), rcode))
     }
     return rcode;
 }
@@ -83,9 +81,7 @@ RetCode peer_recv_task_outg_conn::execute()
 {
     RetCode rcode = RetCode_OK;
     if((rcode = conn_.impl_->peer_->recv_and_route_pkt(conn_, pkt_hdr_.get(), pkt_body_.get()))) {
-        IFLOG(dbg(TH_ID, LS_EXE "[recv task:%d - execution failed - res:%d]", __func__, get_id(), rcode))
-    } else {
-        IFLOG(trc(TH_ID, LS_EXE "[recv task:%d - executed]", __func__, get_id()))
+        IFLOG(trc(TH_ID, LS_EXE "[recv task:%d - execution failed - res:%d]", __func__, get_id(), rcode))
     }
     return rcode;
 }
@@ -621,20 +617,12 @@ RetCode peer_impl::remove_subscriber(incoming_subscription_impl *sbsdesc)
     return RetCode_OK;
 }
 
-// VLG_PEER_SBS_TASK
-/*
-This task is used in srv_sbs_exec_serv_ executor service, and it is used
-to perform a server-side subscription task, tipically this means that
-a subscription event has been triggered and it must be delivered to all
-subscriptors.
-*/
-
 class peer_sbs_task;
 
 struct srv_connid_condesc_set_ashsnd_rud {
-    unsigned int    nclass_id;
-    peer_sbs_task   *tsk;
-    RetCode         rcode;
+    unsigned int nclass_id;
+    peer_sbs_task *tsk;
+    RetCode rcode;
 };
 
 class peer_sbs_task : public p_tsk {

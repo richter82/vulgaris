@@ -131,11 +131,6 @@ RetCode tx_impl::set_flying()
         IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
-    IFLOG(dbg(TH_ID, LS_TXO"[%08x%08x%08x%08x][FLYING]",
-              txid_.txplid,
-              txid_.txsvid,
-              txid_.txcnid,
-              txid_.txprid))
     set_status(TransactionStatus_FLYING);
     return RetCode_OK;
 }

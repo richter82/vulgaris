@@ -913,8 +913,6 @@ RetCode incoming_connection_impl::recv_tx_request(const vlg_hdr_rec *pkt_hdr,
 
     if((rcode = inco_flytx_map_.remove(&timpl->txid_, nullptr))) {
         IFLOG(cri(TH_ID, LS_TRX"[error removing tx from flying map - res:%d]", rcode))
-    } else {
-        IFLOG(trc(TH_ID, LS_TRX"[tx removed from flying map]"))
     }
 
     if(aborted) {
@@ -1347,8 +1345,6 @@ RetCode outgoing_connection_impl::recv_tx_response(const vlg_hdr_rec *pkt_hdr,
 
     if((rcode = outg_flytx_map_.remove(&trans->txid_, nullptr))) {
         IFLOG(cri(TH_ID, LS_TRX"[error removing tx from flying map - res:%d]", rcode))
-    } else {
-        IFLOG(trc(TH_ID, LS_TRX"[tx removed from flying map]"))
     }
 
     if(aborted) {

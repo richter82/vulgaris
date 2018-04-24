@@ -293,10 +293,6 @@ RetCode selector::process_inco_sock_inco_events()
             srv_cli_sock = it->second->get_socket();
             //first: check if it is readable.
             if(FD_ISSET(srv_cli_sock, &read_FDs_)) {
-                IFLOG(trc(TH_ID, LS_TRL"[socket:%d, connid:%d][server-side socket became readable]",
-                          __func__,
-                          srv_cli_sock,
-                          it->first))
                 if(it->second->impl_->status_ != ConnectionStatus_ESTABLISHED &&
                         it->second->impl_->status_ != ConnectionStatus_PROTOCOL_HANDSHAKE &&
                         it->second->impl_->status_ != ConnectionStatus_AUTHENTICATED) {
@@ -344,9 +340,6 @@ RetCode selector::process_inco_sock_outg_events()
     //**** HANDLE OUTGOING EVENTS BEGIN****
     for(auto it = write_pending_sock_inco_conn_map_.begin(); it != write_pending_sock_inco_conn_map_.end(); it++) {
         if(FD_ISSET(it->first, &write_FDs_)) {
-            IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d][is writepending]", __func__,
-                      it->first,
-                      it->second->impl_->connid_))
             g_bbuf *sending_pkt = nullptr;
             if(it->second->impl_->pkt_sending_q_.get(&sending_pkt)) {
                 IFLOG(cri(TH_ID, LS_CLO "[reading from packet queue]", __func__))
@@ -384,9 +377,6 @@ RetCode selector::process_outg_sock_outg_events()
     //**** HANDLE OUTGOING EVENTS BEGIN****
     for(auto it = write_pending_sock_outg_conn_map_.begin(); it != write_pending_sock_outg_conn_map_.end(); it++) {
         if(FD_ISSET(it->first, &write_FDs_)) {
-            IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d][is write-pending]", __func__,
-                      it->first,
-                      it->second->connid_))
             g_bbuf *sending_pkt = nullptr;
             if(it->second->pkt_sending_q_.get(&sending_pkt)) {
                 IFLOG(cri(TH_ID, LS_CLO "[reading from packet queue]", __func__))
@@ -428,7 +418,6 @@ RetCode selector::process_outg_sock_inco_events()
         for(auto it = outg_early_sock_conn_map_.begin(); it != outg_early_sock_conn_map_.end(); it++) {
             //first: check if it is readable.
             if(FD_ISSET(it->first, &read_FDs_)) {
-                IFLOG(trc(TH_ID, LS_TRL"[socket:%d][early-outgoing socket became readable]", __func__, it->first))
                 if(it->second->status_ != ConnectionStatus_ESTABLISHED &&
                         it->second->status_ != ConnectionStatus_PROTOCOL_HANDSHAKE &&
                         it->second->status_ != ConnectionStatus_AUTHENTICATED) {
@@ -469,9 +458,6 @@ RetCode selector::process_outg_sock_inco_events()
         for(auto it = outg_connid_conn_map_.begin(); it != outg_connid_conn_map_.end(); it++) {
             //first: check if it is readable.
             if(FD_ISSET(it->second->socket_, &read_FDs_)) {
-                IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d][client-side socket became readable]", __func__,
-                          it->second->socket_,
-                          connid))
                 if(it->second->status_ != ConnectionStatus_ESTABLISHED &&
                         it->second->status_ != ConnectionStatus_PROTOCOL_HANDSHAKE &&
                         it->second->status_ != ConnectionStatus_AUTHENTICATED) {
@@ -537,16 +523,12 @@ inline RetCode selector::consume_inco_sock_events()
                   new_conn_shp->get_id()))
         --sel_res_;
         if(sel_res_) {
-            //in addition to the newly connection, there is also some other message incoming on incoming sockets.
-            IFLOG(trc(TH_ID, LS_SEL "+some events need to be processed+", __func__))
             if(process_inco_sock_inco_events()) {
                 IFLOG(cri(TH_ID, LS_CLO "[processing incoming socket events]", __func__))
                 SET_ERROR_AND_RETURRetCodeKO_ACT
             }
         }
     } else {
-        //we have to handle incoming messages on incoming sockets
-        IFLOG(trc(TH_ID, LS_SEL "+some events need to be processed+", __func__))
         if(process_inco_sock_inco_events()) {
             IFLOG(cri(TH_ID, LS_CLO "[processing incoming socket events]", __func__))
             SET_ERROR_AND_RETURRetCodeKO_ACT
@@ -579,16 +561,10 @@ RetCode selector::FDSET_write_incoming_pending_sockets()
     auto it = write_pending_sock_inco_conn_map_.begin();
     while(it != write_pending_sock_inco_conn_map_.end()) {
         if(it->second->impl_->pkt_sending_q_.size()) {
-            IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d][iwp+]", __func__,
-                      it->first,
-                      it->second->get_id()))
             FD_SET(it->first, &write_FDs_);
             nfds_ = ((int)it->first > nfds_) ? (int)it->first : nfds_;
             it++;
         } else {
-            IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d][iwp-]", __func__,
-                      it->first,
-                      it->second->get_id()))
             it = write_pending_sock_inco_conn_map_.erase(it);
         }
     }
@@ -600,16 +576,10 @@ RetCode selector::FDSET_write_outgoing_pending_sockets()
     auto it = write_pending_sock_outg_conn_map_.begin();
     while(it != write_pending_sock_outg_conn_map_.end()) {
         if(it->second->pkt_sending_q_.size()) {
-            IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d][owp+]", __func__,
-                      it->first,
-                      it->second->connid_))
             FD_SET(it->first, &write_FDs_);
             nfds_ = ((int)it->first > nfds_) ? (int)it->first : nfds_;
             it++;
         } else {
-            IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d][owp-]", __func__,
-                      it->first,
-                      it->second->connid_))
             it = write_pending_sock_outg_conn_map_.erase(it);
         }
     }
@@ -624,30 +594,16 @@ inline RetCode selector::FDSET_incoming_sockets()
                 it->second->get_status() == ConnectionStatus_PROTOCOL_HANDSHAKE ||
                 it->second->get_status() == ConnectionStatus_AUTHENTICATED) {
             SOCKET inco_sock = it->second->get_socket();
-            IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d][irp+]",
-                      __func__,
-                      inco_sock,
-                      it->first))
             FD_SET(inco_sock, &read_FDs_);
             FD_SET(inco_sock, &excep_FDs_);
             nfds_ = ((int)inco_sock > nfds_) ? (int)inco_sock : nfds_;
             it++;
         } else {
-            IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d, status:%d][irp-]",
-                      __func__,
-                      it->second->get_socket(),
-                      it->first,
-                      it->second->get_status()))
             SOCKET inco_sock = it->second->get_socket();
             if(it->second->get_status() != ConnectionStatus_DISCONNECTED) {
                 it->second->impl_->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_NETWORK);
             }
-            if(write_pending_sock_inco_conn_map_.erase(inco_sock)) {
-                IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d][<][iwp-]",
-                          __func__,
-                          inco_sock,
-                          it->first))
-            }
+            write_pending_sock_inco_conn_map_.erase(inco_sock);
             it = inco_connid_conn_map_.erase(it);
         }
     }
@@ -665,29 +621,16 @@ inline RetCode selector::FDSET_outgoing_sockets()
         if(it_1->second->status_ == ConnectionStatus_ESTABLISHED ||
                 it_1->second->status_ == ConnectionStatus_PROTOCOL_HANDSHAKE ||
                 it_1->second->status_ == ConnectionStatus_AUTHENTICATED) {
-            IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d][early][orp+]", __func__,
-                      it_1->second->socket_,
-                      it_1->second->connid_))
             FD_SET(it_1->second->socket_, &read_FDs_);
             FD_SET(it_1->second->socket_, &excep_FDs_);
             nfds_ = ((int)it_1->second->socket_ > nfds_) ? (int)it_1->second->socket_ : nfds_;
             it_1++;
         } else {
-            IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d, status:%d][early][[orp-]",
-                      __func__,
-                      it_1->second->socket_,
-                      it_1->second->connid_,
-                      it_1->second->status_))
             it_1 = outg_early_sock_conn_map_.erase(it_1);
             if(it_1->second->status_ != ConnectionStatus_DISCONNECTED) {
                 it_1->second->socket_shutdown();
             }
-            if(write_pending_sock_outg_conn_map_.erase(it_1->second->socket_)) {
-                IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d][early][owp-]",
-                          __func__,
-                          it_1->second->socket_,
-                          it_1->second->connid_))
-            }
+            write_pending_sock_outg_conn_map_.erase(it_1->second->socket_);
         }
     }
     auto it_2 = outg_connid_conn_map_.begin();
@@ -695,29 +638,15 @@ inline RetCode selector::FDSET_outgoing_sockets()
         if(it_2->second->status_ == ConnectionStatus_ESTABLISHED ||
                 it_2->second->status_ == ConnectionStatus_PROTOCOL_HANDSHAKE ||
                 it_2->second->status_ == ConnectionStatus_AUTHENTICATED) {
-            IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d][orp+]",
-                      __func__,
-                      it_2->second->socket_,
-                      it_2->second->connid_))
             FD_SET(it_2->second->socket_, &read_FDs_);
             FD_SET(it_2->second->socket_, &excep_FDs_);
             nfds_ = ((int)it_2->second->socket_ > nfds_) ? (int)it_2->second->socket_ : nfds_;
             it_2++;
         } else {
-            IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d, status:%d][orp-]",
-                      __func__,
-                      it_2->second->socket_,
-                      it_2->second->connid_,
-                      it_2->second->status_))
             if(it_2->second->status_ != ConnectionStatus_DISCONNECTED) {
                 it_2->second->socket_shutdown();
             }
-            if(write_pending_sock_outg_conn_map_.erase(it_2->second->socket_)) {
-                IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d][owp-]",
-                          __func__,
-                          it_2->second->socket_,
-                          it_2->second->connid_))
-            }
+            write_pending_sock_outg_conn_map_.erase(it_2->second->socket_);
             it_2 = outg_connid_conn_map_.erase(it_2);
         }
     }
@@ -813,12 +742,6 @@ RetCode selector::consume_asynch_events()
             IFLOG(cri(TH_ID, LS_CLO "[brecv != recv_buf_sz]", __func__))
             return RetCode_GENERR;
         }
-        IFLOG(trc(TH_ID,
-                  LS_TRL"[asynch-event][evt_type:%d, socket:%d, connid:%u]",
-                  __func__,
-                  conn_evt->evt_,
-                  conn_evt->socket_,
-                  conn_evt->conn_ ? conn_evt->conn_->connid_ : -1))
         if(conn_evt->evt_ != VLG_SELECTOR_Evt_Interrupt) {
             /*check if we still have connection*/
             if(conn_evt->evt_ != VLG_SELECTOR_Evt_ConnectRequest) {
@@ -921,7 +844,6 @@ inline RetCode selector::consume_events()
 
 RetCode selector::server_socket_shutdown()
 {
-    IFLOG(trc(TH_ID, LS_OPN"[socket:%d]", __func__, srv_listen_socket_))
     int last_err_ = 0;
 #if defined WIN32 && defined _MSC_VER
     if((last_err_ = closesocket(srv_listen_socket_))) {
@@ -1005,9 +927,7 @@ void *selector::run()
         set_status(SelectorStatus_SELECT);
         timeval sel_timeout = sel_timeout_;
         while(status_ == SelectorStatus_SELECT) {
-            IFLOG(low(TH_ID, LS_SEL"+calling select()+", __func__))
             if((sel_res_ = select(nfds_+1, &read_FDs_, &write_FDs_, &excep_FDs_, 0)) > 0) {
-                IFLOG(low(TH_ID, LS_SEL"+select() [res:%d]+", __func__, sel_res_))
                 consume_events();
             } else if(!sel_res_) {
                 //timeout
