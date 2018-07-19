@@ -10,7 +10,38 @@
 
 namespace vlg {
 
-const std_shared_ptr_obj_mng<subscription_event> sbse_std_shp_omng;
+struct se_std_shared_ptr_obj_mng : public std_shared_ptr_obj_mng<subscription_event> {
+
+    static int se_cmp_obj(const void *obj1, const void *obj2, size_t len) {
+        std::shared_ptr<subscription_event> &sh_se_1 = *(std::shared_ptr<subscription_event> *)(obj1);
+        std::shared_ptr<subscription_event> &sh_se_2 = *(std::shared_ptr<subscription_event> *)(obj2);
+        std::unique_ptr<char> kv1, kv2;
+        sh_se_1->get_data()->get_primary_key_value_as_string(kv1);
+        sh_se_2->get_data()->get_primary_key_value_as_string(kv2);
+        return strcmp(kv1.get(), kv2.get());
+    }
+
+    static void se_hash_obj(const void *key, int len, uint32_t seed, void *out) {
+        std::shared_ptr<subscription_event> &sh_se = *(std::shared_ptr<subscription_event> *)(key);
+        std::unique_ptr<char> kv;
+        sh_se->get_data()->get_primary_key_value_as_string(kv);
+        MurmurHash3_x86_32(key, (int)strlen(kv.get()), seed, out);
+    }
+
+    explicit se_std_shared_ptr_obj_mng() : std_shared_ptr_obj_mng<subscription_event>(0,
+                                                                                          shared_ptr_alloc_func,
+                                                                                          shared_ptr_dealloc_func,
+                                                                                          se_cmp_obj,
+                                                                                          shared_ptr_cpy_func,
+                                                                                          se_hash_obj) {}
+};
+
+const se_std_shared_ptr_obj_mng se_std_shp_omng;
+
+}
+
+namespace vlg {
+
 const std_shared_ptr_obj_mng<incoming_subscription> sbs_std_shp_omng;
 
 }
@@ -279,7 +310,6 @@ incoming_subscription_impl::incoming_subscription_impl(incoming_subscription &pu
                                                        std::shared_ptr<incoming_connection> &conn) :
     sbs_impl(publ, *conn),
     conn_sh_(conn),
-    srv_sbs_evt_glob_q_(sngl_ptr_obj_mng()),
     initial_query_(nullptr),
     initial_query_ended_(true)
 {
@@ -364,8 +394,6 @@ RetCode incoming_subscription_impl::submit_live_event(std::shared_ptr<subscripti
             if((rcode = send_event(sbs_evt))) {
                 IFLOG(err(TH_ID, LS_TRL "[new live event:%d failed to send]", __func__, sbs_evt->impl_->sbs_evtid_))
             }
-        } else {
-            //@todo
         }
     }
     return rcode;

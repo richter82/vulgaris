@@ -94,6 +94,8 @@ struct conn_impl {
     bool connect_evt_occur_;
 
     //---packet sending queue
+
+	//@TODO riprogettare con chiave per supporto a snapshotting.
     b_qu pkt_sending_q_;
 
     mutable mx mon_;

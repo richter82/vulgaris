@@ -44,7 +44,7 @@ RetCode g_bbuf::init(size_t capcty)
     if(!capcty) {
         return RetCode_BADARG;
     }
-    CMD_ON_NUL(buf_ = (unsigned char *)malloc(capcty), EXIT_ACTION)
+    CMD_ON_NUL(buf_ = (char *)malloc(capcty), EXIT_ACTION)
     return RetCode_OK;
 }
 
@@ -54,7 +54,7 @@ RetCode g_bbuf::grow(size_t amnt)
         return RetCode_BADARG;
     }
     capcty_ += amnt;
-    CMD_ON_NUL(buf_ = (unsigned char *)realloc(buf_, capcty_), EXIT_ACTION)
+    CMD_ON_NUL(buf_ = (char *)realloc(buf_, capcty_), EXIT_ACTION)
     return RetCode_OK;
 }
 
@@ -239,12 +239,12 @@ size_t g_bbuf::remaining() const
 
 unsigned char *g_bbuf::buffer()
 {
-    return buf_;
+    return (unsigned char *)buf_;
 }
 
 char *g_bbuf::buffer_as_char()
 {
-    return (char *)buf_;
+    return buf_;
 }
 
 unsigned int *g_bbuf::buffer_as_uint()
