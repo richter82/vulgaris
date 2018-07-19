@@ -12,20 +12,26 @@
 // toolkit_subscription
 //------------------------------------------------------------------------------
 
-toolkit_subscription::toolkit_subscription(vlg_toolkit_sbs_window &widget) : widget_(widget)
+struct toolkit_subscription_listener : public vlg::outgoing_subscription_listener {
+    virtual void on_status_change(vlg::outgoing_subscription &os, vlg::SubscriptionStatus current) override {
+        qDebug() << "sbs status:" << current;
+        ((toolkit_subscription &)os).widget_.EmitSbsStatus(current);
+    }
+    virtual void on_start(vlg::outgoing_subscription &) override {}
+    virtual void on_stop(vlg::outgoing_subscription &) override {}
+    virtual void on_incoming_event(vlg::outgoing_subscription &os,
+                                   std::unique_ptr<vlg::subscription_event> &sbs_evt) override {
+        std::shared_ptr<vlg::subscription_event> sbs_evt_sh(std::move(sbs_evt));
+        ((toolkit_subscription &)os).widget_.SignalSbsEvent(std::move(sbs_evt_sh));
+    }
+};
+
+static toolkit_subscription_listener tsl;
+
+toolkit_subscription::toolkit_subscription(vlg_toolkit_sbs_window &widget) :
+    vlg::outgoing_subscription(tsl),
+    widget_(widget)
 {}
-
-void toolkit_subscription::on_status_change(vlg::SubscriptionStatus current)
-{
-    qDebug() << "sbs status:" << current;
-    widget_.EmitSbsStatus(current);
-}
-
-void toolkit_subscription::on_incoming_event(std::unique_ptr<vlg::subscription_event> &sbs_evt)
-{
-    std::shared_ptr<vlg::subscription_event> sbs_evt_sh(std::move(sbs_evt));
-    widget_.SignalSbsEvent(std::move(sbs_evt_sh));
-}
 
 //------------------------------------------------------------------------------
 // vlg_toolkit_sbs_model
@@ -63,7 +69,7 @@ vlg_toolkit_sbs_window::vlg_toolkit_sbs_window(vlg::outgoing_connection &conn,
                                                const vlg::nentity_desc &edesc,
                                                QWidget *parent) :
     sbs_(*this),
-    sbs_mdl_(edesc, conn.get_peer().get_entity_manager_m()),
+    sbs_mdl_(edesc, conn.get_peer().get_nentity_manager()),
     sbs_mdl_wr_(sbs_mdl_, this),
     QMainWindow(parent),
     ui(new Ui::vlg_toolkit_sbs_window)
@@ -174,16 +180,6 @@ void vlg_toolkit_sbs_window::OnSbsStatusChange(vlg::SubscriptionStatus
                                                status)
 {
     switch(status) {
-        case vlg::SubscriptionStatus_UNDEFINED:
-            ui->sbs_status_label_disp->setText(QObject::tr("UNDEFINED"));
-            ui->sbs_status_label_disp->setStyleSheet(
-                QObject::tr("background-color : Beige; color : black;"));
-            break;
-        case vlg::SubscriptionStatus_EARLY:
-            ui->sbs_status_label_disp->setText(QObject::tr("EARLY"));
-            ui->sbs_status_label_disp->setStyleSheet(
-                QObject::tr("background-color : Beige; color : black;"));
-            break;
         case vlg::SubscriptionStatus_INITIALIZED:
             ui->sbs_status_label_disp->setText(QObject::tr("INITIALIZED"));
             ui->sbs_status_label_disp->setStyleSheet(
@@ -210,11 +206,6 @@ void vlg_toolkit_sbs_window::OnSbsStatusChange(vlg::SubscriptionStatus
             ui->sbs_status_label_disp->setText(QObject::tr("RELEASED"));
             ui->sbs_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : black; color : white;"));
-            break;
-        case vlg::SubscriptionStatus_ERROR:
-            ui->sbs_status_label_disp->setText(QObject::tr("ERROR"));
-            ui->sbs_status_label_disp->setStyleSheet(
-                QObject::tr("background-color : Red; color : black;"));
             break;
         default:
             break;
@@ -262,8 +253,10 @@ void vlg_toolkit_sbs_window::OnNewTxRequested()
         return;
     }
 
-    const vlg::nentity_desc *edesc = sbs_.get_connection().get_peer().get_entity_manager().get_nentity_descriptor(
-                                         item->get_id());
+    const vlg::nentity_desc *edesc = sbs_.get_connection().
+                                     get_peer().
+                                     get_nentity_manager().
+                                     get_nentity_descriptor(item->get_id());
     if(!edesc) {
         return;
     }

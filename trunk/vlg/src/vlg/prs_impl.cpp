@@ -170,16 +170,16 @@ RetCode persistence_worker::submit(persistence_task &task)
 {
     if(surrogate_th_) {
         task.set_execution_result(task.execute());
-        task.set_status(PTASK_STATUS_EXECUTED);
+        task.set_status(PTskStatus_EXECUTED);
         return RetCode_OK;
     }
     RetCode rcode = RetCode_OK;
     persistence_task *task_ptr = &task;
     if((rcode = task_queue_.put(&task_ptr))) {
-        task.set_status(PTASK_STATUS_REJECTED);
+        task.set_status(PTskStatus_REJECTED);
         IFLOG(cri(TH_ID, LS_TRL "[res:%d]", __func__, rcode))
     } else {
-        task.set_status(PTASK_STATUS_SUBMITTED);
+        task.set_status(PTskStatus_SUBMITTED);
     }
     return rcode;
 }
@@ -191,7 +191,7 @@ void *persistence_worker::run()
     do {
         if(!(rcode = task_queue_.take(&task))) {
             task->set_execution_result(task->execute());
-            task->set_status(PTASK_STATUS_EXECUTED);
+            task->set_status(PTskStatus_EXECUTED);
         } else {
             IFLOG(cri(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
             return (void *)1;

@@ -11,34 +11,34 @@
 // toolkit_transaction
 //------------------------------------------------------------------------------
 
-toolkit_transaction::toolkit_transaction(vlg_toolkit_tx_window &widget) : widget_(widget)
+struct toolkit_transaction_listener : public vlg::outgoing_transaction_listener {
+    virtual void on_status_change(vlg::outgoing_transaction &ot, vlg::TransactionStatus current) override {
+        qDebug() << "tx status:" << current;
+        ((toolkit_transaction &)ot).widget_.EmitTxStatus(current);
+    }
+    virtual void on_close(vlg::outgoing_transaction &ot) override {
+        ((toolkit_transaction &)ot).widget_.EmitTxClosure();
+    }
+};
+
+static toolkit_transaction_listener ttl;
+
+toolkit_transaction::toolkit_transaction(vlg_toolkit_tx_window &widget) : vlg::outgoing_transaction(ttl),
+    widget_(widget)
 {}
-
-void toolkit_transaction::on_status_change(vlg::TransactionStatus current)
-{
-    qDebug() << "tx status:" << current;
-    widget_.EmitTxStatus(current);
-}
-
-void toolkit_transaction::on_close()
-{
-    widget_.EmitTxClosure();
-}
 
 //------------------------------------------------------------------------------
 // vlg_toolkit_tx_model
 //------------------------------------------------------------------------------
 
-vlg_toolkit_tx_model::vlg_toolkit_tx_model(vlg_toolkit_tx_vlg_class_model
-                                           &wrapped_mdl, QObject *parent) :
+vlg_toolkit_tx_model::vlg_toolkit_tx_model(vlg_toolkit_tx_vlg_class_model &wrapped_mdl, QObject *parent) :
     wrapped_mdl_(wrapped_mdl),
     QSortFilterProxyModel(parent)
 {
     setSourceModel(&wrapped_mdl);
 }
 
-bool vlg_toolkit_tx_model::filterAcceptsRow(int sourceRow,
-                                            const QModelIndex &sourceParent) const
+bool vlg_toolkit_tx_model::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
     return true;
 }
@@ -56,7 +56,7 @@ vlg_toolkit_tx_window::vlg_toolkit_tx_window(vlg::outgoing_connection &conn,
                                              const vlg::nclass *opt_img,
                                              QWidget *parent) :
     tx_(*this),
-    tx_mdl_(edesc, conn.get_peer().get_entity_manager(), this),
+    tx_mdl_(edesc, conn.get_peer().get_nentity_manager(), this),
     tx_mdl_wrp_(tx_mdl_),
     QMainWindow(parent),
     ui(new Ui::vlg_toolkit_tx_window)
@@ -100,11 +100,6 @@ void vlg_toolkit_tx_window::OnTxStatusChange(vlg::TransactionStatus
                                              status)
 {
     switch(status) {
-        case vlg::TransactionStatus_UNDEFINED:
-            ui->tx_status_label_disp->setText(QObject::tr("UNDEFINED"));
-            ui->tx_status_label_disp->setStyleSheet(
-                QObject::tr("background-color : Beige; color : black;"));
-            break;
         case vlg::TransactionStatus_EARLY:
             ui->tx_status_label_disp->setText(QObject::tr("EARLY"));
             ui->tx_status_label_disp->setStyleSheet(
@@ -129,11 +124,6 @@ void vlg_toolkit_tx_window::OnTxStatusChange(vlg::TransactionStatus
             ui->tx_status_label_disp->setText(QObject::tr("CLOSED"));
             ui->tx_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : LawnGreen; color : black;"));
-            break;
-        case vlg::TransactionStatus_ERROR:
-            ui->tx_status_label_disp->setText(QObject::tr("ERROR"));
-            ui->tx_status_label_disp->setStyleSheet(
-                QObject::tr("background-color : Red; color : black;"));
             break;
         default:
             break;

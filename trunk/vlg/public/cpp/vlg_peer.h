@@ -9,10 +9,35 @@
 
 namespace vlg {
 
+/** @brief peer listener.
+*/
+struct peer_listener {
+    virtual RetCode on_load_config(peer &,
+                                   int pnum,
+                                   const char *param,
+                                   const char *value) = 0;
+
+    virtual RetCode on_init(peer &) = 0;
+    virtual RetCode on_starting(peer &) = 0;
+    virtual RetCode on_stopping(peer &) = 0;
+    virtual RetCode on_move_running(peer &) = 0;
+    virtual void on_dying_breath(peer &) = 0;
+    virtual void on_status_change(peer &, PeerStatus) = 0;
+
+    /**
+    @param incoming_connection the brand new incoming connection.
+    @return default implementation always returns RetCode_OK,
+    so all incoming will be accepted.
+    */
+    virtual RetCode on_incoming_connection(peer &, std::shared_ptr<incoming_connection> &) = 0;
+
+    static peer_listener &default_listener();
+};
+
 /** @brief peer.
 */
 struct peer {
-    explicit peer();
+    explicit peer(peer_listener &listener = peer_listener::default_listener());
     virtual ~peer();
 
     RetCode set_params_file_dir(const char *);
@@ -23,8 +48,7 @@ struct peer {
     unsigned int get_version_maintenance();
     unsigned int get_version_architecture();
     bool is_configured();
-    const nentity_manager &get_entity_manager() const;
-    nentity_manager &get_entity_manager_m();
+    const nentity_manager &get_nentity_manager() const;
     bool is_persistent();
     bool is_create_persistent_schema();
     bool is_drop_existing_persistent_schema();
@@ -51,22 +75,8 @@ struct peer {
     RetCode extend_model(nentity_manager &nem);
     RetCode extend_model(const char *model_name);
 
-    //User mandatory entrypoints
     virtual const char *get_name() = 0;
     virtual const unsigned int *get_version() = 0;
-
-    //User opt. entrypoints
-    virtual RetCode on_load_config(int pnum,
-                                   const char *param,
-                                   const char *value);
-
-    virtual RetCode on_init();
-    virtual RetCode on_starting();
-    virtual RetCode on_stopping();
-    virtual RetCode on_move_running();
-    virtual RetCode on_error();
-    virtual void on_dying_breath();
-    virtual void on_status_change(PeerStatus);
 
     PeerStatus get_status();
 
@@ -126,15 +136,7 @@ struct peer {
                                       PersistenceDeletionMode mode,
                                       const nclass &in);
 
-    /**
-    @param incoming_connection the brand new incoming connection.
-    @return default implementation always returns RetCode_OK,
-    so all incoming will be accepted.
-    */
-    virtual RetCode on_incoming_connection(std::shared_ptr<incoming_connection> &);
-
     std::unique_ptr<peer_impl> impl_;
 };
-
 
 }

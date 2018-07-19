@@ -10,8 +10,11 @@
 namespace vlg {
 
 struct tx_impl {
-    explicit tx_impl(incoming_transaction &publ, incoming_connection &conn);
-    explicit tx_impl(outgoing_transaction &publ);
+    explicit tx_impl(incoming_transaction &publ,
+                     incoming_connection &conn,
+                     incoming_transaction_listener &listener);
+    explicit tx_impl(outgoing_transaction &publ,
+                     outgoing_transaction_listener &listener);
 
     virtual ~tx_impl() = default;
 
@@ -57,10 +60,14 @@ struct tx_impl {
 
     incoming_transaction *ipubl_;
     outgoing_transaction *opubl_;
+    incoming_transaction_listener *ilistener_;
+    outgoing_transaction_listener *olistener_;
 };
 
 struct incoming_transaction_impl : public tx_impl {
-    explicit incoming_transaction_impl(incoming_transaction &, std::shared_ptr<incoming_connection> &conn);
+    explicit incoming_transaction_impl(incoming_transaction &,
+                                       std::shared_ptr<incoming_connection> &conn,
+                                       incoming_transaction_listener &listener);
     virtual ~incoming_transaction_impl();
 
     RetCode send_response();
@@ -76,7 +83,8 @@ struct incoming_transaction_impl : public tx_impl {
 namespace vlg {
 
 struct outgoing_transaction_impl : public tx_impl {
-    explicit outgoing_transaction_impl(outgoing_transaction &);
+    explicit outgoing_transaction_impl(outgoing_transaction &,
+                                       outgoing_transaction_listener &listener);
     virtual ~outgoing_transaction_impl();
 
     RetCode re_new();

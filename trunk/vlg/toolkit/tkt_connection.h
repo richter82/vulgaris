@@ -34,9 +34,6 @@ class toolkit_connection : public vlg::outgoing_connection {
     public:
         toolkit_connection(vlg_toolkit_Connection &widget);
 
-        virtual void on_status_change(vlg::ConnectionStatus current) override;
-
-    private:
         vlg_toolkit_Connection &widget_;
 };
 

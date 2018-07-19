@@ -36,10 +36,23 @@ struct incoming_subscription_factory {
     static incoming_subscription_factory &default_factory();
 };
 
+/** @brief incoming subscription listener.
+*/
+struct incoming_subscription_listener {
+    virtual void on_status_change(incoming_subscription &, SubscriptionStatus) = 0;
+    virtual void on_stop(incoming_subscription &) = 0;
+    virtual RetCode on_accept_event(incoming_subscription &, const subscription_event &) = 0;
+
+    static incoming_subscription_listener &default_listener();
+};
+
 /** @brief incoming_subscription.
 */
 struct incoming_subscription {
-    explicit incoming_subscription(std::shared_ptr<incoming_connection> &);
+    explicit incoming_subscription(std::shared_ptr<incoming_connection> &,
+                                   incoming_subscription_listener &listener =
+                                       incoming_subscription_listener::default_listener());
+
     virtual ~incoming_subscription();
 
     incoming_connection &get_connection();
@@ -77,11 +90,6 @@ struct incoming_subscription {
                                   time_t sec = -1,
                                   long nsec = 0);
 
-    virtual void on_status_change(SubscriptionStatus);
-    virtual void on_stop();
-
-    virtual RetCode accept_distribution(const subscription_event &);
-
     std::unique_ptr<incoming_subscription_impl> impl_;
 };
 
@@ -89,10 +97,23 @@ struct incoming_subscription {
 
 namespace vlg {
 
+/** @brief outgoing subscription listener.
+*/
+struct outgoing_subscription_listener {
+    virtual void on_status_change(outgoing_subscription &, SubscriptionStatus) = 0;
+    virtual void on_start(outgoing_subscription &) = 0;
+    virtual void on_stop(outgoing_subscription &) = 0;
+    virtual void on_incoming_event(outgoing_subscription &, std::unique_ptr<subscription_event> &) = 0;
+
+    static outgoing_subscription_listener &default_listener();
+};
+
 /** @brief outgoing_subscription.
 */
 struct outgoing_subscription {
-    explicit outgoing_subscription();
+    explicit outgoing_subscription(outgoing_subscription_listener &listener =
+                                       outgoing_subscription_listener::default_listener());
+
     virtual ~outgoing_subscription();
 
     RetCode bind(outgoing_connection &);
@@ -146,11 +167,6 @@ struct outgoing_subscription {
                                   ProtocolCode &stop_protocode,
                                   time_t sec = -1,
                                   long nsec = 0);
-
-    virtual void on_status_change(SubscriptionStatus);
-    virtual void on_start();
-    virtual void on_stop();
-    virtual void on_incoming_event(std::unique_ptr<subscription_event> &);
 
     std::unique_ptr<outgoing_subscription_impl> impl_;
 };

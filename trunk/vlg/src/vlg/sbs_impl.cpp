@@ -54,11 +54,13 @@ subscription_event_impl::subscription_event_impl(unsigned int sbsid,
     sbs_data_(std::move(data))
 {}
 
-sbs_impl::sbs_impl(incoming_subscription &publ, incoming_connection &conn) :
+sbs_impl::sbs_impl(incoming_subscription &publ,
+                   incoming_connection &conn,
+                   incoming_subscription_listener &listener) :
     conn_(conn.impl_.get()),
     sbsid_(0),
     reqid_(0),
-    status_(SubscriptionStatus_EARLY),
+    status_(SubscriptionStatus_INITIALIZED),
     start_stop_evt_occur_(false),
     sbstyp_(SubscriptionType_UNDEFINED),
     sbsmod_(SubscriptionMode_UNDEFINED),
@@ -71,14 +73,17 @@ sbs_impl::sbs_impl(incoming_subscription &publ, incoming_connection &conn) :
     sbresl_(SubscriptionResponse_UNDEFINED),
     last_vlgcod_(ProtocolCode_SUCCESS),
     ipubl_(&publ),
-    opubl_(nullptr)
+    opubl_(nullptr),
+    ilistener_(&listener),
+    olistener_(nullptr)
 {}
 
-sbs_impl::sbs_impl(outgoing_subscription &publ) :
+sbs_impl::sbs_impl(outgoing_subscription &publ,
+                   outgoing_subscription_listener &listener) :
     conn_(nullptr),
     sbsid_(0),
     reqid_(0),
-    status_(SubscriptionStatus_EARLY),
+    status_(SubscriptionStatus_INITIALIZED),
     start_stop_evt_occur_(false),
     sbstyp_(SubscriptionType_UNDEFINED),
     sbsmod_(SubscriptionMode_UNDEFINED),
@@ -91,7 +96,9 @@ sbs_impl::sbs_impl(outgoing_subscription &publ) :
     sbresl_(SubscriptionResponse_UNDEFINED),
     last_vlgcod_(ProtocolCode_SUCCESS),
     ipubl_(nullptr),
-    opubl_(&publ)
+    opubl_(&publ),
+    ilistener_(nullptr),
+    olistener_(&listener)
 {}
 
 inline void sbs_impl::ntfy_sel_snd_pkt()
@@ -105,7 +112,7 @@ RetCode sbs_impl::set_started()
     IFLOG(inf(TH_ID, LS_SBS"[CONNID:%u-SBSID:%u][started]", conn_->connid_, sbsid_))
     set_status(SubscriptionStatus_STARTED);
     if(opubl_) {
-        opubl_->on_start();
+        olistener_->on_start(*opubl_);
     }
     return RetCode_OK;
 }
@@ -115,9 +122,9 @@ RetCode sbs_impl::set_stopped()
     IFLOG(inf(TH_ID, LS_SBS"[CONNID:%u-SBSID:%u][stopped]", conn_->connid_, sbsid_))
     set_status(SubscriptionStatus_STOPPED);
     if(ipubl_) {
-        ipubl_->on_stop();
+        ilistener_->on_stop(*ipubl_);
     } else {
-        opubl_->on_stop();
+        olistener_->on_stop(*opubl_);
     }
     return RetCode_OK;
 }
@@ -129,26 +136,14 @@ RetCode sbs_impl::set_released()
     return RetCode_OK;
 }
 
-RetCode sbs_impl::set_error()
-{
-    IFLOG(err(TH_ID, LS_SBS"[CONNID:%u-SBSID:%u][error]", conn_->connid_, sbsid_))
-    set_status(SubscriptionStatus_ERROR);
-    if(ipubl_) {
-        ipubl_->on_stop();
-    } else {
-        opubl_->on_stop();
-    }
-    return RetCode_OK;
-}
-
 inline RetCode sbs_impl::set_status(SubscriptionStatus status)
 {
     scoped_mx smx(mon_);
     status_ = status;
     if(ipubl_) {
-        ipubl_->on_status_change(status_);
+        ilistener_->on_status_change(*ipubl_, status_);
     } else {
-        opubl_->on_status_change(status_);
+        olistener_->on_status_change(*opubl_, status_);
     }
     mon_.notify_all();
     return RetCode_OK;
@@ -272,14 +267,13 @@ RetCode sbs_impl::stop()
 //incoming_subscription_impl
 
 incoming_subscription_impl::incoming_subscription_impl(incoming_subscription &publ,
-                                                       std::shared_ptr<incoming_connection> &conn) :
-    sbs_impl(publ, *conn),
+                                                       std::shared_ptr<incoming_connection> &conn,
+                                                       incoming_subscription_listener &listener) :
+    sbs_impl(publ, *conn, listener),
     conn_sh_(conn),
     initial_query_(nullptr),
     initial_query_ended_(true)
-{
-    set_status(SubscriptionStatus_INITIALIZED);
-}
+{}
 
 incoming_subscription_impl::~incoming_subscription_impl()
 {
@@ -450,11 +444,10 @@ namespace vlg {
 
 //outgoing_subscription_impl
 
-outgoing_subscription_impl::outgoing_subscription_impl(outgoing_subscription &publ) :
-    sbs_impl(publ)
-{
-    set_status(SubscriptionStatus_INITIALIZED);
-}
+outgoing_subscription_impl::outgoing_subscription_impl(outgoing_subscription &publ,
+                                                       outgoing_subscription_listener &listener) :
+    sbs_impl(publ, listener)
+{}
 
 outgoing_subscription_impl::~outgoing_subscription_impl()
 {
@@ -470,8 +463,12 @@ outgoing_subscription_impl::~outgoing_subscription_impl()
         ProtocolCode spc = ProtocolCode_UNDEFINED;
         await_for_stop_result(sres, spc);
     }
-    auto &oconn = *dynamic_cast<outgoing_connection_impl *>(conn_);
-    oconn.release_subscription(this);
+
+    /*BUG!*/
+    auto *oconn = dynamic_cast<outgoing_connection_impl *>(conn_);
+    if(oconn) {
+        oconn->release_subscription(this);
+    }
 }
 
 RetCode outgoing_subscription_impl::set_req_sent()
@@ -586,7 +583,7 @@ RetCode outgoing_subscription_impl::receive_event(const vlg_hdr_rec *pkt_hdr,
                       nclassid_))
             return rcode;
         } else {
-            IFLOG(inf_nclass(TH_ID, nobj.get(), true, LS_SBI"[ACT:%d] ", pkt_hdr->row_2.sevttp.sbeact))
+            IFLOG(dbg_nclass(TH_ID, nobj.get(), true, LS_SBI"[ACT:%d] ", pkt_hdr->row_2.sevttp.sbeact))
         }
     }
 
@@ -599,7 +596,7 @@ RetCode outgoing_subscription_impl::receive_event(const vlg_hdr_rec *pkt_hdr,
                                                                            pkt_hdr->row_5.tmstmp.tmstmp,
                                                                            pkt_hdr->row_2.sevttp.sbeact,
                                                                            nobj)));
-    opubl_->on_incoming_event(sbs_evt);
+    olistener_->on_incoming_event(*opubl_, sbs_evt);
     return RetCode_OK;
 }
 

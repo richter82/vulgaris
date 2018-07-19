@@ -15,7 +15,42 @@ unsigned int VLG_TOOLKIT_PEER_VER[] = {0,0,0,0};
 //------------------------------------------------------------------------------
 // ****VLG_TOOLKIT_PEER****
 //------------------------------------------------------------------------------
-toolkit_peer::toolkit_peer(vlg_toolkit_MainWindow &widget) : widget_(widget)
+
+struct toolkit_peer_listener : public vlg::peer_listener {
+    virtual vlg::RetCode on_load_config(vlg::peer &,
+                                        int pnum,
+                                        const char *param,
+                                        const char *value) override {
+        return vlg::RetCode_OK;
+    }
+
+    virtual vlg::RetCode on_init(vlg::peer &) override {
+        return vlg::RetCode_OK;
+    }
+    virtual vlg::RetCode on_starting(vlg::peer &) override {
+        return vlg::RetCode_OK;
+    }
+    virtual vlg::RetCode on_stopping(vlg::peer &) override {
+        return vlg::RetCode_OK;
+    }
+    virtual vlg::RetCode on_move_running(vlg::peer &) override {
+        return vlg::RetCode_OK;
+    }
+    virtual void on_dying_breath(vlg::peer &) override {}
+
+    void on_status_change(vlg::peer &p, vlg::PeerStatus current) override {
+        qDebug() << "peer status:" << current;
+        ((toolkit_peer &)p).widget_.EmitPeerStatus(current);
+    }
+
+    virtual vlg::RetCode on_incoming_connection(vlg::peer &, std::shared_ptr<vlg::incoming_connection> &) override {
+        return vlg::RetCode_OK;
+    }
+};
+
+static toolkit_peer_listener tpl;
+
+toolkit_peer::toolkit_peer(vlg_toolkit_MainWindow &widget) : vlg::peer(tpl), widget_(widget)
 {}
 
 const char *toolkit_peer::get_name()
@@ -28,12 +63,6 @@ const unsigned int *toolkit_peer::get_version()
     return VLG_TOOLKIT_PEER_VER;
 }
 
-void toolkit_peer::on_status_change(vlg::PeerStatus current)
-{
-    qDebug() << "peer status:" << current;
-    widget_.EmitPeerStatus(current);
-}
-
 }
 
 vlg_toolkit_MainWindow::vlg_toolkit_MainWindow(QWidget *parent) :
@@ -43,7 +72,7 @@ vlg_toolkit_MainWindow::vlg_toolkit_MainWindow(QWidget *parent) :
     view_model_loaded_(false),
     vlgmodel_load_list_model_(this),
     pers_dri_file_load_list_model_(this),
-    vlg_model_loaded_model_(peer_.get_entity_manager_m(), this),
+    vlg_model_loaded_model_(peer_.get_nentity_manager(), this),
     pte_apnd_(this),
     flash_info_msg_val_(0)
 {
@@ -154,8 +183,10 @@ void vlg_toolkit_MainWindow::on_action_Exit_triggered()
     close();
 }
 
-void vlg_toolkit_MainWindow::peer_params_clbk_ud(int pnum, const char *param,
-                                                 const char *value, void *ud)
+void vlg_toolkit_MainWindow::peer_params_clbk_ud(int pnum,
+                                                 const char *param,
+                                                 const char *value,
+                                                 void *ud)
 {
     vlg_toolkit_MainWindow *mw = (vlg_toolkit_MainWindow *)ud;
     mw->PeerLoadCfgHndl(pnum, param, value);
@@ -316,12 +347,9 @@ void vlg_toolkit_MainWindow::on_set_peer_params_button_clicked()
         peer_.set_server_address(ui->pp_cfg_srv_sin_addr->text().toLocal8Bit().data());
     }
     peer_.set_server_port(atoi(ui->pp_cfg_srv_sin_port->text().toLocal8Bit().data()));
-    peer_.set_server_transaction_service_executor_size(atoi(
-                                                           ui->pp_cfg_srv_exectrs->text().toLocal8Bit().data()));
-    peer_.set_client_transaction_service_executor_size(atoi(
-                                                           ui->pp_cfg_cli_exectrs->text().toLocal8Bit().data()));
-    peer_.set_server_subscription_service_executor_size(atoi(
-                                                            ui->pp_cfg_srv_sbs_exectrs->text().toLocal8Bit().data()));
+    peer_.set_server_transaction_service_executor_size(atoi(ui->pp_cfg_srv_exectrs->text().toLocal8Bit().data()));
+    peer_.set_client_transaction_service_executor_size(atoi(ui->pp_cfg_cli_exectrs->text().toLocal8Bit().data()));
+    peer_.set_server_subscription_service_executor_size(atoi(ui->pp_cfg_srv_sbs_exectrs->text().toLocal8Bit().data()));
     peer_.set_persistent(ui->pp_cfg_pers_enabled->isChecked());
     peer_.set_create_persistent_schema(ui->pp_cfg_pers_schema_create->isChecked());
     peer_.set_drop_existing_persistent_schema(ui->pp_cfg_drop_existing_schema->isChecked());
@@ -371,61 +399,47 @@ void vlg_toolkit_MainWindow::OnPeer_status_change(vlg::PeerStatus status)
             break;
         case vlg::PeerStatus_EARLY:
             ui->peer_status_label_display->setText(QObject::tr("EARLY"));
-            ui->peer_status_label_display->setStyleSheet(
-                QObject::tr("background-color : Beige; color : black;"));
+            ui->peer_status_label_display->setStyleSheet(QObject::tr("background-color : Beige; color : black;"));
             break;
         case vlg::PeerStatus_WELCOMED:
             ui->peer_status_label_display->setText(QObject::tr("WELCOMED"));
-            ui->peer_status_label_display->setStyleSheet(
-                QObject::tr("background-color : Cornsilk; color : black;"));
+            ui->peer_status_label_display->setStyleSheet(QObject::tr("background-color : Cornsilk; color : black;"));
             break;
         case vlg::PeerStatus_INITIALIZING:
             ui->peer_status_label_display->setText(QObject::tr("INITIALIZING"));
-            ui->peer_status_label_display->setStyleSheet(
-                QObject::tr("background-color : PowderBlue; color : black;"));
+            ui->peer_status_label_display->setStyleSheet(QObject::tr("background-color : PowderBlue; color : black;"));
             break;
         case vlg::PeerStatus_INITIALIZED:
             ui->peer_status_label_display->setText(QObject::tr("INITIALIZED"));
-            ui->peer_status_label_display->setStyleSheet(
-                QObject::tr("background-color : Aquamarine; color : black;"));
+            ui->peer_status_label_display->setStyleSheet(QObject::tr("background-color : Aquamarine; color : black;"));
             break;
         case vlg::PeerStatus_STARTING:
             ui->peer_status_label_display->setText(QObject::tr("STARTING"));
-            ui->peer_status_label_display->setStyleSheet(
-                QObject::tr("background-color : Coral; color : black;"));
+            ui->peer_status_label_display->setStyleSheet(QObject::tr("background-color : Coral; color : black;"));
             break;
         case vlg::PeerStatus_STARTED:
             ui->peer_status_label_display->setText(QObject::tr("STARTED"));
-            ui->peer_status_label_display->setStyleSheet(
-                QObject::tr("background-color : DarkOrange; color : black;"));
+            ui->peer_status_label_display->setStyleSheet(QObject::tr("background-color : DarkOrange; color : black;"));
             break;
         case vlg::PeerStatus_RUNNING:
             Status_RUNNING_Actions();
             break;
         case vlg::PeerStatus_STOP_REQUESTED:
             ui->peer_status_label_display->setText(QObject::tr("STOP REQUESTED"));
-            ui->peer_status_label_display->setStyleSheet(
-                QObject::tr("background-color : Indigo; color : white;"));
+            ui->peer_status_label_display->setStyleSheet(QObject::tr("background-color : Indigo; color : white;"));
             ui->action_Stop_Peer->setEnabled(false);
             ui->actionConnect->setEnabled(false);
             break;
         case vlg::PeerStatus_STOPPING:
             ui->peer_status_label_display->setText(QObject::tr("STOPPING"));
-            ui->peer_status_label_display->setStyleSheet(
-                QObject::tr("background-color : IndianRed; color : black;"));
+            ui->peer_status_label_display->setStyleSheet(QObject::tr("background-color : IndianRed; color : black;"));
             break;
         case vlg::PeerStatus_STOPPED:
             Status_STOPPED_Actions();
             break;
         case vlg::PeerStatus_DIED:
             ui->peer_status_label_display->setText(QObject::tr("DIED"));
-            ui->peer_status_label_display->setStyleSheet(
-                QObject::tr("background-color : Black; color : white;"));
-            break;
-        case vlg::PeerStatus_ERROR:
-            ui->peer_status_label_display->setText(QObject::tr("ERROR"));
-            ui->peer_status_label_display->setStyleSheet(
-                QObject::tr("background-color : Red; color : black;"));
+            ui->peer_status_label_display->setStyleSheet(QObject::tr("background-color : Black; color : white;"));
             break;
         default:
             break;
@@ -438,8 +452,7 @@ void vlg_toolkit_MainWindow::On_VLG_MODEL_Update()
 void vlg_toolkit_MainWindow::OnSetInfoMsg(const QString &msg)
 {
     ui->main_info_label->setText(QObject::tr("TIMEOUT: [%1]").arg(msg));
-    ui->main_info_label->setStyleSheet(
-        QObject::tr("background-color : Red; color : black; font-weight: bold;"));
+    ui->main_info_label->setStyleSheet(QObject::tr("background-color : Red; color : black; font-weight: bold;"));
     reset_info_msg_tim_.start(VLG_TKT_INT_SINGL_SHOT_TIMER_CAPTMSG_RST_MSEC);
     flash_info_msg_tim_.start(VLG_TKT_INT_REPT_SHOT_TIMER_CAPTMSG_FLAS_MSEC);
 }
@@ -448,11 +461,9 @@ void vlg_toolkit_MainWindow::OnFlashInfoMsg()
 {
     if(reset_info_msg_tim_.isActive()) {
         if(++flash_info_msg_val_ % 2) {
-            ui->main_info_label->setStyleSheet(
-                QObject::tr("background-color : black; color : Red; font-weight: bold;"));
+            ui->main_info_label->setStyleSheet(QObject::tr("background-color : black; color : Red; font-weight: bold;"));
         } else {
-            ui->main_info_label->setStyleSheet(
-                QObject::tr("background-color : Red; color : black; font-weight: bold;"));
+            ui->main_info_label->setStyleSheet(QObject::tr("background-color : Red; color : black; font-weight: bold;"));
         }
     } else {
         flash_info_msg_val_ = 0;

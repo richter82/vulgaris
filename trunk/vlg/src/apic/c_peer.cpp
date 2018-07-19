@@ -85,26 +85,7 @@ extern "C" {
 //c_inco_tx
 
 struct c_inco_tx : public incoming_transaction {
-    c_inco_tx(std::shared_ptr<incoming_connection> &c) :
-        incoming_transaction(c),
-        tr_wr_(nullptr),
-        tc_wr_(nullptr),
-        tsc_wr_(nullptr),
-        tr_ud_(nullptr),
-        tc_ud_(nullptr),
-        tsc_ud_(nullptr) {}
-
-    virtual void on_status_change(TransactionStatus status) override {
-        tsc_wr_(this, status, tsc_ud_);
-    }
-
-    virtual void on_request() override {
-        tr_wr_(this, tr_ud_);
-    }
-
-    virtual void on_close() override {
-        tc_wr_(this, tc_ud_);
-    }
+    c_inco_tx(std::shared_ptr<incoming_connection> &c);
 
     inco_transaction_request tr_wr_;
     inco_transaction_closure tc_wr_;
@@ -113,6 +94,29 @@ struct c_inco_tx : public incoming_transaction {
     void *tc_ud_;
     void *tsc_ud_;
 };
+
+struct c_inco_tx_listener : public incoming_transaction_listener {
+    virtual void on_status_change(incoming_transaction &it, TransactionStatus status) override {
+        ((c_inco_tx &)it).tsc_wr_(&it, status, ((c_inco_tx &)it).tsc_ud_);
+    };
+    virtual void on_request(incoming_transaction &it) override {
+        ((c_inco_tx &)it).tr_wr_(&it, ((c_inco_tx &)it).tr_ud_);
+    };
+    virtual void on_close(incoming_transaction &it) override {
+        ((c_inco_tx &)it).tc_wr_(&it, ((c_inco_tx &)it).tc_ud_);
+    };
+};
+
+static c_inco_tx_listener citl;
+
+c_inco_tx::c_inco_tx(std::shared_ptr<incoming_connection> &c) :
+    incoming_transaction(c, citl),
+    tr_wr_(nullptr),
+    tc_wr_(nullptr),
+    tsc_wr_(nullptr),
+    tr_ud_(nullptr),
+    tc_ud_(nullptr),
+    tsc_ud_(nullptr) {}
 
 //c_inco_tx_factory
 
@@ -163,26 +167,7 @@ static c_inco_tx_factory citf;
 //c_inco_sbs
 
 struct c_inco_sbs : public incoming_subscription {
-    c_inco_sbs(std::shared_ptr<incoming_connection> &c) :
-        incoming_subscription(c),
-        isad_wr_(nullptr),
-        issc_wr_(nullptr),
-        isos_(nullptr),
-        issc_ud_(nullptr),
-        isad_ud_(nullptr),
-        isos_ud_(nullptr) {}
-
-    virtual void on_status_change(SubscriptionStatus status) override {
-        issc_wr_(this, status, issc_ud_);
-    }
-
-    virtual void on_stop() override {
-        isos_(this, isos_ud_);
-    }
-
-    virtual RetCode accept_distribution(const subscription_event &sbs_evt) override {
-        return isad_wr_(this, &sbs_evt, isad_ud_);
-    }
+    c_inco_sbs(std::shared_ptr<incoming_connection> &c);
 
     inco_subscription_accept_distribution isad_wr_;
     inco_subscription_status_change issc_wr_;
@@ -191,6 +176,29 @@ struct c_inco_sbs : public incoming_subscription {
     void *isad_ud_;
     void *isos_ud_;
 };
+
+struct c_inco_sbs_listener : public incoming_subscription_listener {
+    virtual void on_status_change(incoming_subscription &is, SubscriptionStatus status) override {
+        ((c_inco_sbs &)is).issc_wr_(&is, status, ((c_inco_sbs &)is).issc_ud_);
+    }
+    virtual void on_stop(incoming_subscription &is) override {
+        ((c_inco_sbs &)is).isos_(&is, ((c_inco_sbs &)is).isos_ud_);
+    }
+    virtual RetCode on_accept_event(incoming_subscription &is, const subscription_event &se) override {
+        return ((c_inco_sbs &)is).isad_wr_(&is, &se, ((c_inco_sbs &)is).isad_ud_);
+    }
+};
+
+static c_inco_sbs_listener cisl;
+
+c_inco_sbs::c_inco_sbs(std::shared_ptr<incoming_connection> &c) :
+    incoming_subscription(c, cisl),
+    isad_wr_(nullptr),
+    issc_wr_(nullptr),
+    isos_(nullptr),
+    issc_ud_(nullptr),
+    isad_ud_(nullptr),
+    isos_ud_(nullptr) {}
 
 //c_inco_sbs_factory
 
@@ -241,35 +249,7 @@ extern "C" {
 //c_inco_conn
 
 struct c_inco_conn : public incoming_connection {
-    c_inco_conn(peer &p) : incoming_connection(p),
-        icsc_(nullptr),
-        icodh_(nullptr),
-        icoith_(nullptr),
-        icoish_(nullptr),
-        icsc_ud_(nullptr),
-        icodh_ud_(nullptr),
-        icoith_ud_(nullptr),
-        icoish_ud_(nullptr) {
-        set_incoming_transaction_factory(citf);
-        set_incoming_subscription_factory(cisf);
-    }
-
-    virtual void on_status_change(ConnectionStatus current) override {
-        icsc_(this, current, icsc_ud_);
-    }
-
-    virtual void on_disconnect(ConnectivityEventResult con_evt_res,
-                               ConnectivityEventType c_evt_type) override {
-        icodh_(this, con_evt_res, c_evt_type, icodh_ud_);
-    }
-
-    virtual RetCode on_incoming_transaction(std::shared_ptr<incoming_transaction> &ic) override {
-        return icoith_(this, (shr_incoming_transaction *)new std::shared_ptr<incoming_transaction>(ic), icoith_ud_);
-    }
-
-    virtual RetCode on_incoming_subscription(std::shared_ptr<incoming_subscription> &ic) override {
-        return icoish_(this, (shr_incoming_subscription *)new std::shared_ptr<incoming_subscription>(ic), icoish_ud_);
-    }
+    c_inco_conn(peer &p);
 
     inco_connection_status_change icsc_;
     inco_connection_on_disconnect_handler icodh_;
@@ -281,6 +261,45 @@ struct c_inco_conn : public incoming_connection {
     void *icoith_ud_;
     void *icoish_ud_;
 };
+
+struct c_inco_conn_listener : public incoming_connection_listener {
+    virtual void on_status_change(incoming_connection &ic,
+                                  ConnectionStatus current) override {
+        ((c_inco_conn &)ic).icsc_(&ic, current, ((c_inco_conn &)ic).icsc_ud_);
+    }
+
+    virtual void on_disconnect(incoming_connection &ic,
+                               ConnectivityEventResult con_evt_res,
+                               ConnectivityEventType c_evt_type) override {
+        ((c_inco_conn &)ic).icodh_(&ic, con_evt_res, c_evt_type, ((c_inco_conn &)ic).icodh_ud_);
+    }
+
+    virtual RetCode on_incoming_transaction(incoming_connection &ic,
+                                            std::shared_ptr<incoming_transaction> &it) override {
+        return ((c_inco_conn &)ic).icoith_(&ic, (shr_incoming_transaction *)new std::shared_ptr<incoming_transaction>(it), ((c_inco_conn &)ic).icoith_ud_);
+    }
+
+    virtual RetCode on_incoming_subscription(incoming_connection &ic,
+                                             std::shared_ptr<incoming_subscription> &is) override {
+        return ((c_inco_conn &)ic).icoish_(&ic, (shr_incoming_subscription *)new std::shared_ptr<incoming_subscription>(is), ((c_inco_conn &)ic).icoish_ud_);
+    }
+};
+
+static c_inco_conn_listener cicl;
+
+c_inco_conn::c_inco_conn(peer &p) : incoming_connection(p, cicl),
+    icsc_(nullptr),
+    icodh_(nullptr),
+    icoith_(nullptr),
+    icoish_(nullptr),
+    icsc_ud_(nullptr),
+    icodh_ud_(nullptr),
+    icoith_ud_(nullptr),
+    icoish_ud_(nullptr)
+{
+    set_incoming_transaction_factory(citf);
+    set_incoming_subscription_factory(cisf);
+}
 
 //c_inco_conn_factory
 
@@ -334,137 +353,134 @@ extern "C" {
 //c_peer
 
 struct c_peer : public peer {
-    private:
-        static void peer_status_change_c_peer(peer &p, PeerStatus status, void *usr_data) {
-            c_peer &self = static_cast<c_peer &>(p);
-            self.psc_wr_((peer *)&p, status, self.psc_ud_);
+    c_peer();
+
+    virtual const char *get_name() override {
+        if(pnh_wr_) {
+            return pnh_wr_(this, pnh_wr_ud_);
         }
+        return nullptr;
+    }
 
-    public:
-        c_peer() :
-            pnh_wr_(nullptr),
-            pvh_wr_(nullptr),
-            plch_wr_(nullptr),
-            pih_wr_(nullptr),
-            pstarth_wr_(nullptr),
-            pstoph_wr_(nullptr),
-            ptoah_wr_(nullptr),
-            peh_wr_(nullptr),
-            pdbh_wr_(nullptr),
-            psc_wr_(nullptr),
-            sic_wr_(nullptr),
-            psc_ud_(nullptr),
-            pnh_wr_ud_(nullptr),
-            pvh_wr_ud_(nullptr),
-            plch_wr_ud_(nullptr),
-            pih_wr_ud_(nullptr),
-            pstarth_wr_ud_(nullptr),
-            pstoph_wr_ud_(nullptr),
-            ptoah_wr_ud_(nullptr),
-            peh_wr_ud_(nullptr),
-            pdbh_wr_ud_(nullptr),
-            sic_wr_ud_(nullptr) {
-            set_incoming_connection_factory(cicf);
+    virtual const unsigned int *get_version() override {
+        if(pvh_wr_) {
+            return pvh_wr_(this, pvh_wr_ud_);
         }
+        return nullptr;
+    }
 
-        virtual const char *get_name() override {
-            if(pnh_wr_) {
-                return pnh_wr_(this, pnh_wr_ud_);
-            }
-            return nullptr;
-        }
+    peer_name_handler pnh_wr_;
+    peer_version_handler pvh_wr_;
+    peer_load_config_handler plch_wr_;
+    peer_init_handler pih_wr_;
+    peer_starting_handler pstarth_wr_;
+    peer_stopping_handler pstoph_wr_;
+    peer_on_move_running_handler ptoah_wr_;
+    peer_dying_breath_handler pdbh_wr_;
+    peer_status_change psc_wr_;
+    peer_on_incoming_connection_handler sic_wr_;
 
-        virtual const unsigned int *get_version() override {
-            if(pvh_wr_) {
-                return pvh_wr_(this, pvh_wr_ud_);
-            }
-            return nullptr;
-        }
-
-        virtual RetCode on_load_config(int pnum, const char *param, const char *value) override {
-            if(plch_wr_) {
-                return plch_wr_(this, pnum, param, value, plch_wr_ud_);
-            } else {
-                return RetCode_OK;
-            }
-        }
-
-        virtual RetCode on_init() override {
-            if(pih_wr_) {
-                return pih_wr_(this, pih_wr_ud_);
-            } else {
-                return RetCode_OK;
-            }
-        }
-
-        virtual RetCode on_starting() override {
-            if(pstarth_wr_) {
-                return pstarth_wr_(this, pstarth_wr_ud_);
-            } else {
-                return RetCode_OK;
-            }
-        }
-
-        virtual RetCode on_stopping() override {
-            if(pstoph_wr_) {
-                return pstoph_wr_(this, pstoph_wr_ud_);
-            } else {
-                return RetCode_OK;
-            }
-        }
-
-        virtual RetCode on_move_running() override {
-            if(ptoah_wr_) {
-                return ptoah_wr_(this, ptoah_wr_ud_);
-            } else {
-                return RetCode_OK;
-            }
-        }
-
-        virtual RetCode on_error() override {
-            if(peh_wr_) {
-                return peh_wr_(this, peh_wr_ud_);
-            }
-            return RetCode_OK;
-        }
-
-        virtual void on_dying_breath() override {
-            if(pdbh_wr_) {
-                pdbh_wr_(this, pdbh_wr_ud_);
-            }
-        }
-
-        virtual RetCode on_incoming_connection(std::shared_ptr<incoming_connection> &ic) override {
-            if(sic_wr_) {
-                return sic_wr_(this, (shr_incoming_connection *) new std::shared_ptr<incoming_connection>(ic), sic_wr_ud_);
-            }
-            return RetCode_OK;
-        }
-
-        peer_name_handler pnh_wr_;
-        peer_version_handler pvh_wr_;
-        peer_load_config_handler plch_wr_;
-        peer_init_handler pih_wr_;
-        peer_starting_handler pstarth_wr_;
-        peer_stopping_handler pstoph_wr_;
-        peer_on_move_running_handler ptoah_wr_;
-        peer_error_handler peh_wr_;
-        peer_dying_breath_handler pdbh_wr_;
-        peer_status_change psc_wr_;
-        peer_on_incoming_connection_handler sic_wr_;
-
-        void *psc_ud_;
-        void *pnh_wr_ud_;
-        void *pvh_wr_ud_;
-        void *plch_wr_ud_;
-        void *pih_wr_ud_;
-        void *pstarth_wr_ud_;
-        void *pstoph_wr_ud_;
-        void *ptoah_wr_ud_;
-        void *peh_wr_ud_;
-        void *pdbh_wr_ud_;
-        void *sic_wr_ud_;
+    void *psc_ud_;
+    void *pnh_wr_ud_;
+    void *pvh_wr_ud_;
+    void *plch_wr_ud_;
+    void *pih_wr_ud_;
+    void *pstarth_wr_ud_;
+    void *pstoph_wr_ud_;
+    void *ptoah_wr_ud_;
+    void *pdbh_wr_ud_;
+    void *sic_wr_ud_;
 };
+
+struct c_peer_listener : public peer_listener {
+    virtual RetCode on_load_config(peer &p,
+                                   int pnum,
+                                   const char *param,
+                                   const char *value) override {
+        if(((c_peer &)p).plch_wr_) {
+            return ((c_peer &)p).plch_wr_(&p, pnum, param, value, ((c_peer &)p).plch_wr_ud_);
+        } else {
+            return RetCode_OK;
+        }
+    }
+
+    virtual RetCode on_init(peer &p) override {
+        if(((c_peer &)p).pih_wr_) {
+            return ((c_peer &)p).pih_wr_(&p, ((c_peer &)p).pih_wr_ud_);
+        } else {
+            return RetCode_OK;
+        }
+    }
+
+    virtual RetCode on_starting(peer &p) override {
+        if(((c_peer &)p).pstarth_wr_) {
+            return ((c_peer &)p).pstarth_wr_(&p, ((c_peer &)p).pstarth_wr_ud_);
+        } else {
+            return RetCode_OK;
+        }
+    }
+
+    virtual RetCode on_stopping(peer &p) override {
+        if(((c_peer &)p).pstoph_wr_) {
+            return ((c_peer &)p).pstoph_wr_(&p, ((c_peer &)p).pstoph_wr_ud_);
+        } else {
+            return RetCode_OK;
+        }
+    }
+
+    virtual RetCode on_move_running(peer &p) override {
+        if(((c_peer &)p).ptoah_wr_) {
+            return ((c_peer &)p).ptoah_wr_(&p, ((c_peer &)p).ptoah_wr_ud_);
+        } else {
+            return RetCode_OK;
+        }
+    }
+
+    virtual void on_dying_breath(peer &p) override {
+        if(((c_peer &)p).pdbh_wr_) {
+            ((c_peer &)p).pdbh_wr_(&p, ((c_peer &)p).pdbh_wr_ud_);
+        }
+    }
+
+    virtual void on_status_change(peer &p, PeerStatus status) override {
+        ((c_peer &)p).psc_wr_(&p, status, ((c_peer &)p).psc_ud_);
+    }
+
+    virtual RetCode on_incoming_connection(peer &p, std::shared_ptr<incoming_connection> &ic) override {
+        if(((c_peer &)p).sic_wr_) {
+            return ((c_peer &)p).sic_wr_(&p, (shr_incoming_connection *) new std::shared_ptr<incoming_connection>(ic), ((c_peer &)p).sic_wr_ud_);
+        }
+        return RetCode_OK;
+    }
+};
+
+static c_peer_listener cpl;
+
+c_peer::c_peer() :
+    peer(cpl),
+    pnh_wr_(nullptr),
+    pvh_wr_(nullptr),
+    plch_wr_(nullptr),
+    pih_wr_(nullptr),
+    pstarth_wr_(nullptr),
+    pstoph_wr_(nullptr),
+    ptoah_wr_(nullptr),
+    pdbh_wr_(nullptr),
+    psc_wr_(nullptr),
+    sic_wr_(nullptr),
+    psc_ud_(nullptr),
+    pnh_wr_ud_(nullptr),
+    pvh_wr_ud_(nullptr),
+    plch_wr_ud_(nullptr),
+    pih_wr_ud_(nullptr),
+    pstarth_wr_ud_(nullptr),
+    pstoph_wr_ud_(nullptr),
+    ptoah_wr_ud_(nullptr),
+    pdbh_wr_ud_(nullptr),
+    sic_wr_ud_(nullptr)
+{
+    set_incoming_connection_factory(cicf);
+}
 
 extern "C" {
     own_peer *peer_create()
@@ -529,7 +545,7 @@ extern "C" {
 
     const nentity_manager *peer_get_nentity_manager(peer *p)
     {
-        return &p->get_entity_manager();
+        return &p->get_nentity_manager();
     }
 
     int peer_is_persistent(peer *p)
@@ -677,12 +693,6 @@ extern "C" {
     {
         static_cast<c_peer *>(p)->ptoah_wr_ = hndl;
         static_cast<c_peer *>(p)->ptoah_wr_ud_ = usr_data;
-    }
-
-    void peer_set_error_handler(peer *p, peer_error_handler hndl, void *usr_data)
-    {
-        static_cast<c_peer *>(p)->peh_wr_ = hndl;
-        static_cast<c_peer *>(p)->peh_wr_ud_ = usr_data;
     }
 
     void peer_set_dying_breath_handler(peer *p, peer_dying_breath_handler hndl, void *usr_data)

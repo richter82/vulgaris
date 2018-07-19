@@ -91,17 +91,15 @@ struct p_th : public runnable {
 /** @brief An enum representing the status a p_task can assume.
 
 */
-enum PTASK_STATUS {
-    PTASK_STATUS_ZERO,
-    PTASK_STATUS_TOINIT,
-    PTASK_STATUS_INIT,
-    PTASK_STATUS_SUBMITTED,
-    PTASK_STATUS_RUNNING,
-    PTASK_STATUS_EXECUTED,
-    PTASK_STATUS_INTERRUPTED,
-    PTASK_STATUS_REJECTED,
-    PTASK_STATUS_EVICTED,
-    PTASK_STATUS_ERROR = 500,
+enum PTskStatus {
+    PTskStatus_INIT,
+    PTskStatus_SUBMITTED,
+    PTskStatus_RUNNING,
+    PTskStatus_EXECUTED,
+    PTskStatus_INTERRUPTED,
+    PTskStatus_REJECTED,
+    PTskStatus_EVICTED,
+    PTskStatus_ERROR = 500,
 };
 
 /** @brief  This class logically represent a task that can be executed
@@ -110,14 +108,14 @@ enum PTASK_STATUS {
 struct p_tsk {
         explicit p_tsk() :
             id_(0),
-            status_(PTASK_STATUS_INIT),
+            status_(PTskStatus_INIT),
             exec_res_(RetCode_OK),
             wt_th_(0) {
         }
 
         explicit p_tsk(unsigned int id) :
             id_(id),
-            status_(PTASK_STATUS_INIT),
+            status_(PTskStatus_INIT),
             exec_res_(RetCode_OK),
             wt_th_(0) {
         }
@@ -134,11 +132,11 @@ struct p_tsk {
         */
         virtual RetCode execute() = 0;
 
-        PTASK_STATUS get_status() const {
+        PTskStatus get_status() const {
             return status_;
         }
 
-        RetCode set_status(PTASK_STATUS status);
+        RetCode set_status(PTskStatus status);
 
         RetCode execution_result() const {
             return exec_res_;
@@ -168,13 +166,13 @@ struct p_tsk {
                 RetCode_BDSTTS if this task has not been submitted.
                 RetCode_TMOUT if sec/nsec have been elapsed after invocation.
         */
-        RetCode await_for_status(PTASK_STATUS target_status,
+        RetCode await_for_status(PTskStatus target_status,
                                  time_t sec = -1,
                                  long nsec = 0) const;
 
     private:
         unsigned int id_;
-        PTASK_STATUS status_;
+        PTskStatus status_;
         RetCode exec_res_;
         mutable uint32_t wt_th_;
         mutable mx mon_;
@@ -182,14 +180,13 @@ struct p_tsk {
 
 /** @brief An enum representing the status a p_executor can assume.
 */
-enum PEXECUTOR_STATUS {
-    PEXECUTOR_STATUS_ZERO,
-    PEXECUTOR_STATUS_INIT,
-    PEXECUTOR_STATUS_IDLE,
-    PEXECUTOR_STATUS_EXECUTING,
-    PEXECUTOR_STATUS_DISPOSING,
-    PEXECUTOR_STATUS_STOPPED,
-    PEXECUTOR_STATUS_ERROR = 500,
+enum PExecutorStatus {
+    PExecutorStatus_INIT,
+    PExecutorStatus_IDLE,
+    PExecutorStatus_EXECUTING,
+    PExecutorStatus_DISPOSING,
+    PExecutorStatus_STOPPED,
+    PExecutorStatus_ERROR = 500,
 };
 
 /** @brief This class represent an thread-executor used by a p_executor_service.
@@ -199,50 +196,44 @@ struct p_exectr : public p_th {
         explicit p_exectr(p_exec_srv &eserv);
         ~p_exectr();
 
-        PEXECUTOR_STATUS get_status() const {
+        PExecutorStatus get_status() const {
             return status_;
         }
 
-        RetCode set_status(PEXECUTOR_STATUS status);
+        RetCode set_status(PExecutorStatus status);
 
         virtual void *run() override;
 
     private:
-        PEXECUTOR_STATUS status_;
+        PExecutorStatus status_;
         p_exec_srv &eserv_;
         mutable mx mon_;
 };
 
 /** @brief An enum representing the status a p_executor_service can assume.
 */
-enum PEXEC_SERVICE_STATUS {
-    PEXEC_SERVICE_STATUS_ZERO,
-    PEXEC_SERVICE_STATUS_TOINIT,
-    PEXEC_SERVICE_STATUS_INACTIVE,
-    PEXEC_SERVICE_STATUS_INIT,
-    PEXEC_SERVICE_STATUS_STARTING,
-    PEXEC_SERVICE_STATUS_STARTED,
-    PEXEC_SERVICE_STATUS_STOPPING,
-    PEXEC_SERVICE_STATUS_STOPPED,
-    PEXEC_SERVICE_STATUS_ERROR = 500,
+enum PExecSrvStatus {
+    PExecSrvStatus_TOINIT,
+    PExecSrvStatus_INACTIVE,
+    PExecSrvStatus_INIT,
+    PExecSrvStatus_STARTING,
+    PExecSrvStatus_STARTED,
+    PExecSrvStatus_STOPPING,
+    PExecSrvStatus_STOPPED,
+    PExecSrvStatus_ERROR = 500,
 };
 
 /** @brief This class represent an thread-executor-service that can be used
            to execute asynchronously a set of p_task(s).
 */
 struct p_exec_srv {
-        explicit p_exec_srv(bool dispose_task = false);
-
+        explicit p_exec_srv();
         ~p_exec_srv();
 
         RetCode init(unsigned int executor_num);
 
         unsigned int get_id() {
             return id_;
-        }
-
-        bool is_task_disposer() {
-            return dispose_task_;
         }
 
         b_qu &get_task_queue() {
@@ -257,11 +248,11 @@ struct p_exec_srv {
             return *exec_pool_[idx];
         }
 
-        PEXEC_SERVICE_STATUS get_status() const {
+        PExecSrvStatus get_status() const {
             return status_;
         }
 
-        RetCode set_status(PEXEC_SERVICE_STATUS status);
+        RetCode set_status(PExecSrvStatus status);
 
         /**
         res will be set to true if this executor has been shut down, false otherwise.
@@ -269,7 +260,7 @@ struct p_exec_srv {
         @return RetCode_OK when this method successfully complete.
         */
         bool is_shutdown() {
-            return (status_ == PEXEC_SERVICE_STATUS_STOPPING);
+            return (status_ == PExecSrvStatus_STOPPING);
         }
 
         /**
@@ -277,7 +268,7 @@ struct p_exec_srv {
         @return RetCode_OK if all tasks have completed following shut down.
         */
         bool is_terminated() {
-            return (status_ == PEXEC_SERVICE_STATUS_STOPPED);
+            return (status_ == PExecSrvStatus_STOPPED);
         }
 
         /**
@@ -309,7 +300,7 @@ struct p_exec_srv {
         @param task
         @return
         */
-        RetCode submit(p_tsk &task);
+        RetCode submit(std::shared_ptr<p_tsk> &task);
 
         /**
         blocks until all tasks have completed execution after a shutdown
@@ -335,14 +326,13 @@ struct p_exec_srv {
         @param nsec
         @return
         */
-        RetCode await_for_status_reached(PEXEC_SERVICE_STATUS test,
-                                         PEXEC_SERVICE_STATUS &current,
+        RetCode await_for_status_reached(PExecSrvStatus test,
+                                         PExecSrvStatus &current,
                                          time_t sec = -1,
                                          long nsec = 0);
     private:
         unsigned int id_;
-        PEXEC_SERVICE_STATUS status_;
-        bool dispose_task_;
+        PExecSrvStatus status_;
         std::vector<std::unique_ptr<p_exectr>> exec_pool_;
         b_qu task_queue_;
         mutable mx mon_;

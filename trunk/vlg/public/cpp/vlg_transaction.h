@@ -19,10 +19,23 @@ struct incoming_transaction_factory {
     static incoming_transaction_factory &default_factory();
 };
 
+/** @brief incoming transaction listener.
+*/
+struct incoming_transaction_listener {
+    virtual void on_status_change(incoming_transaction &, TransactionStatus) = 0;
+    virtual void on_request(incoming_transaction &) = 0;
+    virtual void on_close(incoming_transaction &) = 0;
+
+    static incoming_transaction_listener &default_listener();
+};
+
 /** @brief incoming_transaction.
 */
 struct incoming_transaction {
-    explicit incoming_transaction(std::shared_ptr<incoming_connection> &);
+    explicit incoming_transaction(std::shared_ptr<incoming_connection> &,
+                                  incoming_transaction_listener &listener =
+                                      incoming_transaction_listener::default_listener());
+
     virtual ~incoming_transaction();
 
     incoming_connection &get_connection();
@@ -66,17 +79,24 @@ struct incoming_transaction {
     tx_id &get_id();
     void set_id(tx_id &);
 
-    virtual void on_status_change(TransactionStatus);
-    virtual void on_request();
-    virtual void on_close();
-
     std::unique_ptr<incoming_transaction_impl> impl_;
+};
+
+/** @brief outgoing transaction listener.
+*/
+struct outgoing_transaction_listener {
+    virtual void on_status_change(outgoing_transaction &, TransactionStatus) = 0;
+    virtual void on_close(outgoing_transaction &) = 0;
+
+    static outgoing_transaction_listener &default_listener();
 };
 
 /** @brief outgoing_transaction.
 */
 struct outgoing_transaction {
-    explicit outgoing_transaction();
+    explicit outgoing_transaction(outgoing_transaction_listener &listener =
+                                      outgoing_transaction_listener::default_listener());
+
     virtual ~outgoing_transaction();
 
     RetCode bind(outgoing_connection &);
@@ -128,9 +148,6 @@ struct outgoing_transaction {
 
     RetCode send();
     RetCode renew();
-
-    virtual void on_status_change(TransactionStatus);
-    virtual void on_close();
 
     std::unique_ptr<outgoing_transaction_impl> impl_;
 };

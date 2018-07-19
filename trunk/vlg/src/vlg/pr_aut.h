@@ -12,7 +12,7 @@ namespace vlg {
 /** @brief peer_automa
 */
 struct peer_automa {
-        explicit peer_automa(peer &);
+        explicit peer_automa(peer &, peer_listener &);
         virtual ~peer_automa();
 
         RetCode set_params_file_path_name(const char *);
@@ -36,7 +36,6 @@ struct peer_automa {
         RetCode set_status(PeerStatus);
         RetCode set_running();
         RetCode set_stop_request();
-        RetCode set_error();
 
         RetCode running_cycle();
 
@@ -60,7 +59,6 @@ struct peer_automa {
         virtual RetCode on_automa_start() = 0;
         virtual RetCode on_automa_stop() = 0;
         virtual RetCode on_automa_move_running() = 0;
-        virtual RetCode on_automa_error() = 0;
         virtual void on_automa_dying_breath() = 0;
 
     public:
@@ -77,7 +75,6 @@ struct peer_automa {
         cfg_ldr peer_conf_ldr_;
         bool configured_;
         RetCode peer_last_error_;
-        bool peer_exit_required_;
 
         // stop / dispose
         bool force_disconnect_on_stop_;
@@ -90,6 +87,7 @@ struct peer_automa {
                                        void *usr_data);
     public:
         peer &publ_;
+        peer_listener &listener_;
 };
 
 

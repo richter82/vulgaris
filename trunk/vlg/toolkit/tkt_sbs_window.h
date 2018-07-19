@@ -16,10 +16,6 @@ class toolkit_subscription : public vlg::outgoing_subscription {
     public:
         toolkit_subscription(vlg_toolkit_sbs_window &widget);
 
-        virtual void on_status_change(vlg::SubscriptionStatus current) override;
-        virtual void on_incoming_event(std::unique_ptr<vlg::subscription_event> &) override;
-
-    private:
         vlg_toolkit_sbs_window &widget_;
 };
 

@@ -70,9 +70,15 @@ const conn_pkt_unqptr_obj_mng conn_pkt_up_omng;
 
 namespace vlg {
 
+enum PktChasingStatus {
+    PktChasingStatus_HDRLen,
+    PktChasingStatus_HDR,
+    PktChasingStatus_Body
+};
+
 struct conn_impl {
-    conn_impl(incoming_connection &ipubl, peer &p);
-    conn_impl(outgoing_connection &opubl);
+    conn_impl(incoming_connection &ipubl, peer &p, incoming_connection_listener &);
+    conn_impl(outgoing_connection &opubl, outgoing_connection_listener &);
 
     virtual ~conn_impl() = default;
     virtual void release_all_children() = 0;
@@ -83,9 +89,6 @@ struct conn_impl {
     RetCode set_appl_connected();
     RetCode set_disconnecting();
     RetCode set_socket_disconnected();
-    RetCode set_proto_error(RetCode cause_res = RetCode_UNKERR);
-    RetCode set_socket_error(RetCode cause_res = RetCode_UNKERR);
-    RetCode set_internal_error(RetCode cause_res = RetCode_UNKERR);
     RetCode set_status(ConnectionStatus status);
 
     RetCode await_for_status_reached(ConnectionStatus
@@ -116,19 +119,15 @@ struct conn_impl {
     RetCode set_socket_blocking_mode(bool blocking);
     RetCode socket_shutdown();
 
-    RetCode aggr_msgs_and_send_pkt(g_bbuf &pkt_snd_buf);
-    RetCode send_single_pkt(g_bbuf &pkt_bbuf);
+    RetCode aggr_msgs_and_send_pkt();
+    RetCode send_acc_buff();
 
-    RetCode recv_single_pkt(vlg_hdr_rec &pkt_hdr,
-                            g_bbuf &pkt_body);
+    RetCode recv_bytes();
+    RetCode chase_pkt();
+    RetCode read_decode_hdr();
+    void clean_rdn_rep();
 
-    RetCode recv_and_decode_hdr(vlg_hdr_rec &pkt_hdr);
-
-    RetCode recv_body(unsigned int bodylen,
-                      g_bbuf &pkt_body);
-
-    RetCode recv_single_hdr_row(unsigned int *hdr_row);
-    RetCode socket_excptn_hndl(long sock_op_res);
+    RetCode sckt_hndl_err(long sock_op_res);
 
     const char *get_host_ip() const;
     unsigned short get_host_port() const;
@@ -151,19 +150,28 @@ struct conn_impl {
     unsigned short cli_agrhbt_;
     unsigned short srv_agrhbt_;
     ProtocolCode disconrescode_;
-
-    //--synch status
     bool connect_evt_occur_;
 
-    //---packet sending queue
+    //reading rep
+    PktChasingStatus pkt_ch_st_;
+    g_bbuf rdn_buff_;
+    vlg_hdr_rec curr_rdn_hdr_;
+    std::unique_ptr<g_bbuf> curr_rdn_body_;
 
-    //@TODO riprogettare con chiave per supporto a snapshotting.
+    //sending rep
+    //packet sending queue
     b_qu_hm pkt_sending_q_;
+    //current sending packet
+    std::unique_ptr<conn_pkt> cpkt_;
+    //accumulating sending buffer
+    g_bbuf acc_snd_buff_;
 
     mutable mx mon_;
 
     incoming_connection *ipubl_;
     outgoing_connection *opubl_;
+    incoming_connection_listener *ilistener_;
+    outgoing_connection_listener *olistener_;
 
     //associated peer.
     //cannot be ref, because bind is after construction.
@@ -171,7 +179,10 @@ struct conn_impl {
 };
 
 struct incoming_connection_impl : public conn_impl {
-    explicit incoming_connection_impl(incoming_connection &publ, peer &p);
+    explicit incoming_connection_impl(incoming_connection &publ,
+                                      peer &p,
+                                      incoming_connection_listener &);
+
     virtual ~incoming_connection_impl();
 
     virtual void release_all_children() override;
@@ -226,7 +237,7 @@ struct incoming_connection_impl : public conn_impl {
 namespace vlg {
 
 struct outgoing_connection_impl : public conn_impl {
-    explicit outgoing_connection_impl(outgoing_connection &publ);
+    explicit outgoing_connection_impl(outgoing_connection &publ, outgoing_connection_listener &);
     virtual ~outgoing_connection_impl();
 
     virtual void release_all_children() override;

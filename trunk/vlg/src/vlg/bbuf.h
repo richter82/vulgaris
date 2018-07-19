@@ -23,15 +23,21 @@ struct g_bbuf {
         pos_ = limit_ = mark_ = 0;
     }
 
-    void flip() {
+    void set_read() {
         pos_ = mark_;
     }
+
+    void set_write() {
+        pos_ = limit_;
+    }
+
+    void compact();
 
     RetCode grow(size_t amount);
     RetCode ensure_capacity(size_t capacity);
 
     RetCode append(g_bbuf &);
-    RetCode append_no_rsz(g_bbuf &);
+    size_t append_no_rsz(g_bbuf &);
 
     RetCode append(const void *buffer,
                    size_t offset,
@@ -100,6 +106,7 @@ struct g_bbuf {
     }
 
     RetCode read(size_t length, void *out);
+    RetCode read(size_t length, g_bbuf &out);
     RetCode read_ushort(unsigned short *);
     RetCode read_uint(unsigned int *);
     RetCode read_uint_to_sizet(size_t *);

@@ -117,27 +117,7 @@ extern "C" {
 //c_outg_conn
 
 struct c_outg_conn : public outgoing_connection {
-    c_outg_conn() :
-        ocsc_(nullptr),
-        ococh_(nullptr),
-        ocodh_(nullptr),
-        ocsc_ud_(nullptr),
-        ococh_ud_(nullptr),
-        ocodh_ud_(nullptr) {}
-
-    virtual void on_status_change(ConnectionStatus current) override {
-        ocsc_(this, current, ocsc_ud_);
-    }
-
-    virtual void on_connect(ConnectivityEventResult con_evt_res,
-                            ConnectivityEventType c_evt_type) override {
-        ococh_(this, con_evt_res, c_evt_type, ococh_ud_);
-    }
-
-    virtual void on_disconnect(ConnectivityEventResult con_evt_res,
-                               ConnectivityEventType c_evt_type) override {
-        ocodh_(this, con_evt_res, c_evt_type, ocodh_ud_);
-    }
+    c_outg_conn();
 
     outg_connection_status_change ocsc_;
     outg_connection_on_connect_handler ococh_;
@@ -147,6 +127,35 @@ struct c_outg_conn : public outgoing_connection {
     void *ococh_ud_;
     void *ocodh_ud_;
 };
+
+struct c_outg_conn_listener : public outgoing_connection_listener {
+    virtual void on_status_change(outgoing_connection &oc,
+                                  ConnectionStatus current) override {
+        ((c_outg_conn &)oc).ocsc_(&oc, current, ((c_outg_conn &)oc).ocsc_ud_);
+    }
+
+    virtual void on_connect(outgoing_connection &oc,
+                            ConnectivityEventResult con_evt_res,
+                            ConnectivityEventType c_evt_type) override {
+        ((c_outg_conn &)oc).ococh_(&oc, con_evt_res, c_evt_type, ((c_outg_conn &)oc).ococh_ud_);
+    }
+
+    virtual void on_disconnect(outgoing_connection &oc,
+                               ConnectivityEventResult con_evt_res,
+                               ConnectivityEventType c_evt_type) override {
+        ((c_outg_conn &)oc).ocodh_(&oc, con_evt_res, c_evt_type, ((c_outg_conn &)oc).ocodh_ud_);
+    }
+};
+
+static c_outg_conn_listener cocl;
+
+c_outg_conn::c_outg_conn() : outgoing_connection(cocl),
+    ocsc_(nullptr),
+    ococh_(nullptr),
+    ocodh_(nullptr),
+    ocsc_ud_(nullptr),
+    ococh_ud_(nullptr),
+    ocodh_ud_(nullptr) {}
 
 //outg_connection
 

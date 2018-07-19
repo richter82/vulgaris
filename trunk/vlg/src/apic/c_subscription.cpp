@@ -201,31 +201,7 @@ extern "C" {
 //c_outg_sbs
 
 struct c_outg_sbs : public outgoing_subscription {
-    c_outg_sbs() :
-        osad_wr_(nullptr),
-        ossc_wr_(nullptr),
-        ososrt_(nullptr),
-        osostp_(nullptr),
-        ossc_ud_(nullptr),
-        osad_ud_(nullptr),
-        ososrt_ud_(nullptr),
-        osostp_ud_(nullptr) {}
-
-    virtual void on_status_change(SubscriptionStatus status) override {
-        ossc_wr_(this, status, ossc_ud_);
-    }
-
-    virtual void on_start() override {
-        ososrt_(this, ososrt_ud_);
-    }
-
-    virtual void on_stop() override {
-        osostp_(this, osostp_ud_);
-    }
-
-    virtual void on_incoming_event(std::unique_ptr<subscription_event> &sev) override {
-        osad_wr_(this, sev.get(), osad_ud_);
-    }
+    c_outg_sbs();
 
     outg_subscription_notify_event osad_wr_;
     outg_subscription_status_change ossc_wr_;
@@ -236,6 +212,34 @@ struct c_outg_sbs : public outgoing_subscription {
     void *ososrt_ud_;
     void *osostp_ud_;
 };
+
+struct c_outg_sbs_listener : public outgoing_subscription_listener {
+    virtual void on_status_change(outgoing_subscription &os, SubscriptionStatus status) override {
+        ((c_outg_sbs &)os).ossc_wr_(&os, status, ((c_outg_sbs &)os).ossc_ud_);
+    }
+    virtual void on_start(outgoing_subscription &os) override {
+        ((c_outg_sbs &)os).ososrt_(&os, ((c_outg_sbs &)os).ososrt_ud_);
+    }
+    virtual void on_stop(outgoing_subscription &os) override {
+        ((c_outg_sbs &)os).osostp_(&os, ((c_outg_sbs &)os).osostp_ud_);
+    }
+    virtual void on_incoming_event(outgoing_subscription &os, std::unique_ptr<subscription_event> &sev) override {
+        ((c_outg_sbs &)os).osad_wr_(&os, sev.get(), ((c_outg_sbs &)os).osad_ud_);
+    }
+};
+
+static c_outg_sbs_listener coslst;
+
+c_outg_sbs::c_outg_sbs() :
+    outgoing_subscription(coslst),
+    osad_wr_(nullptr),
+    ossc_wr_(nullptr),
+    ososrt_(nullptr),
+    osostp_(nullptr),
+    ossc_ud_(nullptr),
+    osad_ud_(nullptr),
+    ososrt_ud_(nullptr),
+    osostp_ud_(nullptr) {}
 
 extern "C" {
     own_outgoing_subscription *outg_subscription_create()

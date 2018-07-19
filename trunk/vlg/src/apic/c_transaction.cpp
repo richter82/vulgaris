@@ -162,25 +162,31 @@ extern "C" {
 //c_outg_tx
 
 struct c_outg_tx : public outgoing_transaction {
-    c_outg_tx() :
-        tc_wr_(nullptr),
-        tsc_wr_(nullptr),
-        tc_ud_(nullptr),
-        tsc_ud_(nullptr) {}
-
-    virtual void on_status_change(TransactionStatus status) override {
-        tsc_wr_(this, status, tsc_ud_);
-    }
-
-    virtual void on_close() override {
-        tc_wr_(this, tc_ud_);
-    }
+    c_outg_tx();
 
     outg_transaction_closure tc_wr_;
     outg_transaction_status_change tsc_wr_;
     void *tc_ud_;
     void *tsc_ud_;
 };
+
+struct c_outg_tx_listener : public outgoing_transaction_listener {
+    virtual void on_status_change(outgoing_transaction &ot, TransactionStatus status) override {
+        ((c_outg_tx &)ot).tsc_wr_(&ot, status, ((c_outg_tx &)ot).tsc_ud_);
+    }
+    virtual void on_close(outgoing_transaction &ot) override {
+        ((c_outg_tx &)ot).tc_wr_(&ot, ((c_outg_tx &)ot).tc_ud_);
+    }
+};
+
+static c_outg_tx_listener cotl;
+
+c_outg_tx::c_outg_tx() :
+    outgoing_transaction(cotl),
+    tc_wr_(nullptr),
+    tsc_wr_(nullptr),
+    tc_ud_(nullptr),
+    tsc_ud_(nullptr) {}
 
 extern "C" {
     own_outgoing_transaction *outg_transaction_create()

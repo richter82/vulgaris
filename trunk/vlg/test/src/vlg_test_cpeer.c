@@ -4,6 +4,8 @@
  * 
  */
 
+#include <stdio.h>
+
 #include "vlg_c_model.h"
 #include "vlg_c_persistence.h"
 #include "vlg_c_peer.h"

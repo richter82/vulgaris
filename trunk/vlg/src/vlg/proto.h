@@ -13,15 +13,14 @@ vlg PROTOCOL PUBLIC INTERFACE
 VER: 000001
 ******************************************/
 
-namespace vlg {
+#define WORD_SZ 4   //word length [byte size]
 
-struct tx_id;
+namespace vlg {
 
 /*****************************************
 GLOB DEFS
 ******************************************/
 
-#define VLG_BUFF_DEF_SZ 64
 #define VLG_PROTO_VER   0x01      //up to 3F
 
 /*****************************************
@@ -280,11 +279,22 @@ union VLG_WORD {
 GLOB STRUCTURES
 ******************************************/
 
+#define VLG_MAX_HDR_SZ 9*4
+
 /*****************************************
 GENERIC HEADER STRUCTURE
 ******************************************/
 struct vlg_hdr_rec {
     explicit vlg_hdr_rec() {
+        memset(this, 0, sizeof(vlg_hdr_rec));
+    }
+    explicit vlg_hdr_rec(const vlg_hdr_rec &oth) {
+        memcpy(this, &oth, sizeof(vlg_hdr_rec));
+    }
+    void operator=(const vlg_hdr_rec &oth) {
+        memcpy(this, &oth, sizeof(vlg_hdr_rec));
+    }
+    void reset() {
         memset(this, 0, sizeof(vlg_hdr_rec));
     }
     unsigned int            hdr_bytelen;
@@ -404,5 +414,198 @@ void build_PKT_SBSSPR(SubscriptionResponse sbresl,
                       ProtocolCode vlgcod,
                       unsigned int sbsrid,
                       g_bbuf *obb);
+
+/*****************************************
+ WORD DECODE FUNCTIONS
+ It is supposed that each Decode f reads 32 bit on buffer
+******************************************/
+
+inline void Decode_WRD_PKTHDR(const unsigned int *data_in,
+                              VLG_WRD_PKTHDR_REC *rec)
+{
+    //PROVER |VVVVVV00000000000000000000000000|
+    unsigned short tus = ((*data_in >> 2) & 0x3F);
+    rec->prover = tus;
+    //HDRLEN |000000HHHH0000000000000000000000|
+    tus = ((*data_in << 2) & 0x000C) | ((*data_in >> 14) & 0x3);
+    rec->hdrlen = tus;
+    //PKTTYP |0000000000RRRRRR0000000000000000|
+    rec->pkttyp = static_cast<VLG_PKT_ID>((*data_in >> 8) & 0x3F);
+}
+
+inline void Decode_WRD_PKTLEN(const unsigned int *data_in,
+                              VLG_WRD_PKTLEN_REC *rec)
+{
+    //PKTLEN |LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL|
+    rec->pktlen = ntohl(*data_in);
+}
+
+inline void Decode_WRD_TMSTMP(const unsigned int *data_in,
+                              VLG_WRD_TMSTMP_REC *rec)
+{
+    //TMSTMP |TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT|
+    rec->tmstmp = ntohl(*data_in);
+}
+
+inline void Decode_WRD_CLIHBT(const unsigned int *data_in,
+                              VLG_WRD_CLIHBT_REC *rec)
+{
+    //CLIHBT |HHHHHHHH000000000000000000000000|
+    rec->hbtsec = *data_in & 0xFF;
+}
+
+inline void Decode_WRD_SRVCRS(const unsigned int *data_in,
+                              VLG_WRD_SRVCRS_REC *rec)
+{
+    //CONRES |RRR00000000000000000000000000000|
+    rec->conres = static_cast<ConnectionResult>((*data_in >> 5) & 0x3);
+    //ERRCOD |000EEEE0000000000000000000000000|
+    rec->errcod = static_cast<ProtocolCode>((*data_in >> 1) & 0xF);
+    //AGRHBT |00000000AAAAAAAA0000000000000000|
+    rec->agrhbt = ((*data_in >> 8) & 0xFF);
+}
+
+inline void Decode_WRD_DISWRD(const unsigned int *data_in,
+                              VLG_WRD_DISWRD_REC *rec)
+{
+    //DISRES |RRRR0000000000000000000000000000|
+    rec->disres = static_cast<ProtocolCode>(*data_in >> 4);
+}
+
+inline void Decode_WRD_TXREQW(const unsigned int *data_in,
+                              VLG_WRD_TXREQW_REC *rec)
+{
+    //TXTYPE |TTTT0000000000000000000000000000|
+    rec->txtype = static_cast<TransactionRequestType>((*data_in >> 4) & 0xF);
+    //TXACTN |0000AAA0000000000000000000000000|
+    rec->txactn = static_cast<Action>((*data_in >> 1) & 0x7);
+    //RSCLRQ |0000000b000000000000000000000000|
+    rec->rsclrq = static_cast<bool>((*data_in) & 0x1);
+}
+
+inline void Decode_WRD_CLSENC(const unsigned int *data_in,
+                              VLG_WRD_CLSENC_REC *rec)
+{
+    //ENCTYP |EEEE0000000000000000000000000000|
+    rec->enctyp = static_cast<Encode>((*data_in >> 4) & 0xF);
+    //NCLSSID |000000000000DDDDDDDDDDDDDDDDDDDD|
+    /******************************************
+    HGFE DCBA RQPO NMLI | 0000 VUTS 0000 0000 -->
+    0000 0000 0000 VUTS | RQPO NMLI HGFE DCBA
+    ******************************************/
+    rec->nclsid = ntohl(((*data_in) & 0xFFFF0F00));
+}
+
+inline void Decode_WRD_TXRESW(const unsigned int *data_in,
+                              VLG_WRD_TXRESW_REC *rec)
+{
+    //TXRESL |XXX00000000000000000000000000000|
+    rec->txresl = static_cast<TransactionResult>((*data_in >> 5) & 0x7);
+    //RESCLS |000b0000000000000000000000000000|
+    rec->rescls = static_cast<bool>((*data_in >> 4) & 0x1);
+    //VLGCOD |0000000000000000RRRRRRRRRRRRRRRR|
+    /******************************************
+    HGFE DCBA RQPO NMLI | 0000 0000 0000 0000 -->
+    0000 0000 0000 0000 | RQPO NMLI HGFE DCBA
+    ******************************************/
+    rec->vlgcod = static_cast<ProtocolCode>(ntohl(*data_in) & 0xFFFF);
+}
+
+inline void Decode_WRD_TXPLID(const unsigned int *data_in,
+                              VLG_WRD_TXPLID_REC *rec)
+{
+    //TXPLID |PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP|
+    rec->txplid = ntohl(*data_in);
+}
+
+inline void Decode_WRD_TXSVID(const unsigned int *data_in,
+                              VLG_WRD_TXSVID_REC *rec)
+{
+    //TXSVID |SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS|
+    rec->txsvid = ntohl(*data_in);
+}
+
+inline void Decode_WRD_TXCNID(const unsigned int *data_in,
+                              VLG_WRD_TXCNID_REC *rec)
+{
+    //TXCNID |CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC|
+    rec->txcnid = ntohl(*data_in);
+}
+
+inline void Decode_WRD_TXPRID(const unsigned int *data_in,
+                              VLG_WRD_TXPRID_REC *rec)
+{
+    //TXPRID |PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP|
+    rec->txprid = ntohl(*data_in);
+}
+
+inline void Decode_WRD_CONNID(const unsigned int *data_in,
+                              VLG_WRD_CONNID_REC *rec)
+{
+    //CONNID |CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC|
+    rec->connid = ntohl(*data_in);
+}
+
+inline void Decode_WRD_RQSTID(const unsigned int *data_in,
+                              VLG_WRD_RQSTID_REC *rec)
+{
+    //RQSTID |RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR|
+    rec->rqstid = ntohl(*data_in);
+}
+
+inline void Decode_WRD_SBREQW(const unsigned int *data_in,
+                              VLG_WRD_SBREQW_REC *rec)
+{
+    //SBSTYP |00SS 0000 0000 0000 | 0000 0000 0000 0000|
+    rec->sbstyp = static_cast<SubscriptionType>((*data_in >> 4) & 0x3);
+    //SBSMOD |0000 MMMM 0000 0000 | 0000 0000 0000 0000|
+    rec->sbsmod = static_cast<SubscriptionMode>((*data_in) & 0xF);
+    //FLOTYP |0000 0000 0FFF 0000 | 0000 0000 0000 0000|
+    rec->flotyp = static_cast<SubscriptionFlowType>((*data_in >> 12) & 0x7);
+    //DWLTYP |0000 0000 0000 0DDD | 0000 0000 0000 0000|
+    rec->dwltyp = static_cast<SubscriptionDownloadType>((*data_in >> 8) & 0x7);
+}
+
+inline void Decode_WRD_SBRESW(const unsigned int *data_in,
+                              VLG_WRD_SBRESW_REC *rec)
+{
+    //SBRESL |XXX00000000000000000000000000000|
+    rec->sbresl = static_cast<SubscriptionResponse>((*data_in >> 5) & 0x7);
+    //VLGCOD |0000000000000000RRRRRRRRRRRRRRRR|
+    /******************************************
+    HGFE DCBA RQPO NMLI | 0000 0000 0000 0000 -->
+    0000 0000 0000 0000 | RQPO NMLI HGFE DCBA
+    ******************************************/
+    rec->vlgcod = static_cast<ProtocolCode>(ntohl(*data_in) & 0xFFFF);
+}
+
+inline void Decode_WRD_SBSRID(const unsigned int *data_in,
+                              VLG_WRD_SBSRID_REC *rec)
+{
+    //SBSRID |SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS|
+    rec->sbsrid = ntohl(*data_in);
+}
+
+inline void Decode_WRD_SEVTID(const unsigned int *data_in,
+                              VLG_WRD_SEVTID_REC *rec)
+{
+    //SEVTID |EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE|
+    rec->sevtid = ntohl(*data_in);
+}
+
+inline void Decode_WRD_SEVTTP(const unsigned int *data_in,
+                              VLG_WRD_SEVTTP_REC *rec)
+{
+    //ENCTYP |TTTT0000000000000000000000000000|
+    rec->sevttp = static_cast<SubscriptionEventType>((*data_in >> 4) & 0xF);
+    //SBEACT |0000AAA0000000000000000000000000|
+    rec->sbeact = static_cast<Action>((*data_in >> 1) & 0x7);
+    //VLGCOD |0000000000000000RRRRRRRRRRRRRRRR|
+    /******************************************
+    HGFE DCBA RQPO NMLI | 0000 0000 0000 0000 -->
+    0000 0000 0000 0000 | RQPO NMLI HGFE DCBA
+    ******************************************/
+    rec->vlgcod = static_cast<ProtocolCode>(ntohl(*data_in) & 0xFFFF);
+}
 
 }

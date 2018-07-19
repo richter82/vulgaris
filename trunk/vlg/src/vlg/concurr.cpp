@@ -12,6 +12,8 @@
 
 namespace vlg {
 
+const std_shared_ptr_obj_mng<p_tsk> tsk_std_shp_omng;
+
 // mx
 
 int mx::wait(time_t sec, long nsec)
@@ -33,7 +35,7 @@ int mx::wait(time_t sec, long nsec)
 
 // p_task
 
-RetCode p_tsk::set_status(PTASK_STATUS status)
+RetCode p_tsk::set_status(PTskStatus status)
 {
     scoped_mx smx(mon_);
     if(status <= status_) {
@@ -47,12 +49,12 @@ RetCode p_tsk::set_status(PTASK_STATUS status)
     return RetCode_OK;
 }
 
-RetCode p_tsk::await_for_status(PTASK_STATUS target_status,
+RetCode p_tsk::await_for_status(PTskStatus target_status,
                                 time_t sec,
                                 long nsec) const
 {
     scoped_mx smx(mon_);
-    if(status_ < PTASK_STATUS_SUBMITTED) {
+    if(status_ < PTskStatus_SUBMITTED) {
         return RetCode_BADSTTS;
     }
     while(status_ < target_status) {
@@ -65,13 +67,13 @@ RetCode p_tsk::await_for_status(PTASK_STATUS target_status,
 // p_executor
 
 p_exectr::p_exectr(p_exec_srv &eserv)  :
-    status_(PEXECUTOR_STATUS_INIT),
+    status_(PExecutorStatus_INIT),
     eserv_(eserv) {}
 
 p_exectr::~p_exectr()
 {}
 
-RetCode p_exectr::set_status(PEXECUTOR_STATUS status)
+RetCode p_exectr::set_status(PExecutorStatus status)
 {
     scoped_mx smx(mon_);
     status_ = status;
@@ -80,57 +82,51 @@ RetCode p_exectr::set_status(PEXECUTOR_STATUS status)
 
 void *p_exectr::run()
 {
-    PEXEC_SERVICE_STATUS eserv_status = PEXEC_SERVICE_STATUS_ZERO;
-    PEXECUTOR_STATUS exec_status = PEXECUTOR_STATUS_ZERO;
+    PExecSrvStatus eserv_status = PExecSrvStatus_TOINIT;
+    PExecutorStatus exec_status = PExecutorStatus_INIT;
     uint32_t tq_size = 0;
-    p_tsk *task = nullptr;
+    std::shared_ptr<p_tsk> task;
     RetCode pres = RetCode_KO;
     bool go_term = true;
-    if(status_ != PEXECUTOR_STATUS_INIT && status_ != PEXECUTOR_STATUS_STOPPED) {
-        set_status(PEXECUTOR_STATUS_ERROR);
+    if(status_ != PExecutorStatus_INIT && status_ != PExecutorStatus_STOPPED) {
+        set_status(PExecutorStatus_ERROR);
         return (void *)1;
     }
-    eserv_.await_for_status_reached(PEXEC_SERVICE_STATUS_STARTED, eserv_status);
-    if(eserv_status != PEXEC_SERVICE_STATUS_STARTED) {
+    eserv_.await_for_status_reached(PExecSrvStatus_STARTED, eserv_status);
+    if(eserv_status != PExecSrvStatus_STARTED) {
         IFLOG(err(TH_ID, LS_TRL "[aborting] [status:%d]", __func__, eserv_.get_status()))
         return (void *)1;
     }
-    set_status(PEXECUTOR_STATUS_IDLE);
-    while((eserv_status = eserv_.get_status()) == PEXEC_SERVICE_STATUS_STARTED) {
+    set_status(PExecutorStatus_IDLE);
+    while((eserv_status = eserv_.get_status()) == PExecSrvStatus_STARTED) {
         if(!(pres = eserv_.get_task_queue().take(0, 10*MSEC_F, &task))) {
-            set_status(PEXECUTOR_STATUS_EXECUTING);
+            set_status(PExecutorStatus_EXECUTING);
             task->set_execution_result(task->execute());
-            task->set_status(PTASK_STATUS_EXECUTED);
-            if(eserv_.is_task_disposer()) {
-                delete task;
-            }
-            set_status(PEXECUTOR_STATUS_IDLE);
+            task->set_status(PTskStatus_EXECUTED);
+            set_status(PExecutorStatus_IDLE);
         } else if(pres == RetCode_PTHERR) {
-            set_status(PEXECUTOR_STATUS_ERROR);
+            set_status(PExecutorStatus_ERROR);
             return (void *)1;
         }
     }
     IFLOG(dbg(TH_ID, LS_TRL "[stopping]", __func__))
-    while((eserv_status = eserv_.get_status()) == PEXEC_SERVICE_STATUS_STOPPING) {
+    while((eserv_status = eserv_.get_status()) == PExecSrvStatus_STOPPING) {
         if(!(pres = eserv_.get_task_queue().take(0, 2*MSEC_F, &task))) {
-            task->set_status(PTASK_STATUS_SUBMITTED);
-            set_status(PEXECUTOR_STATUS_EXECUTING);
+            task->set_status(PTskStatus_SUBMITTED);
+            set_status(PExecutorStatus_EXECUTING);
             task->set_execution_result(task->execute());
-            task->set_status(PTASK_STATUS_EXECUTED);
-            if(eserv_.is_task_disposer()) {
-                delete task;
-            }
-            set_status(PEXECUTOR_STATUS_IDLE);
+            task->set_status(PTskStatus_EXECUTED);
+            set_status(PExecutorStatus_IDLE);
         } else if(pres == RetCode_PTHERR) {
-            set_status(PEXECUTOR_STATUS_ERROR);
+            set_status(PExecutorStatus_ERROR);
             return (void *)1;
         }
         if(!(tq_size = eserv_.get_task_queue().size())) {
-            set_status(PEXECUTOR_STATUS_DISPOSING);
+            set_status(PExecutorStatus_DISPOSING);
             for(unsigned int i = 0; i<eserv_.get_executor_count(); i++) {
                 exec_status = eserv_.get_executor_at_idx(i).get_status();
-                go_term &= ((exec_status == PEXECUTOR_STATUS_DISPOSING) ||
-                            (exec_status == PEXECUTOR_STATUS_STOPPED));
+                go_term &= ((exec_status == PExecutorStatus_DISPOSING) ||
+                            (exec_status == PExecutorStatus_STOPPED));
             }
             if(go_term) {
                 IFLOG(dbg(TH_ID, LS_TRL "[terminating executor service]", __func__))
@@ -139,7 +135,7 @@ void *p_exectr::run()
             break;
         }
     }
-    set_status(PEXECUTOR_STATUS_STOPPED);
+    set_status(PExecutorStatus_STOPPED);
     stop();
     return 0;
 }
@@ -147,13 +143,11 @@ void *p_exectr::run()
 // p_executor_service
 static int p_exec_srv_id = 0;
 
-p_exec_srv::p_exec_srv(bool dispose_task) :
+p_exec_srv::p_exec_srv() :
     id_(++p_exec_srv_id),
-    status_(PEXEC_SERVICE_STATUS_TOINIT),
-    dispose_task_(dispose_task),
-    task_queue_(sngl_ptr_obj_mng())
-{
-}
+    status_(PExecSrvStatus_TOINIT),
+    task_queue_(tsk_std_shp_omng)
+{}
 
 p_exec_srv::~p_exec_srv()
 {}
@@ -163,18 +157,18 @@ RetCode p_exec_srv::init(unsigned int executor_num)
     IFLOG(trc(TH_ID, LS_OPN "[executor_num:%d]", __func__, executor_num))
     if(!executor_num) {
         IFLOG(inf(TH_ID, LS_TRL "[id:%d][zero executors]", __func__, id_))
-        set_status(PEXEC_SERVICE_STATUS_INIT);
+        set_status(PExecSrvStatus_INIT);
     } else {
         exec_pool_.resize(executor_num);
         for(unsigned int i = 0; i<executor_num; i++) {
             exec_pool_[i] = std::move(std::unique_ptr<p_exectr>(new p_exectr(*this)));
         }
-        set_status(PEXEC_SERVICE_STATUS_INIT);
+        set_status(PExecSrvStatus_INIT);
     }
     return RetCode_OK;
 }
 
-RetCode p_exec_srv::set_status(PEXEC_SERVICE_STATUS status)
+RetCode p_exec_srv::set_status(PExecSrvStatus status)
 {
     scoped_mx smx(mon_);
     status_ = status;
@@ -184,25 +178,25 @@ RetCode p_exec_srv::set_status(PEXEC_SERVICE_STATUS status)
 
 RetCode p_exec_srv::start()
 {
-    if(status_ != PEXEC_SERVICE_STATUS_INIT && status_ != PEXEC_SERVICE_STATUS_STOPPED) {
+    if(status_ != PExecSrvStatus_INIT && status_ != PExecSrvStatus_STOPPED) {
         return RetCode_BADSTTS;
     }
-    set_status(PEXEC_SERVICE_STATUS_STARTING);
+    set_status(PExecSrvStatus_STARTING);
     for(unsigned int i = 0; i<exec_pool_.size(); i++) {
         exec_pool_[i]->start();
     }
-    set_status(PEXEC_SERVICE_STATUS_STARTED);
+    set_status(PExecSrvStatus_STARTED);
     return RetCode_OK;
 }
 
-RetCode p_exec_srv::await_for_status_reached(PEXEC_SERVICE_STATUS test,
-                                             PEXEC_SERVICE_STATUS &current,
+RetCode p_exec_srv::await_for_status_reached(PExecSrvStatus test,
+                                             PExecSrvStatus &current,
                                              time_t sec,
                                              long nsec)
 {
     RetCode rcode = RetCode_OK;
     scoped_mx smx(mon_);
-    if(status_ < PEXEC_SERVICE_STATUS_INIT) {
+    if(status_ < PExecSrvStatus_INIT) {
         return RetCode_BADSTTS;
     }
     while(status_ < test) {
@@ -225,7 +219,7 @@ RetCode p_exec_srv::await_for_status_reached(PEXEC_SERVICE_STATUS test,
 RetCode p_exec_srv::await_termination()
 {
     scoped_mx smx(mon_);
-    while(status_ < PEXEC_SERVICE_STATUS_STOPPED) {
+    while(status_ < PExecSrvStatus_STOPPED) {
         mon_.wait();
     }
     return RetCode_OK;
@@ -235,7 +229,7 @@ RetCode p_exec_srv::await_termination(time_t sec, long nsec)
 {
     int pthres;
     scoped_mx smx(mon_);
-    while(status_ < PEXEC_SERVICE_STATUS_STOPPED) {
+    while(status_ < PExecSrvStatus_STOPPED) {
         if((pthres = mon_.wait(sec, nsec))) {
             if(pthres == ETIMEDOUT) {
                 IFLOG(inf(TH_ID, LS_CLO "[sec%d, nsec:%d] - [timeout]", __func__, sec, nsec))
@@ -252,38 +246,34 @@ RetCode p_exec_srv::await_termination(time_t sec, long nsec)
 RetCode p_exec_srv::shutdown()
 {
     if(exec_pool_.empty()) {
-        set_status(PEXEC_SERVICE_STATUS_STOPPED);
+        set_status(PExecSrvStatus_STOPPED);
     } else {
-        set_status(PEXEC_SERVICE_STATUS_STOPPING);
+        set_status(PExecSrvStatus_STOPPING);
     }
     return RetCode_OK;
 }
 
 RetCode p_exec_srv::terminated()
 {
-    set_status(PEXEC_SERVICE_STATUS_STOPPED);
+    set_status(PExecSrvStatus_STOPPED);
     return RetCode_OK;
 }
 
-RetCode p_exec_srv::submit(p_tsk &task)
+RetCode p_exec_srv::submit(std::shared_ptr<p_tsk> &task)
 {
-    if(status_ != PEXEC_SERVICE_STATUS_STARTED) {
-        task.set_status(PTASK_STATUS_REJECTED);
+    if(status_ != PExecSrvStatus_STARTED) {
+        task->set_status(PTskStatus_REJECTED);
         return RetCode_BADSTTS;
     }
     if(exec_pool_.empty()) {
-        task.set_execution_result(task.execute());
-        task.set_status(PTASK_STATUS_EXECUTED);
-        if(is_task_disposer()) {
-            delete &task;
-        }
+        task->set_execution_result(task->execute());
+        task->set_status(PTskStatus_EXECUTED);
         return RetCode_OK;
     }
     RetCode rcode = RetCode_OK;
-    p_tsk *task_ptr = &task;
     scoped_mx smx(mon_);
-    if((rcode = task_queue_.put(0, 5*MSEC_F, &task_ptr))) {
-        task.set_status(PTASK_STATUS_REJECTED);
+    if((rcode = task_queue_.put(0, 5*MSEC_F, &task))) {
+        task->set_status(PTskStatus_REJECTED);
         switch(rcode) {
             case RetCode_QFULL:
             case RetCode_TIMEOUT:
@@ -294,7 +284,7 @@ RetCode p_exec_srv::submit(p_tsk &task)
                 IFLOG(err(TH_ID, LS_TRL "[id:%d][res:%d]", __func__, id_, rcode))
         }
     } else {
-        task.set_status(PTASK_STATUS_SUBMITTED);
+        task->set_status(PTskStatus_SUBMITTED);
     }
     return rcode;
 }

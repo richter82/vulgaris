@@ -41,7 +41,7 @@ void peer_automa::peer_param_clbk_ud(int pnum,
 
 static unsigned int peer_id = 0;
 
-peer_automa::peer_automa(peer &publ) :
+peer_automa::peer_automa(peer &publ, peer_listener &listener) :
     peer_id_(++peer_id),
     peer_plid_(0),
     peer_svid_(0),
@@ -50,9 +50,9 @@ peer_automa::peer_automa(peer &publ) :
     peer_argv_(nullptr),
     configured_(false),
     peer_last_error_(RetCode_OK),
-    peer_exit_required_(false),
     force_disconnect_on_stop_(false),
-    publ_(publ)
+    publ_(publ),
+    listener_(listener)
 {
     memset(&peer_ver_[0], 0, sizeof(peer_ver_));
 }
@@ -86,7 +86,7 @@ RetCode peer_automa::set_status(PeerStatus peer_status)
     IFLOG(trc(TH_ID, LS_OPN "[status:%d]", __func__, peer_status))
     scoped_mx smx(peer_mon_);
     peer_status_ = peer_status;
-    publ_.on_status_change(peer_status_);
+    listener_.on_status_change(publ_, peer_status_);
     peer_mon_.notify_all();
     return RetCode_OK;
 }
@@ -236,21 +236,6 @@ RetCode peer_automa::running_cycle()
                     IFLOG(cri(TH_ID, LS_APL"#stop FAIL with res:%d#", handlers_res))
                     step_dying_breath();
                     return RetCode_EXIT;
-                }
-                break;
-            case PeerStatus_ERROR:
-                IFLOG(inf(TH_ID, LS_APL"#calling error handler#"))
-                if((peer_last_error_ = handlers_res = on_automa_error())) {
-                    IFLOG(cri(TH_ID, LS_APL"#error handler FAIL with res:%d#", handlers_res))
-                    step_dying_breath();
-                    return RetCode_EXIT;
-                }
-                if(peer_exit_required_) {
-                    IFLOG(fat(TH_ID, LS_APL"#error handler required peer to exit#"))
-                    return RetCode_EXIT;
-                } else {
-                    IFLOG(wrn(TH_ID, LS_APL"#peer recovered - check is needed#"))
-                    move_running = true;
                 }
                 break;
             default:
@@ -408,13 +393,6 @@ RetCode peer_automa::set_stop_request()
 {
     IFLOG(inf(TH_ID, LS_APL"#stop request#"))
     set_status(PeerStatus_STOP_REQUESTED);
-    return RetCode_OK;
-}
-
-RetCode peer_automa::set_error()
-{
-    IFLOG(err(TH_ID, LS_APL"#error#"))
-    set_status(PeerStatus_ERROR);
     return RetCode_OK;
 }
 

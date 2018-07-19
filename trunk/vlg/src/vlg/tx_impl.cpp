@@ -19,7 +19,9 @@ const std_shared_ptr_obj_mng<incoming_transaction> tx_std_shp_omng;
 
 namespace vlg {
 
-tx_impl::tx_impl(incoming_transaction &publ, incoming_connection &conn) :
+tx_impl::tx_impl(incoming_transaction &publ,
+                 incoming_connection &conn,
+                 incoming_transaction_listener &listener) :
     conn_(conn.impl_.get()),
     status_(TransactionStatus_INITIALIZED),
     tx_res_(TransactionResult_UNDEFINED),
@@ -34,11 +36,14 @@ tx_impl::tx_impl(incoming_transaction &publ, incoming_connection &conn) :
     rescls_(false),
     start_mark_tim_(0),
     ipubl_(&publ),
-    opubl_(nullptr)
+    opubl_(nullptr),
+    ilistener_(&listener),
+    olistener_(nullptr)
 {}
 
 
-tx_impl::tx_impl(outgoing_transaction &publ) :
+tx_impl::tx_impl(outgoing_transaction &publ,
+                 outgoing_transaction_listener &listener) :
     conn_(nullptr),
     status_(TransactionStatus_INITIALIZED),
     tx_res_(TransactionResult_UNDEFINED),
@@ -53,7 +58,9 @@ tx_impl::tx_impl(outgoing_transaction &publ) :
     rescls_(false),
     start_mark_tim_(0),
     ipubl_(nullptr),
-    opubl_(&publ)
+    opubl_(&publ),
+    ilistener_(nullptr),
+    olistener_(&listener)
 {}
 
 RetCode tx_impl::await_for_status_reached(TransactionStatus test,
@@ -237,9 +244,9 @@ RetCode tx_impl::set_closed()
     trace_tx_closure(tx_res_str);
     set_status(TransactionStatus_CLOSED);
     if(ipubl_) {
-        ipubl_->on_close();
+        ilistener_->on_close(*ipubl_);
     } else {
-        opubl_->on_close();
+        olistener_->on_close(*opubl_);
     }
     return RetCode_OK;
 }
@@ -251,9 +258,9 @@ RetCode tx_impl::set_aborted()
     trace_tx_closure(tx_res_str);
     set_status(TransactionStatus_CLOSED);
     if(ipubl_) {
-        ipubl_->on_close();
+        ilistener_->on_close(*ipubl_);
     } else {
-        opubl_->on_close();
+        olistener_->on_close(*opubl_);
     }
     return RetCode_OK;
 }
@@ -263,9 +270,9 @@ RetCode tx_impl::set_status(TransactionStatus status)
     scoped_mx smx(mon_);
     status_ = status;
     if(ipubl_) {
-        ipubl_->on_status_change(status_);
+        ilistener_->on_status_change(*ipubl_, status_);
     } else {
-        opubl_->on_status_change(status_);
+        olistener_->on_status_change(*opubl_, status_);
     }
     mon_.notify_all();
     return RetCode_OK;
@@ -276,8 +283,9 @@ RetCode tx_impl::set_status(TransactionStatus status)
 namespace vlg {
 
 incoming_transaction_impl::incoming_transaction_impl(incoming_transaction &publ,
-                                                     std::shared_ptr<incoming_connection> &conn) :
-    tx_impl(publ, *conn),
+                                                     std::shared_ptr<incoming_connection> &conn,
+                                                     incoming_transaction_listener &listener) :
+    tx_impl(publ, *conn, listener),
     conn_sh_(conn)
 {}
 
@@ -326,8 +334,9 @@ RetCode incoming_transaction_impl::send_response()
 
 namespace vlg {
 
-outgoing_transaction_impl::outgoing_transaction_impl(outgoing_transaction &publ) :
-    tx_impl(publ)
+outgoing_transaction_impl::outgoing_transaction_impl(outgoing_transaction &publ,
+                                                     outgoing_transaction_listener &listener) :
+    tx_impl(publ, listener)
 {}
 
 outgoing_transaction_impl::~outgoing_transaction_impl()
