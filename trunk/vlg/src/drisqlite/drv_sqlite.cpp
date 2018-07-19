@@ -261,56 +261,56 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                                               const nclass &in,
                                               const nentity_manager &nem,
                                               sqlite3_stmt *stmt,
-                                              unsigned int *bnd_col_idx = NULL);
+                                              unsigned int *bnd_col_idx = nullptr);
 
         inline RetCode sqlite_step_stmt(sqlite3_stmt *stmt,
                                         int &sqlite_rc);
 
         inline RetCode sqlite_release_stmt(sqlite3_stmt *stmt);
 
-        virtual RetCode do_connect();
+        virtual RetCode do_connect() override;
 
         virtual RetCode do_create_table(const nentity_manager &nem,
                                         const nentity_desc &edesc,
-                                        bool drop_if_exist);
+                                        bool drop_if_exist) override;
 
         virtual RetCode do_select(unsigned int key,
                                   const nentity_manager &nem,
                                   unsigned int &ts0_out,
                                   unsigned int &ts1_out,
-                                  nclass &in_out);
+                                  nclass &in_out) override;
 
         virtual RetCode do_update(unsigned int key,
                                   const nentity_manager &nem,
                                   unsigned int ts0,
                                   unsigned int ts1,
-                                  const nclass &in);
+                                  const nclass &in) override;
 
         virtual RetCode do_delete(unsigned int key,
                                   const nentity_manager &nem,
                                   unsigned int ts0,
                                   unsigned int ts1,
                                   PersistenceDeletionMode mode,
-                                  const nclass &in);
+                                  const nclass &in) override;
 
         virtual RetCode do_insert(const nentity_manager &nem,
                                   unsigned int ts0,
                                   unsigned int ts1,
                                   const nclass &in,
-                                  bool fail_is_error = true);
+                                  bool fail_is_error = true) override;
 
         virtual RetCode do_execute_query(const nentity_manager &nem,
                                          const char *sql,
-                                         std::unique_ptr<persistence_query_impl> &qry_out);
+                                         std::unique_ptr<persistence_query_impl> &qry_out) override;
 
-        virtual RetCode do_release_query(persistence_query_impl &qry);
+        virtual RetCode do_release_query(persistence_query_impl &qry) override;
 
         virtual RetCode do_next_entity_from_query(persistence_query_impl &qry,
                                                   unsigned int &ts0_out,
                                                   unsigned int &ts1_out,
-                                                  nclass &out);
+                                                  nclass &out) override;
 
-        virtual RetCode do_execute_statement(const char *sql);
+        virtual RetCode do_execute_statement(const char *sql) override;
 
 
     private:
@@ -334,7 +334,7 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                 }
 
             protected:
-                virtual RetCode do_connect() {
+                virtual RetCode do_connect() override {
                     IFLOG(trc(TH_ID, LS_OPN "[url:%s, user:%s, password:%s]", __func__,
                               sql_conn_.conn_pool_.url_.c_str(),
                               sql_conn_.conn_pool_.usr_.c_str(),
@@ -344,7 +344,7 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                     return rcode;
                 }
 
-                virtual RetCode do_create_table() {
+                virtual RetCode do_create_table() override {
                     RetCode rcode = RetCode_OK;
                     if((rcode = sql_conn_.sqlite_exec_stmt(stmt_bf_, false))) {
                         if(in_drop_if_exist_) {
@@ -369,7 +369,7 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                     return rcode;
                 }
 
-                virtual RetCode do_select() {
+                virtual RetCode do_select() override {
                     RetCode rcode = RetCode_OK;
                     sqlite3_stmt *stmt = nullptr;
                     int sqlite_rc = 0;
@@ -417,7 +417,7 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                     return rcode;
                 }
 
-                virtual RetCode do_insert() {
+                virtual RetCode do_insert() override {
                     RetCode rcode = RetCode_OK;
                     sqlite3_stmt *stmt = nullptr;
                     int sqlite_rc = 0;
@@ -451,7 +451,7 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                     return rcode;
                 }
 
-                virtual RetCode do_update() {
+                virtual RetCode do_update() override {
                     RetCode rcode = RetCode_OK;
                     sqlite3_stmt *stmt = nullptr;
                     int sqlite_rc = 0;
@@ -492,7 +492,7 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                     return rcode;
                 }
 
-                virtual RetCode do_delete() {
+                virtual RetCode do_delete() override {
                     RetCode rcode = RetCode_OK;
                     sqlite3_stmt *stmt = nullptr;
                     int sqlite_rc = 0;
@@ -526,7 +526,7 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                     return rcode;
                 }
 
-                virtual RetCode do_execute_query() {
+                virtual RetCode do_execute_query() override {
                     RetCode rcode = RetCode_OK;
                     sqlite3_stmt *stmt = nullptr;
                     if((rcode = sql_conn_.sqlite_prepare_stmt(in_sql_, &stmt))) {
@@ -537,13 +537,13 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                     return rcode;
                 }
 
-                virtual RetCode do_release_query() {
+                virtual RetCode do_release_query() override {
                     pers_query_sqlite *qry_sqlite = static_cast<pers_query_sqlite *>(in_out_query_);
                     RetCode rcode = sql_conn_.sqlite_release_stmt(qry_sqlite->stmt_);
                     return rcode;
                 }
 
-                virtual RetCode do_next_entity_from_query() {
+                virtual RetCode do_next_entity_from_query() override {
                     RetCode rcode = RetCode_OK;
                     int sqlite_rc = 0;
                     if(!(rcode = sql_conn_.sqlite_step_stmt(sel_stmt_, sqlite_rc))) {
@@ -573,7 +573,7 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                     return rcode;
                 }
 
-                virtual RetCode do_execute_statement() {
+                virtual RetCode do_execute_statement() override {
                     return sql_conn_.sqlite_exec_stmt(in_sql_);
                 }
 
@@ -1740,10 +1740,10 @@ struct pers_driv_sqlite : public persistence_driver {
     explicit pers_driv_sqlite();
 
     virtual RetCode new_connection(persistence_connection_pool &conn_pool,
-                                   persistence_connection_impl **new_conn);
+                                   persistence_connection_impl **new_conn) override;
 
-    virtual RetCode close_connection(persistence_connection_impl &conn);
-    virtual const char *get_driver_name();
+    virtual RetCode close_connection(persistence_connection_impl &conn) override;
+    virtual const char *get_driver_name() override;
 };
 
 std::unique_ptr<pers_driv_sqlite> drv_sqlite_instance;

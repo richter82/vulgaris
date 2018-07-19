@@ -91,9 +91,9 @@ RetCode peer_recv_task_outg_conn::execute()
 peer_impl::peer_impl(peer &publ) :
     peer_automa(publ),
     personality_(PeerPersonality_BOTH),
-    srv_exectrs_(VLG_DEF_SRV_EXEC_NO),
-    cli_exectrs_(VLG_DEF_CLI_EXEC_NO),
-    srv_sbs_exectrs_(VLG_DEF_SRV_SBS_EXEC_NO),
+    srv_exectrs_(0),
+    cli_exectrs_(0),
+    srv_sbs_exectrs_(0),
     selector_(*this),
     prgr_conn_id_(0),
     pers_enabled_(false),
@@ -240,8 +240,6 @@ void peer_impl::set_incoming_connection_factory(incoming_connection_factory &val
 {
     inco_conn_factory_ = &val;
 }
-
-// VLG_PEER_LFCYC HANDLERS
 
 RetCode peer_impl::on_automa_load_config(int pnum,
                                          const char *param,
@@ -411,7 +409,8 @@ RetCode peer_impl::on_automa_start()
         return RetCode_PTHERR;
     }
     IFLOG(dbg(TH_ID, LS_TRL "[wait selector go init]", __func__))
-    RET_ON_KO(selector_.await_for_status_reached(SelectorStatus_INIT, current,
+    RET_ON_KO(selector_.await_for_status_reached(SelectorStatus_INIT,
+                                                 current,
                                                  VLG_INT_AWT_TIMEOUT,
                                                  0))
     if(!rcode) {
@@ -617,7 +616,7 @@ RetCode peer_impl::remove_subscriber(incoming_subscription_impl *sbsdesc)
     return RetCode_OK;
 }
 
-class peer_sbs_task;
+struct peer_sbs_task;
 
 struct srv_connid_condesc_set_ashsnd_rud {
     unsigned int nclass_id;
@@ -625,61 +624,59 @@ struct srv_connid_condesc_set_ashsnd_rud {
     RetCode rcode;
 };
 
-class peer_sbs_task : public p_tsk {
-    public:
-        peer_sbs_task(peer_impl &peer,
-                      subscription_event_impl &sbs_evt,
-                      s_hm &connid_condesc_set) :
-            peer_(peer),
-            sbs_evt_(new subscription_event(sbs_evt)),
-            connid_condesc_set_(connid_condesc_set) {}
+struct peer_sbs_task : public p_tsk {
+    peer_sbs_task(peer_impl &peer,
+                  subscription_event_impl &sbs_evt,
+                  s_hm &connid_condesc_set) :
+        peer_(peer),
+        sbs_evt_(new subscription_event(sbs_evt)),
+        connid_condesc_set_(connid_condesc_set) {}
 
-        ~peer_sbs_task() {}
+    ~peer_sbs_task() {}
 
-        static void enum_srv_connid_connection_map_ashsnd(const s_hm &map,
-                                                          const void *key,
-                                                          void *ptr,
-                                                          void *usr_data) {
-            RetCode rcode = RetCode_OK;
-            srv_connid_condesc_set_ashsnd_rud *rud = static_cast<srv_connid_condesc_set_ashsnd_rud *>(usr_data);
-            std::shared_ptr<incoming_connection> *conn = (std::shared_ptr<incoming_connection> *)ptr;
-            std::shared_ptr<incoming_subscription> sbs_sh;
-            if((*conn)->impl_->inco_nclassid_sbs_map_.get(&rud->nclass_id, &sbs_sh)) {
-                IFLOG(wrn(TH_ID, LS_EXE "[no more active subscriptions on connection:%u]", __func__, (*conn)->get_id()))
-                return;
-            }
-            if((rcode = sbs_sh->impl_->submit_live_event(rud->tsk->sbs_evt_))) {
-                IFLOG(err(TH_ID, LS_EXE "[subscription task:%d - asynch event send failed for sbsid:%d - res:%d]",
-                          __func__,
-                          rud->tsk->get_id(),
-                          sbs_sh->get_id(),
-                          rcode))
-                rud->rcode = rcode;
-            }
+    static void enum_srv_connid_connection_map_ashsnd(const s_hm &map,
+                                                      const void *key,
+                                                      void *ptr,
+                                                      void *usr_data) {
+        RetCode rcode = RetCode_OK;
+        srv_connid_condesc_set_ashsnd_rud *rud = static_cast<srv_connid_condesc_set_ashsnd_rud *>(usr_data);
+        std::shared_ptr<incoming_connection> *conn = (std::shared_ptr<incoming_connection> *)ptr;
+        std::shared_ptr<incoming_subscription> sbs_sh;
+        if((*conn)->impl_->inco_nclassid_sbs_map_.get(&rud->nclass_id, &sbs_sh)) {
+            IFLOG(wrn(TH_ID, LS_EXE "[no more active subscriptions on connection:%u]", __func__, (*conn)->get_id()))
+            return;
         }
-
-        /*this method will be called when this task will be run by an executor*/
-        virtual RetCode execute() {
-            RetCode rcode = RetCode_OK;
-            srv_connid_condesc_set_ashsnd_rud rud;
-            rud.nclass_id = sbs_evt_->get_data()->get_id();
-            rud.tsk = this;
-            rud.rcode = RetCode_OK;
-            connid_condesc_set_.enum_elements_safe_read(enum_srv_connid_connection_map_ashsnd, &rud);
-            if((rud.rcode)) {
-                IFLOG(dbg(TH_ID, LS_EXE "[subscription task:%d - execution failed - res:%d]", __func__, get_id(), rcode))
-            }
-            return rcode;
+        if((rcode = sbs_sh->impl_->submit_live_event(rud->tsk->sbs_evt_))) {
+            IFLOG(err(TH_ID, LS_EXE "[subscription task:%d - asynch event send failed for sbsid:%d - res:%d]",
+                      __func__,
+                      rud->tsk->get_id(),
+                      sbs_sh->get_id(),
+                      rcode))
+            rud->rcode = rcode;
         }
+    }
 
-        peer_impl &get_peer() {
-            return peer_;
+    /*this method will be called when this task will be run by an executor*/
+    virtual RetCode execute() override {
+        RetCode rcode = RetCode_OK;
+        srv_connid_condesc_set_ashsnd_rud rud;
+        rud.nclass_id = sbs_evt_->get_data()->get_id();
+        rud.tsk = this;
+        rud.rcode = RetCode_OK;
+        connid_condesc_set_.enum_elements_safe_read(enum_srv_connid_connection_map_ashsnd, &rud);
+        if((rud.rcode)) {
+            IFLOG(dbg(TH_ID, LS_EXE "[subscription task:%d - execution failed - res:%d]", __func__, get_id(), rcode))
         }
+        return rcode;
+    }
 
-    private:
-        peer_impl &peer_;
-        std::shared_ptr<subscription_event> sbs_evt_;
-        s_hm &connid_condesc_set_;  //connid --> condesc [uint --> sh_ptr]
+    peer_impl &get_peer() {
+        return peer_;
+    }
+
+    peer_impl &peer_;
+    std::shared_ptr<subscription_event> sbs_evt_;
+    s_hm &connid_condesc_set_;  //connid --> condesc [uint --> sh_ptr]
 };
 
 RetCode peer_impl::get_per_nclassid_helper_rec(unsigned int nclass_id, per_nclass_id_conn_set **out)

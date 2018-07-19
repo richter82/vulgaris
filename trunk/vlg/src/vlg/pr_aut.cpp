@@ -9,23 +9,21 @@
 namespace vlg {
 
 // peer_automa_th
-class peer_automa_th : public p_th {
-    public:
-        peer_automa_th(unsigned int id, peer_automa &peer) :
-            id_(id),
-            peer_(peer) {
-        }
+struct peer_automa_th : public p_th {
+    peer_automa_th(unsigned int id, peer_automa &peer) :
+        id_(id),
+        peer_(peer) {
+    }
 
-        virtual void *run() {
-            IFLOG(inf(TH_ID, LS_APL"#peer automa on this thread#"))
-            peer_.running_cycle();
-            stop();
-            return 0;
-        }
+    virtual void *run() override {
+        IFLOG(inf(TH_ID, LS_APL"#peer automa on this thread#"))
+        peer_.running_cycle();
+        stop();
+        return 0;
+    }
 
-    private:
-        unsigned int id_;
-        peer_automa &peer_;
+    unsigned int id_;
+    peer_automa &peer_;
 };
 
 void peer_automa::peer_param_clbk_ud(int pnum,

@@ -37,7 +37,7 @@ typedef enum  {
 
 struct persistence_task : public p_tsk {
     persistence_task(VLG_PERS_TASK_OP op_code);
-    virtual RetCode execute();
+    virtual RetCode execute() override;
 
     virtual RetCode do_connect() = 0;
     virtual RetCode do_create_table() = 0;
@@ -111,7 +111,7 @@ struct persistence_worker : public p_th {
     persistence_worker(persistence_connection_pool &conn_pool, bool surrogate_th = false);
 
     RetCode submit(persistence_task &task);
-    virtual void *run();
+    virtual void *run() override;
 
     persistence_connection_pool &conn_pool_;
     b_qu task_queue_;

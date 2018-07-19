@@ -89,10 +89,9 @@ const char *get_trace_level_string(TraceLVL lvl)
 
 // logger_cfg_loader
 
-class logger_cfg_loader {
-    public:
-        virtual ~logger_cfg_loader() {};
-        virtual RetCode load_cfg() = 0;
+struct logger_cfg_loader {
+    virtual ~logger_cfg_loader() {};
+    virtual RetCode load_cfg() = 0;
 };
 
 static bool deflt_log_loaded = false;
@@ -524,320 +523,315 @@ size_t appender::render_msg_va(const char *lvl_str,
 
 // std_logger_cfg_loader
 
-class std_logger_cfg_loader : public logger_cfg_loader {
-    public:
+struct std_logger_cfg_loader : public logger_cfg_loader {
+    std_logger_cfg_loader(const char *fname) :
+        fname_(fname),
+        log_cfg_(nullptr) {
+    }
 
-        std_logger_cfg_loader(const char *fname) :
-            fname_(fname),
-            log_cfg_(nullptr) {
+    RetCode init() {
+        std::string path;
+        path.assign(log_cfg_file_dir);
+        if(path.length() > 0) {
+            path.append(CR_FS_SEP);
         }
-
-        RetCode init() {
-            std::string path;
-            path.assign(log_cfg_file_dir);
-            if(path.length() > 0) {
-                path.append(CR_FS_SEP);
-            }
-            path.append(fname_);
-            log_cfg_ = fopen(path.c_str(), "r");
-            if(!log_cfg_) {
-                return RetCode_KO;
-            }
-            return RetCode_OK;
+        path.append(fname_);
+        log_cfg_ = fopen(path.c_str(), "r");
+        if(!log_cfg_) {
+            return RetCode_KO;
         }
+        return RetCode_OK;
+    }
 
-        RetCode destroy() {
-            if(fclose(log_cfg_)) {
-                return RetCode_KO;
-            }
-            return RetCode_OK;
+    RetCode destroy() {
+        if(fclose(log_cfg_)) {
+            return RetCode_KO;
         }
+        return RetCode_OK;
+    }
 
-        virtual RetCode load_cfg() {
-            std::string data;
-            char line_buf[CR_MAX_SRC_LINE_LEN+2];
-            while(!feof(log_cfg_)) {
-                if(fgets(line_buf, CR_MAX_SRC_LINE_LEN+2, log_cfg_)) {
-                    if(is_blank_line(line_buf) || is_comment_line(line_buf)) {
-                        continue;
-                    } else {
-                        data.append(line_buf);
-                    }
-                }
-            }
-            RetCode res = RetCode_OK;
-            if((res = parse_data(data))) {
-                FILE *ferr = fopen("log.err", "wa+");
-                fprintf(ferr ? ferr : stderr, "%s() - %s [PARS]\n", __func__, LG_INIT_ERR_TK);
-                if(ferr) {
-                    fclose(ferr);
-                }
-                get_appender_map().clear();
-                get_logger_map().clear();
-            }
-            return res;
-        }
-
-    private:
-
-        RetCode parse_lines_max(str_tok &toknz, int &lnmax) {
-            std::string tkn;
-            while(toknz.next_token(tkn)) {
-                CR_SKIP_SP_TABS(tkn)
-                if(is_new_line(tkn)) {
-                    LPrsERR_FND_EXP(TKLGR, S_NL, S_LF);
-                    return RetCode_BADCFG;
-                } else if(tkn == CR_TK_COMA) {
-                    LPrsERR_UNEXP(TKAPND, CR_TK_COMA);
-                    return RetCode_BADCFG;
+    virtual RetCode load_cfg() {
+        std::string data;
+        char line_buf[CR_MAX_SRC_LINE_LEN+2];
+        while(!feof(log_cfg_)) {
+            if(fgets(line_buf, CR_MAX_SRC_LINE_LEN+2, log_cfg_)) {
+                if(is_blank_line(line_buf) || is_comment_line(line_buf)) {
+                    continue;
                 } else {
-                    lnmax = atoi(tkn.c_str());
-                    return RetCode_OK;
+                    data.append(line_buf);
                 }
             }
-            LPrsERR_EXP(TKLGR, S_LF);
-            return RetCode_BADCFG;
         }
-
-        RetCode read_dot(unsigned long &lnum, str_tok &tknz) {
-            std::string tkn;
-            while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_DOT, true)) {
-                if(tkn == CR_TK_DOT) {
-                    break;
-                } else {
-                    return RetCode_BADCFG;
-                }
+        RetCode res = RetCode_OK;
+        if((res = parse_data(data))) {
+            FILE *ferr = fopen("log.err", "wa+");
+            fprintf(ferr ? ferr : stderr, "%s() - %s [PARS]\n", __func__, LG_INIT_ERR_TK);
+            if(ferr) {
+                fclose(ferr);
             }
-            return RetCode_OK;
+            get_appender_map().clear();
+            get_logger_map().clear();
         }
+        return res;
+    }
 
-        RetCode skip_sp_tab_and_read_eq(unsigned long &lnum, str_tok &tknz) {
-            std::string tkn;
-            while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_EQUAL, true)) {
-                CR_SKIP_SP_TABS(tkn)
-                CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
-                if(tkn == CR_TK_EQUAL) {
-                    break;
-                } else {
-                    return RetCode_BADCFG;
-                }
-            }
-            return RetCode_OK;
-        }
-
-        RetCode read_tkn(unsigned long &lnum, str_tok &tknz,
-                         std::string &tkn_out) {
-            std::string tkn;
-            if(tknz.next_token(tkn, CR_DF_DLMT CR_TK_DOT CR_TK_EQUAL, true)) {
-                CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
-                tkn_out.assign(tkn);
+    RetCode parse_lines_max(str_tok &toknz, int &lnmax) {
+        std::string tkn;
+        while(toknz.next_token(tkn)) {
+            CR_SKIP_SP_TABS(tkn)
+            if(is_new_line(tkn)) {
+                LPrsERR_FND_EXP(TKLGR, S_NL, S_LF);
+                return RetCode_BADCFG;
+            } else if(tkn == CR_TK_COMA) {
+                LPrsERR_UNEXP(TKAPND, CR_TK_COMA);
+                return RetCode_BADCFG;
+            } else {
+                lnmax = atoi(tkn.c_str());
                 return RetCode_OK;
             }
-            return RetCode_BADCFG;
         }
+        LPrsERR_EXP(TKLGR, S_LF);
+        return RetCode_BADCFG;
+    }
 
-        RetCode parse_apnd(std::string &apname, str_tok &toknz) {
-            RetCode res = RetCode_OK;
-            int lnmax;
-            std::string tkn;
-            std::string app_file_name;
-            appender *apnd = nullptr;
-            bool apnd_parsed = false, skip = false;
-            while(!apnd_parsed && toknz.next_token(tkn, ",\n\r\f\t ", true)) {
-                CR_SKIP_SP_TABS(tkn)
-                if(tkn == "stdout") {
-                    while(toknz.next_token(tkn, nullptr, true)) {
-                        CR_SKIP_SP_TABS(tkn)
-                        if(is_new_line(tkn)) {
-                            if(!(apnd = new appender(stdout))) {
-                                return RetCode_MEMERR;
-                            }
-                            apnd_parsed = skip = true;
-                            break;
-                        } else if(tkn == CR_TK_COMA) {
-                            if((res = parse_lines_max(toknz, lnmax))) {
-                                return res;
-                            }
-                            if(!(apnd = new appender(stdout))) {
-                                return RetCode_MEMERR;
-                            }
-                            apnd_parsed = true;
-                            break;
-                        } else {
-                            LPrsERR_UNEXP(TKAPND, tkn.c_str());
-                            return RetCode_BADCFG;
-                        }
-                    }
-                } else if(tkn == "file") {
-                    while(toknz.next_token(tkn, nullptr, true)) {
-                        CR_SKIP_SP_TABS(tkn)
-                        CR_BREAK_ON_TKN(tkn, CR_TK_COMA)
-                        if(is_new_line(tkn)) {
-                            LPrsERR_EXP(TKAPND, S_NL);
-                            return RetCode_BADCFG;
-                        } else {
-                            LPrsERR_UNEXP(TKAPND, tkn.c_str());
-                        }
-                    }
-                    while(toknz.next_token(tkn, nullptr, true)) {
-                        CR_SKIP_SP_TABS(tkn)
-                        if(tkn == CR_TK_COMA) {
-                            LPrsERR_UNEXP(TKAPND, CR_TK_COMA);
-                            return RetCode_BADCFG;
-                        }
-                        if(is_new_line(tkn)) {
-                            LPrsERR_UNEXP(TKAPND, S_NL);
-                            return RetCode_BADCFG;
-                        }
-                        break;
-                    }
-                    app_file_name.assign(tkn);
-                    while(toknz.next_token(tkn, nullptr, true)) {
-                        CR_SKIP_SP_TABS(tkn)
-                        CR_BREAK_ON_TKN(tkn, CR_TK_COMA)
-                        if(is_new_line(tkn)) {
-                            if(!(apnd = new appender(app_file_name.c_str()))) {
-                                return RetCode_MEMERR;
-                            }
-                            apnd_parsed = skip = true;
-                            break;
-                        }
-                    }
-                    if(apnd_parsed) {
-                        break;
-                    }
-                    if((res = parse_lines_max(toknz, lnmax))) {
-                        return res;
-                    }
-                    if(!(apnd = new appender(app_file_name.c_str()))) {
-                        return RetCode_MEMERR;
-                    }
-                    break;
-                } else if(is_new_line(tkn)) {
-                    LPrsERR_UNEXP(TKAPND, S_NL);
-                    return RetCode_BADCFG;
-                } else if(tkn == CR_TK_COMA) {
-                    LPrsERR_UNEXP(TKAPND, CR_TK_COMA);
-                    return RetCode_BADCFG;
-                } else {
-                    LPrsERR_UNEXP(TKAPND, tkn.c_str());
-                    return RetCode_BADCFG;
-                }
+    RetCode read_dot(unsigned long &lnum, str_tok &tknz) {
+        std::string tkn;
+        while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_DOT, true)) {
+            if(tkn == CR_TK_DOT) {
+                break;
+            } else {
+                return RetCode_BADCFG;
             }
-            while(!skip && toknz.next_token(tkn, "\n\r\f\t ", true)) {
-                CR_SKIP_SP_TABS(tkn)
-                if(is_new_line(tkn)) {
+        }
+        return RetCode_OK;
+    }
+
+    RetCode skip_sp_tab_and_read_eq(unsigned long &lnum, str_tok &tknz) {
+        std::string tkn;
+        while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_EQUAL, true)) {
+            CR_SKIP_SP_TABS(tkn)
+            CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
+            if(tkn == CR_TK_EQUAL) {
+                break;
+            } else {
+                return RetCode_BADCFG;
+            }
+        }
+        return RetCode_OK;
+    }
+
+    RetCode read_tkn(unsigned long &lnum, str_tok &tknz,
+                     std::string &tkn_out) {
+        std::string tkn;
+        if(tknz.next_token(tkn, CR_DF_DLMT CR_TK_DOT CR_TK_EQUAL, true)) {
+            CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
+            tkn_out.assign(tkn);
+            return RetCode_OK;
+        }
+        return RetCode_BADCFG;
+    }
+
+    RetCode parse_apnd(std::string &apname, str_tok &toknz) {
+        RetCode res = RetCode_OK;
+        int lnmax;
+        std::string tkn;
+        std::string app_file_name;
+        appender *apnd = nullptr;
+        bool apnd_parsed = false, skip = false;
+        while(!apnd_parsed && toknz.next_token(tkn, ",\n\r\f\t ", true)) {
+            CR_SKIP_SP_TABS(tkn)
+            if(tkn == "stdout") {
+                while(toknz.next_token(tkn, nullptr, true)) {
+                    CR_SKIP_SP_TABS(tkn)
+                    if(is_new_line(tkn)) {
+                        if(!(apnd = new appender(stdout))) {
+                            return RetCode_MEMERR;
+                        }
+                        apnd_parsed = skip = true;
+                        break;
+                    } else if(tkn == CR_TK_COMA) {
+                        if((res = parse_lines_max(toknz, lnmax))) {
+                            return res;
+                        }
+                        if(!(apnd = new appender(stdout))) {
+                            return RetCode_MEMERR;
+                        }
+                        apnd_parsed = true;
+                        break;
+                    } else {
+                        LPrsERR_UNEXP(TKAPND, tkn.c_str());
+                        return RetCode_BADCFG;
+                    }
+                }
+            } else if(tkn == "file") {
+                while(toknz.next_token(tkn, nullptr, true)) {
+                    CR_SKIP_SP_TABS(tkn)
+                    CR_BREAK_ON_TKN(tkn, CR_TK_COMA)
+                    if(is_new_line(tkn)) {
+                        LPrsERR_EXP(TKAPND, S_NL);
+                        return RetCode_BADCFG;
+                    } else {
+                        LPrsERR_UNEXP(TKAPND, tkn.c_str());
+                    }
+                }
+                while(toknz.next_token(tkn, nullptr, true)) {
+                    CR_SKIP_SP_TABS(tkn)
+                    if(tkn == CR_TK_COMA) {
+                        LPrsERR_UNEXP(TKAPND, CR_TK_COMA);
+                        return RetCode_BADCFG;
+                    }
+                    if(is_new_line(tkn)) {
+                        LPrsERR_UNEXP(TKAPND, S_NL);
+                        return RetCode_BADCFG;
+                    }
                     break;
                 }
+                app_file_name.assign(tkn);
+                while(toknz.next_token(tkn, nullptr, true)) {
+                    CR_SKIP_SP_TABS(tkn)
+                    CR_BREAK_ON_TKN(tkn, CR_TK_COMA)
+                    if(is_new_line(tkn)) {
+                        if(!(apnd = new appender(app_file_name.c_str()))) {
+                            return RetCode_MEMERR;
+                        }
+                        apnd_parsed = skip = true;
+                        break;
+                    }
+                }
+                if(apnd_parsed) {
+                    break;
+                }
+                if((res = parse_lines_max(toknz, lnmax))) {
+                    return res;
+                }
+                if(!(apnd = new appender(app_file_name.c_str()))) {
+                    return RetCode_MEMERR;
+                }
+                break;
+            } else if(is_new_line(tkn)) {
+                LPrsERR_UNEXP(TKAPND, S_NL);
+                return RetCode_BADCFG;
+            } else if(tkn == CR_TK_COMA) {
+                LPrsERR_UNEXP(TKAPND, CR_TK_COMA);
+                return RetCode_BADCFG;
+            } else {
                 LPrsERR_UNEXP(TKAPND, tkn.c_str());
                 return RetCode_BADCFG;
             }
-            get_appender_map()[apname] = std::move(std::unique_ptr<appender>(apnd));
-            return RetCode_OK;
         }
+        while(!skip && toknz.next_token(tkn, "\n\r\f\t ", true)) {
+            CR_SKIP_SP_TABS(tkn)
+            if(is_new_line(tkn)) {
+                break;
+            }
+            LPrsERR_UNEXP(TKAPND, tkn.c_str());
+            return RetCode_BADCFG;
+        }
+        get_appender_map()[apname] = std::move(std::unique_ptr<appender>(apnd));
+        return RetCode_OK;
+    }
 
-        RetCode parse_lggr(std::string &lggrname,
-                           std::string &lgsign,
-                           str_tok &toknz) {
-            std::string tkn;
-            logger *lggr = nullptr;
-            bool lggr_parsed = false;
-            while(!lggr_parsed && toknz.next_token(tkn, ",\n\r\f\t ", true)) {
-                CR_SKIP_SP_TABS(tkn)
-                TraceLVL lvl = TL_DBG;
-                if((lvl = get_trace_level_enum(tkn.c_str())) >= 0) {
-                    uint16_t apnds_n = 0;
-                    appender *apnds_l[LG_MAX_APNDS];
-                    memset(apnds_l, 0, sizeof(apnds_l));
-                    while(toknz.next_token(tkn, nullptr, true)) {
-                        CR_SKIP_SP_TABS(tkn)
-                        if(tkn == CR_TK_COMA) {
-                            while(toknz.next_token(tkn, nullptr, true)) {
-                                CR_SKIP_SP_TABS(tkn)
-                                if(is_new_line(tkn)) {
-                                    LPrsERR_UNEXP(TKLGR, S_NL);
-                                    return RetCode_BADCFG;
-                                }
-                                if(tkn == CR_TK_COMA) {
-                                    LPrsERR_UNEXP(TKLGR, CR_TK_COMA);
-                                    return RetCode_BADCFG;
-                                }
-                                break;
-                            }
-                            auto it = get_appender_map().find(tkn);
-                            if(it != get_appender_map().end()) {
-                                apnds_l[apnds_n++] = it->second.get();
-                                continue;
-                            } else {
-                                LPrsERR_APNF(lggrname.c_str(), tkn.c_str());
+    RetCode parse_lggr(std::string &lggrname,
+                       std::string &lgsign,
+                       str_tok &toknz) {
+        std::string tkn;
+        logger *lggr = nullptr;
+        bool lggr_parsed = false;
+        while(!lggr_parsed && toknz.next_token(tkn, ",\n\r\f\t ", true)) {
+            CR_SKIP_SP_TABS(tkn)
+            TraceLVL lvl = TL_DBG;
+            if((lvl = get_trace_level_enum(tkn.c_str())) >= 0) {
+                uint16_t apnds_n = 0;
+                appender *apnds_l[LG_MAX_APNDS];
+                memset(apnds_l, 0, sizeof(apnds_l));
+                while(toknz.next_token(tkn, nullptr, true)) {
+                    CR_SKIP_SP_TABS(tkn)
+                    if(tkn == CR_TK_COMA) {
+                        while(toknz.next_token(tkn, nullptr, true)) {
+                            CR_SKIP_SP_TABS(tkn)
+                            if(is_new_line(tkn)) {
+                                LPrsERR_UNEXP(TKLGR, S_NL);
                                 return RetCode_BADCFG;
                             }
-                        }
-                        if(is_new_line(tkn)) {
-                            if(apnds_n) {
-                                lggr_parsed = true;
-                                break;
-                            } else {
-                                LPrsERR_NOAP(lggrname.c_str());
+                            if(tkn == CR_TK_COMA) {
+                                LPrsERR_UNEXP(TKLGR, CR_TK_COMA);
                                 return RetCode_BADCFG;
                             }
+                            break;
+                        }
+                        auto it = get_appender_map().find(tkn);
+                        if(it != get_appender_map().end()) {
+                            apnds_l[apnds_n++] = it->second.get();
+                            continue;
+                        } else {
+                            LPrsERR_APNF(lggrname.c_str(), tkn.c_str());
+                            return RetCode_BADCFG;
                         }
                     }
-                    if(!(lggr = new logger(lvl, lgsign.c_str(), apnds_l, apnds_n))) {
-                        return RetCode_MEMERR;
+                    if(is_new_line(tkn)) {
+                        if(apnds_n) {
+                            lggr_parsed = true;
+                            break;
+                        } else {
+                            LPrsERR_NOAP(lggrname.c_str());
+                            return RetCode_BADCFG;
+                        }
                     }
-                } else if(is_new_line(tkn)) {
-                    LPrsERR_UNEXP(TKLGR, S_NL);
-                    return RetCode_BADCFG;
-                } else if(tkn == ",") {
-                    LPrsERR_UNEXP(TKLGR, CR_TK_COMA);
-                    return RetCode_BADCFG;
-                } else {
-                    LPrsERR_UNEXP(TKLGR, tkn.c_str());
-                    return RetCode_BADCFG;
                 }
-            }
-            get_logger_map()[lggrname] = std::move(std::unique_ptr<logger>(lggr));
-            return RetCode_OK;
-        }
-
-        RetCode parse_data(std::string &data) {
-            RetCode res = RetCode_OK;
-            unsigned long lnum = 1;
-            std::string tkn, apname, lggrname, lgsign;
-            str_tok tknz(data);
-            while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_DOT CR_TK_EQUAL, true)) {
-                CR_SKIP_SP_TABS(tkn)
-                CR_DO_CMD_ON_NEWLINE(tkn, lnum++; continue)
-                if(tkn == TKAPND) {
-                    //APPENDER
-                    RET_ON_KO(read_dot(lnum, tknz))
-                    RET_ON_KO(read_tkn(lnum, tknz, apname))
-                    RET_ON_KO(skip_sp_tab_and_read_eq(lnum, tknz))
-                    if((res = parse_apnd(apname, tknz))) {
-                        break;
-                    }
-                } else if(tkn == TKLGR) {
-                    //LOGGER
-                    RET_ON_KO(read_dot(lnum, tknz))
-                    RET_ON_KO(read_tkn(lnum, tknz, lggrname))
-                    RET_ON_KO(read_dot(lnum, tknz))
-                    RET_ON_KO(read_tkn(lnum, tknz, lgsign))
-                    RET_ON_KO(skip_sp_tab_and_read_eq(lnum, tknz))
-                    if((res = parse_lggr(lggrname, lgsign, tknz))) {
-                        break;
-                    }
-                } else {
-                    LPrsERR_UNEXP(tkn.c_str());
-                    return RetCode_BADCFG;
+                if(!(lggr = new logger(lvl, lgsign.c_str(), apnds_l, apnds_n))) {
+                    return RetCode_MEMERR;
                 }
+            } else if(is_new_line(tkn)) {
+                LPrsERR_UNEXP(TKLGR, S_NL);
+                return RetCode_BADCFG;
+            } else if(tkn == ",") {
+                LPrsERR_UNEXP(TKLGR, CR_TK_COMA);
+                return RetCode_BADCFG;
+            } else {
+                LPrsERR_UNEXP(TKLGR, tkn.c_str());
+                return RetCode_BADCFG;
             }
-            return res;
         }
+        get_logger_map()[lggrname] = std::move(std::unique_ptr<logger>(lggr));
+        return RetCode_OK;
+    }
 
-    private:
-        std::string fname_;
-        FILE *log_cfg_;
+    RetCode parse_data(std::string &data) {
+        RetCode res = RetCode_OK;
+        unsigned long lnum = 1;
+        std::string tkn, apname, lggrname, lgsign;
+        str_tok tknz(data);
+        while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_DOT CR_TK_EQUAL, true)) {
+            CR_SKIP_SP_TABS(tkn)
+            CR_DO_CMD_ON_NEWLINE(tkn, lnum++; continue)
+            if(tkn == TKAPND) {
+                //APPENDER
+                RET_ON_KO(read_dot(lnum, tknz))
+                RET_ON_KO(read_tkn(lnum, tknz, apname))
+                RET_ON_KO(skip_sp_tab_and_read_eq(lnum, tknz))
+                if((res = parse_apnd(apname, tknz))) {
+                    break;
+                }
+            } else if(tkn == TKLGR) {
+                //LOGGER
+                RET_ON_KO(read_dot(lnum, tknz))
+                RET_ON_KO(read_tkn(lnum, tknz, lggrname))
+                RET_ON_KO(read_dot(lnum, tknz))
+                RET_ON_KO(read_tkn(lnum, tknz, lgsign))
+                RET_ON_KO(skip_sp_tab_and_read_eq(lnum, tknz))
+                if((res = parse_lggr(lggrname, lgsign, tknz))) {
+                    break;
+                }
+            } else {
+                LPrsERR_UNEXP(tkn.c_str());
+                return RetCode_BADCFG;
+            }
+        }
+        return res;
+    }
+
+    std::string fname_;
+    FILE *log_cfg_;
 };
 
 // logger_impl

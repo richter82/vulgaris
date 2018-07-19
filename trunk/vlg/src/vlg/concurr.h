@@ -44,7 +44,7 @@ struct p_th : public runnable {
             return pthread_create(&thread_, attr_, &pthread_run, this);
         }
 
-        virtual void *run() {
+        virtual void *run() override {
             return 0;
         }
 
@@ -166,7 +166,7 @@ struct p_exectr : public p_th {
 
         RetCode set_status(PEXECUTOR_STATUS status);
 
-        virtual void *run();
+        virtual void *run() override;
 
     private:
         PEXECUTOR_STATUS status_;
