@@ -6,30 +6,30 @@
 
 #include "glob.h"
 
-#define VLG_RECV_BUFF_SZ 256
+#define GBB_DF_CPTY 32
 
 namespace vlg {
 
 // grow_byte_buffer
 
 g_bbuf::g_bbuf() :
-    capcty_(0),
+    capcty_(GBB_DF_CPTY),
     pos_(0),
     limit_(0),
     mark_(0),
     buf_(0)
 {
-    init(VLG_RECV_BUFF_SZ);
+    CMD_ON_NUL(buf_ = (char *)malloc(capcty_), exit(1))
 }
 
 g_bbuf::g_bbuf(size_t initial_capacity) :
-    capcty_(0),
+    capcty_(initial_capacity),
     pos_(0),
     limit_(0),
     mark_(0),
     buf_(0)
 {
-    init(initial_capacity);
+    CMD_ON_NUL(buf_ = (char *)malloc(capcty_), exit(1))
 }
 
 g_bbuf::g_bbuf(const g_bbuf &oth) :
@@ -39,7 +39,7 @@ g_bbuf::g_bbuf(const g_bbuf &oth) :
     mark_(oth.mark_),
     buf_(0)
 {
-    init(oth.capcty_);
+    CMD_ON_NUL(buf_ = (char *)malloc(capcty_), exit(1))
     memcpy(buf_, oth.buf_, capcty_);
 }
 
@@ -64,22 +64,13 @@ g_bbuf::~g_bbuf()
     }
 }
 
-RetCode g_bbuf::init(size_t capcty)
-{
-    if(!capcty) {
-        return RetCode_BADARG;
-    }
-    CMD_ON_NUL(buf_ = (char *)malloc(capcty), EXIT_ACTION)
-    return RetCode_OK;
-}
-
 RetCode g_bbuf::grow(size_t amnt)
 {
     if(!amnt) {
         return RetCode_BADARG;
     }
     capcty_ += amnt;
-    CMD_ON_NUL(buf_ = (char *)realloc(buf_, capcty_), EXIT_ACTION)
+    CMD_ON_NUL(buf_ = (char *)realloc(buf_, capcty_), exit(1))
     return RetCode_OK;
 }
 
@@ -101,7 +92,7 @@ RetCode g_bbuf::append(const void *buf, size_t offst, size_t len)
         return RetCode_BADARG;
     }
     if((capcty_ - pos_) < len) {
-        grow(len);
+        grow(len*2);
     }
     memcpy(&buf_[pos_], &((unsigned char *)buf)[offst], len);
     pos_ += len;
@@ -109,10 +100,40 @@ RetCode g_bbuf::append(const void *buf, size_t offst, size_t len)
     return RetCode_OK;
 }
 
+RetCode g_bbuf::append(g_bbuf &oth)
+{
+    if(!oth.limit_) {
+        return RetCode_BADARG;
+    }
+    if((capcty_ - pos_) < (oth.limit_ - oth.pos_)) {
+        grow((oth.limit_ - oth.pos_)*2);
+    }
+    memcpy(&buf_[pos_], &((unsigned char *)oth.buf_)[oth.pos_], oth.limit_);
+    pos_ += oth.limit_;
+    limit_ = pos_;
+    oth.pos_ = oth.limit_;
+    return RetCode_OK;
+}
+
+RetCode g_bbuf::append_no_rsz(g_bbuf &oth)
+{
+    if(!oth.limit_) {
+        return RetCode_BADARG;
+    }
+    if((capcty_ - pos_) < (oth.limit_ - oth.pos_)) {
+        return RetCode_BOVFL;
+    }
+    memcpy(&buf_[pos_], &((unsigned char *)oth.buf_)[oth.pos_], oth.limit_);
+    pos_ += oth.limit_;
+    limit_ = pos_;
+    oth.pos_ = oth.limit_;
+    return RetCode_OK;
+}
+
 RetCode g_bbuf::append_ushort(unsigned short val)
 {
     if((capcty_ - pos_) < 2) {
-        grow(2);
+        grow(2*4);
     }
     memcpy(&buf_[pos_], &val, 2);
     pos_ += 2;
@@ -123,7 +144,7 @@ RetCode g_bbuf::append_ushort(unsigned short val)
 RetCode g_bbuf::append_uint(unsigned int val)
 {
     if((capcty_ - pos_) < 4) {
-        grow(4);
+        grow(4*4);
     }
     memcpy(&buf_[pos_], &val, 4);
     pos_ += 4;
@@ -143,7 +164,7 @@ RetCode g_bbuf::put(const void *buf, size_t pos, size_t len)
 RetCode g_bbuf::advance_pos_write(size_t amnt)
 {
     if((capcty_ - pos_) < amnt) {
-        grow(amnt);
+        grow(amnt*2);
     }
     pos_ += amnt;
     limit_ = pos_;
@@ -153,7 +174,7 @@ RetCode g_bbuf::advance_pos_write(size_t amnt)
 RetCode g_bbuf::set_pos_write(size_t newpos)
 {
     if(capcty_ < newpos) {
-        grow(pos_ - capcty_);
+        grow((newpos - capcty_)*2);
     }
     pos_ = limit_ = newpos;
     return RetCode_OK;

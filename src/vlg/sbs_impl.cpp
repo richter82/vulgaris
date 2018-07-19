@@ -161,7 +161,6 @@ RetCode sbs_impl::await_for_status_reached(SubscriptionStatus test,
 {
     scoped_mx smx(mon_);
     if(status_ < SubscriptionStatus_INITIALIZED) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
     RetCode rcode = RetCode_OK;
@@ -189,7 +188,6 @@ RetCode sbs_impl::await_for_start_result(SubscriptionResponse &sbs_start_result,
 {
     scoped_mx smx(mon_);
     if(status_ < SubscriptionStatus_INITIALIZED) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
     RetCode rcode = RetCode_OK;
@@ -223,7 +221,6 @@ RetCode sbs_impl::await_for_stop_result(SubscriptionResponse &sbs_stop_result,
 {
     scoped_mx smx(mon_);
     if(status_ < SubscriptionStatus_INITIALIZED) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
     RetCode rcode = RetCode_OK;
@@ -261,13 +258,11 @@ RetCode sbs_impl::notify_for_start_stop_result()
 RetCode sbs_impl::stop()
 {
     if(status_ != SubscriptionStatus_STARTED) {
-        IFLOG(err(TH_ID, LS_CLO "[status:%d]", __func__, status_))
         return RetCode_BADSTTS;
     }
     start_stop_evt_occur_ = false;
-    g_bbuf gbb(2);
+    g_bbuf gbb;
     build_PKT_SBSTOP(sbsid_, &gbb);
-    gbb.flip();
     std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
     conn_->pkt_sending_q_.put(&cpkt);
     ntfy_sel_snd_pkt();
@@ -310,13 +305,12 @@ inline void incoming_subscription_impl::release_initial_query()
 
 RetCode incoming_subscription_impl::send_start_response()
 {
-    g_bbuf gbb(4);
+    g_bbuf gbb;
     build_PKT_SBSRES(sbresl_,
                      last_vlgcod_,
                      reqid_,
                      sbsid_,
                      &gbb);
-    gbb.flip();
     std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
     conn_->pkt_sending_q_.put(&cpkt);
     ntfy_sel_snd_pkt();
@@ -345,7 +339,6 @@ void incoming_subscription_impl::enq_event(std::shared_ptr<subscription_event> &
         gbb.put(&totbytes, (6*4), 4);
         sbs_evt->impl_->sbs_data_.get()->get_primary_key_value_as_string(key);
     }
-    gbb.flip();
     std::unique_ptr<conn_pkt> cpkt(new conn_pkt(&key,
                                                 std::move(gbb),
                                                 sbs_evt->impl_->sbs_tmstp0_,
@@ -557,7 +550,7 @@ RetCode outgoing_subscription_impl::send_start_request()
     set_req_sent();
     start_stop_evt_occur_ = false;
 
-    g_bbuf gbb(10*4);
+    g_bbuf gbb;
     build_PKT_SBSREQ(sbstyp_,
                      sbsmod_,
                      flotyp_,
@@ -569,7 +562,6 @@ RetCode outgoing_subscription_impl::send_start_request()
                      open_tmstp0_,
                      open_tmstp1_,
                      &gbb);
-    gbb.flip();
     std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
     conn_->pkt_sending_q_.put(&cpkt);
     ntfy_sel_snd_pkt();

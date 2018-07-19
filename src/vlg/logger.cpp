@@ -283,7 +283,6 @@ struct appender_impl {
             return msg_b_idx;
         }
 
-
         size_t rended_msg_pln(const char *msg,
                               char *buff,
                               uint16_t *buff_len) {
@@ -466,7 +465,6 @@ size_t appender::put_msg_va_plain(const char *msg, va_list args)
     return impl_->put_msg_va_plain(msg, args);
 }
 
-
 size_t appender::render_msg_pln(const char *msg,
                                 char *buff,
                                 uint16_t *buff_len)
@@ -644,18 +642,14 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
                 while(toknz.next_token(tkn, nullptr, true)) {
                     CR_SKIP_SP_TABS(tkn)
                     if(is_new_line(tkn)) {
-                        if(!(apnd = new appender(stdout))) {
-                            return RetCode_MEMERR;
-                        }
+                        apnd = new appender(stdout);
                         apnd_parsed = skip = true;
                         break;
                     } else if(tkn == CR_TK_COMA) {
                         if((res = parse_lines_max(toknz, lnmax))) {
                             return res;
                         }
-                        if(!(apnd = new appender(stdout))) {
-                            return RetCode_MEMERR;
-                        }
+                        apnd = new appender(stdout);
                         apnd_parsed = true;
                         break;
                     } else {
@@ -691,9 +685,7 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
                     CR_SKIP_SP_TABS(tkn)
                     CR_BREAK_ON_TKN(tkn, CR_TK_COMA)
                     if(is_new_line(tkn)) {
-                        if(!(apnd = new appender(app_file_name.c_str()))) {
-                            return RetCode_MEMERR;
-                        }
+                        apnd = new appender(app_file_name.c_str());
                         apnd_parsed = skip = true;
                         break;
                     }
@@ -704,9 +696,7 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
                 if((res = parse_lines_max(toknz, lnmax))) {
                     return res;
                 }
-                if(!(apnd = new appender(app_file_name.c_str()))) {
-                    return RetCode_MEMERR;
-                }
+                apnd = new appender(app_file_name.c_str());
                 break;
             } else if(is_new_line(tkn)) {
                 LPrsERR_UNEXP(TKAPND, S_NL);
@@ -778,9 +768,7 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
                         }
                     }
                 }
-                if(!(lggr = new logger(lvl, lgsign.c_str(), apnds_l, apnds_n))) {
-                    return RetCode_MEMERR;
-                }
+                lggr = new logger(lvl, lgsign.c_str(), apnds_l, apnds_n);
             } else if(is_new_line(tkn)) {
                 LPrsERR_UNEXP(TKLGR, S_NL);
                 return RetCode_BADCFG;

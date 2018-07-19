@@ -150,7 +150,6 @@ RetCode conn_impl::await_for_status_reached(ConnectionStatus test,
 {
     scoped_mx smx(mon_);
     if(status_ < ConnectionStatus_INITIALIZED) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
     RetCode rcode = RetCode_OK;
@@ -174,7 +173,6 @@ RetCode conn_impl::await_for_status_change(ConnectionStatus &status,
 {
     scoped_mx smx(mon_);
     if(status_ < ConnectionStatus_INITIALIZED) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
     RetCode rcode = RetCode_OK;
@@ -197,7 +195,6 @@ RetCode conn_impl::await_for_status_change(ConnectionStatus &status,
 RetCode conn_impl::set_proto_connected()
 {
     if(status_ != ConnectionStatus_ESTABLISHED) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
     set_status(ConnectionStatus_PROTOCOL_HANDSHAKE);
@@ -241,7 +238,6 @@ RetCode conn_impl::set_internal_error(RetCode cause_res)
 RetCode conn_impl::set_appl_connected()
 {
     if(status_ != ConnectionStatus_PROTOCOL_HANDSHAKE) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
     set_status(ConnectionStatus_AUTHENTICATED);
@@ -366,20 +362,18 @@ RetCode conn_impl::establish_connection(sockaddr_in &params)
 RetCode conn_impl::disconnect(ProtocolCode disres)
 {
     if(status_ != ConnectionStatus_PROTOCOL_HANDSHAKE && status_ != ConnectionStatus_AUTHENTICATED) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
     IFLOG(inf(TH_ID, LS_CON"[connid:%d][socket:%d][sending disconnection][disconrescode:%d]", connid_, socket_, disres))
     set_disconnecting();
 
-    g_bbuf gbb(3);
+    g_bbuf gbb;
     if(con_type_ == ConnectionType_OUTGOING) {
         build_PKT_DSCOND(disres, connid_, &gbb);
     } else {
         build_PKT_DSCOND(disres, 0, &gbb);
     }
 
-    gbb.flip();
     std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
     pkt_sending_q_.put(&cpkt);
     selector_event *evt = new selector_event(VLG_SELECTOR_Evt_Disconnect, this);
@@ -416,7 +410,6 @@ RetCode conn_impl::await_for_disconnection_result(ConnectivityEventResult &con_e
     IFLOG(trc(TH_ID, LS_OPN "[connid:%d]", __func__, connid_))
     scoped_mx smx(mon_);
     if(status_ < ConnectionStatus_INITIALIZED) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
     RetCode rcode = RetCode_OK;
@@ -503,20 +496,18 @@ unsigned int incoming_connection_impl::next_sbsid()
 RetCode incoming_connection_impl::server_send_connect_res(std::shared_ptr<incoming_connection> &inco_conn)
 {
     if(status_ != ConnectionStatus_ESTABLISHED) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
 
-    g_bbuf gbb(3 * 4);
+    g_bbuf gbb;
     build_PKT_CONRES(conres_,
                      conrescode_,
                      srv_agrhbt_,
                      connid_,
                      &gbb);
-    gbb.flip();
+
     std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
     pkt_sending_q_.put(&cpkt);
-
     selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, inco_conn);
     return peer_->selector_.asynch_notify(evt);
 }
@@ -852,15 +843,14 @@ RetCode incoming_connection_impl::recv_sbs_stop_request(const vlg_hdr_rec *pkt_h
         inco_nclassid_sbs_map_.remove(&sbs_sh->impl_->nclassid_, nullptr);
     }
 
-    g_bbuf gbb(3);
+    g_bbuf gbb;
     build_PKT_SBSSPR(sbresl,
                      protocode,
                      sbsid,
                      &gbb);
-    gbb.flip();
+
     std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
     pkt_sending_q_.put(&cpkt);
-
     selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, inco_conn);
     rcode = peer_->selector_.asynch_notify(evt);
     return rcode;
@@ -929,7 +919,6 @@ void outgoing_connection_impl::release_all_children()
 
 RetCode outgoing_connection_impl::client_connect(sockaddr_in &params)
 {
-    RetCode rcode = RetCode_OK;
     if(peer_->peer_status_ != PeerStatus_RUNNING) {
         IFLOG(err(TH_ID, LS_CLO "[invalid peer status][%d]", __func__, peer_->peer_status_))
         return RetCode_BADSTTS;
@@ -940,12 +929,11 @@ RetCode outgoing_connection_impl::client_connect(sockaddr_in &params)
     }
 
     connect_evt_occur_ = false;
-    g_bbuf gbb(2);
+    g_bbuf gbb;
     build_PKT_CONREQ(cli_agrhbt_, &gbb);
-    gbb.flip();
+
     std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
     pkt_sending_q_.put(&cpkt);
-
     selector_event *evt = new selector_event(VLG_SELECTOR_Evt_ConnectRequest, this);
     memcpy(&evt->saddr_, &params, sizeof(sockaddr_in));
     return peer_->selector_.asynch_notify(evt);
@@ -957,7 +945,6 @@ RetCode outgoing_connection_impl::await_for_connection_result(ConnectivityEventR
                                                               long nsec)
 {
     if(status_ < ConnectionStatus_INITIALIZED) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
     RetCode rcode = RetCode_OK;

@@ -103,7 +103,7 @@ RetCode LoadTypesMap(std::unordered_set<std::string> &map)
 std::unordered_set<std::string> &GetTypesMap()
 {
     if(types_map.empty()) {
-        CMD_ON_KO(LoadTypesMap(types_map), EXIT_ACTION)
+        LoadTypesMap(types_map);
     }
     return types_map;
 }
@@ -604,7 +604,7 @@ RetCode VLG_COMP_CalcFieldOffset(size_t max_align,
             //we get max align if it is a struct/class
             auto edesc = entitymap.end();
             if((edesc = entitymap.find(mdesc->get_field_usr_str_type())) == entitymap.end()) {
-                EXIT_ACTION
+                exit(1);
             }
             type_align = edesc->second->get_nclass_max_align(arch, os, lang, tcomp);
         } else if(mdesc->get_field_nentity_type() == NEntityType_NENUM) {
@@ -665,7 +665,7 @@ RetCode VLG_COMP_CalcFieldsSizeAndEntityMaxAlign(size_t &max_align,
                                                                           lang,
                                                                           tcomp) : max_align;
             } else {
-                EXIT_ACTION
+                exit(1);
             }
         } else {
             //built-in type

@@ -12,25 +12,7 @@
 
 namespace vlg {
 
-// synch_mon_impl
-
-mx::mx(int pshared)
-{
-    pthread_mutexattr_init(&mattr_);
-    pthread_mutexattr_setpshared(&mattr_, pshared);
-    pthread_mutex_init(&mutex_, &mattr_);
-    pthread_condattr_init(&cattr_);
-    pthread_condattr_setpshared(&cattr_, pshared);
-    pthread_cond_init(&cv_, &cattr_);
-}
-
-mx::~mx()
-{
-    pthread_cond_destroy(&cv_);
-    pthread_mutex_destroy(&mutex_);
-    pthread_mutexattr_destroy(&mattr_);
-    pthread_condattr_destroy(&cattr_);
-}
+// mx
 
 int mx::wait(time_t sec, long nsec)
 {
@@ -49,73 +31,7 @@ int mx::wait(time_t sec, long nsec)
     return pthread_cond_timedwait(&cv_, &mutex_, &abstime);
 }
 
-// p_thread
-
-p_th::p_th() :
-    th_id_(-1),
-    attr_(nullptr),
-    target_(this)
-{
-}
-
-p_th::p_th(runnable *target) :
-    th_id_(-1),
-    attr_(nullptr),
-    target_(target)
-{
-}
-
-p_th::p_th(pthread_attr_t *attr) :
-    th_id_(-1),
-    attr_(attr),
-    target_(this)
-{
-}
-
-p_th::p_th(runnable *target, pthread_attr_t *attr) :
-    th_id_(-1),
-    attr_(attr),
-    target_(target)
-{
-}
-
-p_th::~p_th()
-{}
-
-void *p_th::pthread_run(void *arg)
-{
-    p_th *thread = static_cast<p_th *>(arg);
-    thread->th_id_ = TH_ID;
-    return thread->target_->run();
-}
-
 // p_task
-
-p_tsk::p_tsk() :
-    id_(0),
-    status_(PTASK_STATUS_INIT),
-    exec_res_(RetCode_OK),
-    wt_th_(0)
-{
-}
-
-p_tsk::p_tsk(unsigned int id) :
-    id_(id),
-    status_(PTASK_STATUS_INIT),
-    exec_res_(RetCode_OK),
-    wt_th_(0)
-{
-}
-
-p_tsk::~p_tsk()
-{}
-
-RetCode p_tsk::re_new()
-{
-    scoped_mx smx(mon_);
-    status_ = PTASK_STATUS_INIT;
-    return RetCode_OK;
-}
 
 RetCode p_tsk::set_status(PTASK_STATUS status)
 {
@@ -181,7 +97,7 @@ void *p_exectr::run()
     }
     set_status(PEXECUTOR_STATUS_IDLE);
     while((eserv_status = eserv_.get_status()) == PEXEC_SERVICE_STATUS_STARTED) {
-        if(!(pres = eserv_.get_task_queue().get(0, 50*MSEC_F, &task))) {
+        if(!(pres = eserv_.get_task_queue().take(0, 10*MSEC_F, &task))) {
             set_status(PEXECUTOR_STATUS_EXECUTING);
             task->set_execution_result(task->execute());
             task->set_status(PTASK_STATUS_EXECUTED);
@@ -196,7 +112,7 @@ void *p_exectr::run()
     }
     IFLOG(dbg(TH_ID, LS_TRL "[stopping]", __func__))
     while((eserv_status = eserv_.get_status()) == PEXEC_SERVICE_STATUS_STOPPING) {
-        if(!(pres = eserv_.get_task_queue().get(0, 10*MSEC_F, &task))) {
+        if(!(pres = eserv_.get_task_queue().take(0, 2*MSEC_F, &task))) {
             task->set_status(PTASK_STATUS_SUBMITTED);
             set_status(PEXECUTOR_STATUS_EXECUTING);
             task->set_execution_result(task->execute());
@@ -260,7 +176,6 @@ RetCode p_exec_srv::init(unsigned int executor_num)
 
 RetCode p_exec_srv::set_status(PEXEC_SERVICE_STATUS status)
 {
-    IFLOG(trc(TH_ID, LS_OPN "[status:%d]", __func__, status))
     scoped_mx smx(mon_);
     status_ = status;
     mon_.notify_all();
@@ -270,7 +185,6 @@ RetCode p_exec_srv::set_status(PEXEC_SERVICE_STATUS status)
 RetCode p_exec_srv::start()
 {
     if(status_ != PEXEC_SERVICE_STATUS_INIT && status_ != PEXEC_SERVICE_STATUS_STOPPED) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
     set_status(PEXEC_SERVICE_STATUS_STARTING);
@@ -289,7 +203,6 @@ RetCode p_exec_srv::await_for_status_reached(PEXEC_SERVICE_STATUS test,
     RetCode rcode = RetCode_OK;
     scoped_mx smx(mon_);
     if(status_ < PEXEC_SERVICE_STATUS_INIT) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
     while(status_ < test) {
@@ -356,7 +269,6 @@ RetCode p_exec_srv::submit(p_tsk &task)
 {
     if(status_ != PEXEC_SERVICE_STATUS_STARTED) {
         task.set_status(PTASK_STATUS_REJECTED);
-        IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
     if(exec_pool_.empty()) {
@@ -370,7 +282,7 @@ RetCode p_exec_srv::submit(p_tsk &task)
     RetCode rcode = RetCode_OK;
     p_tsk *task_ptr = &task;
     scoped_mx smx(mon_);
-    if((rcode = task_queue_.put(0, 10*MSEC_F, &task_ptr))) {
+    if((rcode = task_queue_.put(0, 5*MSEC_F, &task_ptr))) {
         task.set_status(PTASK_STATUS_REJECTED);
         switch(rcode) {
             case RetCode_QFULL:

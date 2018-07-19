@@ -465,7 +465,6 @@ struct nentity_manager_impl {
     RetCode extend(const char *model_name) {
         IFLOG(trc(TH_ID, LS_OPN "[model_name:%s]", __func__, model_name))
         if(!model_name || !strlen(model_name)) {
-            IFLOG(err(TH_ID, LS_CLO, __func__))
             return RetCode_BADARG;
         }
 #if defined WIN32 && defined _MSC_VER
@@ -604,7 +603,6 @@ RetCode nentity_manager::new_nclass_instance(unsigned int nclass_id, std::unique
         new_nclass_obj.reset(it->second->get_nclass_allocation_function()());
         return RetCode_OK;
     } else {
-        IFLOG(wrn(TH_ID, LS_CLO "[nclass_id:%u][unknown nclass_id]", __func__, nclass_id))
         return RetCode_BADARG;
     }
 }

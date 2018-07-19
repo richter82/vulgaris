@@ -116,6 +116,7 @@ struct conn_impl {
     RetCode set_socket_blocking_mode(bool blocking);
     RetCode socket_shutdown();
 
+    RetCode aggr_msgs_and_send_pkt(g_bbuf &pkt_snd_buf);
     RetCode send_single_pkt(g_bbuf &pkt_bbuf);
 
     RetCode recv_single_pkt(vlg_hdr_rec &pkt_hdr,
