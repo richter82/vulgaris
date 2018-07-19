@@ -540,10 +540,6 @@ RetCode peer_impl::recv_and_route_pkt(std::shared_ptr<incoming_connection> &inco
             /*SUBSCRIPTION REQUEST**********************************************************/
             rcode = inco_conn->impl_->recv_sbs_start_request(hdr, inco_conn);
             break;
-        case VLG_PKT_SBSACK_ID:
-            /*SUBSCRIPTION EVENT ACK********************************************************/
-            rcode = inco_conn->impl_->recv_sbs_evt_ack(hdr);
-            break;
         case VLG_PKT_SBSTOP_ID:
             /*SUBSCRIPTION STOP REQUEST*****************************************************/
             rcode = inco_conn->impl_->recv_sbs_stop_request(hdr, inco_conn);

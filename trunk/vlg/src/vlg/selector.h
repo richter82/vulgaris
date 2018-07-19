@@ -20,9 +20,6 @@ struct selector_event {
     ConnectionType con_type_;
     conn_impl *conn_;
     std::shared_ptr<incoming_connection> inco_conn_;
-
-    //not really safe rely on this,
-    //what if socket is reused by the system?.
     SOCKET socket_;
     sockaddr_in saddr_;
 };
@@ -44,7 +41,7 @@ enum SelectorStatus {
 };
 
 struct selector : public p_th {
-    explicit selector(peer_impl &peer);
+    explicit selector(peer_impl &);
     ~selector();
 
     RetCode init(unsigned int srv_executors,
@@ -58,43 +55,32 @@ struct selector : public p_th {
                                      time_t sec = -1,
                                      long nsec = 0);
 
-    RetCode asynch_notify(const selector_event *evt);
+    RetCode asynch_notify(const selector_event *);
     RetCode consume_asynch_events();
-
     RetCode interrupt();
-
-    RetCode set_status(SelectorStatus status);
-
+    RetCode set_status(SelectorStatus);
     virtual void *run() override;
-
     RetCode create_UDP_notify_srv_sock();
     RetCode connect_UDP_notify_cli_sock();
-    bool is_still_valid_connection(const selector_event *evt);
-
+    bool is_still_valid_connection(const selector_event *);
     RetCode start_exec_services();
     RetCode process_inco_sock_inco_events();
     RetCode process_inco_sock_outg_events();
     RetCode process_outg_sock_inco_events();
     RetCode process_outg_sock_outg_events();
-
     RetCode start_conn_objs();
-
     RetCode FDSET_sockets();
     RetCode FDSET_incoming_sockets();
     RetCode FDSET_outgoing_sockets();
     RetCode FDSET_write_incoming_pending_sockets();
     RetCode FDSET_write_outgoing_pending_sockets();
     RetCode server_socket_shutdown();
-
     RetCode consume_events();
     RetCode consume_inco_sock_events();
-
-    RetCode add_early_outg_conn(selector_event *conn_evt);
-    RetCode promote_early_outg_conn(conn_impl *conn);
-    RetCode delete_early_outg_conn(conn_impl *conn);
-
-    RetCode manage_disconnect_conn(selector_event *conn_evt);
-
+    RetCode add_early_outg_conn(selector_event *);
+    RetCode promote_early_outg_conn(conn_impl *);
+    RetCode delete_early_outg_conn(conn_impl *);
+    RetCode manage_disconnect_conn(selector_event *);
     RetCode stop_and_clean();
 
     //rep
@@ -102,8 +88,8 @@ struct selector : public p_th {
     SelectorStatus status_;
     fd_set read_FDs_, write_FDs_, excep_FDs_;
 
-    int nfds_;          //used in select
-    int sel_res_;       //last select() result
+    int nfds_;
+    int sel_res_;
     timeval sel_timeout_;
     sockaddr_in udp_ntfy_sa_in_;
     SOCKET udp_ntfy_srv_socket_;

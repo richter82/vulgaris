@@ -157,25 +157,6 @@ int dump_vlg_hdr_rec(const vlg_hdr_rec *hdr, char *out)
     return offst;
 }
 
-const char *dump_raw_pkt(bool all,
-                         const unsigned char *buf,
-                         size_t buf_sz,
-                         std::string &out)
-{
-    char abuff[32];
-    size_t buf_offst = 0;
-    int i = 0;
-    sprintf(abuff, "RAW_%s[", all ? "PKT" : "BDY");
-    out.assign(abuff);
-    while(buf_offst < buf_sz) {
-        sprintf(abuff, "|%d|%x", i++, *(unsigned int *)&buf[buf_offst]);
-        out.append(abuff);
-        buf_offst += 4;
-    }
-    out.append("]");
-    return out.c_str();
-}
-
 /*****************************************
  WORD ENCODE FUNCTIONS
  It is supposed that each Encode f writes 32 bit on buffer
@@ -958,7 +939,60 @@ void build_PKT_SBSSPR(SubscriptionResponse sbresl,
     }
 }
 
-// CONNECTION RECV METHS
+// ****************************************************************************
+// CONNECTION SEND/RECV METHS
+// ****************************************************************************
+
+RetCode conn_impl::socket_excptn_hndl(long sock_op_res)
+{
+    RetCode rcode = RetCode_OK;
+    if(sock_op_res == SOCKET_ERROR) {
+#if defined WIN32 && defined _MSC_VER
+        last_socket_err_ = WSAGetLastError();
+#else
+        last_socket_err_ = errno;
+#endif
+#if defined WIN32 && defined _MSC_VER
+        if(last_socket_err_ == WSAEWOULDBLOCK) {
+#else
+        if(last_socket_err_ == EAGAIN) {
+            return RetCode_SCKEAGN;
+        } else if(last_socket_err_ == EWOULDBLOCK) {
+#endif
+            rcode = RetCode_SCKWBLK;
+#if defined WIN32 && defined _MSC_VER
+        } else if(last_socket_err_ == WSAECONNRESET) {
+#else
+        } else if(last_socket_err_ == ECONNRESET) {
+#endif
+            IFLOG(err(TH_ID, LS_CON"[connid:%d][socket:%d][connection reset by peer][err:%d]",
+                      connid_,
+                      socket_,
+                      last_socket_err_))
+            rcode = RetCode_SCKCLO;
+        } else {
+            perror(__func__);
+            IFLOG(err(TH_ID, LS_CON"[connid:%d][socket:%d][connection socket error][errno:%d][err:%d]",
+                      connid_,
+                      socket_,
+                      errno,
+                      last_socket_err_))
+            rcode = RetCode_SCKERR;
+        }
+    } else if(!sock_op_res) {
+        /*typically we can arrive here on client applicative disconnections*/
+        IFLOG(dbg(TH_ID, LS_CON"[connid:%d][socket:%d][connection socket was closed by peer]",
+                  connid_,
+                  socket_))
+        rcode = RetCode_SCKCLO;
+    } else {
+        IFLOG(err(TH_ID, LS_CON "[connid:%d][socket:%d][connection unk. error]",
+                  connid_,
+                  socket_))
+        rcode = RetCode_UNKERR;
+    }
+    return rcode;
+}
 
 inline RetCode conn_impl::recv_single_hdr_row(unsigned int *hdr_row)
 {
@@ -1145,6 +1179,144 @@ RetCode conn_impl::recv_and_decode_hdr(vlg_hdr_rec *pkt_hdr)
             break;
         default:
             return RetCode_DRPPKT;
+    }
+    return rcode;
+}
+
+RetCode conn_impl::recv_single_pkt(vlg_hdr_rec *pkt_hdr,
+                                   g_bbuf *pkt_body)
+{
+    if(!pkt_hdr || !pkt_body) {
+        IFLOG(err(TH_ID, LS_CLO, __func__))
+        return RetCode_BADARG;
+    }
+    int tot_brecv = 0;
+    RetCode rcode = RetCode_OK;
+    //first phase: decode pkt header.
+    switch((rcode = recv_and_decode_hdr(pkt_hdr))) {
+        case RetCode_OK:
+            break;
+        case RetCode_SCKCLO:
+            close_connection(ConnectivityEventResult_OK, ConnectivityEventType_NETWORK);
+            break;
+        case RetCode_SCKERR:
+            set_socket_error(rcode);
+            close_connection(ConnectivityEventResult_KO, ConnectivityEventType_NETWORK);
+            break;
+        case RetCode_SCKWBLK:
+        case RetCode_DRPPKT:
+            set_proto_error(rcode);
+            close_connection(ConnectivityEventResult_KO, ConnectivityEventType_PROTOCOL);
+            break;
+        default:
+            set_internal_error(rcode);
+            close_connection(ConnectivityEventResult_KO, ConnectivityEventType_UNDEFINED);
+            break;
+    }
+    //END first phase
+    if(pkt_hdr->bdy_bytelen) {
+        //second phase: read eventual remaining body.
+        switch((rcode = recv_body(pkt_hdr->bdy_bytelen, pkt_body))) {
+            case RetCode_OK:
+                break;
+            case RetCode_SCKCLO:
+                close_connection(ConnectivityEventResult_OK, ConnectivityEventType_NETWORK);
+                break;
+            case RetCode_SCKERR:
+                set_socket_error(rcode);
+                close_connection(ConnectivityEventResult_KO, ConnectivityEventType_NETWORK);
+                break;
+            case RetCode_SCKWBLK:
+            case RetCode_DRPPKT:
+                set_proto_error(rcode);
+                close_connection(ConnectivityEventResult_KO, ConnectivityEventType_PROTOCOL);
+                break;
+            default:
+                set_internal_error(rcode);
+                close_connection(ConnectivityEventResult_KO, ConnectivityEventType_UNDEFINED);
+                break;
+        }
+        //END second phase
+    }
+    if(!rcode) {
+        tot_brecv = pkt_hdr->hdr_bytelen + pkt_hdr->bdy_bytelen;
+        if(v_log_ && v_log_->level() <= TL_TRC) {
+            char dump_buf[DMP_OUT_BUF_LEN] = { 0 };
+            dump_vlg_hdr_rec(pkt_hdr, dump_buf);
+            v_log_->trc(TH_ID, LS_INC "%s", dump_buf);
+        }
+    }
+    IFLOG(trc(TH_ID, LS_CLO "[tot-recv:%d, hdr_len:%d, body_len:%d][res:%d]",
+              __func__,
+              tot_brecv,
+              pkt_hdr->hdr_bytelen,
+              pkt_hdr->bdy_bytelen,
+              rcode))
+    return rcode;
+}
+
+RetCode conn_impl::recv_body(unsigned int bodylen,
+                             g_bbuf *pkt_body)
+{
+    RetCode rcode = RetCode_OK;
+    bool stay = true;
+    unsigned int tot_brecv = 0;
+    long brecv = 0, recv_buf_sz = bodylen;
+    pkt_body->ensure_capacity(bodylen);
+    while(stay) {
+        while((tot_brecv < bodylen) && ((brecv = recv(socket_,
+                                                      &pkt_body->buffer_as_char()[pkt_body->position()],
+                                                      recv_buf_sz, 0)) > 0)) {
+            pkt_body->move_pos_write(brecv);
+            tot_brecv += brecv;
+            recv_buf_sz -= brecv;
+        }
+        if(tot_brecv != bodylen) {
+            if((rcode = socket_excptn_hndl(brecv)) != RetCode_SCKEAGN) {
+                rcode = RetCode_OK;
+                stay = false;
+            }
+        } else {
+            break;
+        }
+    }
+    pkt_body->flip();
+    return rcode;
+}
+
+RetCode conn_impl::send_single_pkt(g_bbuf *pkt_bbuf)
+{
+    if(!pkt_bbuf->limit() || !pkt_bbuf) {
+        IFLOG(err(TH_ID, LS_CLO, __func__))
+        return RetCode_BADARG;
+    }
+    RetCode rcode = RetCode_OK;
+    bool stay = true;
+    long bsent = 0, tot_bsent = 0, remaining = (long)pkt_bbuf->limit();
+    while(stay) {
+        while(remaining && ((bsent = send(socket_,
+                                          &pkt_bbuf->buffer_as_char()[pkt_bbuf->position()],
+                                          (int)pkt_bbuf->limit(), 0)) > 0)) {
+            pkt_bbuf->advance_pos_read(bsent);
+            tot_bsent += bsent;
+            remaining -= bsent;
+        }
+        if(remaining) {
+            if(((rcode = socket_excptn_hndl(bsent)) != RetCode_SCKEAGN) || (rcode != RetCode_SCKWBLK)) {
+                rcode = RetCode_OK;
+                stay = false;
+            }
+        } else {
+            break;
+        }
+    }
+    if(v_log_ && v_log_->level() <= TL_TRC) {
+        v_log_->trc(TH_ID, LS_CLO "[socket:%d, sent:%d, remaining:%d][res:%d]",
+                    __func__,
+                    socket_,
+                    tot_bsent,
+                    remaining,
+                    rcode);
     }
     return rcode;
 }
