@@ -29,16 +29,6 @@ selector_event::selector_event(VLG_SELECTOR_Evt evt, std::shared_ptr<incoming_co
     memset(&saddr_, 0, sizeof(sockaddr_in));
 }
 
-// asynch_selector
-
-//for non critical errors
-#define RETURNZERO_ACT return 0
-#define RETURRetCodeKO_ACT return RetCode_KO
-
-//for critical errors
-#define SET_ERROR_AND_RETURNZERO_ACT set_status(SelectorStatus_ERROR); return 0;
-#define SET_ERROR_AND_RETURRetCodeKO_ACT set_status(SelectorStatus_ERROR); return RetCode_KO;
-
 selector::selector(peer_impl &peer) :
     peer_(peer),
     status_(SelectorStatus_TO_INIT),
@@ -245,7 +235,7 @@ RetCode selector::start_exec_services()
         IFLOG(dbg(TH_ID, LS_TRL "[starting server side executor service]", __func__))
         if((res = inco_exec_srv_.start())) {
             IFLOG(cri(TH_ID, LS_CLO "[starting server side, last_err:%d]", __func__, res))
-            SET_ERROR_AND_RETURRetCodeKO_ACT
+            return RetCode_KO;
         }
         inco_exec_srv_.await_for_status_reached(PEXEC_SERVICE_STATUS_STARTED, current);
         IFLOG(dbg(TH_ID, LS_TRL "[server side executor service started]", __func__))
@@ -254,7 +244,7 @@ RetCode selector::start_exec_services()
         IFLOG(dbg(TH_ID, LS_TRL "[starting client side executor service]", __func__))
         if((res = outg_exec_srv_.start())) {
             IFLOG(cri(TH_ID, LS_CLO "[starting client side, last_err:%d]", __func__, res))
-            SET_ERROR_AND_RETURRetCodeKO_ACT
+            return RetCode_KO;
         }
         outg_exec_srv_.await_for_status_reached(PEXEC_SERVICE_STATUS_STARTED, current);
         IFLOG(dbg(TH_ID, LS_TRL "[client side executor service started]", __func__))
@@ -268,7 +258,7 @@ RetCode selector::start_conn_objs()
     if(peer_.personality_ == PeerPersonality_PURE_SERVER || peer_.personality_ == PeerPersonality_BOTH) {
         if((res = srv_acceptor_.create_server_socket(srv_listen_socket_))) {
             IFLOG(cri(TH_ID, LS_CLO "[starting acceptor, last_err:%d]", __func__, res))
-            SET_ERROR_AND_RETURRetCodeKO_ACT
+            return RetCode_KO;
         }
         FD_SET(srv_listen_socket_, &read_FDs_);
         FD_SET(srv_listen_socket_, &excep_FDs_);
@@ -334,17 +324,14 @@ RetCode selector::process_inco_sock_inco_events()
     return RetCode_OK;
 }
 
-RetCode selector::process_inco_sock_outg_events()
+inline RetCode selector::process_inco_sock_outg_events()
 {
     RetCode rcode = RetCode_OK;
     //**** HANDLE OUTGOING EVENTS BEGIN****
     for(auto it = write_pending_sock_inco_conn_map_.begin(); it != write_pending_sock_inco_conn_map_.end(); it++) {
         if(FD_ISSET(it->first, &write_FDs_)) {
             g_bbuf *sending_pkt = nullptr;
-            if(it->second->impl_->pkt_sending_q_.get(&sending_pkt)) {
-                IFLOG(cri(TH_ID, LS_CLO "[reading from packet queue]", __func__))
-                SET_ERROR_AND_RETURRetCodeKO_ACT
-            }
+            it->second->impl_->pkt_sending_q_.get(&sending_pkt);
             //send data to socket.
             if((rcode = it->second->impl_->send_single_pkt(sending_pkt))) {
                 IFLOG(err(TH_ID, LS_TRL "[socket:%d, connid:%d][failed sending packet]",
@@ -371,17 +358,14 @@ RetCode selector::process_inco_sock_outg_events()
     return RetCode_OK;
 }
 
-RetCode selector::process_outg_sock_outg_events()
+inline RetCode selector::process_outg_sock_outg_events()
 {
     RetCode rcode = RetCode_OK;
     //**** HANDLE OUTGOING EVENTS BEGIN****
     for(auto it = write_pending_sock_outg_conn_map_.begin(); it != write_pending_sock_outg_conn_map_.end(); it++) {
         if(FD_ISSET(it->first, &write_FDs_)) {
             g_bbuf *sending_pkt = nullptr;
-            if(it->second->pkt_sending_q_.get(&sending_pkt)) {
-                IFLOG(cri(TH_ID, LS_CLO "[reading from packet queue]", __func__))
-                SET_ERROR_AND_RETURRetCodeKO_ACT
-            }
+            it->second->pkt_sending_q_.get(&sending_pkt);
             //send data to socket.
             if((rcode = it->second->send_single_pkt(sending_pkt))) {
                 IFLOG(err(TH_ID, LS_TRL "[socket:%d, connid:%d][failed sending packet]",
@@ -503,17 +487,14 @@ inline RetCode selector::consume_inco_sock_events()
     std::shared_ptr<incoming_connection> new_conn_shp;
     unsigned int new_connid = 0;
     if(FD_ISSET(srv_listen_socket_, &read_FDs_)) {
-        if(peer_.next_connid(new_connid)) {
-            IFLOG(cri(TH_ID, LS_CLO "[generating client connection id]", __func__))
-            SET_ERROR_AND_RETURRetCodeKO_ACT
-        }
+        peer_.next_connid(new_connid);
         if(srv_acceptor_.accept(new_connid, new_conn_shp)) {
             IFLOG(cri(TH_ID, LS_CLO "[accepting new connection]", __func__))
-            SET_ERROR_AND_RETURRetCodeKO_ACT
+            return RetCode_KO;
         }
         if(new_conn_shp->impl_->set_socket_blocking_mode(false)) {
             IFLOG(cri(TH_ID, LS_CLO "[set socket not blocking]", __func__))
-            SET_ERROR_AND_RETURRetCodeKO_ACT
+            return RetCode_KO;
         }
         inco_connid_conn_map_[new_connid] = new_conn_shp;
         IFLOG(dbg(TH_ID, LS_CON"[socket:%d, host:%s, port:%d, connid:%d][socket accepted]",
@@ -525,13 +506,13 @@ inline RetCode selector::consume_inco_sock_events()
         if(sel_res_) {
             if(process_inco_sock_inco_events()) {
                 IFLOG(cri(TH_ID, LS_CLO "[processing incoming socket events]", __func__))
-                SET_ERROR_AND_RETURRetCodeKO_ACT
+                return RetCode_KO;
             }
         }
     } else {
         if(process_inco_sock_inco_events()) {
             IFLOG(cri(TH_ID, LS_CLO "[processing incoming socket events]", __func__))
-            SET_ERROR_AND_RETURRetCodeKO_ACT
+            return RetCode_KO;
         }
     }
     return RetCode_OK;
@@ -556,7 +537,7 @@ inline RetCode selector::FDSET_sockets()
     return RetCode_OK;
 }
 
-RetCode selector::FDSET_write_incoming_pending_sockets()
+inline RetCode selector::FDSET_write_incoming_pending_sockets()
 {
     auto it = write_pending_sock_inco_conn_map_.begin();
     while(it != write_pending_sock_inco_conn_map_.end()) {
@@ -571,7 +552,7 @@ RetCode selector::FDSET_write_incoming_pending_sockets()
     return RetCode_OK;
 }
 
-RetCode selector::FDSET_write_outgoing_pending_sockets()
+inline RetCode selector::FDSET_write_outgoing_pending_sockets()
 {
     auto it = write_pending_sock_outg_conn_map_.begin();
     while(it != write_pending_sock_outg_conn_map_.end()) {
@@ -657,10 +638,7 @@ inline RetCode selector::manage_disconnect_conn(selector_event *conn_evt)
 {
     RetCode rcode = RetCode_OK;
     g_bbuf *sending_pkt = nullptr;
-    if(conn_evt->conn_->pkt_sending_q_.get(&sending_pkt)) {
-        IFLOG(cri(TH_ID, LS_CLO "[reading from packet queue]", __func__))
-        SET_ERROR_AND_RETURRetCodeKO_ACT
-    }
+    conn_evt->conn_->pkt_sending_q_.get(&sending_pkt);
     if((rcode = conn_evt->conn_->send_single_pkt(sending_pkt))) {
         IFLOG(err(TH_ID, LS_TRL "[socket:%d][failed sending disconnection packet]",
                   __func__,
@@ -673,27 +651,20 @@ inline RetCode selector::manage_disconnect_conn(selector_event *conn_evt)
     return rcode;
 }
 
-
 inline RetCode selector::add_early_outg_conn(selector_event *conn_evt)
 {
     RetCode rcode = RetCode_OK;
     g_bbuf *sending_pkt = nullptr;
     if((rcode = conn_evt->conn_->establish_connection(conn_evt->saddr_))) {
-        if(conn_evt->conn_->pkt_sending_q_.get(&sending_pkt)) {
-            IFLOG(cri(TH_ID, LS_CLO "[reading from packet queue]", __func__))
-            SET_ERROR_AND_RETURRetCodeKO_ACT
-        }
+        conn_evt->conn_->pkt_sending_q_.get(&sending_pkt);
         delete sending_pkt;
         return rcode;
     }
     if(conn_evt->conn_->set_socket_blocking_mode(false)) {
         IFLOG(cri(TH_ID, LS_CLO "[setting socket not blocking]", __func__))
-        SET_ERROR_AND_RETURRetCodeKO_ACT
+        return RetCode_KO;
     }
-    if(conn_evt->conn_->pkt_sending_q_.get(&sending_pkt)) {
-        IFLOG(cri(TH_ID, LS_CLO "[reading from packet queue]", __func__))
-        SET_ERROR_AND_RETURRetCodeKO_ACT
-    }
+    conn_evt->conn_->pkt_sending_q_.get(&sending_pkt);
     if((rcode = conn_evt->conn_->send_single_pkt(sending_pkt))) {
         IFLOG(err(TH_ID, LS_TRL "[socket:%d][failed sending conn-req packet]",
                   __func__,
@@ -756,19 +727,19 @@ RetCode selector::consume_asynch_events()
                             write_pending_sock_outg_conn_map_[conn_evt->socket_] = conn_evt->conn_;
                         }
                         break;
-                    case VLG_SELECTOR_Evt_ConnectRequest:     /*can originate in client peer only*/
+                    case VLG_SELECTOR_Evt_ConnectRequest:
                         add_early_outg_conn(conn_evt);
                         break;
-                    case VLG_SELECTOR_Evt_Disconnect:         /*can originate in both peer*/
+                    case VLG_SELECTOR_Evt_Disconnect:
                         manage_disconnect_conn(conn_evt);
                         break;
-                    case VLG_SELECTOR_Evt_ConnReqAccepted:    /*can originate in client peer only*/
+                    case VLG_SELECTOR_Evt_ConnReqAccepted:
                         promote_early_outg_conn(conn_evt->conn_);
                         break;
-                    case VLG_SELECTOR_Evt_ConnReqRefused:     /*can originate in client peer only*/
+                    case VLG_SELECTOR_Evt_ConnReqRefused:
                         delete_early_outg_conn(conn_evt->conn_);
                         break;
-                    case VLG_SELECTOR_Evt_Inactivity:         /*can originate in both peer*/
+                    case VLG_SELECTOR_Evt_Inactivity:
                         //@todo
                         break;
                     default:
@@ -914,7 +885,7 @@ void *selector::run()
     SelectorStatus current = SelectorStatus_UNDEF;
     if(status_ != SelectorStatus_INIT && status_ != SelectorStatus_REQUEST_READY) {
         IFLOG(err(TH_ID, LS_CLO "[status_=%d, exp:2][BAD STATUS]", __func__, status_))
-        SET_ERROR_AND_RETURNZERO_ACT;
+        return 0;
     }
     do {
         IFLOG(dbg(TH_ID, LS_SEL"+wait for go-ready request+"))

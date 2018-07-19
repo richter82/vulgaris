@@ -14,36 +14,30 @@ namespace vlg {
 
 struct connection_impl;
 
-class peer_recv_task_inco_conn : public p_tsk {
-    public:
-        peer_recv_task_inco_conn(std::shared_ptr<incoming_connection> &conn_sh,
-                                 std::unique_ptr<vlg_hdr_rec> &pkt_hdr,
-                                 std::unique_ptr<g_bbuf> &pkt_body);
+struct peer_recv_task_inco_conn : public p_tsk {
+    peer_recv_task_inco_conn(std::shared_ptr<incoming_connection> &conn_sh,
+                             std::unique_ptr<vlg_hdr_rec> &pkt_hdr,
+                             std::unique_ptr<g_bbuf> &pkt_body);
 
-        ~peer_recv_task_inco_conn();
+    ~peer_recv_task_inco_conn();
+    virtual RetCode execute() override;
 
-        virtual RetCode execute();
-
-    private:
-        std::shared_ptr<incoming_connection> conn_sh_;
-        std::unique_ptr<vlg_hdr_rec> pkt_hdr_;
-        std::unique_ptr<g_bbuf> pkt_body_;
+    std::shared_ptr<incoming_connection> conn_sh_;
+    std::unique_ptr<vlg_hdr_rec> pkt_hdr_;
+    std::unique_ptr<g_bbuf> pkt_body_;
 };
 
-class peer_recv_task_outg_conn : public p_tsk {
-    public:
-        peer_recv_task_outg_conn(outgoing_connection &conn,
-                                 std::unique_ptr<vlg_hdr_rec> &pkt_hdr,
-                                 std::unique_ptr<g_bbuf> &pkt_body);
+struct peer_recv_task_outg_conn : public p_tsk {
+    peer_recv_task_outg_conn(outgoing_connection &conn,
+                             std::unique_ptr<vlg_hdr_rec> &pkt_hdr,
+                             std::unique_ptr<g_bbuf> &pkt_body);
 
-        ~peer_recv_task_outg_conn();
+    ~peer_recv_task_outg_conn();
+    virtual RetCode execute() override;
 
-        virtual RetCode execute();
-
-    private:
-        outgoing_connection &conn_;
-        std::unique_ptr<vlg_hdr_rec> pkt_hdr_;
-        std::unique_ptr<g_bbuf> pkt_body_;
+    outgoing_connection &conn_;
+    std::unique_ptr<vlg_hdr_rec> pkt_hdr_;
+    std::unique_ptr<g_bbuf> pkt_body_;
 };
 
 /***********************************
@@ -66,9 +60,6 @@ struct per_nclass_id_conn_set {
     s_hm connid_condesc_set_;  //[connid --> condesc]
     mutable mx mon_;
 };
-
-#define VLG_DEF_SRV_SBS_EXEC_NO     1
-#define VLG_DEF_SRV_SBS_EXEC_Q_LEN  0
 
 // peer_impl
 struct peer_impl : public peer_automa {

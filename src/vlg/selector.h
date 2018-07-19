@@ -27,11 +27,6 @@ struct selector_event {
     sockaddr_in saddr_;
 };
 
-#define VLG_DEF_SRV_EXEC_NO     1
-#define VLG_DEF_CLI_EXEC_NO     1
-#define VLG_ADDR_LEN            100
-#define BUFF_SIZE               1024
-
 // SelectorStatus
 
 enum SelectorStatus {
@@ -70,7 +65,7 @@ struct selector : public p_th {
 
     RetCode set_status(SelectorStatus status);
 
-    virtual void *run();
+    virtual void *run() override;
 
     RetCode create_UDP_notify_srv_sock();
     RetCode connect_UDP_notify_cli_sock();

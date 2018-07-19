@@ -46,7 +46,7 @@ tx_impl::tx_impl(outgoing_transaction &publ) :
     txtype_(TransactionRequestType_UNDEFINED),
     txactn_(Action_NONE),
     req_nclassid_(0),
-    req_clsenc_(Encode_UNDEFINED),
+    req_clsenc_(Encode_INDEXED_NOT_ZERO),
     res_nclassid_(0),
     res_clsenc_(Encode_UNDEFINED),
     rsclrq_(false),
