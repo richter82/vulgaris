@@ -681,7 +681,7 @@ RetCode nclass::set_field_by_id(unsigned int fldid, const void *ptr, size_t maxl
     if(md) {
         char *cptr = reinterpret_cast<char *>(this);
         cptr += md->get_field_offset();
-        memcpy(cptr, ptr, maxlen ? min(maxlen, (md->get_field_type_size()*md->get_field_nmemb())) :
+        memcpy(cptr, ptr, maxlen ? std::min(maxlen, (md->get_field_type_size()*md->get_field_nmemb())) :
                (md->get_field_type_size()*md->get_field_nmemb()));
         return RetCode_OK;
     }
@@ -695,7 +695,7 @@ RetCode nclass::set_field_by_name(const char *fldname, const void *ptr, size_t m
     if(md) {
         char *cptr = reinterpret_cast<char *>(this);
         cptr += md->get_field_offset();
-        memcpy(cptr, ptr, maxlen ? min(maxlen, (md->get_field_type_size()*md->get_field_nmemb())) :
+        memcpy(cptr, ptr, maxlen ? std::min(maxlen, (md->get_field_type_size()*md->get_field_nmemb())) :
                (md->get_field_type_size()*md->get_field_nmemb()));
         return RetCode_OK;
     }
@@ -712,7 +712,7 @@ RetCode nclass::set_field_by_id_index(unsigned int fldid,
     if(md) {
         char *cptr = reinterpret_cast<char *>(this);
         cptr += (md->get_field_offset() + md->get_field_type_size()*index);
-        memcpy(cptr, ptr, maxlen ? min(maxlen, (md->get_field_type_size()*md->get_field_nmemb())) :
+        memcpy(cptr, ptr, maxlen ? std::min(maxlen, (md->get_field_type_size()*md->get_field_nmemb())) :
                (md->get_field_type_size()*md->get_field_nmemb()));
         return RetCode_OK;
     }
@@ -729,7 +729,7 @@ RetCode nclass::set_field_by_name_index(const char *fldname,
     if(md) {
         char *cptr = reinterpret_cast<char *>(this);
         cptr += (md->get_field_offset() + md->get_field_type_size()*index);
-        memcpy(cptr, ptr, maxlen ? min(maxlen, (md->get_field_type_size()*md->get_field_nmemb())) :
+        memcpy(cptr, ptr, maxlen ? std::min(maxlen, (md->get_field_type_size()*md->get_field_nmemb())) :
                (md->get_field_type_size()*md->get_field_nmemb()));
         return RetCode_OK;
     }

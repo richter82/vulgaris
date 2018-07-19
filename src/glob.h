@@ -8,6 +8,7 @@
 
 #if defined WIN32 && defined _MSC_VER
 #include <WS2tcpip.h>
+#undef min
 #endif
 #ifdef __GNUG__
 #include <unistd.h>
@@ -49,13 +50,11 @@
 #define NOINLINE
 #endif
 
-#ifndef min
-#define min(a,b) (((a) < (b)) ? (a) : (b))
-#endif
-
 #define CR_MAX_SRC_LINE_LEN 1024
 #define VLG_TK_COMMENT      "#"
 #define VLG_MDL_NAME_LEN    256
+
+#define RCV_SND_BUF_SZ 8192
 
 #define LS_WEL "WL|"
 #define LS_EMP "  |"

@@ -88,7 +88,7 @@ static int bind_stmt_fld(const member_desc &mmbrd,
             return sqlite3_bind_text(stmt,
                                      colmn_idx,
                                      obj_f_ptr,
-                                     mmbrd.get_field_nmemb() == 1 ? 1 : (int)min(strlen(obj_f_ptr), mmbrd.get_field_nmemb()),
+                                     mmbrd.get_field_nmemb() == 1 ? 1 : (int)std::min(strlen(obj_f_ptr), mmbrd.get_field_nmemb()),
                                      SQLITE_STATIC);
         case Type_BYTE:
             return sqlite3_bind_blob(stmt, colmn_idx, obj_f_ptr, (int)mmbrd.get_field_nmemb(), SQLITE_STATIC);
@@ -601,7 +601,7 @@ inline RetCode pers_conn_sqlite::sqlite_connect(const char *filename, int flags)
     if(last_rc) {
         IFLOG(err(TH_ID, LS_TRL"[filename:%s][sqlite3_open_v2 - rc:%d - errdesc:%s]",
                   __func__, filename, last_rc, sqlite3_errstr(last_rc)))
-        status_ = PersistenceConnectionStatus_ERROR;
+        status_ = PersistenceConnectionStatus_DISCONNECTED;
         rcode = RetCode_DBERR;
     } else {
         status_ = PersistenceConnectionStatus_CONNECTED;
@@ -617,7 +617,7 @@ inline RetCode pers_conn_sqlite::sqlite_disconnect()
         IFLOG(err(TH_ID, LS_CLO "[sqlite3_close_v2(rc:%d) - errdesc[%s] - db error]", __func__,
                   last_rc,
                   sqlite3_errstr(last_rc)))
-        status_ = PersistenceConnectionStatus_ERROR;
+        status_ = PersistenceConnectionStatus_CONNECTED;
         rcode = RetCode_DBERR;
     } else {
         status_ = PersistenceConnectionStatus_DISCONNECTED;
@@ -824,7 +824,7 @@ inline RetCode pers_conn_sqlite::do_connect()
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
-        task->await_for_status(PTASK_STATUS_EXECUTED);
+        task->await_for_status(PTskStatus_EXECUTED);
     }
     return task->op_res_;
 }
@@ -1018,7 +1018,7 @@ RetCode pers_conn_sqlite::do_create_table(const nentity_manager &nem,
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
-        task->await_for_status(PTASK_STATUS_EXECUTED);
+        task->await_for_status(PTskStatus_EXECUTED);
     }
     return task->op_res_;
 }
@@ -1101,7 +1101,7 @@ RetCode pers_conn_sqlite::do_select(unsigned int key,
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
-        task->await_for_status(PTASK_STATUS_EXECUTED);
+        task->await_for_status(PTskStatus_EXECUTED);
     }
     return task->op_res_;
 }
@@ -1329,7 +1329,7 @@ RetCode pers_conn_sqlite::do_update(unsigned int key,
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
-        task->await_for_status(PTASK_STATUS_EXECUTED);
+        task->await_for_status(PTskStatus_EXECUTED);
     }
     return task->op_res_;
 }
@@ -1437,7 +1437,7 @@ RetCode pers_conn_sqlite::do_delete(unsigned int key,
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
-        task->await_for_status(PTASK_STATUS_EXECUTED);
+        task->await_for_status(PTskStatus_EXECUTED);
     }
     return task->op_res_;
 }
@@ -1641,7 +1641,7 @@ RetCode pers_conn_sqlite::do_insert(const nentity_manager &nem,
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
-        task->await_for_status(PTASK_STATUS_EXECUTED);
+        task->await_for_status(PTskStatus_EXECUTED);
     }
     return task->op_res_;
 }
@@ -1660,7 +1660,7 @@ RetCode pers_conn_sqlite::do_execute_query(const nentity_manager &nem,
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
-        task->await_for_status(PTASK_STATUS_EXECUTED);
+        task->await_for_status(PTskStatus_EXECUTED);
     }
     qry_out.reset(task->in_out_query_);
     return task->op_res_;
@@ -1674,7 +1674,7 @@ RetCode pers_conn_sqlite::do_release_query(persistence_query_impl &qry)
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
-        task->await_for_status(PTASK_STATUS_EXECUTED);
+        task->await_for_status(PTskStatus_EXECUTED);
     }
     return task->op_res_;
 }
@@ -1695,7 +1695,7 @@ RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_impl &qry,
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
-        task->await_for_status(PTASK_STATUS_EXECUTED);
+        task->await_for_status(PTskStatus_EXECUTED);
     }
     return task->op_res_;;
 }
@@ -1711,7 +1711,7 @@ RetCode pers_conn_sqlite::do_execute_statement(const char *sql)
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
-        task->await_for_status(PTASK_STATUS_EXECUTED);
+        task->await_for_status(PTskStatus_EXECUTED);
     }
     return task->op_res_;
 }

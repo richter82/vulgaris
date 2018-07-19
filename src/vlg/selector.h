@@ -8,8 +8,6 @@
 #include "proto.h"
 #include "acceptor.h"
 
-#define PKT_SND_BUF_SZ 8192
-
 namespace vlg {
 
 // sel_evt
@@ -41,6 +39,8 @@ enum SelectorStatus {
     SelectorStatus_STOPPED,
     SelectorStatus_ERROR = 500,
 };
+
+// selector
 
 struct selector : public p_th {
     explicit selector(peer_impl &);
@@ -84,11 +84,13 @@ struct selector : public p_th {
     RetCode delete_early_outg_conn(conn_impl *);
     RetCode manage_disconnect_conn(sel_evt *);
     RetCode stop_and_clean();
+    RetCode inco_conn_process_rdn_buff(std::shared_ptr<incoming_connection> &);
+    RetCode outg_conn_process_rdn_buff(conn_impl *);
 
     //rep
     peer_impl &peer_;
     SelectorStatus status_;
-    fd_set read_FDs_, write_FDs_, excep_FDs_;
+    fd_set read_FDs_, write_FDs_;
 
     int nfds_;
     int sel_res_;
@@ -111,9 +113,6 @@ struct selector : public p_th {
     std::unordered_map<uint64_t, conn_impl *> outg_conn_map_;
     std::unordered_map<uint64_t, conn_impl *> wp_outg_conn_map_;
     p_exec_srv outg_exec_srv_;
-
-    //sending buffer
-    g_bbuf pkt_snd_buf_;
 };
 
 }

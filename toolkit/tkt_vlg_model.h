@@ -65,7 +65,7 @@ class vlg_toolkit_vlg_model : public QAbstractItemModel {
         void OnModelUpdate_event();
 
     public:
-        vlg_toolkit_vlg_model(vlg::nentity_manager &bem, QObject *parent = 0);
+        vlg_toolkit_vlg_model(const vlg::nentity_manager &bem, QObject *parent = 0);
         ~vlg_toolkit_vlg_model();
 
         //overriden methods
@@ -81,7 +81,7 @@ class vlg_toolkit_vlg_model : public QAbstractItemModel {
         QVariant data(const QModelIndex &index, int role) const;
 
         model_item *rootItem() const;
-        vlg::nentity_manager &bem() const;
+        const vlg::nentity_manager &bem() const;
 
         QList<model_item *> parents() const;
 
@@ -90,6 +90,6 @@ class vlg_toolkit_vlg_model : public QAbstractItemModel {
 
         //bem source for this model.
     private:
-        vlg::nentity_manager &bem_;
+        const vlg::nentity_manager &bem_;
         model_item *rootItem_;
 };

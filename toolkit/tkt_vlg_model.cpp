@@ -164,7 +164,7 @@ void vlg_toolkit_vlg_model::OnModelUpdate_event()
     updateModelData(rootItem_);
 }
 
-vlg_toolkit_vlg_model::vlg_toolkit_vlg_model(vlg::nentity_manager &bem,
+vlg_toolkit_vlg_model::vlg_toolkit_vlg_model(const vlg::nentity_manager &bem,
                                              QObject *parent) :
     QAbstractItemModel(parent),
     bem_(bem),
@@ -296,7 +296,7 @@ void vlg_toolkit_vlg_model::updateModelData(model_item *parent)
     bem_.enum_nentity_descriptors(EnumBemEdescF, this);
 }
 
-vlg::nentity_manager &vlg_toolkit_vlg_model::bem() const
+const vlg::nentity_manager &vlg_toolkit_vlg_model::bem() const
 {
     return bem_;
 }

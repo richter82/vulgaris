@@ -12,7 +12,7 @@
 
 namespace vlg {
 
-// CLASS connection_factory
+// incoming_connection_factory
 
 incoming_connection_factory *default_conn_factory = nullptr;
 incoming_connection_factory &incoming_connection_factory::default_factory()
@@ -41,21 +41,20 @@ namespace vlg {
 // peer_recv_task_inco_conn
 
 peer_recv_task_inco_conn::peer_recv_task_inco_conn(std::shared_ptr<incoming_connection> &conn_sh,
-                                                   std::unique_ptr<vlg_hdr_rec> &pkt_hdr,
+                                                   vlg_hdr_rec &pkt_hdr,
                                                    std::unique_ptr<g_bbuf> &pkt_body) :
     conn_sh_(conn_sh),
-    pkt_hdr_(std::move(pkt_hdr)),
+    pkt_hdr_(pkt_hdr),
     pkt_body_(std::move(pkt_body))
 {}
 
 peer_recv_task_inco_conn::~peer_recv_task_inco_conn()
 {}
 
-/*this method will be called when this task will be run by an executor*/
 RetCode peer_recv_task_inco_conn::execute()
 {
     RetCode rcode = RetCode_OK;
-    if((rcode = conn_sh_->impl_->peer_->recv_and_route_pkt(conn_sh_, pkt_hdr_.get(), pkt_body_.get()))) {
+    if((rcode = conn_sh_->impl_->peer_->recv_and_route_pkt(conn_sh_, &pkt_hdr_, pkt_body_.get()))) {
         IFLOG(trc(TH_ID, LS_EXE "[recv task:%d - execution failed - res:%d]", __func__, get_id(), rcode))
     }
     return rcode;
@@ -64,10 +63,10 @@ RetCode peer_recv_task_inco_conn::execute()
 // peer_recv_task_outg_conn
 
 peer_recv_task_outg_conn::peer_recv_task_outg_conn(outgoing_connection &conn,
-                                                   std::unique_ptr<vlg_hdr_rec> &pkt_hdr,
+                                                   vlg_hdr_rec &pkt_hdr,
                                                    std::unique_ptr<g_bbuf> &pkt_body) :
     conn_(conn),
-    pkt_hdr_(std::move(pkt_hdr)),
+    pkt_hdr_(pkt_hdr),
     pkt_body_(std::move(pkt_body))
 {}
 
@@ -77,7 +76,7 @@ peer_recv_task_outg_conn::~peer_recv_task_outg_conn()
 RetCode peer_recv_task_outg_conn::execute()
 {
     RetCode rcode = RetCode_OK;
-    if((rcode = conn_.impl_->peer_->recv_and_route_pkt(conn_, pkt_hdr_.get(), pkt_body_.get()))) {
+    if((rcode = conn_.impl_->peer_->recv_and_route_pkt(conn_, &pkt_hdr_, pkt_body_.get()))) {
         IFLOG(trc(TH_ID, LS_EXE "[recv task:%d - execution failed - res:%d]", __func__, get_id(), rcode))
     }
     return rcode;
@@ -85,8 +84,8 @@ RetCode peer_recv_task_outg_conn::execute()
 
 // peer_impl
 
-peer_impl::peer_impl(peer &publ) :
-    peer_automa(publ),
+peer_impl::peer_impl(peer &publ, peer_listener &listener) :
+    peer_automa(publ, listener),
     personality_(PeerPersonality_BOTH),
     srv_exectrs_(0),
     cli_exectrs_(0),
@@ -97,7 +96,6 @@ peer_impl::peer_impl(peer &publ) :
     pers_mng_(persistence_manager_impl::get_instance()),
     pers_schema_create_(false),
     drop_existing_schema_(false),
-    srv_sbs_exec_serv_(true),
     srv_sbs_nclassid_condesc_set_(HMSz_1031, sngl_ptr_obj_mng(), sizeof(unsigned int)),
     inco_conn_factory_(nullptr)
 {
@@ -322,7 +320,7 @@ RetCode peer_impl::on_automa_load_config(int pnum,
             return RetCode_BADCFG;
         }
     }
-    return publ_.on_load_config(pnum, param, value);
+    return listener_.on_load_config(publ_, pnum, param, value);
 }
 
 RetCode peer_impl::on_automa_early_init()
@@ -348,7 +346,7 @@ RetCode peer_impl::on_automa_init()
 {
     RetCode rcode = init();
     if(!rcode) {
-        rcode = publ_.on_init();
+        listener_.on_init(publ_);
     }
     return rcode;
 }
@@ -361,14 +359,14 @@ RetCode peer_impl::on_automa_start()
               (personality_ == PeerPersonality_BOTH) ? "both" :
               (personality_ == PeerPersonality_PURE_SERVER) ? "pure-server" : "pure-client"))
     if(personality_ == PeerPersonality_PURE_SERVER || personality_ == PeerPersonality_BOTH) {
-        PEXEC_SERVICE_STATUS current_exc_srv = PEXEC_SERVICE_STATUS_ZERO;
+        PExecSrvStatus current_exc_srv = PExecSrvStatus_TOINIT;
         if((rcode = srv_sbs_exec_serv_.start())) {
             IFLOG(cri(TH_ID, LS_CLO "[starting subscription executor service][res:%d]", __func__, rcode))
             return rcode;
         }
-        srv_sbs_exec_serv_.await_for_status_reached(PEXEC_SERVICE_STATUS_STARTED, current_exc_srv);
+        srv_sbs_exec_serv_.await_for_status_reached(PExecSrvStatus_STARTED, current_exc_srv);
     }
-    //persitence driv. bgn
+    //persistence driv. begin
     if(pers_enabled_) {
         IFLOG(dbg(TH_ID, LS_TRL "[starting all persistence drivers]", __func__))
         RET_ON_KO(pers_mng_.start_all_drivers())
@@ -404,7 +402,7 @@ RetCode peer_impl::on_automa_start()
                                        VLG_INT_AWT_TIMEOUT,
                                        0);
     if(!rcode) {
-        rcode = publ_.on_starting();
+        rcode = listener_.on_starting(publ_);
     }
     IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
@@ -428,7 +426,7 @@ RetCode peer_impl::on_automa_move_running()
     IFLOG(dbg(TH_ID, LS_TRL "[request selector go selecting]", __func__))
     selector_.set_status(SelectorStatus_REQUEST_SELECT);
     if(!rcode) {
-        rcode = publ_.on_move_running();
+        rcode = listener_.on_move_running(publ_);
     }
     return rcode;
 }
@@ -452,20 +450,15 @@ RetCode peer_impl::on_automa_stop()
     srv_sbs_exec_serv_.shutdown();
     srv_sbs_exec_serv_.await_termination();
     if(!rcode) {
-        rcode = publ_.on_stopping();
+        rcode = listener_.on_stopping(publ_);
     }
     IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
-RetCode peer_impl::on_automa_error()
-{
-    return publ_.on_error();
-}
-
 void peer_impl::on_automa_dying_breath()
 {
-    publ_.on_dying_breath();
+    listener_.on_dying_breath(publ_);
 }
 
 RetCode peer_impl::recv_and_route_pkt(outgoing_connection &conn,
@@ -667,7 +660,8 @@ RetCode peer_impl::get_per_nclassid_helper_rec(unsigned int nclass_id, per_nclas
 RetCode peer_impl::submit_sbs_evt_task(subscription_event_impl &sbs_evt,
                                        s_hm &connid_condesc_set)
 {
-    return srv_sbs_exec_serv_.submit(*new peer_sbs_task(*this, sbs_evt, connid_condesc_set));
+    std::shared_ptr<p_tsk> stsk(new peer_sbs_task(*this, sbs_evt, connid_condesc_set));
+    return srv_sbs_exec_serv_.submit(stsk);
 }
 
 // #VER#

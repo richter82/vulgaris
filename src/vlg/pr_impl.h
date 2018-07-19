@@ -16,27 +16,27 @@ struct connection_impl;
 
 struct peer_recv_task_inco_conn : public p_tsk {
     peer_recv_task_inco_conn(std::shared_ptr<incoming_connection> &conn_sh,
-                             std::unique_ptr<vlg_hdr_rec> &pkt_hdr,
+                             vlg_hdr_rec &pkt_hdr,
                              std::unique_ptr<g_bbuf> &pkt_body);
 
     ~peer_recv_task_inco_conn();
     virtual RetCode execute() override;
 
     std::shared_ptr<incoming_connection> conn_sh_;
-    std::unique_ptr<vlg_hdr_rec> pkt_hdr_;
+    vlg_hdr_rec pkt_hdr_;
     std::unique_ptr<g_bbuf> pkt_body_;
 };
 
 struct peer_recv_task_outg_conn : public p_tsk {
     peer_recv_task_outg_conn(outgoing_connection &conn,
-                             std::unique_ptr<vlg_hdr_rec> &pkt_hdr,
+                             vlg_hdr_rec &pkt_hdr,
                              std::unique_ptr<g_bbuf> &pkt_body);
 
     ~peer_recv_task_outg_conn();
     virtual RetCode execute() override;
 
     outgoing_connection &conn_;
-    std::unique_ptr<vlg_hdr_rec> pkt_hdr_;
+    vlg_hdr_rec pkt_hdr_;
     std::unique_ptr<g_bbuf> pkt_body_;
 };
 
@@ -63,7 +63,7 @@ struct per_nclass_id_conn_set {
 
 // peer_impl
 struct peer_impl : public peer_automa {
-        explicit peer_impl(peer &);
+        explicit peer_impl(peer &, peer_listener &);
 
         RetCode set_params_file_dir(const char *dir);
 
@@ -158,7 +158,6 @@ struct peer_impl : public peer_automa {
         virtual RetCode on_automa_start() override;
         virtual RetCode on_automa_stop() override;
         virtual RetCode on_automa_move_running() override;
-        virtual RetCode on_automa_error() override;
         virtual void on_automa_dying_breath() override;
 
     public:

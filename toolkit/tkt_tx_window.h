@@ -16,10 +16,6 @@ class toolkit_transaction : public vlg::outgoing_transaction {
     public:
         toolkit_transaction(vlg_toolkit_tx_window &widget);
 
-        virtual void on_status_change(vlg::TransactionStatus current) override;
-        virtual void on_close() override;
-
-    private:
         vlg_toolkit_tx_window &widget_;
 };
 

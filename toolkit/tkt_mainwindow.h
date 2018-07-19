@@ -17,6 +17,7 @@ namespace vlg_tlkt {
 //------------------------------------------------------------------------------
 // ****VLG_TOOLKIT_PEER****
 //------------------------------------------------------------------------------
+
 class toolkit_peer : public vlg::peer {
     public:
         toolkit_peer(vlg_toolkit_MainWindow &widget);
@@ -26,9 +27,6 @@ class toolkit_peer : public vlg::peer {
         virtual const unsigned int *get_version() override;
 
     public:
-        virtual void on_status_change(vlg::PeerStatus current) override;
-
-    private:
         vlg_toolkit_MainWindow &widget_;
 };
 

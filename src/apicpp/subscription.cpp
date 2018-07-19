@@ -52,8 +52,24 @@ std::unique_ptr<nclass> &subscription_event::get_data()
     return impl_->sbs_data_;
 }
 
-incoming_subscription::incoming_subscription(std::shared_ptr<incoming_connection> &conn) :
-    impl_(new incoming_subscription_impl(*this, conn))
+struct default_incoming_subscription_listener : public incoming_subscription_listener {
+    virtual void on_status_change(incoming_subscription &, SubscriptionStatus) override {}
+    virtual void on_stop(incoming_subscription &) override {}
+    virtual RetCode on_accept_event(incoming_subscription &, const subscription_event &) override {
+        return RetCode_OK;
+    }
+};
+
+static default_incoming_subscription_listener disl;
+
+incoming_subscription_listener &incoming_subscription_listener::default_listener()
+{
+    return disl;
+}
+
+incoming_subscription::incoming_subscription(std::shared_ptr<incoming_connection> &conn,
+                                             incoming_subscription_listener &listener) :
+    impl_(new incoming_subscription_impl(*this, conn, listener))
 {
     CTOR_TRC
 }
@@ -193,22 +209,26 @@ RetCode incoming_subscription::await_for_stop_result(SubscriptionResponse
                                         nsec);
 }
 
-void incoming_subscription::on_status_change(SubscriptionStatus current)
-{}
-
-void incoming_subscription::on_stop()
-{}
-
-RetCode incoming_subscription::accept_distribution(const subscription_event &sbs_evt)
-{
-    return RetCode_OK;
-}
-
 }
 
 namespace vlg {
 
-outgoing_subscription::outgoing_subscription() : impl_(new outgoing_subscription_impl(*this))
+struct default_outgoing_subscription_listener : public outgoing_subscription_listener {
+    virtual void on_status_change(outgoing_subscription &, SubscriptionStatus) override {}
+    virtual void on_start(outgoing_subscription &) override {}
+    virtual void on_stop(outgoing_subscription &) override {}
+    virtual void on_incoming_event(outgoing_subscription &, std::unique_ptr<subscription_event> &) override {}
+};
+
+static default_outgoing_subscription_listener dosl;
+
+outgoing_subscription_listener &outgoing_subscription_listener::default_listener()
+{
+    return dosl;
+}
+
+outgoing_subscription::outgoing_subscription(outgoing_subscription_listener &listener) :
+    impl_(new outgoing_subscription_impl(*this, listener))
 {
     CTOR_TRC
 }
@@ -384,17 +404,5 @@ RetCode outgoing_subscription::await_for_stop_result(SubscriptionResponse
                                         sec,
                                         nsec);
 }
-
-void outgoing_subscription::on_status_change(SubscriptionStatus current)
-{}
-
-void outgoing_subscription::on_start()
-{}
-
-void outgoing_subscription::on_stop()
-{}
-
-void outgoing_subscription::on_incoming_event(std::unique_ptr<subscription_event> &sbs_evt)
-{}
 
 }

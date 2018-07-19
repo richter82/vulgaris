@@ -39,14 +39,26 @@ vlg_toolkit_vlg_model &vlg_toolkit_Conn_mdl::wrapped_mdl()
 
 int vlg_toolkit_Connection::count_ = 0;
 
-toolkit_connection::toolkit_connection(vlg_toolkit_Connection &widget) : widget_(widget)
-{}
+struct toolkit_connection_listener : public vlg::outgoing_connection_listener {
+    virtual void on_status_change(vlg::outgoing_connection &oc,
+                                  vlg::ConnectionStatus current) override {
+        qDebug() << "connection status:" << current;
+        ((toolkit_connection &)oc).widget_.EmitConnStatus(current);
+    }
 
-void toolkit_connection::on_status_change(vlg::ConnectionStatus current)
-{
-    qDebug() << "connection status:" << current;
-    widget_.EmitConnStatus(current);
-}
+    virtual void on_connect(vlg::outgoing_connection &oc,
+                            vlg::ConnectivityEventResult con_evt_res,
+                            vlg::ConnectivityEventType c_evt_type) override {}
+
+    virtual void on_disconnect(vlg::outgoing_connection &oc,
+                               vlg::ConnectivityEventResult con_evt_res,
+                               vlg::ConnectivityEventType c_evt_type) override {}
+};
+
+static toolkit_connection_listener tcl;
+
+toolkit_connection::toolkit_connection(vlg_toolkit_Connection &widget) : vlg::outgoing_connection(tcl), widget_(widget)
+{}
 
 vlg_toolkit_Connection::vlg_toolkit_Connection(vlg::peer &peer,
                                                const QString &host,
@@ -110,7 +122,6 @@ void vlg_toolkit_Connection::UpdateTabHeader()
     }
     QIcon icon_flash;
     switch(conn_.get_status()) {
-        case vlg::ConnectionStatus_UNDEFINED:
         case vlg::ConnectionStatus_INITIALIZED:
         case vlg::ConnectionStatus_DISCONNECTED:
             icon_flash.addFile(QStringLiteral(":/icon/icons/flash_red.png"), QSize(),
@@ -122,9 +133,6 @@ void vlg_toolkit_Connection::UpdateTabHeader()
             icon_flash.addFile(QStringLiteral(":/icon/icons/flash_green.png"), QSize(),
                                QIcon::Normal, QIcon::Off);
             break;
-        case vlg::ConnectionStatus_SOCKET_ERROR:
-        case vlg::ConnectionStatus_PROTOCOL_ERROR:
-        case vlg::ConnectionStatus_ERROR:
         default:
             icon_flash.addFile(QStringLiteral(":/icon/icons/flash_red.png"), QSize(),
                                QIcon::Normal, QIcon::Off);
@@ -194,11 +202,6 @@ int vlg_toolkit_Connection::NextCount()
 void vlg_toolkit_Connection::OnConnStatusChange(vlg::ConnectionStatus status)
 {
     switch(status) {
-        case vlg::ConnectionStatus_UNDEFINED:
-            ui->conn_status_label_disp->setText(QObject::tr("UNDEFINED"));
-            ui->conn_status_label_disp->setStyleSheet(
-                QObject::tr("background-color : Beige; color : black;"));
-            break;
         case vlg::ConnectionStatus_INITIALIZED:
             ui->conn_status_label_disp->setText(QObject::tr("INITIALIZED"));
             ui->conn_status_label_disp->setStyleSheet(
@@ -227,21 +230,6 @@ void vlg_toolkit_Connection::OnConnStatusChange(vlg::ConnectionStatus status)
             ui->conn_status_label_disp->setStyleSheet(
                 QObject::tr("background-color : LawnGreen; color : black;"));
             ConnectionUpActions();
-            break;
-        case vlg::ConnectionStatus_SOCKET_ERROR:
-            ui->conn_status_label_disp->setText(QObject::tr("SOCKET ERROR"));
-            ui->conn_status_label_disp->setStyleSheet(
-                QObject::tr("background-color : Red; color : black;"));
-            break;
-        case vlg::ConnectionStatus_PROTOCOL_ERROR:
-            ui->conn_status_label_disp->setText(QObject::tr("PROTOCOL ERROR"));
-            ui->conn_status_label_disp->setStyleSheet(
-                QObject::tr("background-color : Red; color : black;"));
-            break;
-        case vlg::ConnectionStatus_ERROR:
-            ui->conn_status_label_disp->setText(QObject::tr("ERROR"));
-            ui->conn_status_label_disp->setStyleSheet(
-                QObject::tr("background-color : Red; color : black;"));
             break;
         default:
             break;

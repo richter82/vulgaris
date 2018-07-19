@@ -13,7 +13,34 @@
 
 namespace vlg {
 
-incoming_connection::incoming_connection(peer &p) : impl_(new incoming_connection_impl(*this, p))
+struct default_incoming_connection_listener : public incoming_connection_listener {
+    virtual void on_status_change(incoming_connection &,
+                                  ConnectionStatus current) override {}
+
+    virtual void on_disconnect(incoming_connection &,
+                               ConnectivityEventResult con_evt_res,
+                               ConnectivityEventType c_evt_type) override {}
+
+    virtual RetCode on_incoming_transaction(incoming_connection &,
+                                            std::shared_ptr<incoming_transaction> &) override {
+        return RetCode_OK;
+    }
+
+    virtual RetCode on_incoming_subscription(incoming_connection &,
+                                             std::shared_ptr<incoming_subscription> &) override {
+        return RetCode_OK;
+    }
+};
+
+static default_incoming_connection_listener dicl;
+
+incoming_connection_listener &incoming_connection_listener::default_listener()
+{
+    return dicl;
+}
+
+incoming_connection::incoming_connection(peer &p, incoming_connection_listener &listener) :
+    impl_(new incoming_connection_impl(*this, p, listener))
 {
     CTOR_TRC
 }
@@ -82,23 +109,6 @@ RetCode incoming_connection::await_for_disconnection_result(ConnectivityEventRes
                                                  nsec);
 }
 
-void incoming_connection::on_status_change(ConnectionStatus current)
-{}
-
-void incoming_connection::on_disconnect(ConnectivityEventResult con_evt_res,
-                                        ConnectivityEventType connectivity_evt_type)
-{}
-
-RetCode incoming_connection::on_incoming_transaction(std::shared_ptr<incoming_transaction> &incoming_transaction)
-{
-    return RetCode_OK;
-}
-
-RetCode incoming_connection::on_incoming_subscription(std::shared_ptr<incoming_subscription> &incoming_subscription)
-{
-    return RetCode_OK;
-}
-
 incoming_transaction_factory &incoming_connection::get_incoming_transaction_factory()
 {
     return *impl_->tx_factory_publ_;
@@ -138,7 +148,28 @@ unsigned short incoming_connection::get_host_port() const
 
 namespace vlg {
 
-outgoing_connection::outgoing_connection() : impl_(new outgoing_connection_impl(*this))
+struct default_outgoing_connection_listener : public outgoing_connection_listener {
+    virtual void on_status_change(outgoing_connection &,
+                                  ConnectionStatus current) override {}
+
+    virtual void on_connect(outgoing_connection &,
+                            ConnectivityEventResult con_evt_res,
+                            ConnectivityEventType c_evt_type) override {}
+
+    virtual void on_disconnect(outgoing_connection &,
+                               ConnectivityEventResult con_evt_res,
+                               ConnectivityEventType c_evt_type) override {}
+};
+
+static default_outgoing_connection_listener docl;
+
+outgoing_connection_listener &outgoing_connection_listener::default_listener()
+{
+    return docl;
+}
+
+outgoing_connection::outgoing_connection(outgoing_connection_listener &listener) :
+    impl_(new outgoing_connection_impl(*this, listener))
 {
     CTOR_TRC
 }
@@ -248,17 +279,6 @@ RetCode outgoing_connection::await_for_disconnection_result(ConnectivityEventRes
                                                  sec,
                                                  nsec);
 }
-
-void outgoing_connection::on_status_change(ConnectionStatus current)
-{}
-
-void outgoing_connection::on_connect(ConnectivityEventResult con_evt_res,
-                                     ConnectivityEventType connectivity_evt_type)
-{}
-
-void outgoing_connection::on_disconnect(ConnectivityEventResult con_evt_res,
-                                        ConnectivityEventType connectivity_evt_type)
-{}
 
 SOCKET outgoing_connection::get_socket() const
 {

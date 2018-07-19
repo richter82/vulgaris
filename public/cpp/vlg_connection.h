@@ -19,10 +19,42 @@ struct incoming_connection_factory {
     static incoming_connection_factory &default_factory();
 };
 
+/** @brief incoming connection listener.
+*/
+struct incoming_connection_listener {
+    virtual void on_status_change(incoming_connection &,
+                                  ConnectionStatus current) = 0;
+
+    virtual void on_disconnect(incoming_connection &,
+                               ConnectivityEventResult con_evt_res,
+                               ConnectivityEventType c_evt_type) = 0;
+
+    /**
+    @param incoming_transaction the brand new incoming transaction.
+    @return default implementation always returns RetCode_OK,
+            so all incoming transactions will be accepted.
+    */
+    virtual RetCode on_incoming_transaction(incoming_connection &,
+                                            std::shared_ptr<incoming_transaction> &) = 0;
+
+    /**
+    @param incoming_subscription the brand new incoming subscription.
+    @return default implementation always returns RetCode_OK,
+            so all incoming subscriptions will be accepted.
+    */
+    virtual RetCode on_incoming_subscription(incoming_connection &,
+                                             std::shared_ptr<incoming_subscription> &) = 0;
+
+    static incoming_connection_listener &default_listener();
+};
+
 /** @brief incoming_connection.
 */
 struct incoming_connection {
-    explicit incoming_connection(peer &);
+    explicit incoming_connection(peer &,
+                                 incoming_connection_listener &listener =
+                                     incoming_connection_listener::default_listener());
+
     virtual ~incoming_connection();
 
     peer &get_peer();
@@ -47,25 +79,6 @@ struct incoming_connection {
                                            time_t sec = -1,
                                            long nsec = 0);
 
-    virtual void on_status_change(ConnectionStatus current);
-
-    virtual void on_disconnect(ConnectivityEventResult con_evt_res,
-                               ConnectivityEventType c_evt_type);
-
-    /**
-    @param incoming_transaction the brand new incoming transaction.
-    @return default implementation always returns RetCode_OK,
-            so all incoming transactions will be accepted.
-    */
-    virtual RetCode on_incoming_transaction(std::shared_ptr<incoming_transaction> &);
-
-    /**
-    @param incoming_subscription the brand new incoming subscription.
-    @return default implementation always returns RetCode_OK,
-            so all incoming subscriptions will be accepted.
-    */
-    virtual RetCode on_incoming_subscription(std::shared_ptr<incoming_subscription> &);
-
     incoming_transaction_factory &get_incoming_transaction_factory();
     void set_incoming_transaction_factory(incoming_transaction_factory &);
 
@@ -83,10 +96,29 @@ struct incoming_connection {
 
 namespace vlg {
 
+/** @brief outgoing connection listener.
+*/
+struct outgoing_connection_listener {
+    virtual void on_status_change(outgoing_connection &,
+                                  ConnectionStatus current) = 0;
+
+    virtual void on_connect(outgoing_connection &,
+                            ConnectivityEventResult con_evt_res,
+                            ConnectivityEventType c_evt_type) = 0;
+
+    virtual void on_disconnect(outgoing_connection &,
+                               ConnectivityEventResult con_evt_res,
+                               ConnectivityEventType c_evt_type) = 0;
+
+    static outgoing_connection_listener &default_listener();
+};
+
 /** @brief outgoing_connection.
 */
 struct outgoing_connection {
-    explicit outgoing_connection();
+    explicit outgoing_connection(outgoing_connection_listener &listener =
+                                     outgoing_connection_listener::default_listener());
+
     virtual ~outgoing_connection();
 
     RetCode bind(peer &);
@@ -123,14 +155,6 @@ struct outgoing_connection {
                                            ConnectivityEventType &c_evt_type,
                                            time_t sec = -1,
                                            long nsec = 0);
-
-    virtual void on_status_change(ConnectionStatus current);
-
-    virtual void on_connect(ConnectivityEventResult con_evt_res,
-                            ConnectivityEventType c_evt_type);
-
-    virtual void on_disconnect(ConnectivityEventResult con_evt_res,
-                               ConnectivityEventType c_evt_type);
 
     SOCKET get_socket() const;
     const char *get_host_ip() const;

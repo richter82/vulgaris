@@ -830,7 +830,7 @@ struct logger_impl {
                 appender *apnds[],
                 uint16_t apnds_n) :
         lvl_(level),
-        sign_len_((uint16_t)min(strlen(sign), LG_MAX_SIGN_LEN)),
+        sign_len_((uint16_t)std::min(strlen(sign), (size_t)LG_MAX_SIGN_LEN)),
         apnds_n_(apnds_n) {
         memset(sign_, 0, sizeof(sign_));
         strncpy(sign_, sign, sign_len_);

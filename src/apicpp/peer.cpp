@@ -10,7 +10,41 @@
 
 namespace vlg {
 
-peer::peer() : impl_(new peer_impl(*this))
+struct default_peer_listener : public peer_listener {
+    virtual RetCode on_load_config(peer &,
+                                   int pnum,
+                                   const char *param,
+                                   const char *value) override {
+        return RetCode_OK;
+    }
+
+    virtual RetCode on_init(peer &) override {
+        return RetCode_OK;
+    }
+    virtual RetCode on_starting(peer &) override {
+        return RetCode_OK;
+    }
+    virtual RetCode on_stopping(peer &) override {
+        return RetCode_OK;
+    }
+    virtual RetCode on_move_running(peer &) override {
+        return RetCode_OK;
+    }
+    virtual void on_dying_breath(peer &) override {}
+    virtual void on_status_change(peer &, PeerStatus) override {}
+    virtual RetCode on_incoming_connection(peer &, std::shared_ptr<incoming_connection> &) override {
+        return RetCode_OK;
+    }
+};
+
+static default_peer_listener dpl;
+
+peer_listener &peer_listener::default_listener()
+{
+    return dpl;
+}
+
+peer::peer(peer_listener &listener) : impl_(new peer_impl(*this, listener))
 {
     CTOR_TRC
 }
@@ -55,12 +89,7 @@ bool peer::is_configured()
     return impl_->configured_;
 }
 
-const nentity_manager &peer::get_entity_manager() const
-{
-    return impl_->nem_;
-}
-
-nentity_manager &peer::get_entity_manager_m()
+const nentity_manager &peer::get_nentity_manager() const
 {
     return impl_->nem_;
 }
@@ -168,44 +197,6 @@ RetCode peer::extend_model(nentity_manager &nem)
 RetCode peer::extend_model(const char *model_name)
 {
     return impl_->extend_model(model_name);
-}
-
-RetCode peer::on_load_config(int pnum, const char *param,
-                             const char *value)
-{
-    return RetCode_OK;
-}
-
-void peer::on_status_change(PeerStatus current)
-{}
-
-RetCode peer::on_init()
-{
-    return RetCode_OK;
-}
-
-RetCode peer::on_starting()
-{
-    return RetCode_OK;
-}
-
-RetCode peer::on_stopping()
-{
-    return RetCode_OK;
-}
-
-RetCode peer::on_move_running()
-{
-    return RetCode_OK;
-}
-
-RetCode peer::on_error()
-{
-    return RetCode_OK;
-}
-
-void peer::on_dying_breath()
-{
 }
 
 void peer::set_configured(bool configured)
@@ -338,11 +329,6 @@ RetCode peer::obj_remove_and_distribute(unsigned short nclass_key,
                                         const nclass &in)
 {
     return impl_->obj_remove_and_distribute(nclass_key, mode, in);
-}
-
-RetCode peer::on_incoming_connection(std::shared_ptr<incoming_connection> &)
-{
-    return RetCode_OK;
 }
 
 }

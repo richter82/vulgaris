@@ -40,8 +40,12 @@ struct subscription_event_impl {
 };
 
 struct sbs_impl {
-    explicit sbs_impl(incoming_subscription &publ, incoming_connection &conn);
-    explicit sbs_impl(outgoing_subscription &publ);
+    explicit sbs_impl(incoming_subscription &publ,
+                      incoming_connection &conn,
+                      incoming_subscription_listener &listener);
+
+    explicit sbs_impl(outgoing_subscription &publ,
+                      outgoing_subscription_listener &listener);
 
     virtual ~sbs_impl() = default;
 
@@ -49,7 +53,6 @@ struct sbs_impl {
     RetCode set_started();
     RetCode set_stopped();
     RetCode set_released();
-    RetCode set_error();
 
     RetCode stop();
 
@@ -94,10 +97,14 @@ struct sbs_impl {
 
     incoming_subscription *ipubl_;
     outgoing_subscription *opubl_;
+    incoming_subscription_listener *ilistener_;
+    outgoing_subscription_listener *olistener_;
 };
 
 struct incoming_subscription_impl : public sbs_impl {
-    explicit incoming_subscription_impl(incoming_subscription &publ, std::shared_ptr<incoming_connection> &);
+    explicit incoming_subscription_impl(incoming_subscription &publ,
+                                        std::shared_ptr<incoming_connection> &,
+                                        incoming_subscription_listener &);
     virtual ~incoming_subscription_impl();
 
     RetCode execute_initial_query();
@@ -105,7 +112,7 @@ struct incoming_subscription_impl : public sbs_impl {
     RetCode send_start_response();
 
     void submit_evt(std::shared_ptr<subscription_event> &sbs_evt) {
-        if(!(ipubl_->accept_distribution(*sbs_evt))) {
+        if(!(ilistener_->on_accept_event(*ipubl_, *sbs_evt))) {
             enq_event(sbs_evt);
         }
     }
@@ -125,7 +132,8 @@ struct incoming_subscription_impl : public sbs_impl {
 namespace vlg {
 
 struct outgoing_subscription_impl : public sbs_impl {
-    explicit outgoing_subscription_impl(outgoing_subscription &publ);
+    explicit outgoing_subscription_impl(outgoing_subscription &publ,
+                                        outgoing_subscription_listener &);
     virtual ~outgoing_subscription_impl();
 
     RetCode set_req_sent();

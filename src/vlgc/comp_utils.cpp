@@ -6,10 +6,6 @@
 
 #include "compiler.h"
 
-#ifndef min
-#define min(a,b)            (((a) < (b)) ? (a) : (b))
-#endif
-
 //--C++
 #define VLG_COMP_CPP_TYPE_UNSIGN    "unsigned"
 #define VLG_COMP_CPP_TYPE_BOOL      "bool"
@@ -876,7 +872,7 @@ size_t get_next_valid_offset(size_t &cur_offset,
                              size_t packing,
                              bool   scalar)
 {
-    size_t align = scalar ? min(type_align, packing) : max_align;
+    size_t align = scalar ? std::min(type_align, packing) : max_align;
     size_t rem = 0;
     if((rem = (cur_offset % align))) {
         cur_offset += (align - rem);

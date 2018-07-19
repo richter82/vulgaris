@@ -68,43 +68,56 @@ incoming_subscription &incoming_subscription_factory::make_incoming_subscription
 
 namespace vlg {
 
-conn_impl::conn_impl(incoming_connection &ipubl, peer &p) :
+conn_impl::conn_impl(incoming_connection &ipubl,
+                     peer &p,
+                     incoming_connection_listener &listener) :
     con_type_(ConnectionType_INGOING),
     socket_(INVALID_SOCKET),
     last_socket_err_(0),
     con_evt_res_(ConnectivityEventResult_OK),
     connectivity_evt_type_(ConnectivityEventType_UNDEFINED),
     connid_(0),
-    status_(ConnectionStatus_UNDEFINED),
+    status_(ConnectionStatus_INITIALIZED),
     conres_(ConnectionResult_UNDEFINED),
     conrescode_(ProtocolCode_UNDEFINED),
     cli_agrhbt_(0),
     srv_agrhbt_(0),
     disconrescode_(ProtocolCode_UNDEFINED),
     connect_evt_occur_(false),
+    pkt_ch_st_(PktChasingStatus_HDRLen),
+    rdn_buff_(RCV_SND_BUF_SZ),
     pkt_sending_q_(conn_pkt_up_omng),
+    acc_snd_buff_(RCV_SND_BUF_SZ),
     ipubl_(&ipubl),
     opubl_(nullptr),
+    ilistener_(&listener),
+    olistener_(nullptr),
     peer_(p.impl_.get())
 {}
 
-conn_impl::conn_impl(outgoing_connection &opubl) :
+conn_impl::conn_impl(outgoing_connection &opubl,
+                     outgoing_connection_listener &listener) :
     con_type_(ConnectionType_OUTGOING),
     socket_(INVALID_SOCKET),
     last_socket_err_(0),
     con_evt_res_(ConnectivityEventResult_OK),
     connectivity_evt_type_(ConnectivityEventType_UNDEFINED),
     connid_(0),
-    status_(ConnectionStatus_UNDEFINED),
+    status_(ConnectionStatus_INITIALIZED),
     conres_(ConnectionResult_UNDEFINED),
     conrescode_(ProtocolCode_UNDEFINED),
     cli_agrhbt_(0),
     srv_agrhbt_(0),
     disconrescode_(ProtocolCode_UNDEFINED),
     connect_evt_occur_(false),
+    pkt_ch_st_(PktChasingStatus_HDRLen),
+    rdn_buff_(RCV_SND_BUF_SZ),
     pkt_sending_q_(conn_pkt_up_omng),
+    acc_snd_buff_(RCV_SND_BUF_SZ),
     ipubl_(nullptr),
     opubl_(&opubl),
+    ilistener_(nullptr),
+    olistener_(&listener),
     peer_(nullptr)
 {}
 
@@ -135,9 +148,9 @@ RetCode conn_impl::set_status(ConnectionStatus status)
     scoped_mx smx(mon_);
     status_ = status;
     if(con_type_ == ConnectionType_INGOING) {
-        ipubl_->on_status_change(status_);
+        ilistener_->on_status_change(*ipubl_, status_);
     } else {
-        opubl_->on_status_change(status_);
+        olistener_->on_status_change(*opubl_, status_);
     }
     mon_.notify_all();
     return RetCode_OK;
@@ -214,27 +227,6 @@ RetCode conn_impl::set_socket_disconnected()
     return RetCode_OK;
 }
 
-RetCode conn_impl::set_proto_error(RetCode cause_res)
-{
-    set_status(ConnectionStatus_PROTOCOL_ERROR);
-    IFLOG(err(TH_ID, LS_CLO "[res:%d, last_sock_err:%d]", __func__, cause_res, last_socket_err_))
-    return RetCode_OK;
-}
-
-RetCode conn_impl::set_socket_error(RetCode cause_res)
-{
-    IFLOG(err(TH_ID, LS_CLO "[res:%d, last_sock_err:%d]", __func__, cause_res, last_socket_err_))
-    set_status(ConnectionStatus_SOCKET_ERROR);
-    return RetCode_OK;
-}
-
-RetCode conn_impl::set_internal_error(RetCode cause_res)
-{
-    IFLOG(err(TH_ID, LS_CLO "[res:%d, last_sock_err:%d]", __func__, cause_res, last_socket_err_))
-    set_status(ConnectionStatus_ERROR);
-    return RetCode_OK;
-}
-
 RetCode conn_impl::set_appl_connected()
 {
     if(status_ != ConnectionStatus_PROTOCOL_HANDSHAKE) {
@@ -270,6 +262,7 @@ RetCode conn_impl::close_connection(ConnectivityEventResult cer,
                                     ConnectivityEventType cet)
 {
     socket_shutdown();
+    clean_rdn_rep();
     release_all_children();
     notify_disconnection(cer, cet);
     return RetCode_OK;
@@ -395,9 +388,9 @@ RetCode conn_impl::notify_disconnection(ConnectivityEventResult con_evt_res,
                                         ConnectivityEventType connectivity_evt_type)
 {
     if(con_type_ == ConnectionType_INGOING) {
-        ipubl_->on_disconnect(con_evt_res, connectivity_evt_type);
+        ilistener_->on_disconnect(*ipubl_, con_evt_res, connectivity_evt_type);
     } else {
-        opubl_->on_disconnect(con_evt_res, connectivity_evt_type);
+        olistener_->on_disconnect(*opubl_, con_evt_res, connectivity_evt_type);
     }
     return notify_for_connectivity_result(con_evt_res, connectivity_evt_type);
 }
@@ -440,21 +433,413 @@ RetCode conn_impl::await_for_disconnection_result(ConnectivityEventResult &con_e
     return rcode;
 }
 
+// ****************************************************************************
+// CONNECTION SEND/RECV METHS
+// ****************************************************************************
+
+RetCode conn_impl::sckt_hndl_err(long sock_op_res)
+{
+    RetCode rcode = RetCode_OK;
+    if(sock_op_res == SOCKET_ERROR) {
+#if defined WIN32 && defined _MSC_VER
+        last_socket_err_ = WSAGetLastError();
+#else
+        last_socket_err_ = errno;
+#endif
+#if defined WIN32 && defined _MSC_VER
+        if(last_socket_err_ == WSAEWOULDBLOCK) {
+#else
+        if(last_socket_err_ == EAGAIN || last_socket_err_ == EWOULDBLOCK) {
+#endif
+            rcode = RetCode_SCKWBLK;
+#if defined WIN32 && defined _MSC_VER
+        } else if(last_socket_err_ == WSAECONNRESET) {
+#else
+        } else if(last_socket_err_ == ECONNRESET) {
+#endif
+            IFLOG(err(TH_ID, LS_CON"[connid:%d][socket:%d][connection reset by peer][err:%d]",
+                      connid_,
+                      socket_,
+                      last_socket_err_))
+            rcode = RetCode_SCKCLO;
+        } else {
+            perror(__func__);
+            IFLOG(err(TH_ID, LS_CON"[connid:%d][socket:%d][connection socket error][errno:%d][err:%d]",
+                      connid_,
+                      socket_,
+                      errno,
+                      last_socket_err_))
+            rcode = RetCode_SCKERR;
+        }
+    } else if(!sock_op_res) {
+        /*typically we can arrive here on client applicative disconnections*/
+        IFLOG(dbg(TH_ID, LS_CON"[connid:%d][socket:%d][connection socket was closed by peer]",
+                  connid_,
+                  socket_))
+        rcode = RetCode_SCKCLO;
+    } else {
+        IFLOG(err(TH_ID, LS_CON "[connid:%d][socket:%d][connection unk. error]",
+                  connid_,
+                  socket_))
+        rcode = RetCode_UNKERR;
+    }
+
+    switch((rcode)) {
+        case RetCode_SCKCLO:
+            close_connection(ConnectivityEventResult_OK, ConnectivityEventType_NETWORK);
+            break;
+        case RetCode_SCKERR:
+        case RetCode_UNKERR:
+            close_connection(ConnectivityEventResult_KO, ConnectivityEventType_NETWORK);
+            break;
+        default:
+            break;
+    }
+    return rcode;
+}
+
+RetCode conn_impl::recv_bytes()
+{
+    RetCode rcode = RetCode_OK;
+    rdn_buff_.set_write();
+    long brecv = 0, buf_rem_len = (long)rdn_buff_.remaining();
+    while(buf_rem_len && ((brecv = recv(socket_,
+                                        &rdn_buff_.buf_[rdn_buff_.pos_],
+                                        buf_rem_len, 0)) > 0)) {
+        rdn_buff_.move_pos_write(brecv);
+        buf_rem_len -= brecv;
+    }
+    if(brecv<=0) {
+        rcode = sckt_hndl_err(brecv);
+    }
+    return rcode;
+}
+
+RetCode conn_impl::chase_pkt()
+{
+    RetCode rcode = RetCode_PARTPKT;
+    bool pkt_rdy = false, stay = true;
+    rdn_buff_.set_read();
+    while(stay && rdn_buff_.available_read() && !pkt_rdy) {
+        switch(pkt_ch_st_) {
+            case PktChasingStatus_HDRLen:
+                if(rdn_buff_.available_read() >= WORD_SZ) {
+                    unsigned int hdr_row = 0;
+                    rdn_buff_.read_uint(&hdr_row);
+                    Decode_WRD_PKTHDR(&hdr_row, &curr_rdn_hdr_.phdr);
+                    curr_rdn_hdr_.hdr_bytelen = curr_rdn_hdr_.phdr.hdrlen * WORD_SZ;
+                    pkt_ch_st_ = PktChasingStatus_HDR;
+                } else {
+                    stay = false;
+                }
+                break;
+            case PktChasingStatus_HDR:
+                if(rdn_buff_.available_read() >= (curr_rdn_hdr_.hdr_bytelen - WORD_SZ)) {
+                    RetCode dres = read_decode_hdr();
+                    if(dres == RetCode_MALFORM) {
+                        set_disconnecting();
+                        close_connection(ConnectivityEventResult_KO, ConnectivityEventType_PROTOCOL);
+                        stay = false;
+                    }
+                    if(curr_rdn_hdr_.bdy_bytelen) {
+                        pkt_ch_st_ = PktChasingStatus_Body;
+                    } else {
+                        pkt_ch_st_ = PktChasingStatus_HDRLen;
+                        pkt_rdy = true;
+                    }
+                } else {
+                    stay = false;
+                }
+                break;
+            case PktChasingStatus_Body:
+                if(rdn_buff_.available_read()) {
+                    if(!curr_rdn_body_) {
+                        curr_rdn_body_.reset(new g_bbuf(curr_rdn_hdr_.bdy_bytelen));
+                    }
+                    rdn_buff_.read(std::min(curr_rdn_body_->remaining(), rdn_buff_.available_read()), *curr_rdn_body_);
+                    if(curr_rdn_body_->remaining()) {
+                        stay = false;
+                    } else {
+                        curr_rdn_body_->set_read();
+                        pkt_ch_st_ = PktChasingStatus_HDRLen;
+                        pkt_rdy = true;
+                    }
+                } else {
+                    stay = false;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+    size_t avl_rd = rdn_buff_.available_read();
+    if(avl_rd) {
+        rdn_buff_.set_mark();
+        if(avl_rd < VLG_MAX_HDR_SZ) {
+            rdn_buff_.compact();
+        }
+    } else {
+        rdn_buff_.reset();
+    }
+    return pkt_rdy ? RetCode_OK : rcode;
+}
+
+RetCode conn_impl::read_decode_hdr()
+{
+    RetCode rcode = RetCode_OK;
+    unsigned int hdr_row = 0;
+    switch(curr_rdn_hdr_.phdr.pkttyp) {
+        case VLG_PKT_TSTREQ_ID:
+            /*TEST REQUEST*/
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_TMSTMP(&hdr_row, &curr_rdn_hdr_.row_1.tmstmp);
+            if(curr_rdn_hdr_.phdr.hdrlen == 3) {
+                rdn_buff_.read_uint(&hdr_row);
+                Decode_WRD_CONNID(&hdr_row, &curr_rdn_hdr_.row_2.connid);
+            }
+            break;
+        case VLG_PKT_HRTBET_ID:
+            /*HEARTBEAT*/
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_TMSTMP(&hdr_row, &curr_rdn_hdr_.row_1.tmstmp);
+            if(curr_rdn_hdr_.phdr.hdrlen == 3) {
+                rdn_buff_.read_uint(&hdr_row);
+                Decode_WRD_CONNID(&hdr_row, &curr_rdn_hdr_.row_2.connid);
+            }
+            break;
+        case VLG_PKT_CONREQ_ID:
+            /*CONNECTION REQUEST*/
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_CLIHBT(&hdr_row, &curr_rdn_hdr_.row_1.clihbt);
+            break;
+        case VLG_PKT_CONRES_ID:
+            /*CONNECTION RESPONSE*/
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_SRVCRS(&hdr_row, &curr_rdn_hdr_.row_1.srvcrs);
+            if(curr_rdn_hdr_.phdr.hdrlen == 3) {
+                rdn_buff_.read_uint(&hdr_row);
+                Decode_WRD_CONNID(&hdr_row, &curr_rdn_hdr_.row_2.connid);
+            }
+            break;
+        case VLG_PKT_DSCOND_ID:
+            /*DISCONNECTED*/
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_DISWRD(&hdr_row, &curr_rdn_hdr_.row_1.diswrd);
+            if(curr_rdn_hdr_.phdr.hdrlen == 3) {
+                rdn_buff_.read_uint(&hdr_row);
+                Decode_WRD_CONNID(&hdr_row, &curr_rdn_hdr_.row_2.connid);
+            }
+            break;
+        case VLG_PKT_TXRQST_ID:
+            /*TRANSACTION REQUEST*/
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_TXREQW(&hdr_row, &curr_rdn_hdr_.row_1.txreqw);
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_TXPLID(&hdr_row, &curr_rdn_hdr_.row_2.txplid);
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_TXSVID(&hdr_row, &curr_rdn_hdr_.row_3.txsvid);
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_TXCNID(&hdr_row, &curr_rdn_hdr_.row_4.txcnid);
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_TXPRID(&hdr_row, &curr_rdn_hdr_.row_5.txprid);
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_PKTLEN(&hdr_row, &curr_rdn_hdr_.row_6.pktlen);
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_CLSENC(&hdr_row, &curr_rdn_hdr_.row_7.clsenc);
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_CONNID(&hdr_row, &curr_rdn_hdr_.row_8.connid);
+            curr_rdn_hdr_.bdy_bytelen = curr_rdn_hdr_.row_6.pktlen.pktlen - curr_rdn_hdr_.hdr_bytelen;
+            break;
+        case VLG_PKT_TXRESP_ID:
+            /*TRANSACTION RESPONSE*/
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_TXRESW(&hdr_row, &curr_rdn_hdr_.row_1.txresw);
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_TXPLID(&hdr_row, &curr_rdn_hdr_.row_2.txplid);
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_TXSVID(&hdr_row, &curr_rdn_hdr_.row_3.txsvid);
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_TXCNID(&hdr_row, &curr_rdn_hdr_.row_4.txcnid);
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_TXPRID(&hdr_row, &curr_rdn_hdr_.row_5.txprid);
+            if(curr_rdn_hdr_.phdr.hdrlen == 8) {
+                rdn_buff_.read_uint(&hdr_row);
+                Decode_WRD_PKTLEN(&hdr_row, &curr_rdn_hdr_.row_6.pktlen);
+                rdn_buff_.read_uint(&hdr_row);
+                Decode_WRD_CLSENC(&hdr_row, &curr_rdn_hdr_.row_7.clsenc);
+                curr_rdn_hdr_.bdy_bytelen = curr_rdn_hdr_.row_6.pktlen.pktlen - curr_rdn_hdr_.hdr_bytelen;
+            }
+            break;
+        case VLG_PKT_SBSREQ_ID:
+            /*SUBSCRIPTION REQUEST*/
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_SBREQW(&hdr_row, &curr_rdn_hdr_.row_1.sbreqw);
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_CLSENC(&hdr_row, &curr_rdn_hdr_.row_2.clsenc);
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_CONNID(&hdr_row, &curr_rdn_hdr_.row_3.connid);
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_RQSTID(&hdr_row, &curr_rdn_hdr_.row_4.rqstid);
+            if(curr_rdn_hdr_.phdr.hdrlen == 7) {
+                rdn_buff_.read_uint(&hdr_row);
+                Decode_WRD_TMSTMP(&hdr_row, &curr_rdn_hdr_.row_5.tmstmp); //timestamp 0
+                rdn_buff_.read_uint(&hdr_row);
+                Decode_WRD_TMSTMP(&hdr_row, &curr_rdn_hdr_.row_6.tmstmp); //timestamp 1
+            }
+            break;
+        case VLG_PKT_SBSRES_ID:
+            /*SUBSCRIPTION RESPONSE*/
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_SBRESW(&hdr_row, &curr_rdn_hdr_.row_1.sbresw);
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_RQSTID(&hdr_row, &curr_rdn_hdr_.row_2.rqstid);
+            if(curr_rdn_hdr_.phdr.hdrlen == 4) {
+                rdn_buff_.read_uint(&hdr_row);
+                Decode_WRD_SBSRID(&hdr_row, &curr_rdn_hdr_.row_3.sbsrid);
+            }
+            break;
+        case VLG_PKT_SBSEVT_ID:
+            /*SUBSCRIPTION EVENT*/
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_SBSRID(&hdr_row, &curr_rdn_hdr_.row_1.sbsrid);
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_SEVTTP(&hdr_row, &curr_rdn_hdr_.row_2.sevttp);
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_SEVTID(&hdr_row, &curr_rdn_hdr_.row_3.sevtid);
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_TMSTMP(&hdr_row, &curr_rdn_hdr_.row_4.tmstmp); //timestamp 0
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_TMSTMP(&hdr_row, &curr_rdn_hdr_.row_5.tmstmp); //timestamp 1
+            if(curr_rdn_hdr_.phdr.hdrlen == 7) {
+                rdn_buff_.read_uint(&hdr_row);
+                Decode_WRD_PKTLEN(&hdr_row, &curr_rdn_hdr_.row_6.pktlen);
+                curr_rdn_hdr_.bdy_bytelen = curr_rdn_hdr_.row_6.pktlen.pktlen - curr_rdn_hdr_.hdr_bytelen;
+            }
+            break;
+        case VLG_PKT_SBSACK_ID:
+            /*SUBSCRIPTION EVENT ACK*/
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_SBSRID(&hdr_row, &curr_rdn_hdr_.row_1.sbsrid);
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_SEVTID(&hdr_row, &curr_rdn_hdr_.row_2.sevtid);
+            break;
+        case VLG_PKT_SBSTOP_ID:
+            /*SUBSCRIPTION STOP REQUEST*/
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_SBSRID(&hdr_row, &curr_rdn_hdr_.row_1.sbsrid);
+            break;
+        case VLG_PKT_SBSSPR_ID:
+            /*SUBSCRIPTION STOP RESPONSE*/
+            rdn_buff_.read_uint(&hdr_row);
+            Decode_WRD_SBRESW(&hdr_row, &curr_rdn_hdr_.row_1.sbresw);
+            if(curr_rdn_hdr_.phdr.hdrlen == 3) {
+                rdn_buff_.read_uint(&hdr_row);
+                Decode_WRD_SBSRID(&hdr_row, &curr_rdn_hdr_.row_2.sbsrid);
+            }
+            break;
+        default:
+            return RetCode_MALFORM;
+    }
+    return rcode;
+}
+
+void conn_impl::clean_rdn_rep()
+{
+    pkt_ch_st_ = PktChasingStatus_HDRLen;
+    rdn_buff_.reset();
+    curr_rdn_hdr_.reset();
+    curr_rdn_body_.release();
+}
+
+RetCode conn_impl::send_acc_buff()
+{
+    acc_snd_buff_.set_read();
+    if(!acc_snd_buff_.limit_) {
+        return RetCode_BADARG;
+    }
+    RetCode rcode = RetCode_OK;
+    bool stay = true;
+    long bsent = 0, tot_bsent = 0, remaining = (long)acc_snd_buff_.available_read();
+    while(stay) {
+        while(remaining && ((bsent = send(socket_,
+                                          &acc_snd_buff_.buf_[acc_snd_buff_.pos_],
+                                          (int)remaining, 0)) > 0)) {
+            acc_snd_buff_.advance_pos_read(bsent);
+            tot_bsent += bsent;
+            remaining -= bsent;
+        }
+        if(remaining) {
+            if(((rcode = sckt_hndl_err(bsent)) == RetCode_SCKWBLK)) {
+                acc_snd_buff_.set_mark();
+            }
+            stay = false;
+            break;
+        } else {
+            acc_snd_buff_.reset();
+            stay = false;
+            break;
+        }
+    }
+    if(v_log_ && v_log_->level() <= TL_TRC) {
+        v_log_->trc(TH_ID, LS_CLO "[socket:%d, sent:%d, remaining:%d][res:%d]",
+                    __func__,
+                    socket_,
+                    tot_bsent,
+                    remaining,
+                    rcode);
+    }
+    return rcode;
+}
+
+RetCode conn_impl::aggr_msgs_and_send_pkt()
+{
+    RetCode rcode = RetCode_OK;
+    /*  1
+        try to fill accumulating buffer with current packet and queued messages.
+    */
+    do {
+        acc_snd_buff_.set_read();
+        while(acc_snd_buff_.available_read() < acc_snd_buff_.capacity()) {
+            if(cpkt_ && cpkt_->pkt_b_.available_read()) {
+                acc_snd_buff_.set_write();
+                if(!acc_snd_buff_.append_no_rsz(cpkt_->pkt_b_)) {
+                    //accumulating buffer filled.
+                    break;
+                } else {
+                    //current packet has completely read, it can be replaced.
+                }
+            } else {
+                if(pkt_sending_q_.size()) {
+                    pkt_sending_q_.take(&cpkt_);
+                    cpkt_->pkt_b_.set_read();
+                } else {
+                    //current packet read and empty queue
+                    break;
+                }
+            }
+        }
+        /*  2
+            send accumulating buffer
+        */
+    } while(!(rcode = send_acc_buff()) && (cpkt_->pkt_b_.available_read() || pkt_sending_q_.size()));
+    return rcode;
+}
+
 }
 
 namespace vlg {
 
-incoming_connection_impl::incoming_connection_impl(incoming_connection &publ, peer &p) :
-    conn_impl(publ, p),
+incoming_connection_impl::incoming_connection_impl(incoming_connection &publ,
+                                                   peer &p,
+                                                   incoming_connection_listener &listener) :
+    conn_impl(publ, p, listener),
     inco_flytx_map_(HMSz_1031, tx_std_shp_omng, sizeof(tx_id)),
     inco_nclassid_sbs_map_(HMSz_1031, sbs_std_shp_omng, sizeof(unsigned int)),
     inco_sbsid_sbs_map_(HMSz_1031, sbs_std_shp_omng, sizeof(unsigned int)),
     sbsid_(0),
     tx_factory_publ_(&incoming_transaction_factory::default_factory()),
     sbs_factory_publ_(&incoming_subscription_factory::default_factory())
-{
-    set_status(ConnectionStatus_INITIALIZED);
-}
+{}
 
 incoming_connection_impl::~incoming_connection_impl()
 {
@@ -549,9 +934,9 @@ RetCode incoming_connection_impl::recv_connection_request(const vlg_hdr_rec *pkt
     socklen_t len = sizeof(saddr);
     getpeername(socket_, (sockaddr *)&saddr, &len);
 
-    if(!(rcode = peer_->publ_.on_incoming_connection(inco_conn))) {
+    if(!(rcode = peer_->listener_.on_incoming_connection(peer_->publ_, inco_conn))) {
         if((rcode = server_send_connect_res(inco_conn))) {
-            set_internal_error(rcode);
+            set_disconnecting();
             IFLOG(err(TH_ID, LS_CON"[error responding to peer: socket:%d, host:%s, port:%d]",
                       socket_,
                       inet_ntoa(saddr.sin_addr),
@@ -643,7 +1028,7 @@ RetCode incoming_connection_impl::recv_tx_request(const vlg_hdr_rec *pkt_hdr,
         inco_flytx_map_.put(&timpl->txid_, &trans);
     }
 
-    if((rcode = ipubl_->on_incoming_transaction(trans))) {
+    if((rcode = ilistener_->on_incoming_transaction(*ipubl_, trans))) {
         IFLOG(inf(TH_ID, LS_CON"[connection:%d applicatively refused new transaction]", connid_))
         timpl->tx_res_ = TransactionResult_FAILED;
         timpl->result_code_ = ProtocolCode_TRANSACTION_SERVER_ABORT;
@@ -678,7 +1063,7 @@ RetCode incoming_connection_impl::recv_tx_request(const vlg_hdr_rec *pkt_hdr,
             }
         }
         if(!skip_appl_mng) {
-            trans->on_request();
+            timpl->ilistener_->on_request(*timpl->ipubl_);
         }
     }
 
@@ -793,7 +1178,7 @@ RetCode incoming_connection_impl::recv_sbs_start_request(const vlg_hdr_rec *pkt_
         }
     }
 
-    if((rcode = ipubl_->on_incoming_subscription(sbs_sh))) {
+    if((rcode = ilistener_->on_incoming_subscription(*ipubl_, sbs_sh))) {
         IFLOG(inf(TH_ID, LS_CON"[connection:%d applicatively refused new subscription]", connid_))
         inc_sbs->sbresl_ = SubscriptionResponse_KO;
         inc_sbs->last_vlgcod_ = ProtocolCode_SERVER_ERROR;
@@ -806,7 +1191,7 @@ RetCode incoming_connection_impl::recv_sbs_start_request(const vlg_hdr_rec *pkt_
     if(inc_sbs->sbresl_ == SubscriptionResponse_OK || inc_sbs->sbresl_ == SubscriptionResponse_PARTIAL) {
         if((rcode = peer_->add_subscriber(inc_sbs))) {
             IFLOG(cri(TH_ID, LS_SBS"[error binding subscription to peer][res:%d]", rcode))
-            inc_sbs->set_error();
+            inc_sbs->set_stopped();
         } else {
             inc_sbs->set_started();
             if(inc_sbs->sbsmod_ == SubscriptionMode_ALL || inc_sbs->sbsmod_ == SubscriptionMode_DOWNLOAD) {
@@ -860,16 +1245,15 @@ RetCode incoming_connection_impl::recv_sbs_stop_request(const vlg_hdr_rec *pkt_h
 
 namespace vlg {
 
-outgoing_connection_impl::outgoing_connection_impl(outgoing_connection &publ) :
-    conn_impl(publ),
+outgoing_connection_impl::outgoing_connection_impl(outgoing_connection &publ,
+                                                   outgoing_connection_listener &listener) :
+    conn_impl(publ, listener),
     outg_flytx_map_(HMSz_1031, sngl_ptr_obj_mng(), sizeof(tx_id)),
     outg_reqid_sbs_map_(HMSz_23, sngl_ptr_obj_mng(), sizeof(unsigned int)),
     outg_sbsid_sbs_map_(HMSz_1031, sngl_ptr_obj_mng(), sizeof(unsigned int)),
     prid_(0),
     reqid_(0)
-{
-    set_status(ConnectionStatus_INITIALIZED);
-}
+{}
 
 outgoing_connection_impl::~outgoing_connection_impl()
 {
@@ -978,7 +1362,7 @@ RetCode outgoing_connection_impl::await_for_connection_result(ConnectivityEventR
 RetCode outgoing_connection_impl::notify_connection(ConnectivityEventResult con_evt_res,
                                                     ConnectivityEventType connectivity_evt_type)
 {
-    opubl_->on_connect(con_evt_res, connectivity_evt_type);
+    olistener_->on_connect(*opubl_, con_evt_res, connectivity_evt_type);
     return notify_for_connectivity_result(con_evt_res, connectivity_evt_type);
 }
 
@@ -1014,10 +1398,10 @@ RetCode outgoing_connection_impl::recv_connection_response(const vlg_hdr_rec *pk
             break;
     }
     if((rcode = peer_->selector_.notify(evt))) {
-        set_internal_error(rcode);
+        set_disconnecting();
         return rcode;
     }
-    opubl_->on_connect(con_evt_res, ConnectivityEventType_PROTOCOL);
+    olistener_->on_connect(*opubl_, con_evt_res, ConnectivityEventType_PROTOCOL);
     notify_for_connectivity_result(con_evt_res, ConnectivityEventType_PROTOCOL);
     return RetCode_OK;
 }

@@ -136,7 +136,7 @@ void FillFldValue_Qstring(const QVariant &value,
             if(mdesc.get_field_nmemb() > 1) {
                 strncpy(fld_ptr, value.toString().toLatin1().data(), mdesc.get_field_nmemb());
             } else {
-                *(char *)fld_ptr = value.toString().toLatin1().at(0);
+                *(char *)fld_ptr = value.toString().size() == 1 ? value.toString().toLatin1().at(0) : 0;
             }
             break;
         case vlg::Type_BYTE:

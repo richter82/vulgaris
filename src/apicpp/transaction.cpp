@@ -11,8 +11,22 @@
 
 namespace vlg {
 
-incoming_transaction::incoming_transaction(std::shared_ptr<incoming_connection> &conn) :
-    impl_(new incoming_transaction_impl(*this, conn))
+struct default_incoming_transaction_listener : public incoming_transaction_listener {
+    virtual void on_status_change(incoming_transaction &, TransactionStatus) override {};
+    virtual void on_request(incoming_transaction &) override {};
+    virtual void on_close(incoming_transaction &) override {};
+};
+
+static default_incoming_transaction_listener ditl;
+
+incoming_transaction_listener &incoming_transaction_listener::default_listener()
+{
+    return ditl;
+}
+
+incoming_transaction::incoming_transaction(std::shared_ptr<incoming_connection> &conn,
+                                           incoming_transaction_listener &listener) :
+    impl_(new incoming_transaction_impl(*this, conn, listener))
 {
     CTOR_TRC
 }
@@ -153,20 +167,24 @@ void incoming_transaction::set_id(tx_id &txid)
     impl_->txid_ = txid;
 }
 
-void incoming_transaction::on_status_change(TransactionStatus current)
-{}
-
-void incoming_transaction::on_request()
-{}
-
-void incoming_transaction::on_close()
-{}
-
 }
 
 namespace vlg {
 
-outgoing_transaction::outgoing_transaction() : impl_(new outgoing_transaction_impl(*this))
+struct default_outgoing_transaction_listener : public outgoing_transaction_listener {
+    virtual void on_status_change(outgoing_transaction &, TransactionStatus) override {}
+    virtual void on_close(outgoing_transaction &) override {}
+};
+
+static default_outgoing_transaction_listener dotl;
+
+outgoing_transaction_listener &outgoing_transaction_listener::default_listener()
+{
+    return dotl;
+}
+
+outgoing_transaction::outgoing_transaction(outgoing_transaction_listener &listener) :
+    impl_(new outgoing_transaction_impl(*this, listener))
 {
     CTOR_TRC
 }
@@ -338,11 +356,5 @@ RetCode outgoing_transaction::send()
 {
     return impl_->send();
 }
-
-void outgoing_transaction::on_status_change(TransactionStatus current)
-{}
-
-void outgoing_transaction::on_close()
-{}
 
 }

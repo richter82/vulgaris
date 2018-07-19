@@ -7,10 +7,6 @@
 #ifndef VLG_VLG_H_
 #define VLG_VLG_H_
 
-#include <ctype.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
 #ifdef __GNUG__
 #include <string.h>
 #include <errno.h>
@@ -83,7 +79,7 @@ typedef enum {
     RetCode_MALFORM,                     /**< packet malformed */
     RetCode_SCKCLO,                      /**< socket closed */
     RetCode_SCKWBLK,                     /**< socket would block */
-    RetCode_SCKEAGN,                     /**< socket try again */
+    RetCode_PARTPKT,                     /**< partial packet */
 
     //enumeration specific
     RetCode_ENMROW           = 500,      /**< enumeration row */
@@ -169,9 +165,9 @@ typedef enum  {
     ProtocolCode_SUBSCRIPTION_NOT_FOUND                 //- 401 0x191       SBS NOT FOUND
 } ProtocolCode;
 
-/*****************************************
+/*******************************************************************************
 vlg SUPPORTED TYPES // length expressed is fixed when data is transmitted.
-******************************************/
+*******************************************************************************/
 typedef enum  {
     Type_UNDEFINED,
     Type_ENTITY,                    // special, user defined type
@@ -233,14 +229,13 @@ typedef enum  {
     PersistenceConnectionStatus_CONNECTED,
     PersistenceConnectionStatus_DISCONNECTED,
     PersistenceConnectionStatus_RELEASED,
-    PersistenceConnectionStatus_ERROR = 500,
 } PersistenceConnectionStatus;
 
 typedef enum  {
     PersistenceQueryStatus_UNDEFINED,
     PersistenceQueryStatus_PREPARED,
     PersistenceQueryStatus_END,
-    PersistenceQueryStatus_FAILED
+    PersistenceQueryStatus_FAILED,
 } PersistenceQueryStatus;
 
 /*****************************************
@@ -285,16 +280,12 @@ typedef enum  {
 CONNECTION STATUS
 ******************************************/
 typedef enum  {
-    ConnectionStatus_UNDEFINED,
     ConnectionStatus_INITIALIZED,
     ConnectionStatus_DISCONNECTED,
-    ConnectionStatus_ESTABLISHED,          // tcp/ip con. is established
+    ConnectionStatus_ESTABLISHED,
     ConnectionStatus_PROTOCOL_HANDSHAKE,   // protocol handshake completed
     ConnectionStatus_AUTHENTICATED,
     ConnectionStatus_DISCONNECTING,
-    ConnectionStatus_SOCKET_ERROR = 300,
-    ConnectionStatus_PROTOCOL_ERROR,
-    ConnectionStatus_ERROR = 500,
 } ConnectionStatus;
 
 /*****************************************
@@ -322,12 +313,10 @@ typedef enum  {
 TRANSACTION STATUS
 ******************************************/
 typedef enum  {
-    TransactionStatus_UNDEFINED,
     TransactionStatus_EARLY,
     TransactionStatus_INITIALIZED,
     TransactionStatus_FLYING,
     TransactionStatus_CLOSED,
-    TransactionStatus_ERROR = 500,
 } TransactionStatus;
 
 /*****************************************
@@ -354,7 +343,7 @@ vlg SUBSCRIPTION FLOW TYPE
 ******************************************/
 typedef enum  {
     SubscriptionFlowType_UNDEFINED,
-    SubscriptionFlowType_ALL,         //server won't do snapshotting.
+    SubscriptionFlowType_ALL,         //all events transmitted.
     SubscriptionFlowType_LAST,        //server will do snapshotting.
 } SubscriptionFlowType;
 
@@ -392,14 +381,11 @@ typedef enum  {
 SUBSCRIPTION STATUS
 ******************************************/
 typedef enum  {
-    SubscriptionStatus_UNDEFINED,
-    SubscriptionStatus_EARLY,
     SubscriptionStatus_INITIALIZED,
     SubscriptionStatus_STOPPED,
     SubscriptionStatus_REQUEST_SENT,
     SubscriptionStatus_STARTED,
     SubscriptionStatus_RELEASED,
-    SubscriptionStatus_ERROR = 500,
 } SubscriptionStatus;
 
 /*****************************************
@@ -447,7 +433,6 @@ typedef enum  {
     PeerStatus_STOPPING,           //10
     PeerStatus_STOPPED,            //11 --stop state.
     PeerStatus_DIED,               //12 --final state.
-    PeerStatus_ERROR = 500,
 } PeerStatus;
 
 /*****************************************

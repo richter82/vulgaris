@@ -64,6 +64,13 @@ g_bbuf::~g_bbuf()
     }
 }
 
+void g_bbuf::compact()
+{
+    limit_ = limit_ - mark_;
+    memmove(buf_, &buf_[mark_], limit_);
+    mark_ = 0;
+}
+
 RetCode g_bbuf::grow(size_t amnt)
 {
     if(!amnt) {
@@ -105,29 +112,28 @@ RetCode g_bbuf::append(g_bbuf &oth)
     if(!oth.limit_) {
         return RetCode_BADARG;
     }
-    if((capcty_ - pos_) < (oth.limit_ - oth.pos_)) {
-        grow((oth.limit_ - oth.pos_)*2);
+    size_t hwm = oth.limit_ - oth.pos_;
+    if((capcty_ - pos_) < hwm) {
+        grow(hwm*2);
     }
-    memcpy(&buf_[pos_], &((unsigned char *)oth.buf_)[oth.pos_], oth.limit_);
-    pos_ += oth.limit_;
+    memcpy(&buf_[pos_], &((unsigned char *)oth.buf_)[oth.pos_], hwm);
+    pos_ += hwm;
     limit_ = pos_;
     oth.pos_ = oth.limit_;
     return RetCode_OK;
 }
 
-RetCode g_bbuf::append_no_rsz(g_bbuf &oth)
+size_t g_bbuf::append_no_rsz(g_bbuf &oth)
 {
-    if(!oth.limit_) {
-        return RetCode_BADARG;
+    size_t hwm = std::min(oth.limit_ - oth.pos_, capcty_ - pos_);
+    if(!hwm) {
+        return 0;
     }
-    if((capcty_ - pos_) < (oth.limit_ - oth.pos_)) {
-        return RetCode_BOVFL;
-    }
-    memcpy(&buf_[pos_], &((unsigned char *)oth.buf_)[oth.pos_], oth.limit_);
-    pos_ += oth.limit_;
+    memcpy(&buf_[pos_], &((unsigned char *)oth.buf_)[oth.pos_], hwm);
+    pos_ += hwm;
     limit_ = pos_;
-    oth.pos_ = oth.limit_;
-    return RetCode_OK;
+    oth.pos_ += hwm;
+    return capcty_ - pos_;
 }
 
 RetCode g_bbuf::append_ushort(unsigned short val)
@@ -214,6 +220,19 @@ RetCode g_bbuf::read(size_t len, void *out)
     }
     memcpy(&((unsigned char *)out)[0], &buf_[pos_], len);
     pos_ += len;
+    return RetCode_OK;
+}
+
+RetCode g_bbuf::read(size_t len, g_bbuf &out)
+{
+    if(limit_ < (pos_ + len)) {
+        return RetCode_BOVFL;
+    }
+    out.ensure_capacity(len);
+    memcpy(&((unsigned char *)out.buf_)[out.pos_], &buf_[pos_], len);
+    pos_ += len;
+    out.limit_ += len;
+    out.pos_ = out.limit_;
     return RetCode_OK;
 }
 

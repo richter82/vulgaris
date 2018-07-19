@@ -1,7 +1,7 @@
 -srv_sin_port		20002
--srv_exectrs		2
--cli_exectrs		2
--srv_sbs_exectrs	2
+-srv_exectrs		0
+-cli_exectrs		0
+-srv_sbs_exectrs	0
 -load_model			smplmdl
 -load_pers_driv		sqlite
 -pers_enabled

@@ -20,7 +20,6 @@ typedef RetCode(*peer_init_handler)(peer *p, void *usr_data);
 typedef RetCode(*peer_starting_handler)(peer *p, void *usr_data);
 typedef RetCode(*peer_stopping_handler)(peer *p, void *usr_data);
 typedef RetCode(*peer_on_move_running_handler)(peer *p, void *usr_data);
-typedef RetCode(*peer_error_handler)(peer *p, void *usr_data);
 typedef void(*peer_dying_breath_handler)(peer *p, void *usr_data);
 typedef RetCode(*peer_on_incoming_connection_handler)(peer *p, shr_incoming_connection *ic, void *usr_data);
 
@@ -69,7 +68,6 @@ void peer_set_init_handler(peer *p, peer_init_handler hndl, void *usr_data);
 void peer_set_starting_handler(peer *p, peer_starting_handler hndl, void *usr_data);
 void peer_set_stopping_handler(peer *p, peer_stopping_handler hndl, void *usr_data);
 void peer_set_on_move_running_handler(peer *p, peer_on_move_running_handler hndl, void *usr_data);
-void peer_set_error_handler(peer *p, peer_error_handler hndl, void *usr_data);
 void peer_set_dying_breath_handler(peer *p, peer_dying_breath_handler hndl, void *usr_data);
 void peer_set_configured(peer *p, int configured);
 void peer_set_status_change_handler(peer *p, peer_status_change handler, void *usr_data);
