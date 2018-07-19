@@ -153,7 +153,7 @@ RetCode load_file(FILE *fdesc, std::string &data)
             }
         }
     }
-    CMD_ON_KO(fclose(fdesc), EXIT_ACTION)
+    CMD_ON_KO(fclose(fdesc), exit(1))
     return RetCode_OK;
 }
 

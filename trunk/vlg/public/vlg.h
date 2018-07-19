@@ -91,10 +91,6 @@ typedef enum {
     RetCode_ENMBSY,                      /**< enumeration busy */
     RetCode_ENMOTH,                      /**< enumeration other */
 
-    //memory management specific
-    RetCode_MEMRLSD          = 600,      /**< memory has been released */
-    RetCode_MEMNOTR,                     /**< memory has not been released */
-
     //database
     RetCode_DBROW            = 700,      /**< row available */
     RetCode_QRYEND,                      /**< query end */
@@ -484,7 +480,9 @@ typedef enum  {
 */
 #if defined(__cplusplus)
 struct tx_id {
-    explicit tx_id();
+    explicit tx_id() {
+        memset(this, 0, sizeof(tx_id));
+    }
 #else
 typedef struct {
 #endif

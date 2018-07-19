@@ -8,6 +8,12 @@
 #include "structs.h"
 #include <vector>
 
+#if defined WIN32 && defined _MSC_VER
+#define TH_ID GetCurrentThreadId()
+#else
+#define TH_ID ((unsigned int)((unsigned long)pthread_self()))
+#endif
+
 namespace vlg {
 
 /** @brief runnable interface.
@@ -20,13 +26,32 @@ struct runnable {
 /** @brief A convenient wrapper for pthread.
 */
 struct p_th : public runnable {
-        explicit p_th();
-        explicit p_th(runnable *target);
-        explicit p_th(pthread_attr_t *attr);
-        explicit p_th(runnable *target,
-                      pthread_attr_t *attr);
+        explicit p_th() :
+            th_id_(-1),
+            attr_(nullptr),
+            target_(this) {
+        }
 
-        virtual ~p_th();
+        explicit p_th(runnable *target):
+            th_id_(-1),
+            attr_(nullptr),
+            target_(target) {
+        }
+
+        explicit p_th(pthread_attr_t *attr) :
+            th_id_(-1),
+            attr_(attr),
+            target_(this) {
+        }
+
+        explicit p_th(runnable *target,
+                      pthread_attr_t *attr) :
+            th_id_(-1),
+            attr_(attr),
+            target_(target) {
+        }
+
+        virtual ~p_th() = default;
 
         int thread_id() const {
             return th_id_;
@@ -49,7 +74,11 @@ struct p_th : public runnable {
         }
 
     private:
-        static void *pthread_run(void *arg);
+        static void *pthread_run(void *arg) {
+            p_th *thread = static_cast<p_th *>(arg);
+            thread->th_id_ = TH_ID;
+            return thread->target_->run();
+        }
 
     private:
         //thread id has a valid value only when start() has executed.
@@ -79,11 +108,21 @@ enum PTASK_STATUS {
             by a p_executor.
 */
 struct p_tsk {
-        explicit p_tsk();
-        explicit p_tsk(unsigned int id);
-        virtual ~p_tsk();
+        explicit p_tsk() :
+            id_(0),
+            status_(PTASK_STATUS_INIT),
+            exec_res_(RetCode_OK),
+            wt_th_(0) {
+        }
 
-        RetCode re_new();
+        explicit p_tsk(unsigned int id) :
+            id_(id),
+            status_(PTASK_STATUS_INIT),
+            exec_res_(RetCode_OK),
+            wt_th_(0) {
+        }
+
+        virtual ~p_tsk() = default;
 
         unsigned int get_id() const {
             return id_;

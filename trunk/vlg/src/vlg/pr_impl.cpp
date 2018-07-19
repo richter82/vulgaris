@@ -19,9 +19,6 @@ incoming_connection_factory &incoming_connection_factory::default_factory()
 {
     if(default_conn_factory == nullptr) {
         default_conn_factory = new incoming_connection_factory();
-        if(!default_conn_factory) {
-            EXIT_ACTION
-        }
     }
     return *default_conn_factory;
 }
@@ -677,14 +674,7 @@ RetCode peer_impl::get_per_nclassid_helper_rec(unsigned int nclass_id, per_nclas
 RetCode peer_impl::submit_sbs_evt_task(subscription_event_impl &sbs_evt,
                                        s_hm &connid_condesc_set)
 {
-    RetCode rcode = RetCode_OK;
-    p_tsk *sbs_tsk = new peer_sbs_task(*this,
-                                       sbs_evt,
-                                       connid_condesc_set);
-    if((rcode = srv_sbs_exec_serv_.submit(*sbs_tsk))) {
-        IFLOG(cri(TH_ID, LS_TRL "[submit failed][res:%d]", __func__, rcode))
-    }
-    return rcode;
+    return srv_sbs_exec_serv_.submit(*new peer_sbs_task(*this, sbs_evt, connid_condesc_set));
 }
 
 // #VER#

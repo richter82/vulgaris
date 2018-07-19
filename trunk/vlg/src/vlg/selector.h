@@ -8,6 +8,8 @@
 #include "proto.h"
 #include "acceptor.h"
 
+#define PKT_SND_BUF_SZ 8192
+
 namespace vlg {
 
 // selector_event
@@ -96,7 +98,7 @@ struct selector : public p_th {
     SOCKET udp_ntfy_cli_socket_;
     mutable mx mon_;
 
-    //---srv_rep
+    //srv_rep
     SOCKET srv_listen_socket_;
     sockaddr_in srv_sockaddr_in_;
     acceptor srv_acceptor_;
@@ -104,11 +106,14 @@ struct selector : public p_th {
     std::unordered_map<SOCKET, std::shared_ptr<incoming_connection>> write_pending_sock_inco_conn_map_;
     p_exec_srv inco_exec_srv_;
 
-    //---cli_rep
+    //cli_rep
     std::unordered_map<SOCKET, conn_impl *> outg_early_sock_conn_map_;
     std::unordered_map<unsigned int, conn_impl *> outg_connid_conn_map_;
     std::unordered_map<SOCKET, conn_impl *> write_pending_sock_outg_conn_map_;
     p_exec_srv outg_exec_srv_;
+
+    //sending buffer
+    g_bbuf pkt_snd_buf_;
 };
 
 }

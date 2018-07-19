@@ -284,7 +284,9 @@ GLOB STRUCTURES
 GENERIC HEADER STRUCTURE
 ******************************************/
 struct vlg_hdr_rec {
-    vlg_hdr_rec();
+    explicit vlg_hdr_rec() {
+        memset(this, 0, sizeof(vlg_hdr_rec));
+    }
     unsigned int            hdr_bytelen;
     unsigned int            bdy_bytelen;
     VLG_WRD_PKTHDR_REC      phdr;       //fixed row 0 pkthdr

@@ -1452,7 +1452,7 @@ RetCode VLG_COMP_Gen__CPP_(compile_unit &cunit)
     fname.append(VLG_COMP_DOT);
     fname.append("cpp");
     FILE *file = nullptr;
-    CMD_ON_KO(open_output_file(fname.c_str(), &file), EXIT_ACTION)
+    CMD_ON_KO(open_output_file(fname.c_str(), &file), exit(1))
     //header
     RET_ON_KO(render_hdr(cunit, fname, file))
     RET_ON_KO(put_newline(file))

@@ -170,8 +170,21 @@ struct scoped_wr_lock {
 /** @brief mutex.
 */
 struct mx {
-        explicit mx(int pshared = PTHREAD_PROCESS_PRIVATE);
-        ~mx();
+        explicit mx(int pshared = PTHREAD_PROCESS_PRIVATE) {
+            pthread_mutexattr_init(&mattr_);
+            pthread_mutexattr_setpshared(&mattr_, pshared);
+            pthread_mutex_init(&mutex_, &mattr_);
+            pthread_condattr_init(&cattr_);
+            pthread_condattr_setpshared(&cattr_, pshared);
+            pthread_cond_init(&cv_, &cattr_);
+        }
+
+        ~mx() {
+            pthread_cond_destroy(&cv_);
+            pthread_mutex_destroy(&mutex_);
+            pthread_mutexattr_destroy(&mattr_);
+            pthread_condattr_destroy(&cattr_);
+        }
 
         int lock() {
             return pthread_mutex_lock(&mutex_);
@@ -379,16 +392,16 @@ struct b_qu : public brep {
         }
 
         uint32_t remain_capacity() const {
-            return inifinite_cpcty_ ? 1 : (capacity_ - elemcount_);
+            return !capacity_ ? 1 : (capacity_ - elemcount_);
         }
 
         RetCode clear();
 
-        RetCode get(void *copy);
+        RetCode take(void *copy);
 
-        RetCode get(time_t sec,
-                    long nsec,
-                    void *copy);
+        RetCode take(time_t sec,
+                     long nsec,
+                     void *copy);
 
         RetCode put(const void *ptr);
 
@@ -407,7 +420,6 @@ struct b_qu : public brep {
         RetCode enq(const void *ptr, bool idxed = false);
 
         const obj_mng manager_;
-        bool inifinite_cpcty_;
         uint32_t capacity_;
         lnk_node *head_, *tail_;
         rm_idx_func rif_;

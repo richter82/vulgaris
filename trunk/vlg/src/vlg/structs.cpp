@@ -445,7 +445,6 @@ struct lnk_node {
 b_qu::b_qu(size_t elemsize,
            uint32_t capacity) :
     manager_(elemsize),
-    inifinite_cpcty_(capacity ? false : true),
     capacity_(capacity),
     head_(nullptr),
     tail_(nullptr),
@@ -457,7 +456,6 @@ b_qu::b_qu(size_t elemsize,
 b_qu::b_qu(const obj_mng &elem_manager,
            uint32_t capacity) :
     manager_(elem_manager),
-    inifinite_cpcty_(capacity ? false : true),
     capacity_(capacity),
     head_(nullptr),
     tail_(nullptr),
@@ -532,7 +530,7 @@ RetCode b_qu::clear()
     return RetCode_OK;
 }
 
-RetCode b_qu::get(void *copy)
+RetCode b_qu::take(void *copy)
 {
     scoped_mx smx(mon_);
     while(!elemcount_) {
@@ -547,7 +545,7 @@ RetCode b_qu::get(void *copy)
     return RetCode_OK;
 }
 
-RetCode b_qu::get(time_t sec, long nsec, void *copy)
+RetCode b_qu::take(time_t sec, long nsec, void *copy)
 {
     RetCode res = RetCode_OK;
     scoped_mx smx(mon_);

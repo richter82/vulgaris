@@ -73,7 +73,6 @@ inline RetCode FldSeqA_Restore(void *entity_ptr,
     return RetCode_OK;
 }
 
-
 // nclass
 
 RetCode nclass::restore(const nentity_manager *nem,

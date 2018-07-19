@@ -189,7 +189,7 @@ void *persistence_worker::run()
     p_tsk *task = nullptr;
     RetCode rcode = RetCode_OK;
     do {
-        if(!(rcode = task_queue_.get(&task))) {
+        if(!(rcode = task_queue_.take(&task))) {
             task->set_execution_result(task->execute());
             task->set_status(PTASK_STATUS_EXECUTED);
         } else {
@@ -212,7 +212,6 @@ persistence_connection_impl::persistence_connection_impl(persistence_connection_
 RetCode persistence_connection_impl::connect()
 {
     if(status_ != PersistenceConnectionStatus_DISCONNECTED) {
-        IFLOG(err(TH_ID, LS_CLO "[persistence-connection bad status:%d]", __func__, status_))
         return RetCode_BADSTTS;
     }
     RetCode rcode = do_connect();
@@ -230,12 +229,7 @@ RetCode persistence_connection_impl::create_entity_schema(PersistenceAlteringMod
     IFLOG(trc(TH_ID, LS_OPN "[mode:%d, nclass_id:%d]", __func__, mode, nclass_id))
     RetCode rcode = RetCode_OK;
     const nentity_desc *edesc = nem.get_nentity_descriptor(nclass_id);
-    if(!edesc) {
-        IFLOG(err(TH_ID, LS_CLO "[cannot find nclass_id:%d]", __func__, nclass_id))
-        return RetCode_BADARG;
-    }
-    if(!edesc->is_persistent()) {
-        IFLOG(err(TH_ID, LS_CLO "[nclass_id:%d is not persistent]", __func__, edesc->get_nclass_id()))
+    if(!edesc || !edesc->is_persistent()) {
         return RetCode_BADARG;
     }
     switch(mode) {
@@ -261,7 +255,6 @@ RetCode persistence_connection_impl::create_entity_schema(PersistenceAlteringMod
     IFLOG(trc(TH_ID, LS_OPN "[mode:%d]", __func__, mode))
     RetCode rcode = RetCode_OK;
     if(!edesc.is_persistent()) {
-        IFLOG(err(TH_ID, LS_CLO "[nclass_id:%d is not persistent]", __func__, edesc.get_nclass_id()))
         return RetCode_BADARG;
     }
     switch(mode) {
@@ -289,7 +282,6 @@ RetCode persistence_connection_impl::load_entity(unsigned short key,
     RetCode rcode = RetCode_OK;
     const nentity_desc &edesc = in_out.get_nentity_descriptor();
     if(!edesc.is_persistent()) {
-        IFLOG(err(TH_ID, LS_CLO "[nclass_id:%d is not persistent]", __func__, edesc.get_nclass_id()))
         return RetCode_BADARG;
     }
     rcode = do_select(key, nem, ts0_out, ts1_out, in_out);
@@ -305,7 +297,6 @@ RetCode persistence_connection_impl::save_entity(const nentity_manager
     RetCode rcode = RetCode_OK;
     const nentity_desc &edesc = in.get_nentity_descriptor();
     if(!edesc.is_persistent()) {
-        IFLOG(err(TH_ID, LS_CLO "[nclass_id:%d is not persistent]", __func__, edesc.get_nclass_id()))
         return RetCode_BADARG;
     }
     rcode = do_insert(nem, ts0, ts1, in);
@@ -321,7 +312,6 @@ RetCode persistence_connection_impl::update_entity(unsigned short key,
     RetCode rcode = RetCode_OK;
     const nentity_desc &edesc = in.get_nentity_descriptor();
     if(!edesc.is_persistent()) {
-        IFLOG(err(TH_ID, LS_CLO "[nclass_id:%d is not persistent]", __func__, edesc.get_nclass_id()))
         return RetCode_BADARG;
     }
     rcode = do_update(key, nem, ts0, ts1, in);
@@ -337,7 +327,6 @@ RetCode persistence_connection_impl::save_or_update_entity(unsigned short key,
     RetCode rcode = RetCode_OK;
     const nentity_desc &edesc = in.get_nentity_descriptor();
     if(!edesc.is_persistent()) {
-        IFLOG(err(TH_ID, LS_CLO "[nclass_id:%d is not persistent]", __func__, edesc.get_nclass_id()))
         return RetCode_BADARG;
     }
     rcode = do_insert(nem, ts0, ts1, in, false);
@@ -357,7 +346,6 @@ RetCode persistence_connection_impl::remove_entity(unsigned short key,
     RetCode rcode = RetCode_OK;
     const nentity_desc &edesc = in.get_nentity_descriptor();
     if(!edesc.is_persistent()) {
-        IFLOG(err(TH_ID, LS_CLO "[nclass_id:%d is not persistent]", __func__, edesc.get_nclass_id()))
         return RetCode_BADARG;
     }
     rcode = do_delete(key, nem, ts0, ts1, mode, in);
@@ -412,7 +400,6 @@ RetCode persistence_query_impl::load_next_entity(unsigned int &ts0_out,
 {
     const nentity_desc &edesc = out.get_nentity_descriptor();
     if(!edesc.is_persistent()) {
-        IFLOG(err(TH_ID, LS_CLO "[nclass_id:%d is not persistent]", __func__, edesc.get_nclass_id()))
         return RetCode_BADARG;
     }
     return conn_.do_next_entity_from_query(*this, ts0_out, ts1_out, out);
@@ -429,7 +416,6 @@ RetCode persistence_driver::load_driver_dyna(const char *drvname,
                                              persistence_driver **driver)
 {
     if(!drvname || !strlen(drvname)) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADARG;
     }
 #if defined WIN32 && defined _MSC_VER

@@ -212,15 +212,17 @@ bool enum_mmbrs_fill_entity(const member_desc &mmbrd, void *usr_data)
         if(mmbrd.get_field_vlg_type() == Type_ASCII) {
             //value
             obj_f_ptr = rud->obj_ptr + mmbrd.get_field_offset();
-            strncpy(obj_f_ptr,
-                    (const char *)sqlite3_column_text(rud->stmt, (*(rud->colmn_idx))++),
-                    mmbrd.get_field_type_size()*mmbrd.get_field_nmemb());
+            const char *c_ptr = (const char *)sqlite3_column_text(rud->stmt, (*(rud->colmn_idx))++);
+            if(c_ptr) {
+                strncpy(obj_f_ptr, c_ptr, mmbrd.get_field_type_size()*mmbrd.get_field_nmemb());
+            }
         } else if(mmbrd.get_field_vlg_type() == Type_BYTE) {
             //value
             obj_f_ptr = rud->obj_ptr + mmbrd.get_field_offset();
-            memcpy(obj_f_ptr,
-                   (const char *)sqlite3_column_blob(rud->stmt, (*(rud->colmn_idx))++),
-                   mmbrd.get_field_type_size()*mmbrd.get_field_nmemb());
+            const char *c_ptr = (const char *)sqlite3_column_blob(rud->stmt, (*(rud->colmn_idx))++);
+            if(c_ptr) {
+                memcpy(obj_f_ptr, c_ptr, mmbrd.get_field_type_size()*mmbrd.get_field_nmemb());
+            }
         } else if(mmbrd.get_field_nmemb() > 1) {
             for(unsigned int i = 0; i<mmbrd.get_field_nmemb(); i++) {
                 //value
@@ -643,7 +645,6 @@ inline RetCode pers_conn_sqlite::sqlite_exec_stmt(const char *stmt, bool fail_is
 inline RetCode pers_conn_sqlite::sqlite_prepare_stmt(const char *sql_stmt, sqlite3_stmt **stmt)
 {
     if(!stmt) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADARG;
     }
     RetCode rcode = RetCode_OK;
@@ -686,7 +687,6 @@ inline RetCode pers_conn_sqlite::sqlite_bind_where_clause(unsigned int key,
 {
     const key_desc *kdsc = in.get_nentity_descriptor().get_key_desc_by_id(key);
     if(!kdsc) {
-        IFLOG(err(TH_ID, LS_CLO "[key:%d not found]", __func__, key))
         return RetCode_BADARG;
     }
     k_bind_w_c kbwc = { strt_col_idx, stmt, (const char *) &in };
@@ -768,7 +768,6 @@ inline RetCode pers_conn_sqlite::sqlite_step_stmt(sqlite3_stmt *stmt, int &sqlit
 {
     RetCode rcode = RetCode_OK;
     if(!stmt) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADARG;
     }
     sqlite_rc = sqlite3_step(stmt);
@@ -783,7 +782,6 @@ inline RetCode pers_conn_sqlite::sqlite_release_stmt(sqlite3_stmt *stmt)
 {
     RetCode rcode = RetCode_OK;
     if(!stmt) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADARG;
     }
     int last_rc = sqlite3_finalize(stmt);
@@ -824,7 +822,6 @@ inline RetCode pers_conn_sqlite::do_connect()
     }
     std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_CONNECT));
     if((rcode = worker_->submit(*task))) {
-        IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
         return rcode;
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);
@@ -1019,7 +1016,6 @@ RetCode pers_conn_sqlite::do_create_table(const nentity_manager &nem,
     task->stmt_bf_ = create_stmt.c_str();
     IFLOG(dbg(TH_ID, LS_STM "[create_stmt:%s]", __func__, create_stmt.c_str()))
     if((rcode = worker_->submit(*task))) {
-        IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
         return rcode;
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);
@@ -1076,7 +1072,6 @@ RetCode pers_conn_sqlite::do_select(unsigned int key,
 
         const key_desc *kdsc = in_out.get_nentity_descriptor().get_key_desc_by_id(key);
         if(!kdsc) {
-            IFLOG(err(TH_ID, LS_CLO "[key:%d not found]", __func__, key))
             return RetCode_BADARG;
         }
 
@@ -1104,7 +1099,6 @@ RetCode pers_conn_sqlite::do_select(unsigned int key,
 
     IFLOG(trc(TH_ID, LS_QRY "[select_stmt:%s]", __func__, sel_stmt))
     if((rcode = worker_->submit(*task))) {
-        IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
         return rcode;
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);
@@ -1303,7 +1297,6 @@ RetCode pers_conn_sqlite::do_update(unsigned int key,
 
         const key_desc *kdsc = in.get_nentity_descriptor().get_key_desc_by_id(key);
         if(!kdsc) {
-            IFLOG(err(TH_ID, LS_CLO "[key:%d not found]", __func__, key))
             return RetCode_BADARG;
         }
 
@@ -1334,7 +1327,6 @@ RetCode pers_conn_sqlite::do_update(unsigned int key,
     task->stmt_bf_ = upd_stmt;
     IFLOG(dbg(TH_ID, LS_STM "[update_stmt:%s]", __func__, upd_stmt))
     if((rcode = worker_->submit(*task))) {
-        IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
         return rcode;
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);
@@ -1407,7 +1399,6 @@ RetCode pers_conn_sqlite::do_delete(unsigned int key,
 
         const key_desc *kdsc = in.get_nentity_descriptor().get_key_desc_by_id(key);
         if(!kdsc) {
-            IFLOG(err(TH_ID, LS_CLO "[key:%d not found]", __func__, key))
             return RetCode_BADARG;
         }
 
@@ -1444,7 +1435,6 @@ RetCode pers_conn_sqlite::do_delete(unsigned int key,
     task->stmt_bf_ = del_stmt;
     IFLOG(dbg(TH_ID, LS_STM "[delete_stmt:%s]", __func__, del_stmt))
     if((rcode = worker_->submit(*task))) {
-        IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
         return rcode;
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);
@@ -1649,7 +1639,6 @@ RetCode pers_conn_sqlite::do_insert(const nentity_manager &nem,
     task->stmt_bf_ = ins_stmt;
     IFLOG(dbg(TH_ID, LS_STM "[insert_stmt:%s]", __func__, ins_stmt))
     if((rcode = worker_->submit(*task))) {
-        IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
         return rcode;
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);
@@ -1669,7 +1658,6 @@ RetCode pers_conn_sqlite::do_execute_query(const nentity_manager &nem,
     task->in_nem_ = &nem;
     task->in_sql_ = sql;
     if((rcode = worker_->submit(*task))) {
-        IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
         return rcode;
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);
@@ -1684,7 +1672,6 @@ RetCode pers_conn_sqlite::do_release_query(persistence_query_impl &qry)
     std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_RELEASEQUERY));
     task->in_out_query_ = &qry;
     if((rcode = worker_->submit(*task))) {
-        IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
         return rcode;
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);
@@ -1706,7 +1693,6 @@ RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_impl &qry,
     task->sel_stmt_ = qry_sqlite->stmt_;
     task->in_nem_ = &qry_sqlite->nem_;
     if((rcode = worker_->submit(*task))) {
-        IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
         return rcode;
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);
@@ -1723,7 +1709,6 @@ RetCode pers_conn_sqlite::do_execute_statement(const char *sql)
     std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_EXECUTESTATEMENT));
     task->in_sql_= sql;
     if((rcode = worker_->submit(*task))) {
-        IFLOG(cri(TH_ID, LS_CLO "[submit failed][res:%d]", __func__, rcode))
         return rcode;
     } else {
         task->await_for_status(PTASK_STATUS_EXECUTED);

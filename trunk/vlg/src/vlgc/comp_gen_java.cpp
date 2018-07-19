@@ -1368,7 +1368,7 @@ RetCode compile_Java(compile_unit &cunit)
     for(auto edsc = entitymap.begin(); edsc != entitymap.end(); edsc++) {
         efile_n.assign(edsc->second->get_nentity_name());
         efile_n.append(".java");
-        CMD_ON_KO(open_output_file(efile_n.c_str(), &efile), EXIT_ACTION)
+        CMD_ON_KO(open_output_file(efile_n.c_str(), &efile), exit(1))
         RET_ON_KO(render_hdr(cunit, efile_n, efile))
         RET_ON_KO(put_newline(efile))
         RET_ON_KO(VLG_COMP_JAVA_package_decl(efile, unit_nmspace.c_str()))
@@ -1393,7 +1393,7 @@ RetCode compile_Java(compile_unit &cunit)
     dfile_nm.append(cunit.model_name());
     dfile_nm.append(".java");
     FILE *dfile = nullptr;
-    CMD_ON_KO(open_output_file(dfile_nm.c_str(), &dfile), EXIT_ACTION)
+    CMD_ON_KO(open_output_file(dfile_nm.c_str(), &dfile), exit(1))
     RET_ON_KO(render_hdr(cunit, dfile_nm, dfile))
     RET_ON_KO(put_newline(dfile))
     RET_ON_KO(VLG_COMP_JAVA_package_decl(dfile, unit_nmspace.c_str()))

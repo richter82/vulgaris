@@ -4,4 +4,4 @@
 -srv_sbs_exectrs	0
 -pers_enabled
 -pers_schema_create
--drop_existing_schema
+-Xdrop_existing_schema

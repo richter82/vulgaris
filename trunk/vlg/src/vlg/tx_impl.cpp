@@ -128,7 +128,6 @@ void tx_impl::set_result_obj(const nclass &val)
 RetCode tx_impl::set_flying()
 {
     if(status_ != TransactionStatus_INITIALIZED) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
     set_status(TransactionStatus_FLYING);
@@ -232,7 +231,6 @@ inline void tx_impl::trace_tx_closure(const char *tx_res_str)
 RetCode tx_impl::set_closed()
 {
     if(status_ != TransactionStatus_FLYING) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
     const char *tx_res_str = (tx_res_ == TransactionResult_COMMITTED) ? TX_RES_COMMT : TX_RES_FAIL;
@@ -301,7 +299,6 @@ void incoming_transaction_impl::set_request_obj_on_request(std::unique_ptr<nclas
 RetCode incoming_transaction_impl::send_response()
 {
     if(status_ != TransactionStatus_FLYING) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
 
@@ -318,10 +315,9 @@ RetCode incoming_transaction_impl::send_response()
     if(result_obj_) {
         gbb.put(&totbytes, (6*4), 4);
     }
-    gbb.flip();
+
     std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
     conn_->pkt_sending_q_.put(&cpkt);
-
     selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, conn_sh_);
     return conn_->peer_->selector_.asynch_notify(evt);
 }
@@ -364,7 +360,6 @@ void outgoing_transaction_impl::set_result_obj_on_response(std::unique_ptr<nclas
 RetCode outgoing_transaction_impl::send()
 {
     if(status_ != TransactionStatus_INITIALIZED) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
 
@@ -397,10 +392,9 @@ RetCode outgoing_transaction_impl::send()
     if(request_obj_) {
         gbb.put(&totbytes, (6*4), 4);
     }
-    gbb.flip();
+
     std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
     conn_->pkt_sending_q_.put(&cpkt);
-
     selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, conn_);
     return conn_->peer_->selector_.asynch_notify(evt);
 }

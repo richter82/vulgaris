@@ -48,11 +48,6 @@
 #else
 #define NOINLINE
 #endif
-#if defined WIN32 && defined _MSC_VER
-#define TH_ID GetCurrentThreadId()
-#else
-#define TH_ID ((unsigned int)((unsigned long)pthread_self()))
-#endif
 
 #ifndef min
 #define min(a,b) (((a) < (b)) ? (a) : (b))
@@ -122,13 +117,6 @@
 }
 
 #define NO_ACTION ;
-#define EXIT_ACTION \
-{\
-    FILE *ferr = fopen("log.err", "w+");\
-    fprintf(ferr ? ferr : stderr, "EXIT TRIGGERED AT: %s-%d\n", __func__, __LINE__);\
-    if(ferr) fclose(ferr);\
-    exit(1);\
-}
 
 namespace vlg {
 
@@ -152,9 +140,9 @@ inline void *grow_buff_or_die(void *buffer, size_t current_size, size_t amount)
 {
     void *nout = nullptr;
     if(buffer) {
-        CMD_ON_NUL(nout = realloc(buffer, current_size + amount), EXIT_ACTION)
+        CMD_ON_NUL(nout = realloc(buffer, current_size + amount), exit(1))
     } else {
-        CMD_ON_NUL(nout = malloc(amount), EXIT_ACTION)
+        CMD_ON_NUL(nout = malloc(amount), exit(1))
     }
     return nout;
 }

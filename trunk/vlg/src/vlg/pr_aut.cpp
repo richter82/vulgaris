@@ -98,7 +98,6 @@ RetCode peer_automa::await_for_status_reached(PeerStatus test,
 {
     scoped_mx smx(peer_mon_);
     if(peer_status_ < PeerStatus_INITIALIZED) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
     RetCode rcode = RetCode_OK;
@@ -125,7 +124,6 @@ RetCode peer_automa::await_for_status_change(PeerStatus &peer_status,
 {
     scoped_mx smx(peer_mon_);
     if(peer_status_ < PeerStatus_INITIALIZED) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
     RetCode rcode = RetCode_OK;
@@ -153,7 +151,6 @@ RetCode peer_automa::start(int argc,
                            bool spawn_new_thread)
 {
     if(peer_status_ != PeerStatus_EARLY && peer_status_ != PeerStatus_STOPPED) {
-        IFLOG(err(TH_ID, LS_CLO "[res:%d]", __func__, RetCode_BADSTTS))
         return RetCode_BADSTTS;
     }
     peer_argc_ = argc;
@@ -205,7 +202,6 @@ RetCode peer_automa::start(int argc,
 RetCode peer_automa::stop(bool force_disconnect)
 {
     if(peer_status_ != PeerStatus_RUNNING) {
-        IFLOG(err(TH_ID, LS_CLO "[res:%d]", __func__, RetCode_BADSTTS))
         return RetCode_BADSTTS;
     }
     force_disconnect_on_stop_ = force_disconnect;
@@ -292,7 +288,6 @@ const char *peer_welcome_fmt = LS_WEL "@%s %s" "@%s %u.%u.%u" "@%s %s";
 RetCode peer_automa::step_welcome()
 {
     if(peer_status_ > PeerStatus_EARLY) {
-        IFLOG(err(TH_ID, LS_CLO "[res:%d]", __func__, RetCode_BADSTTS))
         return RetCode_BADSTTS;
     }
     IFLOG(inf(TH_ID, peer_welcome_fmt, "PEER:",
@@ -311,7 +306,6 @@ RetCode peer_automa::step_welcome()
 RetCode peer_automa::step_init()
 {
     if(peer_status_ > PeerStatus_INITIALIZED) {
-        IFLOG(err(TH_ID, LS_CLO "[res:%d]", __func__, RetCode_BADSTTS))
         return RetCode_BADSTTS;
     }
     IFLOG(inf(TH_ID, LS_APL"#initializing#"))
@@ -358,7 +352,6 @@ RetCode peer_automa::step_init()
 RetCode peer_automa::step_start()
 {
     if(peer_status_ > PeerStatus_STARTED) {
-        IFLOG(err(TH_ID, LS_CLO "[res:%d]", __func__, RetCode_BADSTTS))
         return RetCode_BADSTTS;
     }
     IFLOG(inf(TH_ID, LS_APL"#starting#"))
@@ -375,7 +368,6 @@ RetCode peer_automa::step_start()
 RetCode peer_automa::step_move_running()
 {
     if(peer_status_ != PeerStatus_STARTED) {
-        IFLOG(err(TH_ID, LS_CLO "[res:%d]", __func__, RetCode_BADSTTS))
         return RetCode_BADSTTS;
     }
     IFLOG(inf(TH_ID, LS_APL"#move running#"))
@@ -389,7 +381,6 @@ RetCode peer_automa::step_move_running()
 RetCode peer_automa::set_running()
 {
     if(peer_status_ > PeerStatus_RUNNING) {
-        IFLOG(err(TH_ID, LS_CLO "[res:%d]", __func__, RetCode_BADSTTS))
         return RetCode_BADSTTS;
     }
     IFLOG(inf(TH_ID, LS_APL"#running#"))
@@ -400,7 +391,6 @@ RetCode peer_automa::set_running()
 RetCode peer_automa::step_stop()
 {
     if(peer_status_ > PeerStatus_STOPPED) {
-        IFLOG(err(TH_ID, LS_CLO "[res:%d]", __func__, RetCode_BADSTTS))
         return RetCode_BADSTTS;
     }
     IFLOG(inf(TH_ID, LS_APL"#stopping#"))

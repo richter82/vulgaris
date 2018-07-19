@@ -119,7 +119,7 @@
              </font>
             </property>
             <property name="styleSheet">
-             <string notr="true">background-color  : AntiqueWhite; color : black;</string>
+             <string notr="true">background-color  : Cornsilk ; color : black;</string>
             </property>
             <property name="lineWidth">
              <number>0</number>
@@ -141,7 +141,7 @@
        <item>
         <widget class="QLabel" name="main_info_label">
          <property name="styleSheet">
-          <string notr="true">background-color  : Azure ; color : black;</string>
+          <string notr="true">background-color  : White  ; color : black;</string>
          </property>
          <property name="text">
           <string/>

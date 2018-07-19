@@ -14,16 +14,6 @@
 ******************************************/
 namespace vlg {
 
-vlg_hdr_rec::vlg_hdr_rec()
-{
-    memset(this, 0, sizeof(vlg_hdr_rec));
-}
-
-tx_id::tx_id()
-{
-    memset(this, 0, sizeof(tx_id));
-}
-
 int dump_vlg_hdr_rec(const vlg_hdr_rec *hdr, char *out)
 {
     int offst = 0;
@@ -1269,7 +1259,6 @@ RetCode conn_impl::recv_body(unsigned int bodylen,
         }
         if(tot_brecv != bodylen) {
             if((rcode = socket_excptn_hndl(brecv)) != RetCode_SCKEAGN) {
-                rcode = RetCode_OK;
                 stay = false;
             }
         } else {
@@ -1282,9 +1271,7 @@ RetCode conn_impl::recv_body(unsigned int bodylen,
 
 RetCode conn_impl::send_single_pkt(g_bbuf &pkt_bbuf)
 {
-    pkt_bbuf.flip();
     if(!pkt_bbuf.limit_) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADARG;
     }
     RetCode rcode = RetCode_OK;
@@ -1299,8 +1286,7 @@ RetCode conn_impl::send_single_pkt(g_bbuf &pkt_bbuf)
             remaining -= bsent;
         }
         if(remaining) {
-            if(((rcode = socket_excptn_hndl(bsent)) != RetCode_SCKEAGN) || (rcode != RetCode_SCKWBLK)) {
-                rcode = RetCode_OK;
+            if(((rcode = socket_excptn_hndl(bsent)) != RetCode_SCKEAGN) && (rcode != RetCode_SCKWBLK)) {
                 stay = false;
             }
         } else {
@@ -1314,6 +1300,28 @@ RetCode conn_impl::send_single_pkt(g_bbuf &pkt_bbuf)
                     tot_bsent,
                     remaining,
                     rcode);
+    }
+    return rcode;
+}
+
+RetCode conn_impl::aggr_msgs_and_send_pkt(g_bbuf &pkt_snd_buf)
+{
+    RetCode rcode = RetCode_OK;
+    while(pkt_sending_q_.size()) {
+        std::unique_ptr<conn_pkt> cpkt;
+        pkt_sending_q_.take(&cpkt);
+        cpkt->pkt_b_.flip();
+        if(pkt_snd_buf.append_no_rsz(cpkt->pkt_b_) == RetCode_BOVFL) {
+            pkt_snd_buf.flip();
+            send_single_pkt(pkt_snd_buf);
+            pkt_snd_buf.reset();
+            pkt_snd_buf.append_no_rsz(cpkt->pkt_b_);
+        }
+    }
+    if(pkt_snd_buf.pos_) {
+        pkt_snd_buf.flip();
+        send_single_pkt(pkt_snd_buf);
+        pkt_snd_buf.reset();
     }
     return rcode;
 }
