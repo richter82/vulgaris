@@ -12,11 +12,11 @@
 
 namespace vlg {
 
-// selector_event
+// sel_evt
 
-struct selector_event {
-    explicit selector_event(VLG_SELECTOR_Evt evt, conn_impl *conn);
-    explicit selector_event(VLG_SELECTOR_Evt evt, std::shared_ptr<incoming_connection> &conn);
+struct sel_evt {
+    explicit sel_evt(VLG_SELECTOR_Evt evt, conn_impl *conn);
+    explicit sel_evt(VLG_SELECTOR_Evt evt, std::shared_ptr<incoming_connection> &conn);
 
     VLG_SELECTOR_Evt evt_;
     ConnectionType con_type_;
@@ -57,14 +57,14 @@ struct selector : public p_th {
                                      time_t sec = -1,
                                      long nsec = 0);
 
-    RetCode asynch_notify(const selector_event *);
-    RetCode consume_asynch_events();
+    RetCode notify(const sel_evt *);
+    RetCode process_asyn_evts();
     RetCode interrupt();
     RetCode set_status(SelectorStatus);
     virtual void *run() override;
     RetCode create_UDP_notify_srv_sock();
     RetCode connect_UDP_notify_cli_sock();
-    bool is_still_valid_connection(const selector_event *);
+    bool is_still_valid_connection(const sel_evt *);
     RetCode start_exec_services();
     RetCode process_inco_sock_inco_events();
     RetCode process_inco_sock_outg_events();
@@ -79,10 +79,10 @@ struct selector : public p_th {
     RetCode server_socket_shutdown();
     RetCode consume_events();
     RetCode consume_inco_sock_events();
-    RetCode add_early_outg_conn(selector_event *);
+    RetCode add_early_outg_conn(sel_evt *);
     RetCode promote_early_outg_conn(conn_impl *);
     RetCode delete_early_outg_conn(conn_impl *);
-    RetCode manage_disconnect_conn(selector_event *);
+    RetCode manage_disconnect_conn(sel_evt *);
     RetCode stop_and_clean();
 
     //rep
@@ -99,17 +99,17 @@ struct selector : public p_th {
     mutable mx mon_;
 
     //srv_rep
-    SOCKET srv_listen_socket_;
+    SOCKET srv_socket_;
     sockaddr_in srv_sockaddr_in_;
     acceptor srv_acceptor_;
-    std::unordered_map<unsigned int, std::shared_ptr<incoming_connection>> inco_connid_conn_map_;
-    std::unordered_map<SOCKET, std::shared_ptr<incoming_connection>> write_pending_sock_inco_conn_map_;
+    std::unordered_map<uint64_t, std::shared_ptr<incoming_connection>> inco_conn_map_;
+    std::unordered_map<uint64_t, std::shared_ptr<incoming_connection>> wp_inco_conn_map_;
     p_exec_srv inco_exec_srv_;
 
     //cli_rep
-    std::unordered_map<SOCKET, conn_impl *> outg_early_sock_conn_map_;
-    std::unordered_map<unsigned int, conn_impl *> outg_connid_conn_map_;
-    std::unordered_map<SOCKET, conn_impl *> write_pending_sock_outg_conn_map_;
+    std::unordered_map<uint64_t, conn_impl *> outg_early_conn_map_;
+    std::unordered_map<uint64_t, conn_impl *> outg_conn_map_;
+    std::unordered_map<uint64_t, conn_impl *> wp_outg_conn_map_;
     p_exec_srv outg_exec_srv_;
 
     //sending buffer

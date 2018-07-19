@@ -193,13 +193,6 @@ void peer_impl::set_cfg_load_pers_driv(const char *driv)
     }
 }
 
-RetCode peer_impl::next_connid(unsigned int &connid)
-{
-    scoped_mx smx(mon_);
-    connid = ++prgr_conn_id_;
-    return RetCode_OK;
-}
-
 RetCode peer_impl::extend_model(nentity_manager &nem)
 {
     RetCode rcode = RetCode_OK;
@@ -443,7 +436,7 @@ RetCode peer_impl::on_automa_move_running()
 RetCode peer_impl::on_automa_stop()
 {
     RetCode rcode = RetCode_OK;
-    if(!selector_.inco_connid_conn_map_.empty() || !selector_.outg_connid_conn_map_.empty()) {
+    if(!selector_.inco_conn_map_.empty() || !selector_.outg_conn_map_.empty()) {
         if(!force_disconnect_on_stop_) {
             IFLOG(err(TH_ID, LS_CLO "[active connections detected, cannot stop peer]", __func__))
             return RetCode_KO;

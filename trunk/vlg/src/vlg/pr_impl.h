@@ -75,7 +75,10 @@ struct peer_impl : public peer_automa {
         RetCode extend_model(nentity_manager &nem);
         RetCode extend_model(const char *model_name);
 
-        RetCode next_connid(unsigned int &connid);
+        unsigned int next_connid() {
+            scoped_mx smx(mon_);
+            return ++prgr_conn_id_;
+        }
 
         RetCode new_incoming_connection(std::shared_ptr<incoming_connection> &new_connection,
                                         unsigned int connid = 0);

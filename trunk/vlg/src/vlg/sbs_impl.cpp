@@ -96,8 +96,8 @@ sbs_impl::sbs_impl(outgoing_subscription &publ) :
 
 inline void sbs_impl::ntfy_sel_snd_pkt()
 {
-    selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, conn_);
-    conn_->peer_->selector_.asynch_notify(evt);
+    sel_evt *evt = new sel_evt(VLG_SELECTOR_Evt_SendPacket, conn_);
+    conn_->peer_->selector_.notify(evt);
 }
 
 RetCode sbs_impl::set_started()
@@ -288,8 +288,8 @@ incoming_subscription_impl::~incoming_subscription_impl()
 
 inline void incoming_subscription_impl::ntfy_sel_snd_pkt()
 {
-    selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, conn_sh_);
-    conn_->peer_->selector_.asynch_notify(evt);
+    sel_evt *evt = new sel_evt(VLG_SELECTOR_Evt_SendPacket, conn_sh_);
+    conn_->peer_->selector_.notify(evt);
 }
 
 inline void incoming_subscription_impl::release_initial_query()

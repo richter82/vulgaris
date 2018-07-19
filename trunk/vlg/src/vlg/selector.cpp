@@ -10,7 +10,7 @@
 
 namespace vlg {
 
-selector_event::selector_event(VLG_SELECTOR_Evt evt, conn_impl *conn) :
+sel_evt::sel_evt(VLG_SELECTOR_Evt evt, conn_impl *conn) :
     evt_(evt),
     con_type_(conn ? conn->con_type_ : ConnectionType_UNDEFINED),
     conn_(conn),
@@ -19,7 +19,7 @@ selector_event::selector_event(VLG_SELECTOR_Evt evt, conn_impl *conn) :
     memset(&saddr_, 0, sizeof(sockaddr_in));
 }
 
-selector_event::selector_event(VLG_SELECTOR_Evt evt, std::shared_ptr<incoming_connection> &conn) :
+sel_evt::sel_evt(VLG_SELECTOR_Evt evt, std::shared_ptr<incoming_connection> &conn) :
     evt_(evt),
     con_type_(ConnectionType_INGOING),
     conn_(conn.get()->impl_.get()),
@@ -36,7 +36,7 @@ selector::selector(peer_impl &peer) :
     sel_res_(-1),
     udp_ntfy_srv_socket_(INVALID_SOCKET),
     udp_ntfy_cli_socket_(INVALID_SOCKET),
-    srv_listen_socket_(INVALID_SOCKET),
+    srv_socket_(INVALID_SOCKET),
     srv_acceptor_(peer),
     inco_exec_srv_(true),
     outg_exec_srv_(true),
@@ -192,11 +192,11 @@ RetCode selector::connect_UDP_notify_cli_sock()
 
 RetCode selector::interrupt()
 {
-    selector_event *interrupt = new selector_event(VLG_SELECTOR_Evt_Interrupt, nullptr);
-    return asynch_notify(interrupt);
+    sel_evt *interrupt = new sel_evt(VLG_SELECTOR_Evt_Interrupt, nullptr);
+    return notify(interrupt);
 }
 
-RetCode selector::asynch_notify(const selector_event *evt)
+RetCode selector::notify(const sel_evt *evt)
 {
     long bsent = 0;
     while((bsent = send(udp_ntfy_cli_socket_, (const char *)&evt, sizeof(void *), 0)) == SOCKET_ERROR) {
@@ -257,13 +257,13 @@ RetCode selector::start_conn_objs()
 {
     RetCode res = RetCode_OK;
     if(peer_.personality_ == PeerPersonality_PURE_SERVER || peer_.personality_ == PeerPersonality_BOTH) {
-        if((res = srv_acceptor_.create_server_socket(srv_listen_socket_))) {
+        if((res = srv_acceptor_.create_server_socket(srv_socket_))) {
             IFLOG(cri(TH_ID, LS_CLO "[starting acceptor, last_err:%d]", __func__, res))
             return RetCode_KO;
         }
-        FD_SET(srv_listen_socket_, &read_FDs_);
-        FD_SET(srv_listen_socket_, &excep_FDs_);
-        nfds_ = (int)srv_listen_socket_;
+        FD_SET(srv_socket_, &read_FDs_);
+        FD_SET(srv_socket_, &excep_FDs_);
+        nfds_ = (int)srv_socket_;
     }
     if(peer_.personality_ == PeerPersonality_PURE_CLIENT || peer_.personality_ == PeerPersonality_BOTH) {
         //???
@@ -276,20 +276,20 @@ RetCode selector::start_conn_objs()
 
 RetCode selector::process_inco_sock_inco_events()
 {
-    SOCKET srv_cli_sock = INVALID_SOCKET;
+    SOCKET sckt = INVALID_SOCKET;
     //**** HANDLE INCOMING EVENTS BEGIN****
     if(sel_res_) {
-        for(auto it = inco_connid_conn_map_.begin(); it != inco_connid_conn_map_.end(); it++) {
-            srv_cli_sock = it->second->get_socket();
+        for(auto it = inco_conn_map_.begin(); it != inco_conn_map_.end(); it++) {
+            sckt = it->second->impl_->socket_;
             //first: check if it is readable.
-            if(FD_ISSET(srv_cli_sock, &read_FDs_)) {
+            if(FD_ISSET(sckt, &read_FDs_)) {
                 if(it->second->impl_->status_ != ConnectionStatus_ESTABLISHED &&
                         it->second->impl_->status_ != ConnectionStatus_PROTOCOL_HANDSHAKE &&
                         it->second->impl_->status_ != ConnectionStatus_AUTHENTICATED) {
                     IFLOG(trc(TH_ID, LS_TRL"[socket:%d, connid:%d, status:%d][not eligible for recv()]",
                               __func__,
-                              srv_cli_sock,
-                              it->first,
+                              sckt,
+                              it->second->impl_->connid_,
                               it->second->impl_->status_))
                     break;
                 }
@@ -306,8 +306,8 @@ RetCode selector::process_inco_sock_inco_events()
                 }
             }
             //second: check if it is in exception.
-            if(FD_ISSET(srv_cli_sock, &excep_FDs_)) {
-                IFLOG(wrn(TH_ID, LS_TRL "[socket:%d][server-side socket is in exception]", __func__, srv_cli_sock))
+            if(FD_ISSET(sckt, &excep_FDs_)) {
+                IFLOG(wrn(TH_ID, LS_TRL "[socket:%d][server-side socket is in exception]", __func__, sckt))
                 if(!(--sel_res_)) {
                     break;
                 }
@@ -321,17 +321,17 @@ RetCode selector::process_inco_sock_inco_events()
 inline RetCode selector::process_inco_sock_outg_events()
 {
     //**** HANDLE OUTGOING EVENTS BEGIN****
-    for(auto it = write_pending_sock_inco_conn_map_.begin(); it != write_pending_sock_inco_conn_map_.end(); it++) {
-        if(FD_ISSET(it->first, &write_FDs_)) {
+    for(auto it = wp_inco_conn_map_.begin(); it != wp_inco_conn_map_.end(); it++) {
+        if(FD_ISSET(it->second->impl_->socket_, &write_FDs_)) {
             it->second->impl_->aggr_msgs_and_send_pkt(pkt_snd_buf_);
             if(!(--sel_res_)) {
                 break;
             }
         }
         //second: check if it is in exception.
-        if(FD_ISSET(it->first, &excep_FDs_)) {
+        if(FD_ISSET(it->second->impl_->socket_, &excep_FDs_)) {
             IFLOG(wrn(TH_ID, LS_TRL "[socket:%d, connid:%d][writepending socket is in exception]", __func__,
-                      it->first,
+                      it->second->impl_->socket_,
                       it->second->impl_->connid_))
             if(!(--sel_res_)) {
                 break;
@@ -345,17 +345,17 @@ inline RetCode selector::process_inco_sock_outg_events()
 inline RetCode selector::process_outg_sock_outg_events()
 {
     //**** HANDLE OUTGOING EVENTS BEGIN****
-    for(auto it = write_pending_sock_outg_conn_map_.begin(); it != write_pending_sock_outg_conn_map_.end(); it++) {
-        if(FD_ISSET(it->first, &write_FDs_)) {
+    for(auto it = wp_outg_conn_map_.begin(); it != wp_outg_conn_map_.end(); it++) {
+        if(FD_ISSET(it->second->socket_, &write_FDs_)) {
             it->second->aggr_msgs_and_send_pkt(pkt_snd_buf_);
             if(!(--sel_res_)) {
                 break;
             }
         }
         //second: check if it is in exception.
-        if(FD_ISSET(it->first, &excep_FDs_)) {
+        if(FD_ISSET(it->second->socket_, &excep_FDs_)) {
             IFLOG(wrn(TH_ID, LS_TRL "[socket:%d, connid:%d][writepending socket is in exception]", __func__,
-                      it->first,
+                      it->second->socket_,
                       it->second->connid_))
             if(!(--sel_res_)) {
                 break;
@@ -368,19 +368,18 @@ inline RetCode selector::process_outg_sock_outg_events()
 
 RetCode selector::process_outg_sock_inco_events()
 {
-    unsigned int connid = 0;
     //**** HANDLE INCOMING EVENTS BEGIN****
     //EARLY CONNECTIONS
     if(sel_res_) {
-        for(auto it = outg_early_sock_conn_map_.begin(); it != outg_early_sock_conn_map_.end(); it++) {
+        for(auto it = outg_early_conn_map_.begin(); it != outg_early_conn_map_.end(); it++) {
             //first: check if it is readable.
-            if(FD_ISSET(it->first, &read_FDs_)) {
+            if(FD_ISSET(it->second->socket_, &read_FDs_)) {
                 if(it->second->status_ != ConnectionStatus_ESTABLISHED &&
                         it->second->status_ != ConnectionStatus_PROTOCOL_HANDSHAKE &&
                         it->second->status_ != ConnectionStatus_AUTHENTICATED) {
                     IFLOG(trc(TH_ID, LS_TRL"[socket:%d, connid:%d, status:%d][not eligible for recv()]", __func__,
-                              it->first,
-                              connid,
+                              it->second->socket_,
+                              it->second->connid_,
                               it->second->status_))
                     break;
                 }
@@ -397,7 +396,7 @@ RetCode selector::process_outg_sock_inco_events()
                 }
             }
             //second: check if it is in exception.
-            if(FD_ISSET(it->first, &excep_FDs_)) {
+            if(FD_ISSET(it->second->socket_, &excep_FDs_)) {
                 IFLOG(wrn(TH_ID, LS_TRL "[socket:%d][early-client-side socket is in exception]", __func__, it->first))
                 if(!(--sel_res_)) {
                     break;
@@ -407,7 +406,7 @@ RetCode selector::process_outg_sock_inco_events()
     }
     //PROTO CONNECTED CONNECTIONS
     if(sel_res_) {
-        for(auto it = outg_connid_conn_map_.begin(); it != outg_connid_conn_map_.end(); it++) {
+        for(auto it = outg_conn_map_.begin(); it != outg_conn_map_.end(); it++) {
             //first: check if it is readable.
             if(FD_ISSET(it->second->socket_, &read_FDs_)) {
                 if(it->second->status_ != ConnectionStatus_ESTABLISHED &&
@@ -415,7 +414,7 @@ RetCode selector::process_outg_sock_inco_events()
                         it->second->status_ != ConnectionStatus_AUTHENTICATED) {
                     IFLOG(trc(TH_ID, LS_TRL "[socket:%d, connid:%d, status:%d][not eligible for recv()]", __func__,
                               it->second->socket_,
-                              connid,
+                              it->second->connid_,
                               it->second->status_))
                     break;
                 }
@@ -447,10 +446,8 @@ RetCode selector::process_outg_sock_inco_events()
 RetCode selector::consume_inco_sock_events()
 {
     std::shared_ptr<incoming_connection> new_conn_shp;
-    unsigned int new_connid = 0;
-    if(FD_ISSET(srv_listen_socket_, &read_FDs_)) {
-        peer_.next_connid(new_connid);
-        if(srv_acceptor_.accept(new_connid, new_conn_shp)) {
+    if(FD_ISSET(srv_socket_, &read_FDs_)) {
+        if(srv_acceptor_.accept(peer_.next_connid(), new_conn_shp)) {
             IFLOG(cri(TH_ID, LS_CLO "[accepting new connection]", __func__))
             return RetCode_KO;
         }
@@ -458,7 +455,7 @@ RetCode selector::consume_inco_sock_events()
             IFLOG(cri(TH_ID, LS_CLO "[set socket not blocking]", __func__))
             return RetCode_KO;
         }
-        inco_connid_conn_map_[new_connid] = new_conn_shp;
+        inco_conn_map_[new_conn_shp->get_socket()] = new_conn_shp;
         IFLOG(dbg(TH_ID, LS_CON"[socket:%d, host:%s, port:%d, connid:%d][socket accepted]",
                   new_conn_shp->get_socket(),
                   new_conn_shp->get_host_ip(),
@@ -500,36 +497,36 @@ inline void selector::FDSET_sockets()
 
 inline void selector::FDSET_write_incoming_pending_sockets()
 {
-    auto it = write_pending_sock_inco_conn_map_.begin();
-    while(it != write_pending_sock_inco_conn_map_.end()) {
+    auto it = wp_inco_conn_map_.begin();
+    while(it != wp_inco_conn_map_.end()) {
         if(it->second->impl_->pkt_sending_q_.size()) {
-            FD_SET(it->first, &write_FDs_);
-            nfds_ = ((int)it->first > nfds_) ? (int)it->first : nfds_;
+            FD_SET(it->second->impl_->socket_, &write_FDs_);
+            nfds_ = ((int)it->second->impl_->socket_ > nfds_) ? (int)it->second->impl_->socket_ : nfds_;
             it++;
         } else {
-            it = write_pending_sock_inco_conn_map_.erase(it);
+            it = wp_inco_conn_map_.erase(it);
         }
     }
 }
 
 inline void selector::FDSET_write_outgoing_pending_sockets()
 {
-    auto it = write_pending_sock_outg_conn_map_.begin();
-    while(it != write_pending_sock_outg_conn_map_.end()) {
+    auto it = wp_outg_conn_map_.begin();
+    while(it != wp_outg_conn_map_.end()) {
         if(it->second->pkt_sending_q_.size()) {
-            FD_SET(it->first, &write_FDs_);
-            nfds_ = ((int)it->first > nfds_) ? (int)it->first : nfds_;
+            FD_SET(it->second->socket_, &write_FDs_);
+            nfds_ = ((int)it->second->socket_ > nfds_) ? (int)it->second->socket_ : nfds_;
             it++;
         } else {
-            it = write_pending_sock_outg_conn_map_.erase(it);
+            it = wp_outg_conn_map_.erase(it);
         }
     }
 }
 
 inline void selector::FDSET_incoming_sockets()
 {
-    auto it = inco_connid_conn_map_.begin();
-    while(it != inco_connid_conn_map_.end()) {
+    auto it = inco_conn_map_.begin();
+    while(it != inco_conn_map_.end()) {
         if(it->second->get_status() == ConnectionStatus_ESTABLISHED ||
                 it->second->get_status() == ConnectionStatus_PROTOCOL_HANDSHAKE ||
                 it->second->get_status() == ConnectionStatus_AUTHENTICATED) {
@@ -543,20 +540,20 @@ inline void selector::FDSET_incoming_sockets()
             if(it->second->get_status() != ConnectionStatus_DISCONNECTED) {
                 it->second->impl_->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_NETWORK);
             }
-            write_pending_sock_inco_conn_map_.erase(inco_sock);
-            it = inco_connid_conn_map_.erase(it);
+            wp_inco_conn_map_.erase(inco_sock);
+            it = inco_conn_map_.erase(it);
         }
     }
     //always set server socket in read and exception fds.
-    FD_SET(srv_listen_socket_, &read_FDs_);
-    FD_SET(srv_listen_socket_, &excep_FDs_);
-    nfds_ = ((int)srv_listen_socket_ > nfds_) ? (int)srv_listen_socket_ : nfds_;
+    FD_SET(srv_socket_, &read_FDs_);
+    FD_SET(srv_socket_, &excep_FDs_);
+    nfds_ = ((int)srv_socket_ > nfds_) ? (int)srv_socket_ : nfds_;
 }
 
 inline void selector::FDSET_outgoing_sockets()
 {
-    auto it_1 = outg_early_sock_conn_map_.begin();
-    while(it_1 != outg_early_sock_conn_map_.end()) {
+    auto it_1 = outg_early_conn_map_.begin();
+    while(it_1 != outg_early_conn_map_.end()) {
         if(it_1->second->status_ == ConnectionStatus_ESTABLISHED ||
                 it_1->second->status_ == ConnectionStatus_PROTOCOL_HANDSHAKE ||
                 it_1->second->status_ == ConnectionStatus_AUTHENTICATED) {
@@ -565,15 +562,15 @@ inline void selector::FDSET_outgoing_sockets()
             nfds_ = ((int)it_1->second->socket_ > nfds_) ? (int)it_1->second->socket_ : nfds_;
             it_1++;
         } else {
-            it_1 = outg_early_sock_conn_map_.erase(it_1);
+            it_1 = outg_early_conn_map_.erase(it_1);
             if(it_1->second->status_ != ConnectionStatus_DISCONNECTED) {
                 it_1->second->socket_shutdown();
             }
-            write_pending_sock_outg_conn_map_.erase(it_1->second->socket_);
+            wp_outg_conn_map_.erase(it_1->second->socket_);
         }
     }
-    auto it_2 = outg_connid_conn_map_.begin();
-    while(it_2 != outg_connid_conn_map_.end()) {
+    auto it_2 = outg_conn_map_.begin();
+    while(it_2 != outg_conn_map_.end()) {
         if(it_2->second->status_ == ConnectionStatus_ESTABLISHED ||
                 it_2->second->status_ == ConnectionStatus_PROTOCOL_HANDSHAKE ||
                 it_2->second->status_ == ConnectionStatus_AUTHENTICATED) {
@@ -585,13 +582,13 @@ inline void selector::FDSET_outgoing_sockets()
             if(it_2->second->status_ != ConnectionStatus_DISCONNECTED) {
                 it_2->second->socket_shutdown();
             }
-            write_pending_sock_outg_conn_map_.erase(it_2->second->socket_);
-            it_2 = outg_connid_conn_map_.erase(it_2);
+            wp_outg_conn_map_.erase(it_2->second->socket_);
+            it_2 = outg_conn_map_.erase(it_2);
         }
     }
 }
 
-inline RetCode selector::manage_disconnect_conn(selector_event *conn_evt)
+inline RetCode selector::manage_disconnect_conn(sel_evt *conn_evt)
 {
     std::unique_ptr<conn_pkt> cpkt;
     conn_evt->conn_->pkt_sending_q_.take(0, 100*1000, &cpkt);
@@ -603,7 +600,7 @@ inline RetCode selector::manage_disconnect_conn(selector_event *conn_evt)
     return RetCode_OK;
 }
 
-inline RetCode selector::add_early_outg_conn(selector_event *conn_evt)
+inline RetCode selector::add_early_outg_conn(sel_evt *conn_evt)
 {
     RetCode rcode = RetCode_OK;
     std::unique_ptr<conn_pkt> cpkt;
@@ -618,41 +615,41 @@ inline RetCode selector::add_early_outg_conn(selector_event *conn_evt)
     if(cpkt) {
         cpkt->pkt_b_.flip();
         conn_evt->conn_->send_single_pkt(cpkt->pkt_b_);
-        outg_early_sock_conn_map_[conn_evt->conn_->socket_] = conn_evt->conn_;
+        outg_early_conn_map_[conn_evt->conn_->socket_] = conn_evt->conn_;
     }
     return RetCode_OK;
 }
 
 inline RetCode selector::promote_early_outg_conn(conn_impl *conn)
 {
-    outg_early_sock_conn_map_.erase(conn->socket_);
-    outg_connid_conn_map_[conn->connid_] = conn;
+    outg_early_conn_map_.erase(conn->socket_);
+    outg_conn_map_[conn->socket_] = conn;
     return RetCode_OK;
 }
 
 inline RetCode selector::delete_early_outg_conn(conn_impl *conn)
 {
-    outg_early_sock_conn_map_.erase(conn->socket_);
+    outg_early_conn_map_.erase(conn->socket_);
     return RetCode_OK;
 }
 
-inline bool selector::is_still_valid_connection(const selector_event *evt)
+inline bool selector::is_still_valid_connection(const sel_evt *evt)
 {
     if(evt->con_type_ == ConnectionType_INGOING) {
-        return (inco_connid_conn_map_.find(evt->conn_->connid_) != inco_connid_conn_map_.end());
+        return (inco_conn_map_.find(evt->conn_->socket_) != inco_conn_map_.end());
     } else {
         if(evt->evt_ == VLG_SELECTOR_Evt_ConnReqAccepted || evt->evt_ == VLG_SELECTOR_Evt_ConnReqRefused) {
-            return (outg_early_sock_conn_map_.find(evt->socket_) != outg_early_sock_conn_map_.end());
+            return (outg_early_conn_map_.find(evt->socket_) != outg_early_conn_map_.end());
         } else {
-            return (outg_connid_conn_map_.find(evt->conn_->connid_) != outg_connid_conn_map_.end());
+            return (outg_conn_map_.find(evt->conn_->socket_) != outg_conn_map_.end());
         }
     }
 }
 
-RetCode selector::consume_asynch_events()
+RetCode selector::process_asyn_evts()
 {
     long brecv = 0, recv_buf_sz = sizeof(void *);
-    selector_event *conn_evt = nullptr;
+    sel_evt *conn_evt = nullptr;
     bool conn_still_valid = true;
     while((brecv = recv(udp_ntfy_srv_socket_, (char *)&conn_evt, recv_buf_sz, 0)) > 0) {
         if(brecv != recv_buf_sz) {
@@ -668,9 +665,9 @@ RetCode selector::consume_asynch_events()
                 switch(conn_evt->evt_) {
                     case VLG_SELECTOR_Evt_SendPacket:
                         if(conn_evt->con_type_ == ConnectionType_INGOING) {
-                            write_pending_sock_inco_conn_map_[conn_evt->socket_] = conn_evt->inco_conn_;
+                            wp_inco_conn_map_[conn_evt->socket_] = conn_evt->inco_conn_;
                         } else {
-                            write_pending_sock_outg_conn_map_[conn_evt->socket_] = conn_evt->conn_;
+                            wp_outg_conn_map_[conn_evt->socket_] = conn_evt->conn_;
                         }
                         break;
                     case VLG_SELECTOR_Evt_ConnectRequest:
@@ -733,7 +730,7 @@ RetCode selector::consume_asynch_events()
 inline RetCode selector::consume_events()
 {
     if(FD_ISSET(udp_ntfy_srv_socket_, &read_FDs_)) {
-        consume_asynch_events();
+        process_asyn_evts();
         sel_res_--;
     }
     if(sel_res_) {
@@ -763,28 +760,28 @@ RetCode selector::server_socket_shutdown()
 {
     int last_err_ = 0;
 #if defined WIN32 && defined _MSC_VER
-    if((last_err_ = closesocket(srv_listen_socket_))) {
+    if((last_err_ = closesocket(srv_socket_))) {
         IFLOG(err(TH_ID, LS_CLO "[socket:%d][closesocket KO][res:%d]", __func__,
-                  srv_listen_socket_, last_err_))
+                  srv_socket_, last_err_))
     } else {
         IFLOG(trc(TH_ID, LS_TRL "[socket:%d][closesocket OK][res:%d]", __func__,
-                  srv_listen_socket_, last_err_))
+                  srv_socket_, last_err_))
     }
 #else
-    if((last_err_ = close(srv_listen_socket_))) {
+    if((last_err_ = close(srv_socket_))) {
         IFLOG(err(TH_ID, LS_CLO "[socket:%d][closesocket KO][res:%d]", __func__,
-                  srv_listen_socket_, last_err_))
+                  srv_socket_, last_err_))
     } else {
         IFLOG(trc(TH_ID, LS_TRL "[socket:%d][closesocket OK][res:%d]", __func__,
-                  srv_listen_socket_, last_err_))
+                  srv_socket_, last_err_))
     }
 #if 0
-    if((last_err_ = shutdown(srv_listen_socket_, SHUT_RDWR))) {
+    if((last_err_ = shutdown(srv_socket_, SHUT_RDWR))) {
         IFLOG(err(TH_ID, LS_CLO "[socket:%d][shutdown KO][res:%d]", __func__,
-                  srv_listen_socket_, last_err_))
+                  srv_socket_, last_err_))
     } else {
         IFLOG(trc(TH_ID, LS_TRL "[socket:%d][shutdown OK][res:%d]", __func__,
-                  srv_listen_socket_, last_err_))
+                  srv_socket_, last_err_))
     }
 #endif
 #endif
@@ -794,29 +791,29 @@ RetCode selector::server_socket_shutdown()
 RetCode selector::stop_and_clean()
 {
     if(peer_.personality_ == PeerPersonality_PURE_SERVER || peer_.personality_ == PeerPersonality_BOTH) {
-        std::for_each(inco_connid_conn_map_.begin(), inco_connid_conn_map_.end(), [](auto &it) {
+        std::for_each(inco_conn_map_.begin(), inco_conn_map_.end(), [](auto &it) {
             if(it.second->get_status() != ConnectionStatus_DISCONNECTED) {
                 it.second->impl_->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
             }
         });
-        inco_connid_conn_map_.clear();
+        inco_conn_map_.clear();
         server_socket_shutdown();
         inco_exec_srv_.shutdown();
         inco_exec_srv_.await_termination();
     }
     if(peer_.personality_ == PeerPersonality_PURE_CLIENT || peer_.personality_ == PeerPersonality_BOTH) {
-        std::for_each(outg_connid_conn_map_.begin(), outg_connid_conn_map_.end(), [](auto &it) {
+        std::for_each(outg_conn_map_.begin(), outg_conn_map_.end(), [](auto &it) {
             if(it.second->status_ != ConnectionStatus_DISCONNECTED) {
                 it.second->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
             }
         });
-        outg_connid_conn_map_.clear();
-        std::for_each(outg_early_sock_conn_map_.begin(), outg_early_sock_conn_map_.end(), [](auto &it) {
+        outg_conn_map_.clear();
+        std::for_each(outg_early_conn_map_.begin(), outg_early_conn_map_.end(), [](auto &it) {
             if(it.second->status_ != ConnectionStatus_DISCONNECTED) {
                 it.second->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
             }
         });
-        outg_early_sock_conn_map_.clear();
+        outg_early_conn_map_.clear();
         outg_exec_srv_.shutdown();
         outg_exec_srv_.await_termination();
     }
