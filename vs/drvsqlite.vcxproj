@@ -19,32 +19,32 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>drvsqlite_dyn</ProjectName>
-    <ProjectGuid>{A1A1B12B-86CE-4BB4-B784-201EF3F0329B}</ProjectGuid>
+    <ProjectName>drvsqlite</ProjectName>
+    <ProjectGuid>{4FD13D0B-33A4-4A4C-B9D3-33DB732B7AFC}</ProjectGuid>
     <RootNamespace>
     </RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -91,24 +91,26 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;BLZ_PERS_DRIV_EXPORTS;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;BLZ_PERS_DRIV_EXPORTS;DSQLITE_THREADSAFE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;BLZ_PERS_DRIV_EXPORTS;DSQLITE_THREADSAFE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader />
-      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ProgramDataBaseFileName>$(IntDir)$(TargetName).pdb</ProgramDataBaseFileName>
     </ClCompile>
-    <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
+    <Lib />
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetDir)$(TargetName)$(TargetExt)" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(DefaultPlatformToolset)\$(TargetName)$(TargetExt)"
-copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(DefaultPlatformToolset)\$(TargetName).pdb"
+      <Command>copy /Y "$(TargetDir)$(TargetName)$(TargetExt)" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(TargetName)$(TargetExt)"
+copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(TargetName).pdb"
 
 
 </Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
@@ -117,48 +119,52 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;VLG_PERS_DRIV_EXPORTS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader />
-      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ProgramDataBaseFileName>$(IntDir)$(TargetName).pdb</ProgramDataBaseFileName>
     </ClCompile>
+    <Lib />
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetDir)$(TargetName)$(TargetExt)" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(DefaultPlatformToolset)\$(TargetName)$(TargetExt)"
-copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(DefaultPlatformToolset)\$(TargetName).pdb"
+      <Command>copy /Y "$(TargetDir)$(TargetName)$(TargetExt)" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(TargetName)$(TargetExt)"
+copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(TargetName).pdb"
 
 
 </Command>
     </PostBuildEvent>
-    <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;BLZ_PERS_DRIV_EXPORTS;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader />
-      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ProgramDataBaseFileName>$(IntDir)$(TargetName).pdb</ProgramDataBaseFileName>
     </ClCompile>
+    <Lib />
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetDir)$(TargetName)$(TargetExt)" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(DefaultPlatformToolset)\$(TargetName)$(TargetExt)"
-copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(DefaultPlatformToolset)\$(TargetName).pdb"
+      <Command>copy /Y "$(TargetDir)$(TargetName)$(TargetExt)" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(TargetName)$(TargetExt)"
+copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(TargetName).pdb"
 
 
 </Command>
     </PostBuildEvent>
-    <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Midl>
@@ -168,42 +174,30 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;VLG_PERS_DRIV_EXPORTS;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader />
-      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ProgramDataBaseFileName>$(IntDir)$(TargetName).pdb</ProgramDataBaseFileName>
     </ClCompile>
+    <Lib />
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetDir)$(TargetName)$(TargetExt)" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(DefaultPlatformToolset)\$(TargetName)$(TargetExt)"
-copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(DefaultPlatformToolset)\$(TargetName).pdb"
+      <Command>copy /Y "$(TargetDir)$(TargetName)$(TargetExt)" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(TargetName)$(TargetExt)"
+copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(TargetName).pdb"
 
 
 </Command>
     </PostBuildEvent>
-    <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\contrib\sqlite\sqlite3.c" />
     <ClCompile Include="..\src\drisqlite\drv_sqlite.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="..\contrib_lib\nt10_x64\pthreadVC2.lib">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </Library>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="apicpp.vcxproj">
-      <Project>{86051208-762d-4d3d-a490-59df7ece67ea}</Project>
-    </ProjectReference>
-    <ProjectReference Include="vlg.vcxproj">
-      <Project>{d8e08f30-6822-4398-9c58-9589811537d8}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

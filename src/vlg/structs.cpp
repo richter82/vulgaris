@@ -801,4 +801,13 @@ RetCode b_qu::peek(void *copy)
     return RetCode_OK;
 }
 
+// hm blocking_queue
+
+RetCode b_qu_hm::put_or_update(const void *ptr)
+{
+    //@TODO
+
+    return put(ptr);
+}
+
 }

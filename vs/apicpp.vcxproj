@@ -19,53 +19,27 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\glob.h" />
-    <ClInclude Include="..\src\vlg\acceptor.h" />
-    <ClInclude Include="..\src\vlg\bbuf.h" />
-    <ClInclude Include="..\src\vlg\cfg.h" />
-    <ClInclude Include="..\src\vlg\concurr.h" />
-    <ClInclude Include="..\src\vlg\conn_impl.h" />
-    <ClInclude Include="..\src\vlg\dl.h" />
-    <ClInclude Include="..\src\vlg\parse.h" />
-    <ClInclude Include="..\src\vlg\proto.h" />
-    <ClInclude Include="..\src\vlg\prs_impl.h" />
-    <ClInclude Include="..\src\vlg\pr_aut.h" />
-    <ClInclude Include="..\src\vlg\pr_impl.h" />
-    <ClInclude Include="..\src\vlg\sbs_impl.h" />
-    <ClInclude Include="..\src\vlg\selector.h" />
-    <ClInclude Include="..\src\vlg\structs.h" />
-    <ClInclude Include="..\src\vlg\timing.h" />
-    <ClInclude Include="..\src\vlg\tx_impl.h" />
+    <ClInclude Include="..\public\cpp\vlg_connection.h" />
+    <ClInclude Include="..\public\cpp\vlg_logger.h" />
+    <ClInclude Include="..\public\cpp\vlg_model.h" />
+    <ClInclude Include="..\public\cpp\vlg_peer.h" />
+    <ClInclude Include="..\public\cpp\vlg_persistence.h" />
+    <ClInclude Include="..\public\cpp\vlg_subscription.h" />
+    <ClInclude Include="..\public\cpp\vlg_transaction.h" />
+    <ClInclude Include="..\public\vlg.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\vlg\acceptor.cpp" />
-    <ClCompile Include="..\src\vlg\bbuf.cpp" />
-    <ClCompile Include="..\src\vlg\cfg.cpp" />
-    <ClCompile Include="..\src\vlg\concurr.cpp" />
-    <ClCompile Include="..\src\vlg\conn_impl.cpp" />
-    <ClCompile Include="..\src\vlg\dl.cpp" />
-    <ClCompile Include="..\src\vlg\logger.cpp" />
-    <ClCompile Include="..\src\vlg\model.cpp" />
-    <ClCompile Include="..\src\vlg\parse.cpp" />
-    <ClCompile Include="..\src\vlg\proto.cpp" />
-    <ClCompile Include="..\src\vlg\prs_impl.cpp" />
-    <ClCompile Include="..\src\vlg\prs_mng.cpp" />
-    <ClCompile Include="..\src\vlg\prs_sbs.cpp" />
-    <ClCompile Include="..\src\vlg\pr_aut.cpp" />
-    <ClCompile Include="..\src\vlg\pr_impl.cpp" />
-    <ClCompile Include="..\src\vlg\restore.cpp" />
-    <ClCompile Include="..\src\vlg\sbs_impl.cpp" />
-    <ClCompile Include="..\src\vlg\selector.cpp" />
-    <ClCompile Include="..\src\vlg\structs.cpp" />
-    <ClCompile Include="..\src\vlg\timing.cpp" />
-    <ClCompile Include="..\src\vlg\tx_impl.cpp" />
+    <ClCompile Include="..\src\apicpp\connection.cpp" />
+    <ClCompile Include="..\src\apicpp\peer.cpp" />
+    <ClCompile Include="..\src\apicpp\persistence.cpp" />
+    <ClCompile Include="..\src\apicpp\subscription.cpp" />
+    <ClCompile Include="..\src\apicpp\transaction.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{D8E08F30-6822-4398-9C58-9589811537D8}</ProjectGuid>
+    <ProjectGuid>{86051208-762D-4D3D-A490-59DF7ECE67EA}</ProjectGuid>
     <RootNamespace>
     </RootNamespace>
     <Keyword>Win32Proj</Keyword>
-    <ProjectName>vlg</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -116,6 +90,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</IntDir>
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
@@ -129,19 +104,18 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <StructMemberAlignment>Default</StructMemberAlignment>
       <PrecompiledHeader />
       <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetDir)$(TargetName)$(TargetExt)" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(DefaultPlatformToolset)\$(TargetName)$(TargetExt)"
-copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(DefaultPlatformToolset)\$(TargetName).pdb"
-
-</Command>
+      <Command>copy /Y "$(TargetDir)$(TargetName)$(TargetExt)" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(TargetName)$(TargetExt)"
+copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(TargetName).pdb"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>
@@ -155,7 +129,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader />
@@ -164,10 +138,8 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetDir)$(TargetName)$(TargetExt)" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(DefaultPlatformToolset)\$(TargetName)$(TargetExt)"
-copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(DefaultPlatformToolset)\$(TargetName).pdb"
-
-</Command>
+      <Command>copy /Y "$(TargetDir)$(TargetName)$(TargetExt)" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(TargetName)$(TargetExt)"
+copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(TargetName).pdb"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>
@@ -179,7 +151,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader />
@@ -188,10 +160,8 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetDir)$(TargetName)$(TargetExt)" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(DefaultPlatformToolset)\$(TargetName)$(TargetExt)"
-copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(DefaultPlatformToolset)\$(TargetName).pdb"
-
-</Command>
+      <Command>copy /Y "$(TargetDir)$(TargetName)$(TargetExt)" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(TargetName)$(TargetExt)"
+copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(TargetName).pdb"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>
@@ -206,7 +176,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>..\src;..\src\cr;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader />
@@ -215,10 +185,8 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetDir)$(TargetName)$(TargetExt)" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(DefaultPlatformToolset)\$(TargetName)$(TargetExt)"
-copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(DefaultPlatformToolset)\$(TargetName).pdb"
-
-</Command>
+      <Command>copy /Y "$(TargetDir)$(TargetName)$(TargetExt)" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(TargetName)$(TargetExt)"
+copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(TargetName).pdb"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>

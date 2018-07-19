@@ -1265,7 +1265,7 @@ RetCode conn_impl::recv_body(unsigned int bodylen,
     pkt_body->ensure_capacity(bodylen);
     while(stay) {
         while((tot_brecv < bodylen) && ((brecv = recv(socket_,
-                                                      &pkt_body->buffer_as_char()[pkt_body->position()],
+                                                      &pkt_body->buf_[pkt_body->pos_],
                                                       recv_buf_sz, 0)) > 0)) {
             pkt_body->move_pos_write(brecv);
             tot_brecv += brecv;
@@ -1286,17 +1286,17 @@ RetCode conn_impl::recv_body(unsigned int bodylen,
 
 RetCode conn_impl::send_single_pkt(g_bbuf *pkt_bbuf)
 {
-    if(!pkt_bbuf->limit() || !pkt_bbuf) {
+    if(!pkt_bbuf || !pkt_bbuf->limit_) {
         IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADARG;
     }
     RetCode rcode = RetCode_OK;
     bool stay = true;
-    long bsent = 0, tot_bsent = 0, remaining = (long)pkt_bbuf->limit();
+    long bsent = 0, tot_bsent = 0, remaining = (long)pkt_bbuf->limit_;
     while(stay) {
         while(remaining && ((bsent = send(socket_,
-                                          &pkt_bbuf->buffer_as_char()[pkt_bbuf->position()],
-                                          (int)pkt_bbuf->limit(), 0)) > 0)) {
+                                          &pkt_bbuf->buf_[pkt_bbuf->pos_],
+                                          (int)pkt_bbuf->limit_, 0)) > 0)) {
             pkt_bbuf->advance_pos_read(bsent);
             tot_bsent += bsent;
             remaining -= bsent;

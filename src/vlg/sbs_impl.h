@@ -111,9 +111,6 @@ struct incoming_subscription_impl : public sbs_impl {
     public:
         std::shared_ptr<incoming_connection> conn_sh_;
 
-        //srv subscription event global queue
-        b_qu srv_sbs_evt_glob_q_;
-
         std::unique_ptr<persistence_query_impl> initial_query_;
         bool initial_query_ended_;
 };

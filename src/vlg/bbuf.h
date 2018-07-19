@@ -16,10 +16,6 @@ struct g_bbuf {
         explicit g_bbuf(size_t initial_capacity);
         ~g_bbuf();
 
-    private:
-        RetCode init(size_t initial_capacity);
-
-    public:
         void reset();
         void flip();
         RetCode grow(size_t amount);
@@ -62,6 +58,9 @@ struct g_bbuf {
         size_t pos_;
         size_t limit_;
         size_t mark_;
-        unsigned char *buf_;
+        char *buf_;
+
+    private:
+        RetCode init(size_t initial_capacity);
 };
 }

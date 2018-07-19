@@ -18,33 +18,49 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\public\c\vlg_c_connection.h" />
+    <ClInclude Include="..\public\c\vlg_c_model.h" />
+    <ClInclude Include="..\public\c\vlg_c_peer.h" />
+    <ClInclude Include="..\public\c\vlg_c_persistence.h" />
+    <ClInclude Include="..\public\c\vlg_c_subscription.h" />
+    <ClInclude Include="..\public\c\vlg_c_transaction.h" />
+    <ClInclude Include="..\public\vlg.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\apic\c_connection.cpp" />
+    <ClCompile Include="..\src\apic\c_model.cpp" />
+    <ClCompile Include="..\src\apic\c_peer.cpp" />
+    <ClCompile Include="..\src\apic\c_persistence.cpp" />
+    <ClCompile Include="..\src\apic\c_subscription.cpp" />
+    <ClCompile Include="..\src\apic\c_transaction.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>test_peer</ProjectName>
-    <ProjectGuid>{C80E2B6A-86FB-4910-9877-4D6D948ED674}</ProjectGuid>
+    <ProjectGuid>{F63BB707-8F3C-4933-B9D0-82B50681145F}</ProjectGuid>
     <RootNamespace>
     </RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -70,49 +86,36 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</IntDir>
-    <LinkIncremental>true</LinkIncremental>
-    <TargetName>peer</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</IntDir>
-    <LinkIncremental>true</LinkIncremental>
-    <TargetName>peer</TargetName>
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</IntDir>
-    <LinkIncremental>false</LinkIncremental>
-    <TargetName>peer</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)$(Platform)$(Configuration)\$(ProjectName)\</IntDir>
-    <LinkIncremental>false</LinkIncremental>
-    <TargetName>peer</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public;..\test\sample_vlg_model</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;STA_L;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\src;..\src\vlg;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public;..\public\c</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <StructMemberAlignment>Default</StructMemberAlignment>
       <PrecompiledHeader />
-      <ProgramDataBaseFileName>$(IntDir)$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
-    <Link>
-      <AdditionalDependencies>WSock32.Lib</AdditionalDependencies>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <SubSystem>Console</SubSystem>
-      <TargetMachine>MachineX86</TargetMachine>
-    </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>copy /Y "$(TargetDir)$(TargetName)$(TargetExt)" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(TargetName)$(TargetExt)"
+copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(TargetName).pdb"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>
@@ -125,25 +128,18 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public;..\test\sample_vlg_model</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;STA_L;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\src;..\src\vlg;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public;..\public\c</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <StructMemberAlignment>Default</StructMemberAlignment>
       <PrecompiledHeader />
-      <ProgramDataBaseFileName>$(IntDir)$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
-    <Link>
-      <AdditionalDependencies>WSock32.Lib</AdditionalDependencies>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <SubSystem>Console</SubSystem>
-      <TargetMachine>MachineX64</TargetMachine>
-    </Link>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetDir)$(TargetName)$(TargetExt)" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(DefaultPlatformToolset)\$(TargetName)$(TargetExt)"
-copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(DefaultPlatformToolset)\$(TargetName).pdb"</Command>
+      <Command>copy /Y "$(TargetDir)$(TargetName)$(TargetExt)" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(TargetName)$(TargetExt)"
+copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(TargetName).pdb"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>
@@ -154,26 +150,18 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\src;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public;..\test\sample_vlg_model</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;STA_L;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\src;..\src\vlg;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public;..\public\c</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader />
-      <ProgramDataBaseFileName>$(IntDir)$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
-    <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <SubSystem>Console</SubSystem>
-      <OptimizeReferences>true</OptimizeReferences>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalDependencies>WSock32.Lib</AdditionalDependencies>
-    </Link>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetDir)$(TargetName)$(TargetExt)" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(DefaultPlatformToolset)\$(TargetName)$(TargetExt)"
-copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(DefaultPlatformToolset)\$(TargetName).pdb"</Command>
+      <Command>copy /Y "$(TargetDir)$(TargetName)$(TargetExt)" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(TargetName)$(TargetExt)"
+copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(TargetName).pdb"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>
@@ -187,52 +175,24 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\src;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public;..\test\sample_vlg_model</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;STA_L;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\src;..\src\vlg;..\public\cpp;..\contrib\pthread;..\contrib\sqlite;..\public;..\public\c</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader />
-      <ProgramDataBaseFileName>$(IntDir)$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
-    <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <SubSystem>Console</SubSystem>
-      <OptimizeReferences>true</OptimizeReferences>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <TargetMachine>MachineX64</TargetMachine>
-      <AdditionalDependencies>WSock32.Lib</AdditionalDependencies>
-    </Link>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetDir)$(TargetName)$(TargetExt)" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(DefaultPlatformToolset)\$(TargetName)$(TargetExt)"
-copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(DefaultPlatformToolset)\$(TargetName).pdb"</Command>
+      <Command>copy /Y "$(TargetDir)$(TargetName)$(TargetExt)" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(TargetName)$(TargetExt)"
+copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTarget)\$(Configuration)\$(ConfigurationType)\$(TargetName).pdb"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>
       </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="..\test\src\vlg_test_peer_both.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="..\contrib_lib\nt10_x64\pthreadVC2.lib" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="apicpp.vcxproj">
-      <Project>{86051208-762d-4d3d-a490-59df7ece67ea}</Project>
-    </ProjectReference>
-    <ProjectReference Include="drvsqlite.vcxproj">
-      <Project>{4fd13d0b-33a4-4a4c-b9d3-33db732b7afc}</Project>
-    </ProjectReference>
-    <ProjectReference Include="test_smplmdl.vcxproj">
-      <Project>{258d0d7e-f056-4cb8-a5df-a77d35b802a0}</Project>
-    </ProjectReference>
-    <ProjectReference Include="vlg.vcxproj">
-      <Project>{d8e08f30-6822-4398-9c58-9589811537d8}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

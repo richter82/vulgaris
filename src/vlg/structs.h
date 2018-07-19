@@ -9,6 +9,8 @@
 #define HAVE_STRUCT_TIMESPEC
 #include <pthread.h>
 
+void MurmurHash3_x86_32(const void *key, int len, uint32_t seed, void *out);
+
 namespace vlg {
 
 typedef void *(*alloc_func)(size_t type_size,
@@ -29,7 +31,7 @@ typedef void(*hash_func)(const void *key,
                          uint32_t seed,
                          void *out);
 
-/** @brief Object Manager class.
+/** @brief Object Manager.
 */
 struct obj_mng {
     explicit obj_mng(size_t type_size);
@@ -51,18 +53,15 @@ struct obj_mng {
         dealloc_func_(ptr);
     }
 
-    void *copy_obj(void *copy,
-                   const void *ptr) const {
+    void *copy_obj(void *copy, const void *ptr) const {
         return copy ? cpy_func_(copy, ptr, type_size_) : nullptr;
     }
 
-    int cmp_obj(const void *ptr1,
-                const void *ptr2) const {
+    int cmp_obj(const void *ptr1, const void *ptr2) const {
         return cmp_func_(ptr1, ptr2, type_size_);
     }
 
-    void hash_obj(const void *ptr,
-                  void *out) const {
+    void hash_obj(const void *ptr, void *out) const {
         hash_func_(ptr, (int)type_size_, seed_, out);
     }
 
@@ -116,7 +115,7 @@ struct scoped_wr_lock {
     pthread_rwlock_t &lock_;
 };
 
-/** @brief mx class.
+/** @brief mutex.
 */
 struct mx {
         explicit mx(int pshared = PTHREAD_PROCESS_PRIVATE);
@@ -282,13 +281,14 @@ struct s_hm : public brep {
             return elems_cnt();
         }
 
-    private:
+    protected:
         void init(pthread_rwlockattr_t *attr);
         uint32_t gidx(const void *key) const;
         void rm(hm_node *del_mn, uint32_t idx);
         void enm(const s_hm &map, s_hm_enm_func enum_f, void *usr_data) const;
         void enmbr(const s_hm &map, s_hm_enm_func_br enum_f, void *usr_data) const;
 
+    public:
         const obj_mng elem_manager_, key_manager_;
         uint32_t hash_size_;
         hm_node **buckets_;
@@ -296,7 +296,7 @@ struct s_hm : public brep {
         mutable pthread_rwlock_t lock_;
 };
 
-/** @brief Basic Blocking-Queue class.
+/** @brief Blocking-Queue.
 */
 struct lnk_node;
 struct b_qu : public brep {
@@ -322,25 +322,8 @@ struct b_qu : public brep {
 
         RetCode clear();
 
-        /**
-        waits indefinitely until an element becomes available.
-        @param copy
-        @return RetCode_OK when an element becomes available.
-        */
         RetCode get(void *copy);
 
-        /**
-        same as above, except that this method waits at most for sec/nsec seconds
-        before return with RetCode_TMOUT code.
-        Use sec=0 and nsec=0 if you want this method to return immediatly
-        with rescode RetCode_EPTY if no elements are available.
-        @param sec
-        @param nsec
-        @param copy
-        @return RetCode_OK when an element becomes available. RetCode_TMOUT if no
-        elements became available in sec/nsec after invocation. RetCode_EPTY if
-        no elements are available and sec=0 and nsec=0.
-        */
         RetCode get(time_t sec,
                     long nsec,
                     void *copy);
@@ -357,11 +340,12 @@ struct b_qu : public brep {
                      long nsec,
                      void *copy);
 
-    private:
+    protected:
         void dq(void *copy);
         RetCode enq(const void *ptr);
 
-        obj_mng manager_;
+    public:
+        const obj_mng manager_;
         bool inifinite_cpcty_;
         uint32_t capacity_;
         lnk_node *head_;
@@ -370,74 +354,100 @@ struct b_qu : public brep {
         mutable mx mon_;
 };
 
+/** @brief Blocking-Queue with hash-map capability.
+*/
+struct b_qu_hm : public b_qu {
+    explicit b_qu_hm(size_t elemsize,
+                     uint32_t capacity = 0) : b_qu(elemsize, capacity) {}
+
+    explicit b_qu_hm(const obj_mng &elem_manager,
+                     uint32_t capacity = 0) : b_qu(elem_manager, capacity) {}
+
+    RetCode put_or_update(const void *ptr);
+};
+
 /** @brief object manager for std shared pointers.
 */
 template <typename T>
-class std_shared_ptr_obj_mng : public obj_mng {
-    private:
-        static void *shared_ptr_alloc_func(size_t type_size,
-                                           const void *copy) {
-            std::shared_ptr<T> &sh_ptr_cpy = *(std::shared_ptr<T> *)(copy);
-            std::shared_ptr<T> *new_sh_ptr = new std::shared_ptr<T>(sh_ptr_cpy);
-            return new_sh_ptr;
-        }
+struct std_shared_ptr_obj_mng : public obj_mng {
+    static void *shared_ptr_alloc_func(size_t type_size, const void *copy) {
+        std::shared_ptr<T> &sh_ptr_cpy = *(std::shared_ptr<T> *)(copy);
+        std::shared_ptr<T> *new_sh_ptr = new std::shared_ptr<T>(sh_ptr_cpy);
+        return new_sh_ptr;
+    }
 
-        static void shared_ptr_dealloc_func(void *ptr) {
-            std::shared_ptr<T> *sh_ptr = (std::shared_ptr<T> *)(ptr);
-            delete sh_ptr;
-        }
+    static void shared_ptr_dealloc_func(void *ptr) {
+        std::shared_ptr<T> *sh_ptr = (std::shared_ptr<T> *)(ptr);
+        delete sh_ptr;
+    }
 
-        static void *shared_ptr_cpy_func(void *copy,
-                                         const void *ptr,
-                                         size_t type_size) {
-            std::shared_ptr<T> &sh_ptr_cpy = *(std::shared_ptr<T> *)(copy);
-            std::shared_ptr<T> &sh_ptr_ptr = *(std::shared_ptr<T> *)(ptr);
-            sh_ptr_cpy = sh_ptr_ptr;
-            return copy;
-        }
+    static void *shared_ptr_cpy_func(void *copy, const void *ptr, size_t type_size) {
+        std::shared_ptr<T> &sh_ptr_cpy = *(std::shared_ptr<T> *)(copy);
+        std::shared_ptr<T> &sh_ptr_ptr = *(std::shared_ptr<T> *)(ptr);
+        sh_ptr_cpy = sh_ptr_ptr;
+        return copy;
+    }
 
-    public:
-        std_shared_ptr_obj_mng() : obj_mng(0,
-                                               shared_ptr_alloc_func,
-                                               shared_ptr_dealloc_func,
-                                               0,
-                                               shared_ptr_cpy_func,
-                                               0) {}
+    explicit std_shared_ptr_obj_mng() : obj_mng(0,
+                                                    shared_ptr_alloc_func,
+                                                    shared_ptr_dealloc_func,
+                                                    0,
+                                                    shared_ptr_cpy_func,
+                                                    0) {}
+
+    explicit std_shared_ptr_obj_mng(size_t type_size,
+                                    alloc_func alloc_f,
+                                    dealloc_func dealloc_f,
+                                    cmp_func cmp_f,
+                                    cpy_func copy_f,
+                                    hash_func hash_f) : obj_mng(type_size,
+                                                                    alloc_f,
+                                                                    dealloc_f,
+                                                                    cmp_f,
+                                                                    copy_f,
+                                                                    hash_f) {}
 };
 
 /** @brief object manager for std unique pointers.
 */
 template <typename T>
-class std_unique_ptr_obj_mng : public obj_mng {
-    private:
-        static void *unique_ptr_alloc_func(size_t type_size,
-                                           const void *copy) {
-            std::unique_ptr<T> &uq_ptr_cpy = *(std::unique_ptr<T> *)(copy);
-            std::unique_ptr<T> *new_uq_ptr = new std::unique_ptr<T>(std::move(uq_ptr_cpy));
-            return new_uq_ptr;
-        }
+struct std_unique_ptr_obj_mng : public obj_mng {
+    static void *unique_ptr_alloc_func(size_t type_size, const void *copy) {
+        std::unique_ptr<T> &uq_ptr_cpy = *(std::unique_ptr<T> *)(copy);
+        std::unique_ptr<T> *new_uq_ptr = new std::unique_ptr<T>(std::move(uq_ptr_cpy));
+        return new_uq_ptr;
+    }
 
-        static void unique_ptr_dealloc_func(void *ptr) {
-            std::unique_ptr<T> *uq_ptr = (std::unique_ptr<T> *)(ptr);
-            delete uq_ptr;
-        }
+    static void unique_ptr_dealloc_func(void *ptr) {
+        std::unique_ptr<T> *uq_ptr = (std::unique_ptr<T> *)(ptr);
+        delete uq_ptr;
+    }
 
-        static void *unique_ptr_cpy_func(void *copy,
-                                         const void *ptr,
-                                         size_t type_size) {
-            std::unique_ptr<T> &uq_ptr_cpy = *(std::unique_ptr<T> *)(copy);
-            std::unique_ptr<T> &uq_ptr_ptr = *(std::unique_ptr<T> *)(ptr);
-            uq_ptr_cpy = std::move(uq_ptr_ptr);
-            return copy;
-        }
+    static void *unique_ptr_cpy_func(void *copy, const void *ptr, size_t type_size) {
+        std::unique_ptr<T> &uq_ptr_cpy = *(std::unique_ptr<T> *)(copy);
+        std::unique_ptr<T> &uq_ptr_ptr = *(std::unique_ptr<T> *)(ptr);
+        uq_ptr_cpy = std::move(uq_ptr_ptr);
+        return copy;
+    }
 
-    public:
-        std_unique_ptr_obj_mng() : obj_mng(0,
-                                               unique_ptr_alloc_func,
-                                               unique_ptr_dealloc_func,
-                                               0,
-                                               unique_ptr_cpy_func,
-                                               0) {}
+    explicit std_unique_ptr_obj_mng() : obj_mng(0,
+                                                    unique_ptr_alloc_func,
+                                                    unique_ptr_dealloc_func,
+                                                    0,
+                                                    unique_ptr_cpy_func,
+                                                    0) {}
+
+    explicit std_unique_ptr_obj_mng(size_t type_size,
+                                    alloc_func alloc_f,
+                                    dealloc_func dealloc_f,
+                                    cmp_func cmp_f,
+                                    cpy_func copy_f,
+                                    hash_func hash_f) : obj_mng(type_size,
+                                                                    alloc_f,
+                                                                    dealloc_f,
+                                                                    cmp_f,
+                                                                    copy_f,
+                                                                    hash_f) {}
 };
 
 }
