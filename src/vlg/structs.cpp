@@ -6,8 +6,6 @@
 
 #include "glob.h"
 
-#define FNV_32_PRIME ((uint32_t)0x01000193)
-
 // Platform-specific functions and macros
 // Microsoft Visual Studio
 #if defined WIN32 && defined _MSC_VER
@@ -116,81 +114,7 @@ void MurmurHash3_x86_32(const void *key, int len, uint32_t seed, void *out)
 
 namespace vlg {
 
-void *def_alloc_func(size_t type_size, const void *copy)
-{
-    void *new_ptr = malloc(type_size);
-    if(!new_ptr) {
-        return nullptr;
-    }
-    if(copy) {
-        return memcpy(new_ptr, copy, type_size);
-    }
-    return new_ptr;
-}
-
-void *cstr_alloc_func(size_t type_size, const void *copy)
-{
-    void *new_ptr = strdup((char *)copy);
-    if(!new_ptr) {
-        return nullptr;
-    }
-    return new_ptr;
-}
-
-void *cstr_cpy_func(void *copy, const void *ptr, size_t type_size)
-{
-    return strcpy((char *)copy, (char *)ptr);
-}
-
-int cstr_cmp_func(const void *obj1, const void *obj2, size_t len)
-{
-    return strcmp((char *)obj1, (char *)obj2);
-}
-
-void cstr_hash_func(const void *key, int len, uint32_t seed, void *out)
-{
-    MurmurHash3_x86_32(key, (int)strlen((char *)key), seed, out);
-}
-
 //obj_mng
-
-obj_mng::obj_mng(size_t type_size) :
-    seed_(FNV_32_PRIME),
-    type_size_(type_size),
-    alloc_func_(def_alloc_func),
-    dealloc_func_(free),
-    cmp_func_(memcmp),
-    cpy_func_(memcpy),
-    hash_func_(MurmurHash3_x86_32)
-{
-}
-
-obj_mng::obj_mng(const obj_mng &other) :
-    seed_(other.seed_),
-    type_size_(other.type_size_),
-    alloc_func_(other.alloc_func_),
-    dealloc_func_(other.dealloc_func_),
-    cmp_func_(other.cmp_func_),
-    cpy_func_(other.cpy_func_),
-    hash_func_(other.hash_func_)
-{
-}
-
-obj_mng::obj_mng(size_t type_size,
-                 alloc_func alloc_f,
-                 dealloc_func dealloc_f,
-                 cmp_func cmp_f,
-                 cpy_func copy_f,
-                 hash_func hash_f) :
-    seed_(FNV_32_PRIME),
-    type_size_(type_size),
-    alloc_func_(alloc_f),
-    dealloc_func_(dealloc_f),
-    cmp_func_(cmp_f),
-    cpy_func_(copy_f),
-    hash_func_(hash_f)
-{
-}
 
 ptr_obj_mng::ptr_obj_mng() : obj_mng(sizeof(void *)) {}
 
@@ -208,7 +132,8 @@ cstr_obj_mng::cstr_obj_mng() : obj_mng(0,
                                            free,
                                            cstr_cmp_func,
                                            cstr_cpy_func,
-                                           cstr_hash_func) {}
+                                           cstr_hash_func,
+                                           nullptr) {}
 
 cstr_obj_mng *cstr_obj_mng::instance_ = nullptr;
 const cstr_obj_mng &sngl_cstr_obj_mng()
@@ -221,7 +146,7 @@ const cstr_obj_mng &sngl_cstr_obj_mng()
 
 struct hm_node {
     hm_node(void *ptr,
-            void *key_ptr) :
+            void *key_ptr = nullptr) :
         next_(nullptr),
         prev_(nullptr),
         ptr_(ptr),
@@ -303,8 +228,8 @@ s_hm::~s_hm()
         hm_node *cur_mn = head_, *next = nullptr;
         while(cur_mn != nullptr) {
             next = cur_mn->insrt_next_;
-            elem_manager_.del_obj(cur_mn->ptr_);
-            key_manager_.del_obj(cur_mn->key_ptr_);
+            elem_manager_.dealloc_func_(cur_mn->ptr_);
+            key_manager_.dealloc_func_(cur_mn->key_ptr_);
             delete cur_mn;
             cur_mn = next;
         }
@@ -313,17 +238,16 @@ s_hm::~s_hm()
     pthread_rwlock_destroy(&lock_);
 }
 
-
 void s_hm::init(pthread_rwlockattr_t *attr)
 {
     pthread_rwlock_init(&lock_, attr);
     buckets_ = (hm_node **)calloc(hash_size_, sizeof(hm_node *));
 }
 
-uint32_t s_hm::gidx(const void *key) const
+inline uint32_t s_hm::gidx(const void *key) const
 {
     uint32_t hash_code;
-    key_manager_.hash_obj(key, &hash_code);
+    key_manager_.hash_func_(key, (int)key_manager_.type_size_, key_manager_.seed_, &hash_code);
     return hash_code % hash_size_;
 }
 
@@ -347,8 +271,8 @@ void s_hm::rm(hm_node *del_mn, uint32_t idx)
     } else if(tail_ == del_mn) {
         tail_ = del_mn->insrt_prev_;
     }
-    elem_manager_.del_obj(del_mn->ptr_);
-    key_manager_.del_obj(del_mn->key_ptr_);
+    elem_manager_.dealloc_func_(del_mn->ptr_);
+    key_manager_.dealloc_func_(del_mn->key_ptr_);
     delete del_mn;
 }
 
@@ -383,46 +307,14 @@ RetCode s_hm::clear()
     hm_node *cur_mn = head_, *next = nullptr;
     while(cur_mn != nullptr) {
         next = cur_mn->insrt_next_;
-        elem_manager_.del_obj(cur_mn->ptr_);
-        key_manager_.del_obj(cur_mn->key_ptr_);
+        elem_manager_.dealloc_func_(cur_mn->ptr_);
+        key_manager_.dealloc_func_(cur_mn->key_ptr_);
         delete cur_mn;
         cur_mn = next;
     }
     memset(buckets_, 0, (hash_size_*sizeof(hm_node *)));
     head_ = tail_ = nullptr;
     rst_elems();
-    return RetCode_OK;
-}
-
-RetCode s_hm::enum_elements_safe_read(s_hm_enm_func enum_f,
-                                      void *usr_data) const
-{
-    scoped_rd_lock rl(lock_);
-    enm(*this, enum_f, usr_data);
-    return RetCode_OK;
-}
-
-RetCode s_hm::enum_elements_safe_write(s_hm_enm_func enum_f,
-                                       void *usr_data) const
-{
-    scoped_wr_lock wl(lock_);
-    enm(*this, enum_f, usr_data);
-    return RetCode_OK;
-}
-
-RetCode s_hm::enum_elements_breakable_safe_read(s_hm_enm_func_br enum_f,
-                                                void *usr_data) const
-{
-    scoped_rd_lock rl(lock_);
-    enmbr(*this, enum_f, usr_data);
-    return RetCode_OK;
-}
-
-RetCode s_hm::enum_elements_breakable_safe_write(s_hm_enm_func_br enum_f,
-                                                 void *usr_data) const
-{
-    scoped_wr_lock wl(lock_);
-    enmbr(*this, enum_f, usr_data);
     return RetCode_OK;
 }
 
@@ -434,8 +326,10 @@ RetCode s_hm::get(const void *key, void *copy) const
     scoped_rd_lock rl(lock_);
     hm_node *m_node = buckets_[gidx(key)];
     while(m_node) {
-        if(!key_manager_.cmp_obj(m_node->key_ptr_, key)) {
-            elem_manager_.copy_obj(copy, m_node->ptr_);
+        if(!key_manager_.cmp_func_(m_node->key_ptr_, key, key_manager_.type_size_)) {
+            if(copy) {
+                elem_manager_.cpy_func_(copy, m_node->ptr_, elem_manager_.type_size_);
+            }
             return RetCode_OK;
         }
         m_node = m_node->next_;
@@ -454,7 +348,7 @@ RetCode s_hm::put(const void *key, const void *ptr)
     bool is_new = true;
     if(cur_node) {
         do {
-            if(!key_manager_.cmp_obj(cur_node->key_ptr_, key)) {
+            if(!key_manager_.cmp_func_(cur_node->key_ptr_, key, key_manager_.type_size_)) {
                 is_new = false;
                 break;
             }
@@ -465,18 +359,9 @@ RetCode s_hm::put(const void *key, const void *ptr)
             }
         } while(true);
         if(is_new) {
-            void *elem_ptr = elem_manager_.new_obj(ptr);
-            if(!elem_ptr) {
-                return RetCode_MEMERR;
-            }
-            void *key_ptr = key_manager_.new_obj(key);
-            if(!key_ptr) {
-                return RetCode_MEMERR;
-            }
+            void *elem_ptr = elem_manager_.alloc_func_(elem_manager_.type_size_, ptr);
+            void *key_ptr = key_manager_.alloc_func_(key_manager_.type_size_, key);
             hm_node *new_node = new hm_node(elem_ptr, key_ptr);
-            if(!new_node) {
-                return RetCode_MEMERR;
-            }
             cur_node->next_ = new_node;
             new_node->prev_ = cur_node;
             tail_->insrt_next_ = new_node;
@@ -484,23 +369,12 @@ RetCode s_hm::put(const void *key, const void *ptr)
             tail_ = new_node;
             incr_elems();
         } else {
-            if(!(cur_node->ptr_ = elem_manager_.copy_obj(cur_node->ptr_, ptr))) {
-                return RetCode_MEMERR;
-            }
+            cur_node->ptr_ = elem_manager_.cpy_func_(cur_node->ptr_, ptr, elem_manager_.type_size_);
         }
     } else {
-        void *elem_ptr = elem_manager_.new_obj(ptr);
-        if(!elem_ptr) {
-            return RetCode_MEMERR;
-        }
-        void *key_ptr = key_manager_.new_obj(key);
-        if(!key_ptr) {
-            return RetCode_MEMERR;
-        }
+        void *elem_ptr = elem_manager_.alloc_func_(elem_manager_.type_size_, ptr);
+        void *key_ptr = key_manager_.alloc_func_(key_manager_.type_size_, key);
         hm_node *new_node = new hm_node(elem_ptr, key_ptr);
-        if(!new_node) {
-            return RetCode_MEMERR;
-        }
         buckets_[idx] = new_node;
         if(!head_) {
             head_ = new_node;
@@ -522,7 +396,7 @@ RetCode s_hm::contains_key(const void *key) const
     scoped_rd_lock rl(lock_);
     hm_node *m_node = buckets_[gidx(key)];
     while(m_node) {
-        if(!key_manager_.cmp_obj(m_node->key_ptr_, key)) {
+        if(!key_manager_.cmp_func_(m_node->key_ptr_, key, key_manager_.type_size_)) {
             return RetCode_OK;
         }
         m_node = m_node->next_;
@@ -539,8 +413,10 @@ RetCode s_hm::remove(const void *key, void *copy)
     uint32_t idx = gidx(key);
     hm_node *m_node = buckets_[idx];
     while(m_node) {
-        if(!key_manager_.cmp_obj(m_node->key_ptr_, key)) {
-            elem_manager_.copy_obj(copy, m_node->ptr_);
+        if(!key_manager_.cmp_func_(m_node->key_ptr_, key, key_manager_.type_size_)) {
+            if(copy) {
+                elem_manager_.cpy_func_(copy, m_node->ptr_, elem_manager_.type_size_);
+            }
             rm(m_node, idx);
             dcr_elems();
             return RetCode_OK;
@@ -553,12 +429,15 @@ RetCode s_hm::remove(const void *key, void *copy)
 // lnk_node
 
 struct lnk_node {
-    lnk_node(void *ptr) : ptr_(ptr),
+    lnk_node(void *ptr, bool indexed = false) :
+        ptr_(ptr),
         next_(nullptr),
-        previous_(nullptr) {}
+        previous_(nullptr),
+        indexed_(indexed) {}
     void *ptr_;
     lnk_node *next_;
     lnk_node *previous_;
+    bool indexed_;
 };
 
 // blocking_queue
@@ -570,6 +449,7 @@ b_qu::b_qu(size_t elemsize,
     capacity_(capacity),
     head_(nullptr),
     tail_(nullptr),
+    rif_(nullptr),
     wt_prod_(0),
     wt_cons_(0)
 {}
@@ -581,6 +461,7 @@ b_qu::b_qu(const obj_mng &elem_manager,
     capacity_(capacity),
     head_(nullptr),
     tail_(nullptr),
+    rif_(nullptr),
     wt_prod_(0),
     wt_cons_(0)
 {}
@@ -590,7 +471,7 @@ b_qu::~b_qu()
     lnk_node *cur = tail_, *next = nullptr;
     while(cur != nullptr) {
         next = cur->next_;
-        manager_.del_obj(cur->ptr_);
+        manager_.dealloc_func_(cur->ptr_);
         delete cur;
         cur = next;
     }
@@ -599,10 +480,13 @@ b_qu::~b_qu()
 void b_qu::dq(void *copy)
 {
     lnk_node *new_head = head_->previous_;
-    if(copy) {
-        manager_.copy_obj(copy, head_->ptr_);
+    if(head_->indexed_) {
+        rif_(*this, head_->ptr_);
     }
-    manager_.del_obj(head_->ptr_);
+    if(copy) {
+        manager_.cpy_func_(copy, head_->ptr_, manager_.type_size_);
+    }
+    manager_.dealloc_func_(head_->ptr_);
     delete head_;
     if(new_head) {
         head_ = new_head;
@@ -613,13 +497,10 @@ void b_qu::dq(void *copy)
     dcr_elems();
 }
 
-RetCode b_qu::enq(const void *ptr)
+RetCode b_qu::enq(const void *ptr, bool idxed)
 {
-    void *new_obj = manager_.new_obj(ptr);
-    lnk_node *new_tail = new lnk_node(new_obj);
-    if(!new_tail) {
-        return RetCode_MEMERR;
-    }
+    void *new_obj = (!idxed ? manager_.alloc_func_(manager_.type_size_, ptr) : const_cast<void *>(ptr));
+    lnk_node *new_tail = new lnk_node(new_obj, idxed);
     lnk_node *old_tail = tail_;
     tail_ = new_tail;
     if(!old_tail) {
@@ -638,7 +519,7 @@ RetCode b_qu::clear()
     lnk_node *cur = tail_, *next = nullptr;
     while(cur != nullptr) {
         next = cur->next_;
-        manager_.del_obj(cur->ptr_);
+        manager_.dealloc_func_(cur->ptr_);
         delete cur;
         cur = next;
     }
@@ -654,7 +535,7 @@ RetCode b_qu::clear()
 RetCode b_qu::get(void *copy)
 {
     scoped_mx smx(mon_);
-    while(!elems_cnt()) {
+    while(!elemcount_) {
         wt_cons_++;
         mon_.wait();
     }
@@ -671,13 +552,13 @@ RetCode b_qu::get(time_t sec, long nsec, void *copy)
     RetCode res = RetCode_OK;
     scoped_mx smx(mon_);
     if(!nsec && !sec) {
-        if(elems_cnt()) {
+        if(elemcount_) {
             dq(copy);
         } else {
             res = RetCode_EMPTY;
         }
     } else {
-        while(!elems_cnt()) {
+        while(!elemcount_) {
             wt_cons_++;
             int pthres;
             if((pthres = mon_.wait(sec, nsec))) {
@@ -703,15 +584,15 @@ RetCode b_qu::peek(time_t sec, long nsec, void *copy)
     RetCode res = RetCode_OK;
     scoped_mx smx(mon_);
     if(!nsec && !sec) {
-        if(elems_cnt()) {
+        if(elemcount_) {
             if(copy) {
-                manager_.copy_obj(copy, head_->ptr_);
+                manager_.cpy_func_(copy, head_->ptr_, manager_.type_size_);
             }
         } else {
             res = RetCode_EMPTY;
         }
     } else {
-        while(!elems_cnt()) {
+        while(!elemcount_) {
             wt_cons_++;
             int pthres;
             if((pthres = mon_.wait(sec, nsec))) {
@@ -724,7 +605,7 @@ RetCode b_qu::peek(time_t sec, long nsec, void *copy)
             }
         }
         if(copy) {
-            manager_.copy_obj(copy, head_->ptr_);
+            manager_.cpy_func_(copy, head_->ptr_, manager_.type_size_);
         }
     }
     return res;
@@ -732,10 +613,10 @@ RetCode b_qu::peek(time_t sec, long nsec, void *copy)
 
 RetCode b_qu::put(time_t sec, long nsec, const void *ptr)
 {
-    RetCode res = RetCode_OK;
     if(!ptr) {
         return RetCode_BADARG;
     }
+    RetCode res = RetCode_OK;
     scoped_mx smx(mon_);
     if(!nsec && !sec) {
         if(remain_capacity()) {
@@ -767,10 +648,10 @@ RetCode b_qu::put(time_t sec, long nsec, const void *ptr)
 
 RetCode b_qu::put(const void *ptr)
 {
-    RetCode res = RetCode_OK;
     if(!ptr) {
         return RetCode_BADARG;
     }
+    RetCode res = RetCode_OK;
     scoped_mx smx(mon_);
     while(!remain_capacity()) {
         wt_prod_++;
@@ -791,23 +672,227 @@ RetCode b_qu::put(const void *ptr)
 RetCode b_qu::peek(void *copy)
 {
     scoped_mx smx(mon_);
-    while(!elems_cnt()) {
+    while(!elemcount_) {
         wt_cons_++;
         mon_.wait();
     }
     if(copy) {
-        manager_.copy_obj(copy, head_->ptr_);
+        manager_.cpy_func_(copy, head_->ptr_, manager_.type_size_);
     }
     return RetCode_OK;
 }
 
 // hm blocking_queue
 
+#define B_QU_HM_SZ HMSz_1031
+
+b_qu_hm::b_qu_hm(size_t elemsize,
+                 uint32_t capacity) :
+    b_qu(elemsize, capacity),
+    buckets_((hm_node * *)calloc(B_QU_HM_SZ, sizeof(hm_node *))),
+    hhead_(nullptr),
+    htail_(nullptr)
+{
+    rif_ = hmr;
+}
+
+b_qu_hm::b_qu_hm(const obj_mng &elem_manager,
+                 uint32_t capacity) :
+    b_qu(elem_manager, capacity),
+    buckets_((hm_node * *)calloc(B_QU_HM_SZ, sizeof(hm_node *))),
+    hhead_(nullptr),
+    htail_(nullptr)
+{
+    rif_ = hmr;
+}
+
+b_qu_hm::~b_qu_hm()
+{
+    if(buckets_) {
+        hm_node *cur_mn = hhead_, *next = nullptr;
+        while(cur_mn != nullptr) {
+            next = cur_mn->insrt_next_;
+            delete cur_mn;
+            cur_mn = next;
+        }
+        free(buckets_);
+    }
+}
+
+inline uint32_t b_qu_hm::gidx(const void *ptr) const
+{
+    uint32_t hash_code;
+    manager_.hash_func_(ptr, (int)manager_.type_size_, manager_.seed_, &hash_code);
+    return hash_code % B_QU_HM_SZ;
+}
+
+void *b_qu_hm::hmp(const void *ptr)
+{
+    uint32_t idx = gidx(ptr);
+    hm_node *cur_node = buckets_[idx];
+    bool is_new = true;
+    void *elem_ptr = nullptr;
+    if(cur_node) {
+        do {
+            if(!manager_.cmp_func_(cur_node->ptr_, ptr, manager_.type_size_)) {
+                is_new = false;
+                break;
+            }
+            if(cur_node->next_) {
+                cur_node = cur_node->next_;
+            } else {
+                break;
+            }
+        } while(true);
+        if(is_new) {
+            elem_ptr = manager_.alloc_func_(manager_.type_size_, ptr);
+            hm_node *new_node = new hm_node(elem_ptr);
+            cur_node->next_ = new_node;
+            new_node->prev_ = cur_node;
+            htail_->insrt_next_ = new_node;
+            new_node->insrt_prev_ = htail_;
+            htail_ = new_node;
+        } else {
+            cur_node->ptr_ = manager_.rplc_func_(cur_node->ptr_, ptr, manager_.type_size_);
+        }
+    } else {
+        elem_ptr = manager_.alloc_func_(manager_.type_size_, ptr);
+        hm_node *new_node = new hm_node(elem_ptr);
+        buckets_[idx] = new_node;
+        if(!hhead_) {
+            hhead_ = new_node;
+        } else {
+            htail_->insrt_next_ = new_node;
+        }
+        new_node->insrt_prev_ = htail_;
+        htail_ = new_node;
+    }
+    return elem_ptr;
+}
+
+void b_qu_hm::hmr(b_qu &self, const void *ptr)
+{
+    b_qu_hm &hself = static_cast<b_qu_hm &>(self);
+    uint32_t idx = hself.gidx(ptr);
+    hm_node *del_mn = hself.buckets_[idx];
+    while(del_mn) {
+        if(!hself.manager_.cmp_func_(del_mn->ptr_, ptr, hself.manager_.type_size_)) {
+            if(del_mn->prev_) {
+                del_mn->prev_->next_ = del_mn->next_;
+            } else {
+                hself.buckets_[idx] = del_mn->next_;
+            }
+            if(del_mn->next_) {
+                del_mn->next_->prev_ = del_mn->prev_;
+            }
+            if(del_mn->insrt_prev_) {
+                del_mn->insrt_prev_->insrt_next_ = del_mn->insrt_next_;
+            } else if(hself.hhead_ == del_mn) {
+                hself.hhead_ = del_mn->insrt_next_;
+            }
+            if(del_mn->insrt_next_) {
+                del_mn->insrt_next_->insrt_prev_ = del_mn->insrt_prev_;
+            } else if(hself.htail_ == del_mn) {
+                hself.htail_ = del_mn->insrt_prev_;
+            }
+            delete del_mn;
+            return;
+        }
+        del_mn = del_mn->next_;
+    }
+}
+
+RetCode b_qu_hm::clear()
+{
+    scoped_mx smx(mon_);
+    hm_node *cur_mn = hhead_, *hnext = nullptr;
+    while(cur_mn != nullptr) {
+        hnext = cur_mn->insrt_next_;
+        delete cur_mn;
+        cur_mn = hnext;
+    }
+    memset(buckets_, 0, (B_QU_HM_SZ * sizeof(hm_node *)));
+    hhead_ = htail_ = nullptr;
+    lnk_node *cur = tail_, *next = nullptr;
+    while(cur != nullptr) {
+        next = cur->next_;
+        manager_.dealloc_func_(cur->ptr_);
+        delete cur;
+        cur = next;
+    }
+    tail_ = head_ = nullptr;
+    rst_elems();
+    if(wt_prod_) {
+        wt_prod_ = 0;
+        mon_.notify_all();
+    }
+    return RetCode_OK;
+}
+
 RetCode b_qu_hm::put_or_update(const void *ptr)
 {
-    //@TODO
+    if(!ptr) {
+        return RetCode_BADARG;
+    }
+    RetCode res = RetCode_OK;
+    scoped_mx smx(mon_);
+    void *elem_ptr = hmp(ptr);
+    if(elem_ptr) {
+        while(!remain_capacity()) {
+            wt_prod_++;
+            mon_.wait();
+        }
+        res = enq(elem_ptr, true);
+        if(wt_cons_) {
+            if(wt_cons_ > 1) {
+                mon_.notify_all();
+            } else {
+                mon_.notify();
+            }
+            wt_cons_ = 0;
+        }
+    }
+    return res;
+}
 
-    return put(ptr);
+RetCode b_qu_hm::put_or_update(time_t sec,
+                               long nsec,
+                               const void *ptr)
+{
+    if(!ptr) {
+        return RetCode_BADARG;
+    }
+    RetCode res = RetCode_OK;
+    scoped_mx smx(mon_);
+    void *elem_ptr = hmp(ptr);
+    if(elem_ptr) {
+        if(!nsec && !sec) {
+            if(remain_capacity()) {
+                res = enq(elem_ptr, true);
+            } else {
+                res = RetCode_QFULL;
+            }
+        } else {
+            while(!remain_capacity()) {
+                wt_prod_++;
+                int pthres;
+                if((pthres = mon_.wait(sec, nsec))) {
+                    if(pthres == ETIMEDOUT) {
+                        wt_prod_--;
+                        return RetCode_TIMEOUT;
+                    } else {
+                        return RetCode_PTHERR;
+                    }
+                }
+            }
+            res = enq(elem_ptr, true);
+            if(wt_cons_) {
+                wt_cons_ = 0;
+                mon_.notify_all();
+            }
+        }
+    }
+    return res;
 }
 
 }

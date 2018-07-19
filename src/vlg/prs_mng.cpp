@@ -248,9 +248,9 @@ persistence_driver *persistence_manager_impl::available_driver(unsigned int ncla
 PARSE- ParseData
 ***********************************/
 
-RetCode persistence_manager_impl::parse_impl_after_colon(
-    unsigned long &lnum,
-    str_tok &tknz, unsigned int &integer)
+RetCode persistence_manager_impl::parse_impl_after_colon(unsigned long &lnum,
+                                                         str_tok &tknz,
+                                                         unsigned int &integer)
 {
     std::string tkn;
     //read mandatory colon

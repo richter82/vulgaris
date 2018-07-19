@@ -33,8 +33,8 @@ struct subscription_event_impl {
     unsigned int sbs_evtid_;
     SubscriptionEventType sbs_evttype_;
     ProtocolCode sbs_protocode_;
-    unsigned int sbs_tmstp0_;    /*part. dwnl.*/
-    unsigned int sbs_tmstp1_;    /*part. dwnl.*/
+    unsigned int sbs_tmstp0_;
+    unsigned int sbs_tmstp1_;
     Action sbs_act_;
     std::unique_ptr<nclass> sbs_data_;
 };
@@ -69,6 +69,7 @@ struct sbs_impl {
                                      long nsec = 0);
 
     RetCode notify_for_start_stop_result();
+    void ntfy_sel_snd_pkt();
 
     conn_impl *conn_;
 
@@ -96,23 +97,27 @@ struct sbs_impl {
 };
 
 struct incoming_subscription_impl : public sbs_impl {
-        explicit incoming_subscription_impl(incoming_subscription &publ, std::shared_ptr<incoming_connection> &);
-        virtual ~incoming_subscription_impl();
+    explicit incoming_subscription_impl(incoming_subscription &publ, std::shared_ptr<incoming_connection> &);
+    virtual ~incoming_subscription_impl();
 
-        RetCode execute_initial_query();
-        void release_initial_query();
-        RetCode send_start_response();
-        RetCode submit_live_event(std::shared_ptr<subscription_event> &sbs_evt);
-        RetCode submit_dwnl_event();
+    RetCode execute_initial_query();
+    void release_initial_query();
+    RetCode send_start_response();
 
-    private:
-        RetCode send_event(std::shared_ptr<subscription_event> &sbs_evt);
+    void submit_evt(std::shared_ptr<subscription_event> &sbs_evt) {
+        if(!(ipubl_->accept_distribution(*sbs_evt))) {
+            enq_event(sbs_evt);
+        }
+    }
 
-    public:
-        std::shared_ptr<incoming_connection> conn_sh_;
+    void ntfy_sel_snd_pkt();
 
-        std::unique_ptr<persistence_query_impl> initial_query_;
-        bool initial_query_ended_;
+    RetCode send_initial_query();
+    void enq_event(std::shared_ptr<subscription_event> &sbs_evt);
+
+    std::shared_ptr<incoming_connection> conn_sh_;
+    std::unique_ptr<persistence_query_impl> initial_query_;
+    bool initial_query_ended_;
 };
 
 }

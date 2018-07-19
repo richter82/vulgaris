@@ -10,38 +10,6 @@
 
 namespace vlg {
 
-struct se_std_shared_ptr_obj_mng : public std_shared_ptr_obj_mng<subscription_event> {
-
-    static int se_cmp_obj(const void *obj1, const void *obj2, size_t len) {
-        std::shared_ptr<subscription_event> &sh_se_1 = *(std::shared_ptr<subscription_event> *)(obj1);
-        std::shared_ptr<subscription_event> &sh_se_2 = *(std::shared_ptr<subscription_event> *)(obj2);
-        std::unique_ptr<char> kv1, kv2;
-        sh_se_1->get_data()->get_primary_key_value_as_string(kv1);
-        sh_se_2->get_data()->get_primary_key_value_as_string(kv2);
-        return strcmp(kv1.get(), kv2.get());
-    }
-
-    static void se_hash_obj(const void *key, int len, uint32_t seed, void *out) {
-        std::shared_ptr<subscription_event> &sh_se = *(std::shared_ptr<subscription_event> *)(key);
-        std::unique_ptr<char> kv;
-        sh_se->get_data()->get_primary_key_value_as_string(kv);
-        MurmurHash3_x86_32(key, (int)strlen(kv.get()), seed, out);
-    }
-
-    explicit se_std_shared_ptr_obj_mng() : std_shared_ptr_obj_mng<subscription_event>(0,
-                                                                                          shared_ptr_alloc_func,
-                                                                                          shared_ptr_dealloc_func,
-                                                                                          se_cmp_obj,
-                                                                                          shared_ptr_cpy_func,
-                                                                                          se_hash_obj) {}
-};
-
-const se_std_shared_ptr_obj_mng se_std_shp_omng;
-
-}
-
-namespace vlg {
-
 const std_shared_ptr_obj_mng<incoming_subscription> sbs_std_shp_omng;
 
 }
@@ -125,6 +93,12 @@ sbs_impl::sbs_impl(outgoing_subscription &publ) :
     ipubl_(nullptr),
     opubl_(&publ)
 {}
+
+inline void sbs_impl::ntfy_sel_snd_pkt()
+{
+    selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, conn_);
+    conn_->peer_->selector_.asynch_notify(evt);
+}
 
 RetCode sbs_impl::set_started()
 {
@@ -290,18 +264,14 @@ RetCode sbs_impl::stop()
         IFLOG(err(TH_ID, LS_CLO "[status:%d]", __func__, status_))
         return RetCode_BADSTTS;
     }
-    RetCode rcode = RetCode_OK;
     start_stop_evt_occur_ = false;
-    g_bbuf *gbb = new g_bbuf();
-    build_PKT_SBSTOP(sbsid_, gbb);
-    gbb->flip();
-    RET_ON_KO(conn_->pkt_sending_q_.put(&gbb))
-    selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, conn_);
-    rcode = conn_->peer_->selector_.asynch_notify(evt);
-    if(rcode) {
-        set_status(SubscriptionStatus_ERROR);
-    }
-    return rcode;
+    g_bbuf gbb(2);
+    build_PKT_SBSTOP(sbsid_, &gbb);
+    gbb.flip();
+    std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
+    conn_->pkt_sending_q_.put(&cpkt);
+    ntfy_sel_snd_pkt();
+    return RetCode_OK;
 }
 
 //incoming_subscription_impl
@@ -321,6 +291,12 @@ incoming_subscription_impl::~incoming_subscription_impl()
     release_initial_query();
 }
 
+inline void incoming_subscription_impl::ntfy_sel_snd_pkt()
+{
+    selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, conn_sh_);
+    conn_->peer_->selector_.asynch_notify(evt);
+}
+
 inline void incoming_subscription_impl::release_initial_query()
 {
     if(!initial_query_ended_) {
@@ -334,27 +310,22 @@ inline void incoming_subscription_impl::release_initial_query()
 
 RetCode incoming_subscription_impl::send_start_response()
 {
-    RetCode rcode = RetCode_OK;
-    g_bbuf *gbb = new g_bbuf();
+    g_bbuf gbb(4);
     build_PKT_SBSRES(sbresl_,
                      last_vlgcod_,
                      reqid_,
                      sbsid_,
-                     gbb);
-    gbb->flip();
-    RET_ON_KO(conn_->pkt_sending_q_.put(&gbb))
-    selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, conn_sh_);
-    rcode = conn_->peer_->selector_.asynch_notify(evt);
-    if(rcode) {
-        set_status(SubscriptionStatus_ERROR);
-    }
-    return rcode;
+                     &gbb);
+    gbb.flip();
+    std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
+    conn_->pkt_sending_q_.put(&cpkt);
+    ntfy_sel_snd_pkt();
+    return RetCode_OK;
 }
 
-RetCode incoming_subscription_impl::send_event(std::shared_ptr<subscription_event> &sbs_evt)
+void incoming_subscription_impl::enq_event(std::shared_ptr<subscription_event> &sbs_evt)
 {
-    RetCode rcode = RetCode_OK;
-    g_bbuf *gbb = new g_bbuf();
+    g_bbuf gbb;
     build_PKT_SBSEVT(sbsid_,
                      sbs_evt->impl_->sbs_evttype_,
                      sbs_evt->impl_->sbs_act_,
@@ -362,44 +333,36 @@ RetCode incoming_subscription_impl::send_event(std::shared_ptr<subscription_even
                      sbs_evt->impl_->sbs_evtid_,
                      sbs_evt->impl_->sbs_tmstp0_,
                      sbs_evt->impl_->sbs_tmstp1_,
-                     gbb);
+                     &gbb);
 
     long totbytes = sbs_evt->impl_->sbs_data_ ?
-                    sbs_evt->impl_->sbs_data_->serialize(enctyp_, nullptr, gbb) :
-                    (long)gbb->position();
+                    sbs_evt->impl_->sbs_data_->serialize(enctyp_, nullptr, &gbb) :
+                    (long)gbb.pos_;
 
+    std::unique_ptr<char> key;
     totbytes = htonl(totbytes);
     if(sbs_evt->impl_->sbs_data_) {
-        gbb->put(&totbytes, (6*4), 4);
+        gbb.put(&totbytes, (6*4), 4);
+        sbs_evt->impl_->sbs_data_.get()->get_primary_key_value_as_string(key);
     }
-    gbb->flip();
-    RET_ON_KO(conn_->pkt_sending_q_.put(&gbb))
-    selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, conn_sh_);
-    rcode = conn_->peer_->selector_.asynch_notify(evt);
-    if(rcode) {
-        set_status(SubscriptionStatus_ERROR);
-    }
-    return rcode;
-}
+    gbb.flip();
+    std::unique_ptr<conn_pkt> cpkt(new conn_pkt(&key,
+                                                std::move(gbb),
+                                                sbs_evt->impl_->sbs_tmstp0_,
+                                                sbs_evt->impl_->sbs_tmstp1_));
 
-RetCode incoming_subscription_impl::submit_live_event(std::shared_ptr<subscription_event> &sbs_evt)
-{
-    RetCode rcode = RetCode_OK;
-    if((rcode = ipubl_->accept_distribution(*sbs_evt))) {
-        IFLOG(trc(TH_ID, LS_TRL"[unauthorized event:%d skipped for subscriber:%d]",
-                  __func__, sbs_evt->impl_->sbs_evtid_, sbsid_))
+    if(flotyp_ == SubscriptionFlowType_LAST) {
+        conn_->pkt_sending_q_.put_or_update(&cpkt);
     } else {
-        if(initial_query_ended_) {
-            //immediate sending
-            if((rcode = send_event(sbs_evt))) {
-                IFLOG(err(TH_ID, LS_TRL "[new live event:%d failed to send]", __func__, sbs_evt->impl_->sbs_evtid_))
-            }
-        }
+        conn_->pkt_sending_q_.put(&cpkt);
     }
-    return rcode;
+
+    if(sbs_evt->impl_->sbs_evttype_ == SubscriptionEventType_LIVE) {
+        ntfy_sel_snd_pkt();
+    }
 }
 
-RetCode incoming_subscription_impl::submit_dwnl_event()
+RetCode incoming_subscription_impl::send_initial_query()
 {
     RetCode rcode = RetCode_OK;
     per_nclass_id_conn_set *sdr = nullptr;
@@ -411,57 +374,31 @@ RetCode incoming_subscription_impl::submit_dwnl_event()
         return rcode;
     }
 
-    //we need to new instance here because we do not know if query has ended here.
-    conn_->peer_->nem_.new_nclass_instance(nclassid_, dwnl_obj);
-
-    if((rcode = initial_query_->load_next_entity(ts0, ts1, *dwnl_obj)) == RetCode_DBROW) {
-        sbs_dwnl_evt_impl = new subscription_event_impl(sbsid_,
-                                                        sdr->next_sbs_evt_id(),
-                                                        SubscriptionEventType_DOWNLOAD,
-                                                        ProtocolCode_SUCCESS,
-                                                        ts0,
-                                                        ts1,
-                                                        Action_INSERT,
-                                                        dwnl_obj);
-        RetCode rrcode = RetCode_OK;
-        std::shared_ptr<subscription_event> sbs_evt(new subscription_event(*sbs_dwnl_evt_impl));
-        if((rrcode = ipubl_->accept_distribution(*sbs_evt))) {
-            IFLOG(trc(TH_ID, LS_TRL "[unauthorized event:%d skipped for subscriber%d]",
-                      __func__, sbs_dwnl_evt_impl->sbs_evtid_, sbsid_))
+    do {
+        conn_->peer_->nem_.new_nclass_instance(nclassid_, dwnl_obj);
+        if((rcode = initial_query_->load_next_entity(ts0, ts1, *dwnl_obj)) == RetCode_DBROW) {
+            sbs_dwnl_evt_impl = new subscription_event_impl(sbsid_,
+                                                            sdr->next_sbs_evt_id(),
+                                                            SubscriptionEventType_DOWNLOAD,
+                                                            ProtocolCode_SUCCESS,
+                                                            ts0,
+                                                            ts1,
+                                                            Action_INSERT,
+                                                            dwnl_obj);
+            std::shared_ptr<subscription_event> sbs_evt(new subscription_event(*sbs_dwnl_evt_impl));
+            submit_evt(sbs_evt);
         } else {
-            IFLOG(trc(TH_ID, LS_TRL "[send new download event:%d]",
-                      __func__, sbs_dwnl_evt_impl->sbs_evtid_))
+            break;
+        }
+    } while(true);
+    ntfy_sel_snd_pkt();
 
-            if((rrcode = send_event(sbs_evt))) {
-                IFLOG(err(TH_ID, LS_TRL "[new download event:%d failed to send]",
-                          __func__, sbs_dwnl_evt_impl->sbs_evtid_))
-            }
-        }
-    } else if(rcode == RetCode_QRYEND) {
-        RetCode rrcode = RetCode_OK;
-        dwnl_obj.release();
-        sbs_dwnl_evt_impl = new subscription_event_impl(sbsid_,
-                                                        sdr->next_sbs_evt_id(),
-                                                        SubscriptionEventType_DOWNLOAD_END,
-                                                        ProtocolCode_SUCCESS,
-                                                        0,
-                                                        0,
-                                                        Action_NONE,
-                                                        dwnl_obj);
-        std::shared_ptr<subscription_event> sbs_evt(new subscription_event(*sbs_dwnl_evt_impl));
-        if((rrcode = send_event(sbs_evt))) {
-            IFLOG(err(TH_ID, LS_TRL "[download-end event:%d failed to send]", __func__, sbs_dwnl_evt_impl->sbs_evtid_))
-        }
-        if(!(rrcode = initial_query_->release())) {
-            IFLOG(dbg(TH_ID, LS_TRL "[download query released]", __func__))
-        } else {
-            IFLOG(cri(TH_ID, LS_TRL "[download query releasing failed][res:%d]", __func__, rcode))
-        }
-        initial_query_ = nullptr;
-        initial_query_ended_ = true;
-    } else {
-        IFLOG(cri(TH_ID, LS_TRL "[download query failed][res:%d]", __func__, rcode))
+    if((rcode = initial_query_->release())) {
+        IFLOG(cri(TH_ID, LS_TRL "[download query failed to release][res:%d]", __func__, rcode))
     }
+
+    initial_query_.release();
+    initial_query_ended_ = true;
     return rcode;
 }
 
@@ -508,8 +445,8 @@ RetCode incoming_subscription_impl::execute_initial_query()
         if(initial_query_) {
             initial_query_->release();
         }
-        initial_query_ = nullptr;
-        IFLOG(err(TH_ID, LS_CLO "[sbsid:%d - download query FAILED][res:%d].", __func__, sbsid_, rcode))
+        initial_query_.release();
+        IFLOG(err(TH_ID, LS_CLO "[sbsid:%d - download query failed][res:%d].", __func__, sbsid_, rcode))
     }
     return rcode;
 }
@@ -617,10 +554,10 @@ RetCode outgoing_subscription_impl::start(SubscriptionType sbscr_type,
 
 RetCode outgoing_subscription_impl::send_start_request()
 {
-    RetCode rcode = RetCode_OK;
     set_req_sent();
     start_stop_evt_occur_ = false;
-    g_bbuf *gbb = new g_bbuf();
+
+    g_bbuf gbb(10*4);
     build_PKT_SBSREQ(sbstyp_,
                      sbsmod_,
                      flotyp_,
@@ -631,14 +568,12 @@ RetCode outgoing_subscription_impl::send_start_request()
                      reqid_,
                      open_tmstp0_,
                      open_tmstp1_,
-                     gbb);
-    gbb->flip();
-    RET_ON_KO(conn_->pkt_sending_q_.put(&gbb))
-    selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, conn_);
-    if((rcode = conn_->peer_->selector_.asynch_notify(evt))) {
-        set_status(SubscriptionStatus_ERROR);
-    }
-    return rcode;
+                     &gbb);
+    gbb.flip();
+    std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
+    conn_->pkt_sending_q_.put(&cpkt);
+    ntfy_sel_snd_pkt();
+    return RetCode_OK;
 }
 
 RetCode outgoing_subscription_impl::receive_event(const vlg_hdr_rec *pkt_hdr,

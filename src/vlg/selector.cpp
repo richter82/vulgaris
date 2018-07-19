@@ -296,7 +296,7 @@ RetCode selector::process_inco_sock_inco_events()
                 std::unique_ptr<vlg_hdr_rec> pkt_hdr(new vlg_hdr_rec());
                 std::unique_ptr<g_bbuf> pkt_body(new g_bbuf());
                 //read data from socket.
-                if(!(rcode = it->second->impl_->recv_single_pkt(pkt_hdr.get(), pkt_body.get()))) {
+                if(!(rcode = it->second->impl_->recv_single_pkt(*pkt_hdr, *pkt_body))) {
                     pkt_body->flip();
                     p_tsk *task = new peer_recv_task_inco_conn(it->second, pkt_hdr, pkt_body);
                     if((sub_res = inco_exec_srv_.submit(*task))) {
@@ -330,16 +330,9 @@ inline RetCode selector::process_inco_sock_outg_events()
     //**** HANDLE OUTGOING EVENTS BEGIN****
     for(auto it = write_pending_sock_inco_conn_map_.begin(); it != write_pending_sock_inco_conn_map_.end(); it++) {
         if(FD_ISSET(it->first, &write_FDs_)) {
-            g_bbuf *sending_pkt = nullptr;
-            it->second->impl_->pkt_sending_q_.get(&sending_pkt);
-            //send data to socket.
-            if((rcode = it->second->impl_->send_single_pkt(sending_pkt))) {
-                IFLOG(err(TH_ID, LS_TRL "[socket:%d, connid:%d][failed sending packet]",
-                          __func__,
-                          it->first,
-                          it->second->impl_->connid_))
-            }
-            delete sending_pkt;
+            std::unique_ptr<conn_pkt> cpkt;
+            it->second->impl_->pkt_sending_q_.get(&cpkt);
+            rcode = it->second->impl_->send_single_pkt(cpkt->pkt_b_);
             if(!(--sel_res_)) {
                 break;
             }
@@ -364,16 +357,9 @@ inline RetCode selector::process_outg_sock_outg_events()
     //**** HANDLE OUTGOING EVENTS BEGIN****
     for(auto it = write_pending_sock_outg_conn_map_.begin(); it != write_pending_sock_outg_conn_map_.end(); it++) {
         if(FD_ISSET(it->first, &write_FDs_)) {
-            g_bbuf *sending_pkt = nullptr;
-            it->second->pkt_sending_q_.get(&sending_pkt);
-            //send data to socket.
-            if((rcode = it->second->send_single_pkt(sending_pkt))) {
-                IFLOG(err(TH_ID, LS_TRL "[socket:%d, connid:%d][failed sending packet]",
-                          __func__,
-                          it->first,
-                          it->second->connid_))
-            }
-            delete sending_pkt;
+            std::unique_ptr<conn_pkt> cpkt;
+            it->second->pkt_sending_q_.get(&cpkt);
+            rcode = it->second->send_single_pkt(cpkt->pkt_b_);
             if(!(--sel_res_)) {
                 break;
             }
@@ -414,7 +400,7 @@ RetCode selector::process_outg_sock_inco_events()
                 std::unique_ptr<vlg_hdr_rec> pkt_hdr(new vlg_hdr_rec());
                 std::unique_ptr<g_bbuf> pkt_body(new g_bbuf());
                 //read data from socket.
-                if(!(rcode = it->second->recv_single_pkt(pkt_hdr.get(), pkt_body.get()))) {
+                if(!(rcode = it->second->recv_single_pkt(*pkt_hdr, *pkt_body))) {
                     pkt_body->flip();
                     p_tsk *task = new peer_recv_task_outg_conn(*it->second->opubl_, pkt_hdr, pkt_body);
                     if((sub_res = outg_exec_srv_.submit(*task))) {
@@ -454,7 +440,7 @@ RetCode selector::process_outg_sock_inco_events()
                 std::unique_ptr<vlg_hdr_rec> pkt_hdr(new vlg_hdr_rec());
                 std::unique_ptr<g_bbuf> pkt_body(new g_bbuf());
                 //read data from socket.
-                if(!(rcode = it->second->recv_single_pkt(pkt_hdr.get(), pkt_body.get()))) {
+                if(!(rcode = it->second->recv_single_pkt(*pkt_hdr, *pkt_body))) {
                     pkt_body->flip();
                     p_tsk *task = new peer_recv_task_outg_conn(*it->second->opubl_, pkt_hdr, pkt_body);
                     if((sub_res = outg_exec_srv_.submit(*task))) {
@@ -518,26 +504,25 @@ inline RetCode selector::consume_inco_sock_events()
     return RetCode_OK;
 }
 
-inline RetCode selector::FDSET_sockets()
+inline void selector::FDSET_sockets()
 {
     FD_ZERO(&read_FDs_);
     FD_ZERO(&write_FDs_);
     FD_ZERO(&excep_FDs_);
     if(peer_.personality_ == PeerPersonality_PURE_SERVER || peer_.personality_ == PeerPersonality_BOTH) {
-        RET_ON_KO(FDSET_incoming_sockets())
+        FDSET_incoming_sockets();
     }
     if(peer_.personality_ == PeerPersonality_PURE_CLIENT || peer_.personality_ == PeerPersonality_BOTH) {
-        RET_ON_KO(FDSET_outgoing_sockets())
+        FDSET_outgoing_sockets();
     }
     FDSET_write_incoming_pending_sockets();
     FDSET_write_outgoing_pending_sockets();
     FD_SET(udp_ntfy_srv_socket_, &read_FDs_);
     FD_SET(udp_ntfy_srv_socket_, &excep_FDs_);
     nfds_ = ((int)udp_ntfy_srv_socket_ > nfds_) ? (int)udp_ntfy_srv_socket_ : nfds_;
-    return RetCode_OK;
 }
 
-inline RetCode selector::FDSET_write_incoming_pending_sockets()
+inline void selector::FDSET_write_incoming_pending_sockets()
 {
     auto it = write_pending_sock_inco_conn_map_.begin();
     while(it != write_pending_sock_inco_conn_map_.end()) {
@@ -549,10 +534,9 @@ inline RetCode selector::FDSET_write_incoming_pending_sockets()
             it = write_pending_sock_inco_conn_map_.erase(it);
         }
     }
-    return RetCode_OK;
 }
 
-inline RetCode selector::FDSET_write_outgoing_pending_sockets()
+inline void selector::FDSET_write_outgoing_pending_sockets()
 {
     auto it = write_pending_sock_outg_conn_map_.begin();
     while(it != write_pending_sock_outg_conn_map_.end()) {
@@ -564,10 +548,9 @@ inline RetCode selector::FDSET_write_outgoing_pending_sockets()
             it = write_pending_sock_outg_conn_map_.erase(it);
         }
     }
-    return RetCode_OK;
 }
 
-inline RetCode selector::FDSET_incoming_sockets()
+inline void selector::FDSET_incoming_sockets()
 {
     auto it = inco_connid_conn_map_.begin();
     while(it != inco_connid_conn_map_.end()) {
@@ -592,10 +575,9 @@ inline RetCode selector::FDSET_incoming_sockets()
     FD_SET(srv_listen_socket_, &read_FDs_);
     FD_SET(srv_listen_socket_, &excep_FDs_);
     nfds_ = ((int)srv_listen_socket_ > nfds_) ? (int)srv_listen_socket_ : nfds_;
-    return RetCode_OK;
 }
 
-inline RetCode selector::FDSET_outgoing_sockets()
+inline void selector::FDSET_outgoing_sockets()
 {
     auto it_1 = outg_early_sock_conn_map_.begin();
     while(it_1 != outg_early_sock_conn_map_.end()) {
@@ -631,22 +613,14 @@ inline RetCode selector::FDSET_outgoing_sockets()
             it_2 = outg_connid_conn_map_.erase(it_2);
         }
     }
-    return RetCode_OK;
 }
 
 inline RetCode selector::manage_disconnect_conn(selector_event *conn_evt)
 {
     RetCode rcode = RetCode_OK;
-    g_bbuf *sending_pkt = nullptr;
-    conn_evt->conn_->pkt_sending_q_.get(&sending_pkt);
-    if((rcode = conn_evt->conn_->send_single_pkt(sending_pkt))) {
-        IFLOG(err(TH_ID, LS_TRL "[socket:%d][failed sending disconnection packet]",
-                  __func__,
-                  conn_evt->conn_->socket_))
-        delete sending_pkt;
-        return RetCode_KO;
-    }
-    delete sending_pkt;
+    std::unique_ptr<conn_pkt> cpkt;
+    conn_evt->conn_->pkt_sending_q_.get(&cpkt);
+    rcode = conn_evt->conn_->send_single_pkt(cpkt->pkt_b_);
     conn_evt->conn_->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
     return rcode;
 }
@@ -654,25 +628,16 @@ inline RetCode selector::manage_disconnect_conn(selector_event *conn_evt)
 inline RetCode selector::add_early_outg_conn(selector_event *conn_evt)
 {
     RetCode rcode = RetCode_OK;
-    g_bbuf *sending_pkt = nullptr;
+    std::unique_ptr<conn_pkt> cpkt;
     if((rcode = conn_evt->conn_->establish_connection(conn_evt->saddr_))) {
-        conn_evt->conn_->pkt_sending_q_.get(&sending_pkt);
-        delete sending_pkt;
         return rcode;
     }
     if(conn_evt->conn_->set_socket_blocking_mode(false)) {
         IFLOG(cri(TH_ID, LS_CLO "[setting socket not blocking]", __func__))
         return RetCode_KO;
     }
-    conn_evt->conn_->pkt_sending_q_.get(&sending_pkt);
-    if((rcode = conn_evt->conn_->send_single_pkt(sending_pkt))) {
-        IFLOG(err(TH_ID, LS_TRL "[socket:%d][failed sending conn-req packet]",
-                  __func__,
-                  conn_evt->conn_->socket_))
-        delete sending_pkt;
-        return rcode;
-    }
-    delete sending_pkt;
+    conn_evt->conn_->pkt_sending_q_.get(&cpkt);
+    rcode = conn_evt->conn_->send_single_pkt(cpkt->pkt_b_);
     outg_early_sock_conn_map_[conn_evt->conn_->socket_] = conn_evt->conn_;
     return rcode;
 }
@@ -787,26 +752,26 @@ RetCode selector::consume_asynch_events()
 inline RetCode selector::consume_events()
 {
     if(FD_ISSET(udp_ntfy_srv_socket_, &read_FDs_)) {
-        RET_ON_KO(consume_asynch_events())
+        consume_asynch_events();
         sel_res_--;
     }
     if(sel_res_) {
         if(peer_.personality_ == PeerPersonality_PURE_SERVER || peer_.personality_ == PeerPersonality_BOTH) {
-            RET_ON_KO(consume_inco_sock_events())
+            consume_inco_sock_events();
         }
         if(peer_.personality_ == PeerPersonality_PURE_CLIENT || peer_.personality_ == PeerPersonality_BOTH) {
             if(sel_res_) {
-                RET_ON_KO(process_outg_sock_inco_events())
+                process_outg_sock_inco_events();
             }
         }
     }
     if(sel_res_) {
         if(peer_.personality_ == PeerPersonality_PURE_SERVER || peer_.personality_ == PeerPersonality_BOTH) {
-            RET_ON_KO(process_inco_sock_outg_events())
+            process_inco_sock_outg_events();
         }
         if(peer_.personality_ == PeerPersonality_PURE_CLIENT || peer_.personality_ == PeerPersonality_BOTH) {
             if(sel_res_) {
-                RET_ON_KO(process_outg_sock_outg_events())
+                process_outg_sock_outg_events();
             }
         }
     }

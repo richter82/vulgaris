@@ -9,9 +9,13 @@
 #define HAVE_STRUCT_TIMESPEC
 #include <pthread.h>
 
+#define FNV_32_PRIME ((uint32_t)0x01000193)
+
 void MurmurHash3_x86_32(const void *key, int len, uint32_t seed, void *out);
 
 namespace vlg {
+
+//obj_mng func types
 
 typedef void *(*alloc_func)(size_t type_size,
                             const void *copy);
@@ -31,39 +35,86 @@ typedef void(*hash_func)(const void *key,
                          uint32_t seed,
                          void *out);
 
+typedef void *(*rplc_on_hit_func)(void *hit,
+                                  const void *rplcr,
+                                  size_t type_size);
+
+//obj_mng default func
+
+inline void *def_alloc_func(size_t type_size, const void *copy)
+{
+    void *new_ptr = malloc(type_size);
+    if(!new_ptr) {
+        return nullptr;
+    }
+    if(copy) {
+        return memcpy(new_ptr, copy, type_size);
+    }
+    return new_ptr;
+}
+
+inline void *cstr_alloc_func(size_t type_size, const void *copy)
+{
+    void *new_ptr = strdup((char *)copy);
+    if(!new_ptr) {
+        return nullptr;
+    }
+    return new_ptr;
+}
+
+inline void *cstr_cpy_func(void *copy, const void *ptr, size_t type_size)
+{
+    return strcpy((char *)copy, (char *)ptr);
+}
+
+inline int cstr_cmp_func(const void *obj1, const void *obj2, size_t len)
+{
+    return strcmp((char *)obj1, (char *)obj2);
+}
+
+inline void cstr_hash_func(const void *key, int len, uint32_t seed, void *out)
+{
+    MurmurHash3_x86_32(key, (int)strlen((char *)key), seed, out);
+}
+
 /** @brief Object Manager.
 */
 struct obj_mng {
-    explicit obj_mng(size_t type_size);
+    explicit obj_mng(size_t type_size) :
+        seed_(FNV_32_PRIME),
+        type_size_(type_size),
+        alloc_func_(def_alloc_func),
+        dealloc_func_(free),
+        cmp_func_(memcmp),
+        cpy_func_(memcpy),
+        hash_func_(MurmurHash3_x86_32),
+        rplc_func_(nullptr) {}
 
-    explicit obj_mng(const obj_mng &other);
+    explicit obj_mng(const obj_mng &other) :
+        seed_(other.seed_),
+        type_size_(other.type_size_),
+        alloc_func_(other.alloc_func_),
+        dealloc_func_(other.dealloc_func_),
+        cmp_func_(other.cmp_func_),
+        cpy_func_(other.cpy_func_),
+        hash_func_(other.hash_func_),
+        rplc_func_(other.rplc_func_) {}
 
     explicit obj_mng(size_t type_size,
                      alloc_func alloc_f,
                      dealloc_func dealloc_f,
                      cmp_func cmp_f,
                      cpy_func copy_f,
-                     hash_func hash_f);
-
-    void *new_obj(const void *copy) const {
-        return alloc_func_(type_size_, copy);
-    }
-
-    void del_obj(void *ptr) const {
-        dealloc_func_(ptr);
-    }
-
-    void *copy_obj(void *copy, const void *ptr) const {
-        return copy ? cpy_func_(copy, ptr, type_size_) : nullptr;
-    }
-
-    int cmp_obj(const void *ptr1, const void *ptr2) const {
-        return cmp_func_(ptr1, ptr2, type_size_);
-    }
-
-    void hash_obj(const void *ptr, void *out) const {
-        hash_func_(ptr, (int)type_size_, seed_, out);
-    }
+                     hash_func hash_f,
+                     rplc_on_hit_func rplc_f) :
+        seed_(FNV_32_PRIME),
+        type_size_(type_size),
+        alloc_func_(alloc_f),
+        dealloc_func_(dealloc_f),
+        cmp_func_(cmp_f),
+        cpy_func_(copy_f),
+        hash_func_(hash_f),
+        rplc_func_(rplc_f) {}
 
     uint32_t seed_;
     size_t type_size_;
@@ -72,6 +123,7 @@ struct obj_mng {
     cmp_func cmp_func_;
     cpy_func cpy_func_;
     hash_func hash_func_;
+    rplc_on_hit_func rplc_func_;
 };
 
 /** @brief Pointer Object Manager.
@@ -166,22 +218,17 @@ struct scoped_mx {
 namespace vlg {
 
 struct brep {
-        brep(): elemcount_(0) {}
-        void dcr_elems() {
-            elemcount_--;
-        }
-        void incr_elems() {
-            elemcount_++;
-        }
-        void rst_elems() {
-            elemcount_ = 0;
-        }
-        uint32_t elems_cnt()  const {
-            return elemcount_;
-        }
-
-    private:
-        uint32_t elemcount_;
+    brep(): elemcount_(0) {}
+    void dcr_elems() {
+        elemcount_--;
+    }
+    void incr_elems() {
+        elemcount_++;
+    }
+    void rst_elems() {
+        elemcount_ = 0;
+    }
+    uint32_t elemcount_;
 };
 
 struct s_hm;
@@ -246,17 +293,6 @@ struct s_hm : public brep {
         */
         RetCode contains_key(const void *key) const;
 
-        RetCode enum_elements_safe_read(s_hm_enm_func enum_f,
-                                        void *usr_data) const;
-
-        RetCode enum_elements_safe_write(s_hm_enm_func enum_f,
-                                         void *usr_data) const;
-
-        RetCode enum_elements_breakable_safe_read(s_hm_enm_func_br enum_f,
-                                                  void *usr_data) const;
-
-        RetCode enum_elements_breakable_safe_write(s_hm_enm_func_br enum_f,
-                                                   void *usr_data) const;
         /**
         @param key
         @param copy
@@ -268,7 +304,7 @@ struct s_hm : public brep {
                     void *copy) const;
 
         bool is_empty() const {
-            return elems_cnt() == 0;
+            return elemcount_ == 0;
         }
 
         RetCode remove(const void *key,
@@ -278,7 +314,31 @@ struct s_hm : public brep {
                     const void *ptr);
 
         uint32_t size() const {
-            return elems_cnt();
+            return elemcount_;
+        }
+
+        void enum_elements_safe_read(s_hm_enm_func enum_f,
+                                     void *usr_data) const {
+            scoped_rd_lock rl(lock_);
+            enm(*this, enum_f, usr_data);
+        }
+
+        void enum_elements_safe_write(s_hm_enm_func enum_f,
+                                      void *usr_data) const {
+            scoped_wr_lock wl(lock_);
+            enm(*this, enum_f, usr_data);
+        }
+
+        void enum_elements_breakable_safe_read(s_hm_enm_func_br enum_f,
+                                               void *usr_data) const {
+            scoped_rd_lock rl(lock_);
+            enmbr(*this, enum_f, usr_data);
+        }
+
+        void enum_elements_breakable_safe_write(s_hm_enm_func_br enum_f,
+                                                void *usr_data) const {
+            scoped_wr_lock wl(lock_);
+            enmbr(*this, enum_f, usr_data);
         }
 
     protected:
@@ -292,7 +352,7 @@ struct s_hm : public brep {
         const obj_mng elem_manager_, key_manager_;
         uint32_t hash_size_;
         hm_node **buckets_;
-        hm_node  *head_, *tail_, *it_, *prev_;
+        hm_node *head_, *tail_, *it_, *prev_;
         mutable pthread_rwlock_t lock_;
 };
 
@@ -300,6 +360,8 @@ struct s_hm : public brep {
 */
 struct lnk_node;
 struct b_qu : public brep {
+        typedef void (*rm_idx_func)(b_qu &, const void *);
+
         explicit b_qu(size_t elemsize,
                       uint32_t capacity = 0);
 
@@ -309,15 +371,15 @@ struct b_qu : public brep {
         ~b_qu();
 
         bool is_empty() const {
-            return elems_cnt() == 0;
+            return elemcount_ == 0;
         }
 
         uint32_t size() const {
-            return elems_cnt();
+            return elemcount_;
         }
 
         uint32_t remain_capacity() const {
-            return inifinite_cpcty_ ? 1 : (capacity_ - elems_cnt());
+            return inifinite_cpcty_ ? 1 : (capacity_ - elemcount_);
         }
 
         RetCode clear();
@@ -342,14 +404,13 @@ struct b_qu : public brep {
 
     protected:
         void dq(void *copy);
-        RetCode enq(const void *ptr);
+        RetCode enq(const void *ptr, bool idxed = false);
 
-    public:
         const obj_mng manager_;
         bool inifinite_cpcty_;
         uint32_t capacity_;
-        lnk_node *head_;
-        lnk_node *tail_;
+        lnk_node *head_, *tail_;
+        rm_idx_func rif_;
         uint32_t wt_prod_, wt_cons_;
         mutable mx mon_;
 };
@@ -357,13 +418,29 @@ struct b_qu : public brep {
 /** @brief Blocking-Queue with hash-map capability.
 */
 struct b_qu_hm : public b_qu {
-    explicit b_qu_hm(size_t elemsize,
-                     uint32_t capacity = 0) : b_qu(elemsize, capacity) {}
+        explicit b_qu_hm(size_t elemsize,
+                         uint32_t capacity = 0);
 
-    explicit b_qu_hm(const obj_mng &elem_manager,
-                     uint32_t capacity = 0) : b_qu(elem_manager, capacity) {}
+        explicit b_qu_hm(const obj_mng &elem_manager,
+                         uint32_t capacity = 0);
 
-    RetCode put_or_update(const void *ptr);
+        ~b_qu_hm();
+
+        RetCode clear();
+
+        RetCode put_or_update(const void *ptr);
+
+        RetCode put_or_update(time_t sec,
+                              long nsec,
+                              const void *ptr);
+
+    protected:
+        uint32_t gidx(const void *ptr) const;
+        void *hmp(const void *ptr);
+        static void hmr(b_qu &self, const void *ptr);
+
+        hm_node **buckets_;
+        hm_node *hhead_, *htail_;
 };
 
 /** @brief object manager for std shared pointers.
@@ -393,6 +470,7 @@ struct std_shared_ptr_obj_mng : public obj_mng {
                                                     shared_ptr_dealloc_func,
                                                     0,
                                                     shared_ptr_cpy_func,
+                                                    0,
                                                     0) {}
 
     explicit std_shared_ptr_obj_mng(size_t type_size,
@@ -400,12 +478,14 @@ struct std_shared_ptr_obj_mng : public obj_mng {
                                     dealloc_func dealloc_f,
                                     cmp_func cmp_f,
                                     cpy_func copy_f,
-                                    hash_func hash_f) : obj_mng(type_size,
-                                                                    alloc_f,
-                                                                    dealloc_f,
-                                                                    cmp_f,
-                                                                    copy_f,
-                                                                    hash_f) {}
+                                    hash_func hash_f,
+                                    rplc_on_hit_func rplc_f) : obj_mng(type_size,
+                                                                           alloc_f,
+                                                                           dealloc_f,
+                                                                           cmp_f,
+                                                                           copy_f,
+                                                                           hash_f,
+                                                                           rplc_f) {}
 };
 
 /** @brief object manager for std unique pointers.
@@ -435,6 +515,7 @@ struct std_unique_ptr_obj_mng : public obj_mng {
                                                     unique_ptr_dealloc_func,
                                                     0,
                                                     unique_ptr_cpy_func,
+                                                    0,
                                                     0) {}
 
     explicit std_unique_ptr_obj_mng(size_t type_size,
@@ -442,12 +523,14 @@ struct std_unique_ptr_obj_mng : public obj_mng {
                                     dealloc_func dealloc_f,
                                     cmp_func cmp_f,
                                     cpy_func copy_f,
-                                    hash_func hash_f) : obj_mng(type_size,
-                                                                    alloc_f,
-                                                                    dealloc_f,
-                                                                    cmp_f,
-                                                                    copy_f,
-                                                                    hash_f) {}
+                                    hash_func hash_f,
+                                    rplc_on_hit_func rplc_f) : obj_mng(type_size,
+                                                                           alloc_f,
+                                                                           dealloc_f,
+                                                                           cmp_f,
+                                                                           copy_f,
+                                                                           hash_f,
+                                                                           rplc_f) {}
 };
 
 }

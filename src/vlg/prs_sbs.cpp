@@ -405,7 +405,7 @@ RetCode peer_impl::obj_save_and_distribute(const nclass &in)
                                                                            ts1,
                                                                            Action_INSERT,
                                                                            in);
-            RET_ON_KO(submit_sbs_evt_task(*sbs_evt, sdr->connid_condesc_set_))
+            rcode = submit_sbs_evt_task(*sbs_evt, sdr->connid_condesc_set_);
         }
     }
     //**** SBS MNG END
@@ -463,7 +463,7 @@ RetCode peer_impl::obj_update_and_distribute(unsigned short key,
                                                                            ts1,
                                                                            Action_UPDATE,
                                                                            in);
-            RET_ON_KO(submit_sbs_evt_task(*sbs_evt, sdr->connid_condesc_set_))
+            rcode = submit_sbs_evt_task(*sbs_evt, sdr->connid_condesc_set_);
         }
     }
     //**** SBS MNG END
@@ -521,7 +521,7 @@ RetCode peer_impl::obj_update_or_save_and_distribute(unsigned short key,
                                                                            ts1,
                                                                            Action_UPDATE,
                                                                            in);
-            RET_ON_KO(submit_sbs_evt_task(*sbs_evt, sdr->connid_condesc_set_))
+            rcode = submit_sbs_evt_task(*sbs_evt, sdr->connid_condesc_set_);
         }
     }
     //**** SBS MNG END
@@ -580,7 +580,7 @@ RetCode peer_impl::obj_remove_and_distribute(unsigned short key,
                                                                            ts1,
                                                                            (mode == PersistenceDeletionMode_LOGICAL) ? Action_DELETE : Action_REMOVE,
                                                                            in);
-            RET_ON_KO(submit_sbs_evt_task(*sbs_evt, sdr->connid_condesc_set_))
+            rcode = submit_sbs_evt_task(*sbs_evt, sdr->connid_condesc_set_);
         }
     }
     //**** SBS MNG END

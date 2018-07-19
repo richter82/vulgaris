@@ -32,6 +32,31 @@ g_bbuf::g_bbuf(size_t initial_capacity) :
     init(initial_capacity);
 }
 
+g_bbuf::g_bbuf(const g_bbuf &oth) :
+    capcty_(oth.capcty_),
+    pos_(oth.pos_),
+    limit_(oth.limit_),
+    mark_(oth.mark_),
+    buf_(0)
+{
+    init(oth.capcty_);
+    memcpy(buf_, oth.buf_, capcty_);
+}
+
+g_bbuf::g_bbuf(g_bbuf &&oth) :
+    capcty_(oth.capcty_),
+    pos_(oth.pos_),
+    limit_(oth.limit_),
+    mark_(oth.mark_),
+    buf_(oth.buf_)
+{
+    oth.capcty_ = 0;
+    oth.pos_ = 0;
+    oth.limit_ = 0;
+    oth.mark_ = 0;
+    oth.buf_ = nullptr;
+}
+
 g_bbuf::~g_bbuf()
 {
     if(buf_) {
@@ -202,75 +227,9 @@ RetCode g_bbuf::read_uint_to_sizet(size_t *out)
     return RetCode_OK;
 }
 
-void g_bbuf::reset()
-{
-    pos_ = limit_ = mark_ = 0;
-}
-
-void g_bbuf::flip()
-{
-    pos_ = mark_;
-}
-
 size_t g_bbuf::position() const
 {
     return pos_;
-}
-
-size_t g_bbuf::limit() const
-{
-    return limit_;
-}
-
-size_t g_bbuf::mark() const
-{
-    return mark_;
-}
-
-size_t g_bbuf::capacity() const
-{
-    return capcty_;
-}
-
-size_t g_bbuf::remaining() const
-{
-    return capcty_ - pos_;
-}
-
-unsigned char *g_bbuf::buffer()
-{
-    return (unsigned char *)buf_;
-}
-
-char *g_bbuf::buffer_as_char()
-{
-    return buf_;
-}
-
-unsigned int *g_bbuf::buffer_as_uint()
-{
-    return (unsigned int *)buf_;
-}
-
-void g_bbuf::move_pos_write(size_t amount)
-{
-    pos_ += amount;
-    limit_ = pos_;
-}
-
-void g_bbuf::set_mark()
-{
-    mark_ = pos_;
-}
-
-size_t g_bbuf::from_mark() const
-{
-    return pos_ - mark_;
-}
-
-size_t g_bbuf::available_read()
-{
-    return limit_ - pos_;
 }
 
 }
