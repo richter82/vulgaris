@@ -318,8 +318,8 @@ RetCode incoming_transaction_impl::send_response()
 
     std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
     conn_->pkt_sending_q_.put(&cpkt);
-    selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, conn_sh_);
-    return conn_->peer_->selector_.asynch_notify(evt);
+    sel_evt *evt = new sel_evt(VLG_SELECTOR_Evt_SendPacket, conn_sh_);
+    return conn_->peer_->selector_.notify(evt);
 }
 
 }
@@ -395,8 +395,8 @@ RetCode outgoing_transaction_impl::send()
 
     std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
     conn_->pkt_sending_q_.put(&cpkt);
-    selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, conn_);
-    return conn_->peer_->selector_.asynch_notify(evt);
+    sel_evt *evt = new sel_evt(VLG_SELECTOR_Evt_SendPacket, conn_);
+    return conn_->peer_->selector_.notify(evt);
 }
 
 }

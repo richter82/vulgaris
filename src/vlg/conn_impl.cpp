@@ -376,8 +376,8 @@ RetCode conn_impl::disconnect(ProtocolCode disres)
 
     std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
     pkt_sending_q_.put(&cpkt);
-    selector_event *evt = new selector_event(VLG_SELECTOR_Evt_Disconnect, this);
-    return peer_->selector_.asynch_notify(evt);
+    sel_evt *evt = new sel_evt(VLG_SELECTOR_Evt_Disconnect, this);
+    return peer_->selector_.notify(evt);
 }
 
 RetCode conn_impl::notify_for_connectivity_result(ConnectivityEventResult con_evt_res,
@@ -508,8 +508,8 @@ RetCode incoming_connection_impl::server_send_connect_res(std::shared_ptr<incomi
 
     std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
     pkt_sending_q_.put(&cpkt);
-    selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, inco_conn);
-    return peer_->selector_.asynch_notify(evt);
+    sel_evt *evt = new sel_evt(VLG_SELECTOR_Evt_SendPacket, inco_conn);
+    return peer_->selector_.notify(evt);
 }
 
 RetCode incoming_connection_impl::recv_connection_request(const vlg_hdr_rec *pkt_hdr,
@@ -851,8 +851,8 @@ RetCode incoming_connection_impl::recv_sbs_stop_request(const vlg_hdr_rec *pkt_h
 
     std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
     pkt_sending_q_.put(&cpkt);
-    selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, inco_conn);
-    rcode = peer_->selector_.asynch_notify(evt);
+    sel_evt *evt = new sel_evt(VLG_SELECTOR_Evt_SendPacket, inco_conn);
+    rcode = peer_->selector_.notify(evt);
     return rcode;
 }
 
@@ -934,9 +934,9 @@ RetCode outgoing_connection_impl::client_connect(sockaddr_in &params)
 
     std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
     pkt_sending_q_.put(&cpkt);
-    selector_event *evt = new selector_event(VLG_SELECTOR_Evt_ConnectRequest, this);
+    sel_evt *evt = new sel_evt(VLG_SELECTOR_Evt_ConnectRequest, this);
     memcpy(&evt->saddr_, &params, sizeof(sockaddr_in));
-    return peer_->selector_.asynch_notify(evt);
+    return peer_->selector_.notify(evt);
 }
 
 RetCode outgoing_connection_impl::await_for_connection_result(ConnectivityEventResult &con_evt_res,
@@ -990,7 +990,7 @@ RetCode outgoing_connection_impl::recv_connection_response(const vlg_hdr_rec *pk
     conrescode_ = pkt_hdr->row_1.srvcrs.errcod;
     srv_agrhbt_ = pkt_hdr->row_1.srvcrs.agrhbt;
     connid_ = pkt_hdr->row_2.connid.connid;
-    selector_event *evt = new selector_event(VLG_SELECTOR_Evt_Undef, this);
+    sel_evt *evt = new sel_evt(VLG_SELECTOR_Evt_Undef, this);
     switch(conres_) {
         case ConnectionResult_ACCEPTED:
             IFLOG(inf(TH_ID, LS_CON"[connection accepted by peer][connid:%d][socket:%d]", connid_, socket_))
@@ -1013,7 +1013,7 @@ RetCode outgoing_connection_impl::recv_connection_response(const vlg_hdr_rec *pk
             con_evt_res = ConnectivityEventResult_KO;
             break;
     }
-    if((rcode = peer_->selector_.asynch_notify(evt))) {
+    if((rcode = peer_->selector_.notify(evt))) {
         set_internal_error(rcode);
         return rcode;
     }
