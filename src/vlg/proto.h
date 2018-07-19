@@ -303,10 +303,6 @@ struct vlg_hdr_rec {
 int dump_vlg_hdr_rec(const vlg_hdr_rec *hdr,
                      char *out);
 
-const char *dump_raw_pkt(bool all, const unsigned char *pkt,
-                         size_t pkt_sz,
-                         std::string &out);
-
 /*****************************************
  GLOB PROTO UTILS
 ******************************************/
