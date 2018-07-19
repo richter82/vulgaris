@@ -69,11 +69,11 @@ struct selector : public p_th {
     RetCode process_outg_sock_inco_events();
     RetCode process_outg_sock_outg_events();
     RetCode start_conn_objs();
-    RetCode FDSET_sockets();
-    RetCode FDSET_incoming_sockets();
-    RetCode FDSET_outgoing_sockets();
-    RetCode FDSET_write_incoming_pending_sockets();
-    RetCode FDSET_write_outgoing_pending_sockets();
+    void FDSET_sockets();
+    void FDSET_incoming_sockets();
+    void FDSET_outgoing_sockets();
+    void FDSET_write_incoming_pending_sockets();
+    void FDSET_write_outgoing_pending_sockets();
     RetCode server_socket_shutdown();
     RetCode consume_events();
     RetCode consume_inco_sock_events();

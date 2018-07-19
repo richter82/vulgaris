@@ -300,32 +300,30 @@ void incoming_transaction_impl::set_request_obj_on_request(std::unique_ptr<nclas
 
 RetCode incoming_transaction_impl::send_response()
 {
-    RetCode rcode = RetCode_OK;
     if(status_ != TransactionStatus_FLYING) {
         IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
-    g_bbuf *gbb = new g_bbuf();
+
+    g_bbuf gbb;
     build_PKT_TXRESP(tx_res_,
                      result_code_,
                      &txid_,
                      rescls_,
                      res_clsenc_,
                      res_nclassid_,
-                     gbb);
-    int totbytes = result_obj_ ? result_obj_->serialize(res_clsenc_, nullptr, gbb) : 0;
+                     &gbb);
+    int totbytes = result_obj_ ? result_obj_->serialize(res_clsenc_, nullptr, &gbb) : 0;
     totbytes = htonl(totbytes);
     if(result_obj_) {
-        gbb->put(&totbytes, (6*4), 4);
+        gbb.put(&totbytes, (6*4), 4);
     }
-    gbb->flip();
-    RET_ON_KO(conn_->pkt_sending_q_.put(&gbb))
+    gbb.flip();
+    std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
+    conn_->pkt_sending_q_.put(&cpkt);
+
     selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, conn_sh_);
-    rcode = conn_->peer_->selector_.asynch_notify(evt);
-    if(rcode) {
-        set_status(TransactionStatus_ERROR);
-    }
-    return rcode;
+    return conn_->peer_->selector_.asynch_notify(evt);
 }
 
 }
@@ -349,7 +347,7 @@ RetCode outgoing_transaction_impl::re_new()
         IFLOG(err(TH_ID, LS_CLO "[transaction is flying, cannot renew]", __func__))
         return RetCode_BADSTTS;
     }
-    conn_->impl_->next_tx_id(txid_);
+    static_cast<outgoing_connection_impl *>(conn_)->next_tx_id(txid_);
     set_status(TransactionStatus_INITIALIZED);
     return RetCode_OK;
 }
@@ -365,7 +363,6 @@ void outgoing_transaction_impl::set_result_obj_on_response(std::unique_ptr<nclas
 
 RetCode outgoing_transaction_impl::send()
 {
-    RetCode rcode = RetCode_OK;
     if(status_ != TransactionStatus_INITIALIZED) {
         IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
@@ -374,11 +371,7 @@ RetCode outgoing_transaction_impl::send()
     rt_mark_time(&start_mark_tim_);
     set_flying();
     outgoing_transaction_impl *self = this;
-    if((rcode = conn_->impl_->outg_flytx_map_.put(&txid_, &self))) {
-        set_status(TransactionStatus_ERROR);
-        IFLOG(err(TH_ID, LS_TRL"[error putting tx into flying map - res:%d]", rcode))
-        return rcode;
-    }
+    static_cast<outgoing_connection_impl *>(conn_)->outg_flytx_map_.put(&txid_, &self);
     IFLOG(inf(TH_ID,
               LS_OUT"[%08x%08x%08x%08x][TXTYPE:%d, TXACT:%d, CLSENC:%d, RSCLREQ:%d]",
               txid_.txplid,
@@ -389,27 +382,27 @@ RetCode outgoing_transaction_impl::send()
               txactn_,
               req_clsenc_,
               rsclrq_))
-    g_bbuf *gbb = new g_bbuf();
+
+    g_bbuf gbb;
     build_PKT_TXRQST(txtype_,
                      txactn_,
                      &txid_,
                      rsclrq_,
                      req_clsenc_,
                      req_nclassid_,
-                     conn_->get_id(),
-                     gbb);
-    int totbytes = request_obj_ ? request_obj_->serialize(req_clsenc_, current_obj_.get(), gbb) : 0;
+                     conn_->connid_,
+                     &gbb);
+    int totbytes = request_obj_ ? request_obj_->serialize(req_clsenc_, current_obj_.get(), &gbb) : 0;
     totbytes = htonl(totbytes);
     if(request_obj_) {
-        gbb->put(&totbytes, (6*4), 4);
+        gbb.put(&totbytes, (6*4), 4);
     }
-    gbb->flip();
-    RET_ON_KO(conn_->impl_->pkt_sending_q_.put(&gbb))
-    selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, conn_->impl_.get());
-    if((rcode = conn_->impl_->peer_->selector_.asynch_notify(evt))) {
-        set_status(TransactionStatus_ERROR);
-    }
-    return rcode;
+    gbb.flip();
+    std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
+    conn_->pkt_sending_q_.put(&cpkt);
+
+    selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, conn_);
+    return conn_->peer_->selector_.asynch_notify(evt);
 }
 
 }

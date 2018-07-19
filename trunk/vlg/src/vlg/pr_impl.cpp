@@ -115,8 +115,8 @@ RetCode peer_impl::set_params_file_dir(const char *dir)
 RetCode peer_impl::init()
 {
     RetCode rcode = RetCode_OK;
-    RET_ON_KO(selector_.init(srv_exectrs_, cli_exectrs_))
-    RET_ON_KO(srv_sbs_exec_serv_.init(srv_sbs_exectrs_))
+    selector_.init(srv_exectrs_, cli_exectrs_);
+    srv_sbs_exec_serv_.init(srv_sbs_exectrs_);
 #ifdef __APPLE__
 #include "TargetConditionals.h"
 #if TARGET_IPHONE_SIMULATOR
@@ -409,10 +409,10 @@ RetCode peer_impl::on_automa_start()
         return RetCode_PTHERR;
     }
     IFLOG(dbg(TH_ID, LS_TRL "[wait selector go init]", __func__))
-    RET_ON_KO(selector_.await_for_status_reached(SelectorStatus_INIT,
-                                                 current,
-                                                 VLG_INT_AWT_TIMEOUT,
-                                                 0))
+    selector_.await_for_status_reached(SelectorStatus_INIT,
+                                       current,
+                                       VLG_INT_AWT_TIMEOUT,
+                                       0);
     if(!rcode) {
         rcode = publ_.on_starting();
     }
@@ -431,10 +431,10 @@ RetCode peer_impl::on_automa_move_running()
     IFLOG(dbg(TH_ID, LS_TRL "[request selector go ready]", __func__))
     selector_.set_status(SelectorStatus_REQUEST_READY);
     IFLOG(dbg(TH_ID, LS_TRL "[wait selector go ready]", __func__))
-    RET_ON_KO(selector_.await_for_status_reached(SelectorStatus_READY,
-                                                 current,
-                                                 VLG_INT_AWT_TIMEOUT,
-                                                 0))
+    selector_.await_for_status_reached(SelectorStatus_READY,
+                                       current,
+                                       VLG_INT_AWT_TIMEOUT,
+                                       0);
     IFLOG(dbg(TH_ID, LS_TRL "[request selector go selecting]", __func__))
     selector_.set_status(SelectorStatus_REQUEST_SELECT);
     if(!rcode) {
@@ -583,9 +583,9 @@ RetCode peer_impl::add_subscriber(incoming_subscription_impl *sbsdesc)
     per_nclass_id_conn_set *sdrec = nullptr;
     if(srv_sbs_nclassid_condesc_set_.get(&sbsdesc->nclassid_, &sdrec)) {
         sdrec = new per_nclass_id_conn_set();
-        RET_ON_KO(srv_sbs_nclassid_condesc_set_.put(&sbsdesc->nclassid_, &sdrec))
+        srv_sbs_nclassid_condesc_set_.put(&sbsdesc->nclassid_, &sdrec);
     }
-    RET_ON_KO(sdrec->connid_condesc_set_.put(&sbsdesc->conn_->connid_, &sbsdesc->conn_sh_))
+    sdrec->connid_condesc_set_.put(&sbsdesc->conn_->connid_, &sbsdesc->conn_sh_);
     IFLOG(dbg(TH_ID, LS_SBS"[added subscriber: connid:%d, nclass_id:%d]",
               sbsdesc->conn_->connid_,
               sbsdesc->nclassid_))
@@ -634,7 +634,6 @@ struct peer_sbs_task : public p_tsk {
                                                       const void *key,
                                                       void *ptr,
                                                       void *usr_data) {
-        RetCode rcode = RetCode_OK;
         srv_connid_condesc_set_ashsnd_rud *rud = static_cast<srv_connid_condesc_set_ashsnd_rud *>(usr_data);
         std::shared_ptr<incoming_connection> *conn = (std::shared_ptr<incoming_connection> *)ptr;
         std::shared_ptr<incoming_subscription> sbs_sh;
@@ -642,28 +641,16 @@ struct peer_sbs_task : public p_tsk {
             IFLOG(wrn(TH_ID, LS_EXE "[no more active subscriptions on connection:%u]", __func__, (*conn)->get_id()))
             return;
         }
-        if((rcode = sbs_sh->impl_->submit_live_event(rud->tsk->sbs_evt_))) {
-            IFLOG(err(TH_ID, LS_EXE "[subscription task:%d - asynch event send failed for sbsid:%d - res:%d]",
-                      __func__,
-                      rud->tsk->get_id(),
-                      sbs_sh->get_id(),
-                      rcode))
-            rud->rcode = rcode;
-        }
+        sbs_sh->impl_->submit_evt(rud->tsk->sbs_evt_);
     }
 
-    /*this method will be called when this task will be run by an executor*/
     virtual RetCode execute() override {
-        RetCode rcode = RetCode_OK;
         srv_connid_condesc_set_ashsnd_rud rud;
         rud.nclass_id = sbs_evt_->get_data()->get_id();
         rud.tsk = this;
         rud.rcode = RetCode_OK;
         connid_condesc_set_.enum_elements_safe_read(enum_srv_connid_connection_map_ashsnd, &rud);
-        if((rud.rcode)) {
-            IFLOG(dbg(TH_ID, LS_EXE "[subscription task:%d - execution failed - res:%d]", __func__, get_id(), rcode))
-        }
-        return rcode;
+        return RetCode_OK;
     }
 
     peer_impl &get_peer() {

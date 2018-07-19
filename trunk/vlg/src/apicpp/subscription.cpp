@@ -52,8 +52,8 @@ std::unique_ptr<nclass> &subscription_event::get_data()
     return impl_->sbs_data_;
 }
 
-incoming_subscription::incoming_subscription(std::shared_ptr<incoming_connection> &conn) : impl_
-    (new incoming_subscription_impl(*this, conn))
+incoming_subscription::incoming_subscription(std::shared_ptr<incoming_connection> &conn) :
+    impl_(new incoming_subscription_impl(*this, conn))
 {
     CTOR_TRC
 }
@@ -93,8 +93,7 @@ SubscriptionFlowType incoming_subscription::get_flow_type() const
     return impl_->flotyp_;
 }
 
-SubscriptionDownloadType incoming_subscription::get_download_type()
-const
+SubscriptionDownloadType incoming_subscription::get_download_type() const
 {
     return impl_->dwltyp_;
 }

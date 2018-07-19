@@ -9,6 +9,67 @@
 
 namespace vlg {
 
+struct conn_pkt {
+    conn_pkt(std::unique_ptr<char> *key,
+             g_bbuf &&pkt_b,
+             unsigned int ts0 = 0,
+             unsigned int ts1 = 0) :
+        key_(key ? std::move(*key) : nullptr),
+        pkt_b_(pkt_b),
+        ts0_(ts0),
+        ts1_(ts1) {}
+
+    std::unique_ptr<char> key_;
+    g_bbuf pkt_b_;
+    unsigned int ts0_;
+    unsigned int ts1_;
+};
+
+struct conn_pkt_unqptr_obj_mng : public std_unique_ptr_obj_mng<conn_pkt> {
+
+    static int cpkt_cmp_obj(const void *obj1, const void *obj2, size_t len) {
+        std::unique_ptr<conn_pkt> &cpkt_1 = *(std::unique_ptr<conn_pkt> *)(obj1);
+        std::unique_ptr<conn_pkt> &cpkt_2 = *(std::unique_ptr<conn_pkt> *)(obj2);
+        if(cpkt_1 && cpkt_2) {
+            return strcmp(cpkt_1.get()->key_.get(), cpkt_2.get()->key_.get());
+        } else if(cpkt_1) {
+            return 1;
+        } else if(cpkt_2) {
+            return -1;
+        } else {
+            return 0;
+        }
+    }
+
+    static void cpkt_hash_obj(const void *key, int len, uint32_t seed, void *out) {
+        std::unique_ptr<conn_pkt> &cpkt = *(std::unique_ptr<conn_pkt> *)(key);
+        MurmurHash3_x86_32(cpkt.get()->key_.get(), (int)strlen(cpkt.get()->key_.get()), seed, out);
+    }
+
+    static void *cpkt_rplc_on_hit_func(void *hit, const void *rplcr, size_t type_size) {
+        std::unique_ptr<conn_pkt> &h_cpkt = *(std::unique_ptr<conn_pkt> *)(hit);
+        std::unique_ptr<conn_pkt> &r_cpkt = *(std::unique_ptr<conn_pkt> *)(rplcr);
+        if((h_cpkt->ts0_ < r_cpkt->ts0_) || ((h_cpkt->ts0_ == r_cpkt->ts0_) && (h_cpkt->ts1_ < r_cpkt->ts1_))) {
+            h_cpkt = std::move(r_cpkt);
+        }
+        return hit;
+    }
+
+    explicit conn_pkt_unqptr_obj_mng() : std_unique_ptr_obj_mng<conn_pkt>(0,
+                                                                              unique_ptr_alloc_func,
+                                                                              unique_ptr_dealloc_func,
+                                                                              cpkt_cmp_obj,
+                                                                              unique_ptr_cpy_func,
+                                                                              cpkt_hash_obj,
+                                                                              cpkt_rplc_on_hit_func) {}
+};
+
+const conn_pkt_unqptr_obj_mng conn_pkt_up_omng;
+
+}
+
+namespace vlg {
+
 struct conn_impl {
     conn_impl(incoming_connection &ipubl, peer &p);
     conn_impl(outgoing_connection &opubl);
@@ -55,15 +116,15 @@ struct conn_impl {
     RetCode set_socket_blocking_mode(bool blocking);
     RetCode socket_shutdown();
 
-    RetCode send_single_pkt(g_bbuf *pkt_bbuf);
+    RetCode send_single_pkt(g_bbuf &pkt_bbuf);
 
-    RetCode recv_single_pkt(vlg_hdr_rec *pkt_hdr,
-                            g_bbuf *pkt_body);
+    RetCode recv_single_pkt(vlg_hdr_rec &pkt_hdr,
+                            g_bbuf &pkt_body);
 
-    RetCode recv_and_decode_hdr(vlg_hdr_rec *pkt_hdr);
+    RetCode recv_and_decode_hdr(vlg_hdr_rec &pkt_hdr);
 
     RetCode recv_body(unsigned int bodylen,
-                      g_bbuf *pkt_body);
+                      g_bbuf &pkt_body);
 
     RetCode recv_single_hdr_row(unsigned int *hdr_row);
     RetCode socket_excptn_hndl(long sock_op_res);
@@ -95,8 +156,8 @@ struct conn_impl {
 
     //---packet sending queue
 
-	//@TODO riprogettare con chiave per supporto a snapshotting.
-    b_qu pkt_sending_q_;
+    //@TODO riprogettare con chiave per supporto a snapshotting.
+    b_qu_hm pkt_sending_q_;
 
     mutable mx mon_;
 

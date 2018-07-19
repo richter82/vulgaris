@@ -178,13 +178,13 @@ outgoing_transaction::~outgoing_transaction()
 
 RetCode outgoing_transaction::bind(outgoing_connection &conn)
 {
-    impl_->conn_ = &conn;
+    impl_->conn_ = conn.impl_.get();
     return RetCode_OK;
 }
 
 outgoing_connection &outgoing_transaction::get_connection()
 {
-    return *impl_->conn_;
+    return *impl_->conn_->opubl_;
 }
 
 TransactionResult outgoing_transaction::get_close_result()

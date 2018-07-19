@@ -1021,160 +1021,160 @@ inline RetCode conn_impl::recv_single_hdr_row(unsigned int *hdr_row)
 
 #define RCVSNGLROW if((rcode = recv_single_hdr_row(&hdr_row))) return rcode;
 
-RetCode conn_impl::recv_and_decode_hdr(vlg_hdr_rec *pkt_hdr)
+RetCode conn_impl::recv_and_decode_hdr(vlg_hdr_rec &pkt_hdr)
 {
     RetCode rcode = RetCode_OK;
     unsigned int hdr_row = 0;
     RCVSNGLROW
-    Decode_WRD_PKTHDR(&hdr_row, &pkt_hdr->phdr);
-    pkt_hdr->hdr_bytelen = pkt_hdr->phdr.hdrlen * VLG_WRD_BYTE_SIZE;
-    switch(pkt_hdr->phdr.pkttyp) {
+    Decode_WRD_PKTHDR(&hdr_row, &pkt_hdr.phdr);
+    pkt_hdr.hdr_bytelen = pkt_hdr.phdr.hdrlen * VLG_WRD_BYTE_SIZE;
+    switch(pkt_hdr.phdr.pkttyp) {
         case VLG_PKT_TSTREQ_ID:
             /*TEST REQUEST*/
             RCVSNGLROW
-            Decode_WRD_TMSTMP(&hdr_row, &pkt_hdr->row_1.tmstmp);
-            if(pkt_hdr->phdr.hdrlen == 3) {
+            Decode_WRD_TMSTMP(&hdr_row, &pkt_hdr.row_1.tmstmp);
+            if(pkt_hdr.phdr.hdrlen == 3) {
                 RCVSNGLROW
-                Decode_WRD_CONNID(&hdr_row, &pkt_hdr->row_2.connid);
+                Decode_WRD_CONNID(&hdr_row, &pkt_hdr.row_2.connid);
             }
             break;
         case VLG_PKT_HRTBET_ID:
             /*HEARTBEAT*/
             RCVSNGLROW
-            Decode_WRD_TMSTMP(&hdr_row, &pkt_hdr->row_1.tmstmp);
-            if(pkt_hdr->phdr.hdrlen == 3) {
+            Decode_WRD_TMSTMP(&hdr_row, &pkt_hdr.row_1.tmstmp);
+            if(pkt_hdr.phdr.hdrlen == 3) {
                 RCVSNGLROW
-                Decode_WRD_CONNID(&hdr_row, &pkt_hdr->row_2.connid);
+                Decode_WRD_CONNID(&hdr_row, &pkt_hdr.row_2.connid);
             }
             break;
         case VLG_PKT_CONREQ_ID:
             /*CONNECTION REQUEST*/
             RCVSNGLROW
-            Decode_WRD_CLIHBT(&hdr_row, &pkt_hdr->row_1.clihbt);
+            Decode_WRD_CLIHBT(&hdr_row, &pkt_hdr.row_1.clihbt);
             break;
         case VLG_PKT_CONRES_ID:
             /*CONNECTION RESPONSE*/
             RCVSNGLROW
-            Decode_WRD_SRVCRS(&hdr_row, &pkt_hdr->row_1.srvcrs);
-            if(pkt_hdr->phdr.hdrlen == 3) {
+            Decode_WRD_SRVCRS(&hdr_row, &pkt_hdr.row_1.srvcrs);
+            if(pkt_hdr.phdr.hdrlen == 3) {
                 RCVSNGLROW
-                Decode_WRD_CONNID(&hdr_row, &pkt_hdr->row_2.connid);
+                Decode_WRD_CONNID(&hdr_row, &pkt_hdr.row_2.connid);
             }
             break;
         case VLG_PKT_DSCOND_ID:
             /*DISCONNECTED*/
             RCVSNGLROW
-            Decode_WRD_DISWRD(&hdr_row, &pkt_hdr->row_1.diswrd);
-            if(pkt_hdr->phdr.hdrlen == 3) {
+            Decode_WRD_DISWRD(&hdr_row, &pkt_hdr.row_1.diswrd);
+            if(pkt_hdr.phdr.hdrlen == 3) {
                 RCVSNGLROW
-                Decode_WRD_CONNID(&hdr_row, &pkt_hdr->row_2.connid);
+                Decode_WRD_CONNID(&hdr_row, &pkt_hdr.row_2.connid);
             }
             break;
         case VLG_PKT_TXRQST_ID:
             /*TRANSACTION REQUEST*/
             RCVSNGLROW
-            Decode_WRD_TXREQW(&hdr_row, &pkt_hdr->row_1.txreqw);
+            Decode_WRD_TXREQW(&hdr_row, &pkt_hdr.row_1.txreqw);
             RCVSNGLROW
-            Decode_WRD_TXPLID(&hdr_row, &pkt_hdr->row_2.txplid);
+            Decode_WRD_TXPLID(&hdr_row, &pkt_hdr.row_2.txplid);
             RCVSNGLROW
-            Decode_WRD_TXSVID(&hdr_row, &pkt_hdr->row_3.txsvid);
+            Decode_WRD_TXSVID(&hdr_row, &pkt_hdr.row_3.txsvid);
             RCVSNGLROW
-            Decode_WRD_TXCNID(&hdr_row, &pkt_hdr->row_4.txcnid);
+            Decode_WRD_TXCNID(&hdr_row, &pkt_hdr.row_4.txcnid);
             RCVSNGLROW
-            Decode_WRD_TXPRID(&hdr_row, &pkt_hdr->row_5.txprid);
+            Decode_WRD_TXPRID(&hdr_row, &pkt_hdr.row_5.txprid);
             RCVSNGLROW
-            Decode_WRD_PKTLEN(&hdr_row, &pkt_hdr->row_6.pktlen);
+            Decode_WRD_PKTLEN(&hdr_row, &pkt_hdr.row_6.pktlen);
             RCVSNGLROW
-            Decode_WRD_CLSENC(&hdr_row, &pkt_hdr->row_7.clsenc);
+            Decode_WRD_CLSENC(&hdr_row, &pkt_hdr.row_7.clsenc);
             RCVSNGLROW
-            Decode_WRD_CONNID(&hdr_row, &pkt_hdr->row_8.connid);
-            pkt_hdr->bdy_bytelen = pkt_hdr->row_6.pktlen.pktlen - pkt_hdr->hdr_bytelen;
+            Decode_WRD_CONNID(&hdr_row, &pkt_hdr.row_8.connid);
+            pkt_hdr.bdy_bytelen = pkt_hdr.row_6.pktlen.pktlen - pkt_hdr.hdr_bytelen;
             break;
         case VLG_PKT_TXRESP_ID:
             /*TRANSACTION RESPONSE*/
             RCVSNGLROW
-            Decode_WRD_TXRESW(&hdr_row, &pkt_hdr->row_1.txresw);
+            Decode_WRD_TXRESW(&hdr_row, &pkt_hdr.row_1.txresw);
             RCVSNGLROW
-            Decode_WRD_TXPLID(&hdr_row, &pkt_hdr->row_2.txplid);
+            Decode_WRD_TXPLID(&hdr_row, &pkt_hdr.row_2.txplid);
             RCVSNGLROW
-            Decode_WRD_TXSVID(&hdr_row, &pkt_hdr->row_3.txsvid);
+            Decode_WRD_TXSVID(&hdr_row, &pkt_hdr.row_3.txsvid);
             RCVSNGLROW
-            Decode_WRD_TXCNID(&hdr_row, &pkt_hdr->row_4.txcnid);
+            Decode_WRD_TXCNID(&hdr_row, &pkt_hdr.row_4.txcnid);
             RCVSNGLROW
-            Decode_WRD_TXPRID(&hdr_row, &pkt_hdr->row_5.txprid);
-            if(pkt_hdr->phdr.hdrlen == 8) {
+            Decode_WRD_TXPRID(&hdr_row, &pkt_hdr.row_5.txprid);
+            if(pkt_hdr.phdr.hdrlen == 8) {
                 RCVSNGLROW
-                Decode_WRD_PKTLEN(&hdr_row, &pkt_hdr->row_6.pktlen);
+                Decode_WRD_PKTLEN(&hdr_row, &pkt_hdr.row_6.pktlen);
                 RCVSNGLROW
-                Decode_WRD_CLSENC(&hdr_row, &pkt_hdr->row_7.clsenc);
-                pkt_hdr->bdy_bytelen = pkt_hdr->row_6.pktlen.pktlen - pkt_hdr->hdr_bytelen;
+                Decode_WRD_CLSENC(&hdr_row, &pkt_hdr.row_7.clsenc);
+                pkt_hdr.bdy_bytelen = pkt_hdr.row_6.pktlen.pktlen - pkt_hdr.hdr_bytelen;
             }
             break;
         case VLG_PKT_SBSREQ_ID:
             /*SUBSCRIPTION REQUEST*/
             RCVSNGLROW
-            Decode_WRD_SBREQW(&hdr_row, &pkt_hdr->row_1.sbreqw);
+            Decode_WRD_SBREQW(&hdr_row, &pkt_hdr.row_1.sbreqw);
             RCVSNGLROW
-            Decode_WRD_CLSENC(&hdr_row, &pkt_hdr->row_2.clsenc);
+            Decode_WRD_CLSENC(&hdr_row, &pkt_hdr.row_2.clsenc);
             RCVSNGLROW
-            Decode_WRD_CONNID(&hdr_row, &pkt_hdr->row_3.connid);
+            Decode_WRD_CONNID(&hdr_row, &pkt_hdr.row_3.connid);
             RCVSNGLROW
-            Decode_WRD_RQSTID(&hdr_row, &pkt_hdr->row_4.rqstid);
-            if(pkt_hdr->phdr.hdrlen == 7) {
+            Decode_WRD_RQSTID(&hdr_row, &pkt_hdr.row_4.rqstid);
+            if(pkt_hdr.phdr.hdrlen == 7) {
                 RCVSNGLROW
-                Decode_WRD_TMSTMP(&hdr_row, &pkt_hdr->row_5.tmstmp); //timestamp 0
+                Decode_WRD_TMSTMP(&hdr_row, &pkt_hdr.row_5.tmstmp); //timestamp 0
                 RCVSNGLROW
-                Decode_WRD_TMSTMP(&hdr_row, &pkt_hdr->row_6.tmstmp); //timestamp 1
+                Decode_WRD_TMSTMP(&hdr_row, &pkt_hdr.row_6.tmstmp); //timestamp 1
             }
             break;
         case VLG_PKT_SBSRES_ID:
             /*SUBSCRIPTION RESPONSE*/
             RCVSNGLROW
-            Decode_WRD_SBRESW(&hdr_row, &pkt_hdr->row_1.sbresw);
+            Decode_WRD_SBRESW(&hdr_row, &pkt_hdr.row_1.sbresw);
             RCVSNGLROW
-            Decode_WRD_RQSTID(&hdr_row, &pkt_hdr->row_2.rqstid);
-            if(pkt_hdr->phdr.hdrlen == 4) {
+            Decode_WRD_RQSTID(&hdr_row, &pkt_hdr.row_2.rqstid);
+            if(pkt_hdr.phdr.hdrlen == 4) {
                 RCVSNGLROW
-                Decode_WRD_SBSRID(&hdr_row, &pkt_hdr->row_3.sbsrid);
+                Decode_WRD_SBSRID(&hdr_row, &pkt_hdr.row_3.sbsrid);
             }
             break;
         case VLG_PKT_SBSEVT_ID:
             /*SUBSCRIPTION EVENT*/
             RCVSNGLROW
-            Decode_WRD_SBSRID(&hdr_row, &pkt_hdr->row_1.sbsrid);
+            Decode_WRD_SBSRID(&hdr_row, &pkt_hdr.row_1.sbsrid);
             RCVSNGLROW
-            Decode_WRD_SEVTTP(&hdr_row, &pkt_hdr->row_2.sevttp);
+            Decode_WRD_SEVTTP(&hdr_row, &pkt_hdr.row_2.sevttp);
             RCVSNGLROW
-            Decode_WRD_SEVTID(&hdr_row, &pkt_hdr->row_3.sevtid);
+            Decode_WRD_SEVTID(&hdr_row, &pkt_hdr.row_3.sevtid);
             RCVSNGLROW
-            Decode_WRD_TMSTMP(&hdr_row, &pkt_hdr->row_4.tmstmp); //timestamp 0
+            Decode_WRD_TMSTMP(&hdr_row, &pkt_hdr.row_4.tmstmp); //timestamp 0
             RCVSNGLROW
-            Decode_WRD_TMSTMP(&hdr_row, &pkt_hdr->row_5.tmstmp); //timestamp 1
-            if(pkt_hdr->phdr.hdrlen == 7) {
+            Decode_WRD_TMSTMP(&hdr_row, &pkt_hdr.row_5.tmstmp); //timestamp 1
+            if(pkt_hdr.phdr.hdrlen == 7) {
                 RCVSNGLROW
-                Decode_WRD_PKTLEN(&hdr_row, &pkt_hdr->row_6.pktlen);
-                pkt_hdr->bdy_bytelen = pkt_hdr->row_6.pktlen.pktlen - pkt_hdr->hdr_bytelen;
+                Decode_WRD_PKTLEN(&hdr_row, &pkt_hdr.row_6.pktlen);
+                pkt_hdr.bdy_bytelen = pkt_hdr.row_6.pktlen.pktlen - pkt_hdr.hdr_bytelen;
             }
             break;
         case VLG_PKT_SBSACK_ID:
             /*SUBSCRIPTION EVENT ACK*/
             RCVSNGLROW
-            Decode_WRD_SBSRID(&hdr_row, &pkt_hdr->row_1.sbsrid);
+            Decode_WRD_SBSRID(&hdr_row, &pkt_hdr.row_1.sbsrid);
             RCVSNGLROW
-            Decode_WRD_SEVTID(&hdr_row, &pkt_hdr->row_2.sevtid);
+            Decode_WRD_SEVTID(&hdr_row, &pkt_hdr.row_2.sevtid);
             break;
         case VLG_PKT_SBSTOP_ID:
             /*SUBSCRIPTION STOP REQUEST*/
             RCVSNGLROW
-            Decode_WRD_SBSRID(&hdr_row, &pkt_hdr->row_1.sbsrid);
+            Decode_WRD_SBSRID(&hdr_row, &pkt_hdr.row_1.sbsrid);
             break;
         case VLG_PKT_SBSSPR_ID:
             /*SUBSCRIPTION STOP RESPONSE*/
             RCVSNGLROW
-            Decode_WRD_SBRESW(&hdr_row, &pkt_hdr->row_1.sbresw);
-            if(pkt_hdr->phdr.hdrlen == 3) {
+            Decode_WRD_SBRESW(&hdr_row, &pkt_hdr.row_1.sbresw);
+            if(pkt_hdr.phdr.hdrlen == 3) {
                 RCVSNGLROW
-                Decode_WRD_SBSRID(&hdr_row, &pkt_hdr->row_2.sbsrid);
+                Decode_WRD_SBSRID(&hdr_row, &pkt_hdr.row_2.sbsrid);
             }
             break;
         default:
@@ -1183,13 +1183,9 @@ RetCode conn_impl::recv_and_decode_hdr(vlg_hdr_rec *pkt_hdr)
     return rcode;
 }
 
-RetCode conn_impl::recv_single_pkt(vlg_hdr_rec *pkt_hdr,
-                                   g_bbuf *pkt_body)
+RetCode conn_impl::recv_single_pkt(vlg_hdr_rec &pkt_hdr,
+                                   g_bbuf &pkt_body)
 {
-    if(!pkt_hdr || !pkt_body) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
-        return RetCode_BADARG;
-    }
     int tot_brecv = 0;
     RetCode rcode = RetCode_OK;
     //first phase: decode pkt header.
@@ -1214,9 +1210,9 @@ RetCode conn_impl::recv_single_pkt(vlg_hdr_rec *pkt_hdr,
             break;
     }
     //END first phase
-    if(pkt_hdr->bdy_bytelen) {
+    if(pkt_hdr.bdy_bytelen) {
         //second phase: read eventual remaining body.
-        switch((rcode = recv_body(pkt_hdr->bdy_bytelen, pkt_body))) {
+        switch((rcode = recv_body(pkt_hdr.bdy_bytelen, pkt_body))) {
             case RetCode_OK:
                 break;
             case RetCode_SCKCLO:
@@ -1239,35 +1235,35 @@ RetCode conn_impl::recv_single_pkt(vlg_hdr_rec *pkt_hdr,
         //END second phase
     }
     if(!rcode) {
-        tot_brecv = pkt_hdr->hdr_bytelen + pkt_hdr->bdy_bytelen;
+        tot_brecv = pkt_hdr.hdr_bytelen + pkt_hdr.bdy_bytelen;
         if(v_log_ && v_log_->level() <= TL_TRC) {
             char dump_buf[DMP_OUT_BUF_LEN] = { 0 };
-            dump_vlg_hdr_rec(pkt_hdr, dump_buf);
+            dump_vlg_hdr_rec(&pkt_hdr, dump_buf);
             v_log_->trc(TH_ID, LS_INC "%s", dump_buf);
         }
     }
     IFLOG(trc(TH_ID, LS_CLO "[tot-recv:%d, hdr_len:%d, body_len:%d][res:%d]",
               __func__,
               tot_brecv,
-              pkt_hdr->hdr_bytelen,
-              pkt_hdr->bdy_bytelen,
+              pkt_hdr.hdr_bytelen,
+              pkt_hdr.bdy_bytelen,
               rcode))
     return rcode;
 }
 
 RetCode conn_impl::recv_body(unsigned int bodylen,
-                             g_bbuf *pkt_body)
+                             g_bbuf &pkt_body)
 {
     RetCode rcode = RetCode_OK;
     bool stay = true;
     unsigned int tot_brecv = 0;
     long brecv = 0, recv_buf_sz = bodylen;
-    pkt_body->ensure_capacity(bodylen);
+    pkt_body.ensure_capacity(bodylen);
     while(stay) {
         while((tot_brecv < bodylen) && ((brecv = recv(socket_,
-                                                      &pkt_body->buf_[pkt_body->pos_],
+                                                      &pkt_body.buf_[pkt_body.pos_],
                                                       recv_buf_sz, 0)) > 0)) {
-            pkt_body->move_pos_write(brecv);
+            pkt_body.move_pos_write(brecv);
             tot_brecv += brecv;
             recv_buf_sz -= brecv;
         }
@@ -1280,24 +1276,25 @@ RetCode conn_impl::recv_body(unsigned int bodylen,
             break;
         }
     }
-    pkt_body->flip();
+    pkt_body.flip();
     return rcode;
 }
 
-RetCode conn_impl::send_single_pkt(g_bbuf *pkt_bbuf)
+RetCode conn_impl::send_single_pkt(g_bbuf &pkt_bbuf)
 {
-    if(!pkt_bbuf || !pkt_bbuf->limit_) {
+    pkt_bbuf.flip();
+    if(!pkt_bbuf.limit_) {
         IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADARG;
     }
     RetCode rcode = RetCode_OK;
     bool stay = true;
-    long bsent = 0, tot_bsent = 0, remaining = (long)pkt_bbuf->limit_;
+    long bsent = 0, tot_bsent = 0, remaining = (long)pkt_bbuf.limit_;
     while(stay) {
         while(remaining && ((bsent = send(socket_,
-                                          &pkt_bbuf->buf_[pkt_bbuf->pos_],
-                                          (int)pkt_bbuf->limit_, 0)) > 0)) {
-            pkt_bbuf->advance_pos_read(bsent);
+                                          &pkt_bbuf.buf_[pkt_bbuf.pos_],
+                                          (int)pkt_bbuf.limit_, 0)) > 0)) {
+            pkt_bbuf.advance_pos_read(bsent);
             tot_bsent += bsent;
             remaining -= bsent;
         }

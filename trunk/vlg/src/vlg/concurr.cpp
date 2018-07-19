@@ -247,13 +247,13 @@ RetCode p_exec_srv::init(unsigned int executor_num)
     IFLOG(trc(TH_ID, LS_OPN "[executor_num:%d]", __func__, executor_num))
     if(!executor_num) {
         IFLOG(inf(TH_ID, LS_TRL "[id:%d][zero executors]", __func__, id_))
-        RET_ON_KO(set_status(PEXEC_SERVICE_STATUS_INIT))
+        set_status(PEXEC_SERVICE_STATUS_INIT);
     } else {
         exec_pool_.resize(executor_num);
         for(unsigned int i = 0; i<executor_num; i++) {
             exec_pool_[i] = std::move(std::unique_ptr<p_exectr>(new p_exectr(*this)));
         }
-        RET_ON_KO(set_status(PEXEC_SERVICE_STATUS_INIT))
+        set_status(PEXEC_SERVICE_STATUS_INIT);
     }
     return RetCode_OK;
 }
@@ -273,11 +273,11 @@ RetCode p_exec_srv::start()
         IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
-    RET_ON_KO(set_status(PEXEC_SERVICE_STATUS_STARTING))
+    set_status(PEXEC_SERVICE_STATUS_STARTING);
     for(unsigned int i = 0; i<exec_pool_.size(); i++) {
         exec_pool_[i]->start();
     }
-    RET_ON_KO(set_status(PEXEC_SERVICE_STATUS_STARTED))
+    set_status(PEXEC_SERVICE_STATUS_STARTED);
     return RetCode_OK;
 }
 
@@ -339,16 +339,16 @@ RetCode p_exec_srv::await_termination(time_t sec, long nsec)
 RetCode p_exec_srv::shutdown()
 {
     if(exec_pool_.empty()) {
-        RET_ON_KO(set_status(PEXEC_SERVICE_STATUS_STOPPED))
+        set_status(PEXEC_SERVICE_STATUS_STOPPED);
     } else {
-        RET_ON_KO(set_status(PEXEC_SERVICE_STATUS_STOPPING))
+        set_status(PEXEC_SERVICE_STATUS_STOPPING);
     }
     return RetCode_OK;
 }
 
 RetCode p_exec_srv::terminated()
 {
-    RET_ON_KO(set_status(PEXEC_SERVICE_STATUS_STOPPED))
+    set_status(PEXEC_SERVICE_STATUS_STOPPED);
     return RetCode_OK;
 }
 

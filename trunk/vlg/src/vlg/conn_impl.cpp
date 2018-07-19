@@ -82,7 +82,7 @@ conn_impl::conn_impl(incoming_connection &ipubl, peer &p) :
     srv_agrhbt_(0),
     disconrescode_(ProtocolCode_UNDEFINED),
     connect_evt_occur_(false),
-    pkt_sending_q_(sngl_ptr_obj_mng()),
+    pkt_sending_q_(conn_pkt_up_omng),
     ipubl_(&ipubl),
     opubl_(nullptr),
     peer_(p.impl_.get())
@@ -102,7 +102,7 @@ conn_impl::conn_impl(outgoing_connection &opubl) :
     srv_agrhbt_(0),
     disconrescode_(ProtocolCode_UNDEFINED),
     connect_evt_occur_(false),
-    pkt_sending_q_(sngl_ptr_obj_mng()),
+    pkt_sending_q_(conn_pkt_up_omng),
     ipubl_(nullptr),
     opubl_(&opubl),
     peer_(nullptr)
@@ -365,26 +365,25 @@ RetCode conn_impl::establish_connection(sockaddr_in &params)
 
 RetCode conn_impl::disconnect(ProtocolCode disres)
 {
-    RetCode rcode = RetCode_OK;
     if(status_ != ConnectionStatus_PROTOCOL_HANDSHAKE && status_ != ConnectionStatus_AUTHENTICATED) {
         IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
     IFLOG(inf(TH_ID, LS_CON"[connid:%d][socket:%d][sending disconnection][disconrescode:%d]", connid_, socket_, disres))
     set_disconnecting();
-    g_bbuf *gbb = new g_bbuf(3);
+
+    g_bbuf gbb(3);
     if(con_type_ == ConnectionType_OUTGOING) {
-        build_PKT_DSCOND(disres, connid_, gbb);
+        build_PKT_DSCOND(disres, connid_, &gbb);
     } else {
-        build_PKT_DSCOND(disres, 0, gbb);
+        build_PKT_DSCOND(disres, 0, &gbb);
     }
-    gbb->flip();
-    RET_ON_KO(pkt_sending_q_.put(&gbb))
+
+    gbb.flip();
+    std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
+    pkt_sending_q_.put(&cpkt);
     selector_event *evt = new selector_event(VLG_SELECTOR_Evt_Disconnect, this);
-    if((rcode = peer_->selector_.asynch_notify(evt))) {
-        set_status(ConnectionStatus_ERROR);
-    }
-    return rcode;
+    return peer_->selector_.asynch_notify(evt);
 }
 
 RetCode conn_impl::notify_for_connectivity_result(ConnectivityEventResult con_evt_res,
@@ -503,24 +502,23 @@ unsigned int incoming_connection_impl::next_sbsid()
 
 RetCode incoming_connection_impl::server_send_connect_res(std::shared_ptr<incoming_connection> &inco_conn)
 {
-    RetCode rcode = RetCode_OK;
     if(status_ != ConnectionStatus_ESTABLISHED) {
         IFLOG(err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
-    g_bbuf *gbb = new g_bbuf(3*4);
+
+    g_bbuf gbb(3 * 4);
     build_PKT_CONRES(conres_,
                      conrescode_,
                      srv_agrhbt_,
                      connid_,
-                     gbb);
-    gbb->flip();
-    RET_ON_KO(pkt_sending_q_.put(&gbb))
+                     &gbb);
+    gbb.flip();
+    std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
+    pkt_sending_q_.put(&cpkt);
+
     selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, inco_conn);
-    if((rcode = peer_->selector_.asynch_notify(evt))) {
-        set_status(ConnectionStatus_ERROR);
-    }
-    return rcode;
+    return peer_->selector_.asynch_notify(evt);
 }
 
 RetCode incoming_connection_impl::recv_connection_request(const vlg_hdr_rec *pkt_hdr,
@@ -819,15 +817,15 @@ RetCode incoming_connection_impl::recv_sbs_start_request(const vlg_hdr_rec *pkt_
             IFLOG(cri(TH_ID, LS_SBS"[error binding subscription to peer][res:%d]", rcode))
             inc_sbs->set_error();
         } else {
+            inc_sbs->set_started();
             if(inc_sbs->sbsmod_ == SubscriptionMode_ALL || inc_sbs->sbsmod_ == SubscriptionMode_DOWNLOAD) {
                 //do initial query.
                 if(!(rcode = inc_sbs->execute_initial_query())) {
                     inc_sbs->initial_query_ended_ = false;
                 }
             }
-            inc_sbs->set_started();
             if(!inc_sbs->initial_query_ended_) {
-                while(inc_sbs->submit_dwnl_event() == RetCode_DBROW);
+                inc_sbs->send_initial_query();
             }
         }
     }
@@ -853,13 +851,16 @@ RetCode incoming_connection_impl::recv_sbs_stop_request(const vlg_hdr_rec *pkt_h
         inco_sbsid_sbs_map_.remove(&sbs_sh->impl_->sbsid_, nullptr);
         inco_nclassid_sbs_map_.remove(&sbs_sh->impl_->nclassid_, nullptr);
     }
-    g_bbuf *gbb = new g_bbuf();
+
+    g_bbuf gbb(3);
     build_PKT_SBSSPR(sbresl,
                      protocode,
                      sbsid,
-                     gbb);
-    gbb->flip();
-    RET_ON_KO(pkt_sending_q_.put(&gbb))
+                     &gbb);
+    gbb.flip();
+    std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
+    pkt_sending_q_.put(&cpkt);
+
     selector_event *evt = new selector_event(VLG_SELECTOR_Evt_SendPacket, inco_conn);
     rcode = peer_->selector_.asynch_notify(evt);
     return rcode;
@@ -939,16 +940,15 @@ RetCode outgoing_connection_impl::client_connect(sockaddr_in &params)
     }
 
     connect_evt_occur_ = false;
-    g_bbuf *gbb = new g_bbuf(2);
-    build_PKT_CONREQ(cli_agrhbt_, gbb);
-    gbb->flip();
-    RET_ON_KO(pkt_sending_q_.put(&gbb))
+    g_bbuf gbb(2);
+    build_PKT_CONREQ(cli_agrhbt_, &gbb);
+    gbb.flip();
+    std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
+    pkt_sending_q_.put(&cpkt);
+
     selector_event *evt = new selector_event(VLG_SELECTOR_Evt_ConnectRequest, this);
     memcpy(&evt->saddr_, &params, sizeof(sockaddr_in));
-    if((rcode = peer_->selector_.asynch_notify(evt))) {
-        set_status(ConnectionStatus_ERROR);
-    }
-    return rcode;
+    return peer_->selector_.asynch_notify(evt);
 }
 
 RetCode outgoing_connection_impl::await_for_connection_result(ConnectivityEventResult &con_evt_res,

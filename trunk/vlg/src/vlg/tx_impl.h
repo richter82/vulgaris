@@ -83,10 +83,6 @@ struct outgoing_transaction_impl : public tx_impl {
     RetCode send();
 
     void set_result_obj_on_response(std::unique_ptr<nclass> &);
-
-    //associated connection.
-    //cannot be ref, because bind is after construction.
-    outgoing_connection *conn_;
 };
 
 }

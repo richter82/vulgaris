@@ -66,10 +66,10 @@ win32 {
             -lwsock32\
             -lshell32
     CONFIG(debug, debug|release) {
-        LIBS += -L$$PWD/../bin/MSVC/x64/Debug/StaticLibrary/v140
+        LIBS += -L$$PWD/../bin/MSVC/x64/Debug/StaticLibrary
     }
     CONFIG(release, debug|release) {
-        LIBS += -L$$PWD/../bin/MSVC/x64/Release/StaticLibrary/v140
+        LIBS += -L$$PWD/../bin/MSVC/x64/Release/StaticLibrary
     }
     LIBS += -lpthreadVC2
 
