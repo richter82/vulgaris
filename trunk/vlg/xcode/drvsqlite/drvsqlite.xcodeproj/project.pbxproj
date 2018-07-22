@@ -6,6 +6,10 @@
 	objectVersion = 46;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		E3EDF5D821051EDF00B455CC /* drv_sqlite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5D721051EDF00B455CC /* drv_sqlite.cpp */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXCopyFilesBuildPhase section */
 		E357C6A31FD5E559009CD894 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -19,9 +23,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		E357C6A01FD5E502009CD894 /* vlg_drv_sqlite.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_drv_sqlite.cpp; path = ../../src/drisqlite/vlg_drv_sqlite.cpp; sourceTree = "<group>"; };
 		E357C6A51FD5E559009CD894 /* libdrvsqlite.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libdrvsqlite.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		E3AA74CB1EB79236004C4423 /* sqlite3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sqlite3.c; path = ../../contrib/sqlite/sqlite3.c; sourceTree = "<group>"; };
+		E3EDF5D721051EDF00B455CC /* drv_sqlite.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = drv_sqlite.cpp; path = ../../src/drisqlite/drv_sqlite.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,7 +59,7 @@
 		E38789A51A8A71B0005A753E /* src */ = {
 			isa = PBXGroup;
 			children = (
-				E357C6A01FD5E502009CD894 /* vlg_drv_sqlite.cpp */,
+				E3EDF5D721051EDF00B455CC /* drv_sqlite.cpp */,
 			);
 			name = src;
 			sourceTree = "<group>";
@@ -94,7 +98,7 @@
 		E387898F1A8A703C005A753E /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0900;
+				LastUpgradeCheck = 0940;
 				ORGANIZATIONNAME = blaze;
 				TargetAttributes = {
 					E357C6A41FD5E559009CD894 = {
@@ -126,6 +130,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E3EDF5D821051EDF00B455CC /* drv_sqlite.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -189,12 +194,14 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -240,12 +247,14 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;

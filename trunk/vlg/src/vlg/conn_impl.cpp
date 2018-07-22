@@ -769,7 +769,7 @@ RetCode conn_impl::send_acc_buff()
             remaining -= bsent;
         }
         if(remaining) {
-            if(((rcode = sckt_hndl_err(bsent)) == RetCode_SCKWBLK)) {
+            if((rcode = sckt_hndl_err(bsent)) == RetCode_SCKWBLK) {
                 acc_snd_buff_.set_mark();
             }
             stay = false;

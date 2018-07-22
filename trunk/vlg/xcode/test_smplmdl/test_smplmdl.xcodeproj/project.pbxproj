@@ -6,10 +6,6 @@
 	objectVersion = 46;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		E38BCB111FD728FE002D095A /* vlg_model_sample.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E38BCB101FD728FE002D095A /* vlg_model_sample.cpp */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXCopyFilesBuildPhase section */
 		E357C6ED1FD5E962009CD894 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -24,7 +20,6 @@
 
 /* Begin PBXFileReference section */
 		E357C6EF1FD5E962009CD894 /* libtest_smplmdl.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libtest_smplmdl.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		E38BCB101FD728FE002D095A /* vlg_model_sample.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_model_sample.cpp; path = ../../test/sample_vlg_model/vlg_model_sample.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,7 +36,6 @@
 		E38BCB0F1FD728DF002D095A /* src */ = {
 			isa = PBXGroup;
 			children = (
-				E38BCB101FD728FE002D095A /* vlg_model_sample.cpp */,
 			);
 			name = src;
 			sourceTree = "<group>";
@@ -88,7 +82,7 @@
 		E3AA74DF1EB91A9C004C4423 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0900;
+				LastUpgradeCheck = 0940;
 				ORGANIZATIONNAME = blaze;
 				TargetAttributes = {
 					E357C6EE1FD5E962009CD894 = {
@@ -120,7 +114,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E38BCB111FD728FE002D095A /* vlg_model_sample.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -175,6 +168,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -182,6 +176,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -230,6 +225,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -237,6 +233,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;

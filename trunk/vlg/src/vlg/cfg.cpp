@@ -153,7 +153,7 @@ void cfg_ldr::dump_config()
 
 void cfg_ldr::dump_config(FILE *fd)
 {
-    std::for_each(lpap_.begin(), lpap_.end(), [&](auto &pap) {
+    std::for_each(lpap_.begin(), lpap_.end(), [&](param_arg_pair &pap) {
         fprintf(fd, "-%-20s %s\n", pap.param, pap.arg ? pap.arg : "");
     });
     fprintf(fd, "----------------------------------------------------\n\n");
@@ -162,7 +162,7 @@ void cfg_ldr::dump_config(FILE *fd)
 void cfg_ldr::enum_params(param_callback usr_clbk)
 {
     int i = 1;
-    std::for_each(lpap_.begin(), lpap_.end(), [&](auto &pap) {
+    std::for_each(lpap_.begin(), lpap_.end(), [&](param_arg_pair &pap) {
         usr_clbk(i++, pap.param, pap.arg);
     });
 }
@@ -170,7 +170,7 @@ void cfg_ldr::enum_params(param_callback usr_clbk)
 void cfg_ldr::enum_params(param_callback_ud usr_clbk_ud, void *usr_data)
 {
     int i = 1;
-    std::for_each(lpap_.begin(), lpap_.end(), [&](auto &pap) {
+    std::for_each(lpap_.begin(), lpap_.end(), [&](param_arg_pair &pap) {
         usr_clbk_ud(i++, pap.param, pap.arg, usr_data);
     });
 }

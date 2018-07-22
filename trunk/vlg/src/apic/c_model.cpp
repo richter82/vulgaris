@@ -180,7 +180,7 @@ extern "C" {
 
     own_nclass *nclass_clone(nclass *obj)
     {
-        return (own_nclass *) new std::unique_ptr<nclass>(std::move(obj->clone()));
+        return (own_nclass *) new std::unique_ptr<nclass>(obj->clone());
     }
 
     int nclass_is_zero(nclass *obj)

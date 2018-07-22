@@ -17,9 +17,6 @@
       location = "group:apic/apic.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:cr/cr.xcodeproj">
-   </FileRef>
-   <FileRef
       location = "group:vlg/vlg.xcodeproj">
    </FileRef>
 </Workspace>

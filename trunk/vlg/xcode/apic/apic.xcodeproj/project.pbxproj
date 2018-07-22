@@ -6,6 +6,15 @@
 	objectVersion = 46;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		E3EDF5C721051E8400B455CC /* c_persistence.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5C121051E8400B455CC /* c_persistence.cpp */; };
+		E3EDF5C821051E8400B455CC /* c_model.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5C221051E8400B455CC /* c_model.cpp */; };
+		E3EDF5C921051E8400B455CC /* c_subscription.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5C321051E8400B455CC /* c_subscription.cpp */; };
+		E3EDF5CA21051E8400B455CC /* c_transaction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5C421051E8400B455CC /* c_transaction.cpp */; };
+		E3EDF5CB21051E8400B455CC /* c_connection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5C521051E8400B455CC /* c_connection.cpp */; };
+		E3EDF5CC21051E8400B455CC /* c_peer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5C621051E8400B455CC /* c_peer.cpp */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXCopyFilesBuildPhase section */
 		E357C6E01FD5E6FC009CD894 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -19,14 +28,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		E357C6C21FD5E6C3009CD894 /* vlg_c_model.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_c_model.cpp; path = ../../src/apic/vlg_c_model.cpp; sourceTree = "<group>"; };
-		E357C6C31FD5E6C3009CD894 /* vlg_c_connection.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_c_connection.cpp; path = ../../src/apic/vlg_c_connection.cpp; sourceTree = "<group>"; };
-		E357C6C41FD5E6C3009CD894 /* vlg_c_subscription.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_c_subscription.cpp; path = ../../src/apic/vlg_c_subscription.cpp; sourceTree = "<group>"; };
-		E357C6C51FD5E6C3009CD894 /* vlg_c_peer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_c_peer.cpp; path = ../../src/apic/vlg_c_peer.cpp; sourceTree = "<group>"; };
-		E357C6C61FD5E6C3009CD894 /* vlg_c_transaction.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_c_transaction.cpp; path = ../../src/apic/vlg_c_transaction.cpp; sourceTree = "<group>"; };
-		E357C6C71FD5E6C3009CD894 /* vlg_c_persistence.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_c_persistence.cpp; path = ../../src/apic/vlg_c_persistence.cpp; sourceTree = "<group>"; };
-		E357C6C81FD5E6C3009CD894 /* vlg_c_drv_sqlite.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_c_drv_sqlite.cpp; path = ../../src/apic/vlg_c_drv_sqlite.cpp; sourceTree = "<group>"; };
 		E357C6E21FD5E6FC009CD894 /* libapic.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libapic.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		E3EDF5C121051E8400B455CC /* c_persistence.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = c_persistence.cpp; path = ../../src/apic/c_persistence.cpp; sourceTree = "<group>"; };
+		E3EDF5C221051E8400B455CC /* c_model.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = c_model.cpp; path = ../../src/apic/c_model.cpp; sourceTree = "<group>"; };
+		E3EDF5C321051E8400B455CC /* c_subscription.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = c_subscription.cpp; path = ../../src/apic/c_subscription.cpp; sourceTree = "<group>"; };
+		E3EDF5C421051E8400B455CC /* c_transaction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = c_transaction.cpp; path = ../../src/apic/c_transaction.cpp; sourceTree = "<group>"; };
+		E3EDF5C521051E8400B455CC /* c_connection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = c_connection.cpp; path = ../../src/apic/c_connection.cpp; sourceTree = "<group>"; };
+		E3EDF5C621051E8400B455CC /* c_peer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = c_peer.cpp; path = ../../src/apic/c_peer.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,13 +67,12 @@
 		E3136AA11AE6361200CCA990 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				E357C6C31FD5E6C3009CD894 /* vlg_c_connection.cpp */,
-				E357C6C81FD5E6C3009CD894 /* vlg_c_drv_sqlite.cpp */,
-				E357C6C21FD5E6C3009CD894 /* vlg_c_model.cpp */,
-				E357C6C51FD5E6C3009CD894 /* vlg_c_peer.cpp */,
-				E357C6C71FD5E6C3009CD894 /* vlg_c_persistence.cpp */,
-				E357C6C41FD5E6C3009CD894 /* vlg_c_subscription.cpp */,
-				E357C6C61FD5E6C3009CD894 /* vlg_c_transaction.cpp */,
+				E3EDF5C521051E8400B455CC /* c_connection.cpp */,
+				E3EDF5C221051E8400B455CC /* c_model.cpp */,
+				E3EDF5C621051E8400B455CC /* c_peer.cpp */,
+				E3EDF5C121051E8400B455CC /* c_persistence.cpp */,
+				E3EDF5C321051E8400B455CC /* c_subscription.cpp */,
+				E3EDF5C421051E8400B455CC /* c_transaction.cpp */,
 			);
 			name = src;
 			sourceTree = "<group>";
@@ -96,7 +103,7 @@
 		E3136A8B1AE635EA00CCA990 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0900;
+				LastUpgradeCheck = 0940;
 				ORGANIZATIONNAME = blaze;
 				TargetAttributes = {
 					E357C6E11FD5E6FC009CD894 = {
@@ -128,6 +135,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E3EDF5C721051E8400B455CC /* c_persistence.cpp in Sources */,
+				E3EDF5C921051E8400B455CC /* c_subscription.cpp in Sources */,
+				E3EDF5CA21051E8400B455CC /* c_transaction.cpp in Sources */,
+				E3EDF5CC21051E8400B455CC /* c_peer.cpp in Sources */,
+				E3EDF5C821051E8400B455CC /* c_model.cpp in Sources */,
+				E3EDF5CB21051E8400B455CC /* c_connection.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -146,12 +159,14 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -198,12 +213,14 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;

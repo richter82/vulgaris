@@ -23,7 +23,18 @@
 
 #if defined(__cplusplus)
 #include <string>
+#ifdef __clang__
 #include <memory>
+using std::shared_ptr;
+using std::unique_ptr;
+//#include <tr1/memory>
+//using std::tr1::shared_ptr;
+//using std::tr1::unique_ptr;
+#else
+#include <memory>
+using std::shared_ptr;
+using std::unique_ptr;
+#endif
 
 extern "C" {
 namespace vlg {
