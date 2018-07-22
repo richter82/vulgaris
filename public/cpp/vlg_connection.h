@@ -30,7 +30,6 @@ struct incoming_connection_listener {
                                ConnectivityEventType c_evt_type) = 0;
 
     /**
-    @param incoming_transaction the brand new incoming transaction.
     @return default implementation always returns RetCode_OK,
             so all incoming transactions will be accepted.
     */
@@ -38,7 +37,6 @@ struct incoming_connection_listener {
                                             std::shared_ptr<incoming_transaction> &) = 0;
 
     /**
-    @param incoming_subscription the brand new incoming subscription.
     @return default implementation always returns RetCode_OK,
             so all incoming subscriptions will be accepted.
     */

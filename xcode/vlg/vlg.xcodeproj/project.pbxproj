@@ -7,20 +7,27 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E357C6921FCDB3C2009CD894 /* vlg_selector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C6841FCDB3C1009CD894 /* vlg_selector.cpp */; };
-		E357C6931FCDB3C2009CD894 /* vlg_acceptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C6851FCDB3C1009CD894 /* vlg_acceptor.cpp */; };
-		E357C6941FCDB3C2009CD894 /* vlg_connection_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C6861FCDB3C1009CD894 /* vlg_connection_impl.cpp */; };
-		E357C6951FCDB3C2009CD894 /* vlg_pers_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C6871FCDB3C1009CD894 /* vlg_pers_impl.cpp */; };
-		E357C6961FCDB3C2009CD894 /* vlg_connection_proto.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C6881FCDB3C1009CD894 /* vlg_connection_proto.cpp */; };
-		E357C6971FCDB3C2009CD894 /* vlg_peer_automa.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C6891FCDB3C1009CD894 /* vlg_peer_automa.cpp */; };
-		E357C6981FCDB3C2009CD894 /* vlg_transaction_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C68A1FCDB3C1009CD894 /* vlg_transaction_impl.cpp */; };
-		E357C6991FCDB3C2009CD894 /* vlg_model_utl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C68B1FCDB3C1009CD894 /* vlg_model_utl.cpp */; };
-		E357C69A1FCDB3C2009CD894 /* vlg_model.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C68C1FCDB3C1009CD894 /* vlg_model.cpp */; };
-		E357C69B1FCDB3C2009CD894 /* vlg_peer_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C68D1FCDB3C1009CD894 /* vlg_peer_impl.cpp */; };
-		E357C69C1FCDB3C2009CD894 /* vlg_subscription_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C68E1FCDB3C1009CD894 /* vlg_subscription_impl.cpp */; };
-		E357C69D1FCDB3C2009CD894 /* vlg_pers_mng.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C68F1FCDB3C1009CD894 /* vlg_pers_mng.cpp */; };
-		E357C69E1FCDB3C2009CD894 /* vlg_restore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C6901FCDB3C1009CD894 /* vlg_restore.cpp */; };
-		E357C69F1FCDB3C2009CD894 /* vlg_peer_pers_sbs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E357C6911FCDB3C2009CD894 /* vlg_peer_pers_sbs.cpp */; };
+		E3EDF5AC21051E5300B455CC /* sbs_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF59721051E5200B455CC /* sbs_impl.cpp */; };
+		E3EDF5AD21051E5300B455CC /* structs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF59821051E5200B455CC /* structs.cpp */; };
+		E3EDF5AE21051E5300B455CC /* conn_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF59921051E5200B455CC /* conn_impl.cpp */; };
+		E3EDF5AF21051E5300B455CC /* dl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF59A21051E5200B455CC /* dl.cpp */; };
+		E3EDF5B021051E5300B455CC /* logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF59B21051E5200B455CC /* logger.cpp */; };
+		E3EDF5B121051E5300B455CC /* acceptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF59C21051E5200B455CC /* acceptor.cpp */; };
+		E3EDF5B221051E5300B455CC /* model.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF59D21051E5200B455CC /* model.cpp */; };
+		E3EDF5B321051E5300B455CC /* tx_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF59E21051E5200B455CC /* tx_impl.cpp */; };
+		E3EDF5B421051E5300B455CC /* pr_aut.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF59F21051E5200B455CC /* pr_aut.cpp */; };
+		E3EDF5B521051E5300B455CC /* timing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5A021051E5200B455CC /* timing.cpp */; };
+		E3EDF5B621051E5300B455CC /* bbuf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5A121051E5200B455CC /* bbuf.cpp */; };
+		E3EDF5B721051E5300B455CC /* restore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5A221051E5200B455CC /* restore.cpp */; };
+		E3EDF5B821051E5300B455CC /* prs_mng.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5A321051E5200B455CC /* prs_mng.cpp */; };
+		E3EDF5B921051E5300B455CC /* pr_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5A421051E5200B455CC /* pr_impl.cpp */; };
+		E3EDF5BA21051E5300B455CC /* parse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5A521051E5200B455CC /* parse.cpp */; };
+		E3EDF5BB21051E5300B455CC /* selector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5A621051E5200B455CC /* selector.cpp */; };
+		E3EDF5BC21051E5300B455CC /* concurr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5A721051E5200B455CC /* concurr.cpp */; };
+		E3EDF5BD21051E5300B455CC /* prs_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5A821051E5200B455CC /* prs_impl.cpp */; };
+		E3EDF5BE21051E5300B455CC /* prs_sbs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5A921051E5200B455CC /* prs_sbs.cpp */; };
+		E3EDF5BF21051E5300B455CC /* cfg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5AA21051E5200B455CC /* cfg.cpp */; };
+		E3EDF5C021051E5300B455CC /* proto.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5AB21051E5200B455CC /* proto.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -37,20 +44,27 @@
 
 /* Begin PBXFileReference section */
 		E357C6491FC819A6009CD894 /* libvlg.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libvlg.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		E357C6841FCDB3C1009CD894 /* vlg_selector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_selector.cpp; path = ../../src/vlg/vlg_selector.cpp; sourceTree = "<group>"; };
-		E357C6851FCDB3C1009CD894 /* vlg_acceptor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_acceptor.cpp; path = ../../src/vlg/vlg_acceptor.cpp; sourceTree = "<group>"; };
-		E357C6861FCDB3C1009CD894 /* vlg_connection_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_connection_impl.cpp; path = ../../src/vlg/vlg_connection_impl.cpp; sourceTree = "<group>"; };
-		E357C6871FCDB3C1009CD894 /* vlg_pers_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_pers_impl.cpp; path = ../../src/vlg/vlg_pers_impl.cpp; sourceTree = "<group>"; };
-		E357C6881FCDB3C1009CD894 /* vlg_connection_proto.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_connection_proto.cpp; path = ../../src/vlg/vlg_connection_proto.cpp; sourceTree = "<group>"; };
-		E357C6891FCDB3C1009CD894 /* vlg_peer_automa.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_peer_automa.cpp; path = ../../src/vlg/vlg_peer_automa.cpp; sourceTree = "<group>"; };
-		E357C68A1FCDB3C1009CD894 /* vlg_transaction_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_transaction_impl.cpp; path = ../../src/vlg/vlg_transaction_impl.cpp; sourceTree = "<group>"; };
-		E357C68B1FCDB3C1009CD894 /* vlg_model_utl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_model_utl.cpp; path = ../../src/vlg/vlg_model_utl.cpp; sourceTree = "<group>"; };
-		E357C68C1FCDB3C1009CD894 /* vlg_model.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_model.cpp; path = ../../src/vlg/vlg_model.cpp; sourceTree = "<group>"; };
-		E357C68D1FCDB3C1009CD894 /* vlg_peer_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_peer_impl.cpp; path = ../../src/vlg/vlg_peer_impl.cpp; sourceTree = "<group>"; };
-		E357C68E1FCDB3C1009CD894 /* vlg_subscription_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_subscription_impl.cpp; path = ../../src/vlg/vlg_subscription_impl.cpp; sourceTree = "<group>"; };
-		E357C68F1FCDB3C1009CD894 /* vlg_pers_mng.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_pers_mng.cpp; path = ../../src/vlg/vlg_pers_mng.cpp; sourceTree = "<group>"; };
-		E357C6901FCDB3C1009CD894 /* vlg_restore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_restore.cpp; path = ../../src/vlg/vlg_restore.cpp; sourceTree = "<group>"; };
-		E357C6911FCDB3C2009CD894 /* vlg_peer_pers_sbs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_peer_pers_sbs.cpp; path = ../../src/vlg/vlg_peer_pers_sbs.cpp; sourceTree = "<group>"; };
+		E3EDF59721051E5200B455CC /* sbs_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sbs_impl.cpp; path = ../../src/vlg/sbs_impl.cpp; sourceTree = "<group>"; };
+		E3EDF59821051E5200B455CC /* structs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = structs.cpp; path = ../../src/vlg/structs.cpp; sourceTree = "<group>"; };
+		E3EDF59921051E5200B455CC /* conn_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = conn_impl.cpp; path = ../../src/vlg/conn_impl.cpp; sourceTree = "<group>"; };
+		E3EDF59A21051E5200B455CC /* dl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dl.cpp; path = ../../src/vlg/dl.cpp; sourceTree = "<group>"; };
+		E3EDF59B21051E5200B455CC /* logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = logger.cpp; path = ../../src/vlg/logger.cpp; sourceTree = "<group>"; };
+		E3EDF59C21051E5200B455CC /* acceptor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = acceptor.cpp; path = ../../src/vlg/acceptor.cpp; sourceTree = "<group>"; };
+		E3EDF59D21051E5200B455CC /* model.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = model.cpp; path = ../../src/vlg/model.cpp; sourceTree = "<group>"; };
+		E3EDF59E21051E5200B455CC /* tx_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tx_impl.cpp; path = ../../src/vlg/tx_impl.cpp; sourceTree = "<group>"; };
+		E3EDF59F21051E5200B455CC /* pr_aut.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pr_aut.cpp; path = ../../src/vlg/pr_aut.cpp; sourceTree = "<group>"; };
+		E3EDF5A021051E5200B455CC /* timing.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = timing.cpp; path = ../../src/vlg/timing.cpp; sourceTree = "<group>"; };
+		E3EDF5A121051E5200B455CC /* bbuf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = bbuf.cpp; path = ../../src/vlg/bbuf.cpp; sourceTree = "<group>"; };
+		E3EDF5A221051E5200B455CC /* restore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = restore.cpp; path = ../../src/vlg/restore.cpp; sourceTree = "<group>"; };
+		E3EDF5A321051E5200B455CC /* prs_mng.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = prs_mng.cpp; path = ../../src/vlg/prs_mng.cpp; sourceTree = "<group>"; };
+		E3EDF5A421051E5200B455CC /* pr_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pr_impl.cpp; path = ../../src/vlg/pr_impl.cpp; sourceTree = "<group>"; };
+		E3EDF5A521051E5200B455CC /* parse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = parse.cpp; path = ../../src/vlg/parse.cpp; sourceTree = "<group>"; };
+		E3EDF5A621051E5200B455CC /* selector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = selector.cpp; path = ../../src/vlg/selector.cpp; sourceTree = "<group>"; };
+		E3EDF5A721051E5200B455CC /* concurr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = concurr.cpp; path = ../../src/vlg/concurr.cpp; sourceTree = "<group>"; };
+		E3EDF5A821051E5200B455CC /* prs_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = prs_impl.cpp; path = ../../src/vlg/prs_impl.cpp; sourceTree = "<group>"; };
+		E3EDF5A921051E5200B455CC /* prs_sbs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = prs_sbs.cpp; path = ../../src/vlg/prs_sbs.cpp; sourceTree = "<group>"; };
+		E3EDF5AA21051E5200B455CC /* cfg.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cfg.cpp; path = ../../src/vlg/cfg.cpp; sourceTree = "<group>"; };
+		E3EDF5AB21051E5200B455CC /* proto.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = proto.cpp; path = ../../src/vlg/proto.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,20 +97,27 @@
 		E38785781A8523D3005A753E /* src */ = {
 			isa = PBXGroup;
 			children = (
-				E357C6851FCDB3C1009CD894 /* vlg_acceptor.cpp */,
-				E357C6861FCDB3C1009CD894 /* vlg_connection_impl.cpp */,
-				E357C6881FCDB3C1009CD894 /* vlg_connection_proto.cpp */,
-				E357C68B1FCDB3C1009CD894 /* vlg_model_utl.cpp */,
-				E357C68C1FCDB3C1009CD894 /* vlg_model.cpp */,
-				E357C6891FCDB3C1009CD894 /* vlg_peer_automa.cpp */,
-				E357C68D1FCDB3C1009CD894 /* vlg_peer_impl.cpp */,
-				E357C6911FCDB3C2009CD894 /* vlg_peer_pers_sbs.cpp */,
-				E357C6871FCDB3C1009CD894 /* vlg_pers_impl.cpp */,
-				E357C68F1FCDB3C1009CD894 /* vlg_pers_mng.cpp */,
-				E357C6901FCDB3C1009CD894 /* vlg_restore.cpp */,
-				E357C6841FCDB3C1009CD894 /* vlg_selector.cpp */,
-				E357C68E1FCDB3C1009CD894 /* vlg_subscription_impl.cpp */,
-				E357C68A1FCDB3C1009CD894 /* vlg_transaction_impl.cpp */,
+				E3EDF59C21051E5200B455CC /* acceptor.cpp */,
+				E3EDF5A121051E5200B455CC /* bbuf.cpp */,
+				E3EDF5AA21051E5200B455CC /* cfg.cpp */,
+				E3EDF5A721051E5200B455CC /* concurr.cpp */,
+				E3EDF59921051E5200B455CC /* conn_impl.cpp */,
+				E3EDF59A21051E5200B455CC /* dl.cpp */,
+				E3EDF59B21051E5200B455CC /* logger.cpp */,
+				E3EDF59D21051E5200B455CC /* model.cpp */,
+				E3EDF5A521051E5200B455CC /* parse.cpp */,
+				E3EDF59F21051E5200B455CC /* pr_aut.cpp */,
+				E3EDF5A421051E5200B455CC /* pr_impl.cpp */,
+				E3EDF5AB21051E5200B455CC /* proto.cpp */,
+				E3EDF5A821051E5200B455CC /* prs_impl.cpp */,
+				E3EDF5A321051E5200B455CC /* prs_mng.cpp */,
+				E3EDF5A921051E5200B455CC /* prs_sbs.cpp */,
+				E3EDF5A221051E5200B455CC /* restore.cpp */,
+				E3EDF59721051E5200B455CC /* sbs_impl.cpp */,
+				E3EDF5A621051E5200B455CC /* selector.cpp */,
+				E3EDF59821051E5200B455CC /* structs.cpp */,
+				E3EDF5A021051E5200B455CC /* timing.cpp */,
+				E3EDF59E21051E5200B455CC /* tx_impl.cpp */,
 			);
 			name = src;
 			sourceTree = "<group>";
@@ -127,7 +148,7 @@
 		E38785611A852398005A753E /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0900;
+				LastUpgradeCheck = 0940;
 				ORGANIZATIONNAME = "";
 				TargetAttributes = {
 					E357C6481FC819A6009CD894 = {
@@ -159,20 +180,27 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E357C6941FCDB3C2009CD894 /* vlg_connection_impl.cpp in Sources */,
-				E357C6951FCDB3C2009CD894 /* vlg_pers_impl.cpp in Sources */,
-				E357C6931FCDB3C2009CD894 /* vlg_acceptor.cpp in Sources */,
-				E357C69B1FCDB3C2009CD894 /* vlg_peer_impl.cpp in Sources */,
-				E357C6921FCDB3C2009CD894 /* vlg_selector.cpp in Sources */,
-				E357C69C1FCDB3C2009CD894 /* vlg_subscription_impl.cpp in Sources */,
-				E357C6971FCDB3C2009CD894 /* vlg_peer_automa.cpp in Sources */,
-				E357C6961FCDB3C2009CD894 /* vlg_connection_proto.cpp in Sources */,
-				E357C69D1FCDB3C2009CD894 /* vlg_pers_mng.cpp in Sources */,
-				E357C69E1FCDB3C2009CD894 /* vlg_restore.cpp in Sources */,
-				E357C6981FCDB3C2009CD894 /* vlg_transaction_impl.cpp in Sources */,
-				E357C6991FCDB3C2009CD894 /* vlg_model_utl.cpp in Sources */,
-				E357C69F1FCDB3C2009CD894 /* vlg_peer_pers_sbs.cpp in Sources */,
-				E357C69A1FCDB3C2009CD894 /* vlg_model.cpp in Sources */,
+				E3EDF5B621051E5300B455CC /* bbuf.cpp in Sources */,
+				E3EDF5BE21051E5300B455CC /* prs_sbs.cpp in Sources */,
+				E3EDF5C021051E5300B455CC /* proto.cpp in Sources */,
+				E3EDF5BD21051E5300B455CC /* prs_impl.cpp in Sources */,
+				E3EDF5B921051E5300B455CC /* pr_impl.cpp in Sources */,
+				E3EDF5B121051E5300B455CC /* acceptor.cpp in Sources */,
+				E3EDF5B321051E5300B455CC /* tx_impl.cpp in Sources */,
+				E3EDF5B221051E5300B455CC /* model.cpp in Sources */,
+				E3EDF5BA21051E5300B455CC /* parse.cpp in Sources */,
+				E3EDF5B721051E5300B455CC /* restore.cpp in Sources */,
+				E3EDF5BC21051E5300B455CC /* concurr.cpp in Sources */,
+				E3EDF5B521051E5300B455CC /* timing.cpp in Sources */,
+				E3EDF5AD21051E5300B455CC /* structs.cpp in Sources */,
+				E3EDF5BF21051E5300B455CC /* cfg.cpp in Sources */,
+				E3EDF5AC21051E5300B455CC /* sbs_impl.cpp in Sources */,
+				E3EDF5B421051E5300B455CC /* pr_aut.cpp in Sources */,
+				E3EDF5B021051E5300B455CC /* logger.cpp in Sources */,
+				E3EDF5B821051E5300B455CC /* prs_mng.cpp in Sources */,
+				E3EDF5AE21051E5300B455CC /* conn_impl.cpp in Sources */,
+				E3EDF5BB21051E5300B455CC /* selector.cpp in Sources */,
+				E3EDF5AF21051E5300B455CC /* dl.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -228,7 +256,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -236,12 +264,14 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -267,11 +297,11 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
-				USER_HEADER_SEARCH_PATHS = "../../src ../../src/cr ../../public/cpp ../../public";
+				USER_HEADER_SEARCH_PATHS = "../../src ../../public/cpp ../../public ../../src/vlg";
 			};
 			name = Debug;
 		};
@@ -279,7 +309,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -287,12 +317,14 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -312,10 +344,10 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
-				USER_HEADER_SEARCH_PATHS = "../../src ../../src/cr ../../public/cpp ../../public";
+				USER_HEADER_SEARCH_PATHS = "../../src ../../public/cpp ../../public ../../src/vlg";
 			};
 			name = Release;
 		};

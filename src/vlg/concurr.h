@@ -158,10 +158,6 @@ struct p_tsk {
         if this instance reaches a state > to the one passed, this method
         is guaranteed to return.
 
-        @param target_status
-        @param sec
-        @param nsec
-
         @return RetCode_OK when target_status has been reached.
                 RetCode_BDSTTS if this task has not been submitted.
                 RetCode_TMOUT if sec/nsec have been elapsed after invocation.
@@ -255,17 +251,14 @@ struct p_exec_srv {
         RetCode set_status(PExecSrvStatus status);
 
         /**
-        res will be set to true if this executor has been shut down, false otherwise.
-        @param res
-        @return RetCode_OK when this method successfully complete.
+        @return true if this executor has been shut down, false otherwise.
         */
         bool is_shutdown() {
             return (status_ == PExecSrvStatus_STOPPING);
         }
 
         /**
-        @param res
-        @return RetCode_OK if all tasks have completed following shut down.
+        @return true if all tasks have completed following shut down.
         */
         bool is_terminated() {
             return (status_ == PExecSrvStatus_STOPPED);
@@ -273,20 +266,17 @@ struct p_exec_srv {
 
         /**
         initiates an orderly shutdown in which previously submitted tasks
-        are executed, but no new tasks will be accepted
-        @return
+        are executed, but no new tasks will be accepted.
         */
         RetCode shutdown();
 
         /**
         set this executor service as terminated.
-        @return
         */
         RetCode terminated();
 
         /**
-        starts this Executor service
-        @return
+        starts this Executor service.
         */
         RetCode start();
 
@@ -296,35 +286,23 @@ struct p_exec_srv {
         capacity.
         This executor service must be in PEXEC_SERVICE_STATUS_STARTED state,
         otherwise this method will return RetCode_BDSTTS.
-
-        @param task
-        @return
         */
         RetCode submit(std::shared_ptr<p_tsk> &task);
 
         /**
-        blocks until all tasks have completed execution after a shutdown
-        @return
+        blocks until all tasks have completed execution after a shutdown.
         */
         RetCode await_termination();
 
         /**
         same as above, except that this method waits at most for sec/nsec seconds
-        before return with RetCode_TMOUT code
-        @param sec
-        @param nsec
-        @return
+        before return with RetCode_TMOUT code.
         */
         RetCode await_termination(time_t sec,
                                   long nsec);
 
         /**
-        await indefinitely until this service reaches or outdoes status provided
-        @param test
-        @param current
-        @param sec
-        @param nsec
-        @return
+        await indefinitely until this service reaches or reaches status provided.
         */
         RetCode await_for_status_reached(PExecSrvStatus test,
                                          PExecSrvStatus &current,

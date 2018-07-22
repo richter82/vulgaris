@@ -25,7 +25,6 @@ struct peer_listener {
     virtual void on_status_change(peer &, PeerStatus) = 0;
 
     /**
-    @param incoming_connection the brand new incoming connection.
     @return default implementation always returns RetCode_OK,
     so all incoming will be accepted.
     */

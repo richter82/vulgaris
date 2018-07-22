@@ -1125,7 +1125,7 @@ bool enum_prim_key_str_value(const key_desc &kdsc,
 {
     prim_key_str_value_rec_ud *rud = static_cast<prim_key_str_value_rec_ud *>(usr_data);
     if(kdsc.is_primary()) {
-        std::for_each(kdsc.impl_->fieldset_.begin(), kdsc.impl_->fieldset_.end(), [&](auto mdsc) {
+        std::for_each(kdsc.impl_->fieldset_.begin(), kdsc.impl_->fieldset_.end(), [&](const member_desc *mdsc) {
             const char *obj_f_ptr = nullptr;
             obj_f_ptr = rud->obj_ptr_ + mdsc->get_field_offset();
             FillStr_FldValue(obj_f_ptr, mdsc->get_field_vlg_type(), mdsc->get_field_nmemb(), rud->out_);

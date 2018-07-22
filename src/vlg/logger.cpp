@@ -106,24 +106,21 @@ static std::unordered_map<std::string, std::unique_ptr<logger>> &get_logger_map(
 
 RetCode logger::add_appender_to_all_loggers(appender *apnd)
 {
-    std::for_each(get_logger_map().begin(), get_logger_map().end(), [&](auto &it) {
-        it.second->add_appender(apnd);
-    });
+    for (auto it = get_logger_map().begin(); it != get_logger_map().end(); ++it )
+        it->second->add_appender(apnd);
     return RetCode_OK;
 }
 
 void logger::set_level_for_all_loggers(TraceLVL lvl)
 {
-    std::for_each(get_logger_map().begin(), get_logger_map().end(), [&](auto &it) {
-        it.second->set_level(lvl);
-    });
+    for (auto it = get_logger_map().begin(); it != get_logger_map().end(); ++it )
+        it->second->set_level(lvl);
 }
 
 RetCode logger::remove_last_appender_from_all_loggers()
 {
-    std::for_each(get_logger_map().begin(), get_logger_map().end(), [&](auto &it) {
-        it.second->remove_last_appender();
-    });
+    for (auto it = get_logger_map().begin(); it != get_logger_map().end(); ++it )
+        it->second->remove_last_appender();
     return RetCode_OK;
 }
 
@@ -717,7 +714,7 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
             LPrsERR_UNEXP(TKAPND, tkn.c_str());
             return RetCode_BADCFG;
         }
-        get_appender_map()[apname] = std::move(std::unique_ptr<appender>(apnd));
+        get_appender_map()[apname] = std::unique_ptr<appender>(apnd);
         return RetCode_OK;
     }
 
@@ -780,7 +777,7 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
                 return RetCode_BADCFG;
             }
         }
-        get_logger_map()[lggrname] = std::move(std::unique_ptr<logger>(lggr));
+        get_logger_map()[lggrname] = std::unique_ptr<logger>(lggr);
         return RetCode_OK;
     }
 

@@ -706,28 +706,25 @@ RetCode selector::server_socket_shutdown()
 RetCode selector::stop_and_clean()
 {
     if(peer_.personality_ == PeerPersonality_PURE_SERVER || peer_.personality_ == PeerPersonality_BOTH) {
-        std::for_each(inco_conn_map_.begin(), inco_conn_map_.end(), [](auto &it) {
-            if(it.second->get_status() != ConnectionStatus_DISCONNECTED) {
-                it.second->impl_->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
+        for ( auto it = inco_conn_map_.begin(); it != inco_conn_map_.end(); ++it )
+            if(it->second->get_status() != ConnectionStatus_DISCONNECTED) {
+                it->second->impl_->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
             }
-        });
         inco_conn_map_.clear();
         server_socket_shutdown();
         inco_exec_srv_.shutdown();
         inco_exec_srv_.await_termination();
     }
     if(peer_.personality_ == PeerPersonality_PURE_CLIENT || peer_.personality_ == PeerPersonality_BOTH) {
-        std::for_each(outg_conn_map_.begin(), outg_conn_map_.end(), [](auto &it) {
-            if(it.second->status_ != ConnectionStatus_DISCONNECTED) {
-                it.second->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
+        for ( auto it = outg_conn_map_.begin(); it != outg_conn_map_.end(); ++it )
+            if(it->second->status_ != ConnectionStatus_DISCONNECTED) {
+                it->second->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
             }
-        });
         outg_conn_map_.clear();
-        std::for_each(outg_early_conn_map_.begin(), outg_early_conn_map_.end(), [](auto &it) {
-            if(it.second->status_ != ConnectionStatus_DISCONNECTED) {
-                it.second->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
+        for ( auto it = outg_early_conn_map_.begin(); it != outg_early_conn_map_.end(); ++it )
+            if(it->second->status_ != ConnectionStatus_DISCONNECTED) {
+                it->second->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
             }
-        });
         outg_early_conn_map_.clear();
         outg_exec_srv_.shutdown();
         outg_exec_srv_.await_termination();

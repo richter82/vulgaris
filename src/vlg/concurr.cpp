@@ -161,7 +161,7 @@ RetCode p_exec_srv::init(unsigned int executor_num)
     } else {
         exec_pool_.resize(executor_num);
         for(unsigned int i = 0; i<executor_num; i++) {
-            exec_pool_[i] = std::move(std::unique_ptr<p_exectr>(new p_exectr(*this)));
+            exec_pool_[i] = std::unique_ptr<p_exectr>(new p_exectr(*this));
         }
         set_status(PExecSrvStatus_INIT);
     }

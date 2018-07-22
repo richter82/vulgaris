@@ -6,6 +6,14 @@
 	objectVersion = 46;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		E3EDF5D221051EA000B455CC /* peer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5CD21051EA000B455CC /* peer.cpp */; };
+		E3EDF5D321051EA000B455CC /* subscription.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5CE21051EA000B455CC /* subscription.cpp */; };
+		E3EDF5D421051EA000B455CC /* transaction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5CF21051EA000B455CC /* transaction.cpp */; };
+		E3EDF5D521051EA000B455CC /* connection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5D021051EA000B455CC /* connection.cpp */; };
+		E3EDF5D621051EA000B455CC /* persistence.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5D121051EA000B455CC /* persistence.cpp */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXCopyFilesBuildPhase section */
 		E357C6D31FD5E6EC009CD894 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -19,12 +27,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		E357C6BD1FD5E69E009CD894 /* vlg_transaction.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_transaction.cpp; path = ../../src/apicpp/vlg_transaction.cpp; sourceTree = "<group>"; };
-		E357C6BE1FD5E69E009CD894 /* vlg_peer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_peer.cpp; path = ../../src/apicpp/vlg_peer.cpp; sourceTree = "<group>"; };
-		E357C6BF1FD5E69E009CD894 /* vlg_connection.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_connection.cpp; path = ../../src/apicpp/vlg_connection.cpp; sourceTree = "<group>"; };
-		E357C6C01FD5E69E009CD894 /* vlg_persistence.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_persistence.cpp; path = ../../src/apicpp/vlg_persistence.cpp; sourceTree = "<group>"; };
-		E357C6C11FD5E69E009CD894 /* vlg_subscription.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = vlg_subscription.cpp; path = ../../src/apicpp/vlg_subscription.cpp; sourceTree = "<group>"; };
 		E357C6D51FD5E6EC009CD894 /* libapicpp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libapicpp.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		E3EDF5CD21051EA000B455CC /* peer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = peer.cpp; path = ../../src/apicpp/peer.cpp; sourceTree = "<group>"; };
+		E3EDF5CE21051EA000B455CC /* subscription.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = subscription.cpp; path = ../../src/apicpp/subscription.cpp; sourceTree = "<group>"; };
+		E3EDF5CF21051EA000B455CC /* transaction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = transaction.cpp; path = ../../src/apicpp/transaction.cpp; sourceTree = "<group>"; };
+		E3EDF5D021051EA000B455CC /* connection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = connection.cpp; path = ../../src/apicpp/connection.cpp; sourceTree = "<group>"; };
+		E3EDF5D121051EA000B455CC /* persistence.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = persistence.cpp; path = ../../src/apicpp/persistence.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,11 +65,11 @@
 		E3136AC51AE63BFD00CCA990 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				E357C6BF1FD5E69E009CD894 /* vlg_connection.cpp */,
-				E357C6BE1FD5E69E009CD894 /* vlg_peer.cpp */,
-				E357C6C01FD5E69E009CD894 /* vlg_persistence.cpp */,
-				E357C6C11FD5E69E009CD894 /* vlg_subscription.cpp */,
-				E357C6BD1FD5E69E009CD894 /* vlg_transaction.cpp */,
+				E3EDF5D021051EA000B455CC /* connection.cpp */,
+				E3EDF5CD21051EA000B455CC /* peer.cpp */,
+				E3EDF5D121051EA000B455CC /* persistence.cpp */,
+				E3EDF5CE21051EA000B455CC /* subscription.cpp */,
+				E3EDF5CF21051EA000B455CC /* transaction.cpp */,
 			);
 			name = src;
 			sourceTree = "<group>";
@@ -92,7 +100,7 @@
 		E3136AAF1AE63B5300CCA990 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0900;
+				LastUpgradeCheck = 0940;
 				ORGANIZATIONNAME = blaze;
 				TargetAttributes = {
 					E357C6D41FD5E6EC009CD894 = {
@@ -124,6 +132,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E3EDF5D421051EA000B455CC /* transaction.cpp in Sources */,
+				E3EDF5D321051EA000B455CC /* subscription.cpp in Sources */,
+				E3EDF5D621051EA000B455CC /* persistence.cpp in Sources */,
+				E3EDF5D221051EA000B455CC /* peer.cpp in Sources */,
+				E3EDF5D521051EA000B455CC /* connection.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -142,12 +155,14 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -194,12 +209,14 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
