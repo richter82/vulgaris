@@ -456,19 +456,19 @@ struct b_qu_hm : public b_qu {
 template <typename T>
 struct std_shared_ptr_obj_mng : public obj_mng {
     static void *shared_ptr_alloc_func(size_t type_size, const void *copy) {
-        shared_ptr<T> &sh_ptr_cpy = *(shared_ptr<T> *)(copy);
-        shared_ptr<T> *new_sh_ptr = new shared_ptr<T>(sh_ptr_cpy);
+        std::shared_ptr<T> &sh_ptr_cpy = *(std::shared_ptr<T> *)(copy);
+        std::shared_ptr<T> *new_sh_ptr = new std::shared_ptr<T>(sh_ptr_cpy);
         return new_sh_ptr;
     }
 
     static void shared_ptr_dealloc_func(void *ptr) {
-        shared_ptr<T> *sh_ptr = (shared_ptr<T> *)(ptr);
+        std::shared_ptr<T> *sh_ptr = (std::shared_ptr<T> *)(ptr);
         delete sh_ptr;
     }
 
     static void *shared_ptr_cpy_func(void *copy, const void *ptr, size_t type_size) {
-        shared_ptr<T> &sh_ptr_cpy = *(shared_ptr<T> *)(copy);
-        shared_ptr<T> &sh_ptr_ptr = *(shared_ptr<T> *)(ptr);
+        std::shared_ptr<T> &sh_ptr_cpy = *(std::shared_ptr<T> *)(copy);
+        std::shared_ptr<T> &sh_ptr_ptr = *(std::shared_ptr<T> *)(ptr);
         sh_ptr_cpy = sh_ptr_ptr;
         return copy;
     }
@@ -501,19 +501,19 @@ struct std_shared_ptr_obj_mng : public obj_mng {
 template <typename T>
 struct std_unique_ptr_obj_mng : public obj_mng {
     static void *unique_ptr_alloc_func(size_t type_size, const void *copy) {
-        unique_ptr<T> &uq_ptr_cpy = *(unique_ptr<T> *)(copy);
-        unique_ptr<T> *new_uq_ptr = new unique_ptr<T>(std::move(uq_ptr_cpy));
+        std::unique_ptr<T> &uq_ptr_cpy = *(std::unique_ptr<T> *)(copy);
+        std::unique_ptr<T> *new_uq_ptr = new std::unique_ptr<T>(std::move(uq_ptr_cpy));
         return new_uq_ptr;
     }
 
     static void unique_ptr_dealloc_func(void *ptr) {
-        unique_ptr<T> *uq_ptr = (unique_ptr<T> *)(ptr);
+        std::unique_ptr<T> *uq_ptr = (std::unique_ptr<T> *)(ptr);
         delete uq_ptr;
     }
 
     static void *unique_ptr_cpy_func(void *copy, const void *ptr, size_t type_size) {
-        unique_ptr<T> &uq_ptr_cpy = *(unique_ptr<T> *)(copy);
-        unique_ptr<T> &uq_ptr_ptr = *(unique_ptr<T> *)(ptr);
+        std::unique_ptr<T> &uq_ptr_cpy = *(std::unique_ptr<T> *)(copy);
+        std::unique_ptr<T> &uq_ptr_ptr = *(std::unique_ptr<T> *)(ptr);
         uq_ptr_cpy = std::move(uq_ptr_ptr);
         return copy;
     }
