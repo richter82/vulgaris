@@ -706,7 +706,7 @@ RetCode selector::server_socket_shutdown()
 RetCode selector::stop_and_clean()
 {
     if(peer_.personality_ == PeerPersonality_PURE_SERVER || peer_.personality_ == PeerPersonality_BOTH) {
-        for ( auto it = inco_conn_map_.begin(); it != inco_conn_map_.end(); ++it )
+        for(auto it = inco_conn_map_.begin(); it != inco_conn_map_.end(); ++it)
             if(it->second->get_status() != ConnectionStatus_DISCONNECTED) {
                 it->second->impl_->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
             }
@@ -716,12 +716,12 @@ RetCode selector::stop_and_clean()
         inco_exec_srv_.await_termination();
     }
     if(peer_.personality_ == PeerPersonality_PURE_CLIENT || peer_.personality_ == PeerPersonality_BOTH) {
-        for ( auto it = outg_conn_map_.begin(); it != outg_conn_map_.end(); ++it )
+        for(auto it = outg_conn_map_.begin(); it != outg_conn_map_.end(); ++it)
             if(it->second->status_ != ConnectionStatus_DISCONNECTED) {
                 it->second->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
             }
         outg_conn_map_.clear();
-        for ( auto it = outg_early_conn_map_.begin(); it != outg_early_conn_map_.end(); ++it )
+        for(auto it = outg_early_conn_map_.begin(); it != outg_early_conn_map_.end(); ++it)
             if(it->second->status_ != ConnectionStatus_DISCONNECTED) {
                 it->second->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
             }

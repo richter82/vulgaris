@@ -106,21 +106,24 @@ static std::unordered_map<std::string, std::unique_ptr<logger>> &get_logger_map(
 
 RetCode logger::add_appender_to_all_loggers(appender *apnd)
 {
-    for (auto it = get_logger_map().begin(); it != get_logger_map().end(); ++it )
+    for(auto it = get_logger_map().begin(); it != get_logger_map().end(); ++it) {
         it->second->add_appender(apnd);
+    }
     return RetCode_OK;
 }
 
 void logger::set_level_for_all_loggers(TraceLVL lvl)
 {
-    for (auto it = get_logger_map().begin(); it != get_logger_map().end(); ++it )
+    for(auto it = get_logger_map().begin(); it != get_logger_map().end(); ++it) {
         it->second->set_level(lvl);
+    }
 }
 
 RetCode logger::remove_last_appender_from_all_loggers()
 {
-    for (auto it = get_logger_map().begin(); it != get_logger_map().end(); ++it )
+    for(auto it = get_logger_map().begin(); it != get_logger_map().end(); ++it) {
         it->second->remove_last_appender();
+    }
     return RetCode_OK;
 }
 
