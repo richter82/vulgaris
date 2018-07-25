@@ -61,7 +61,7 @@ RetCode inco_subscription_stop(incoming_subscription *sbs);
 RetCode inco_subscription_await_for_stop_result(incoming_subscription *sbs, SubscriptionResponse *stop_result, ProtocolCode *stop_protocode, time_t sec, long nsec);
 
 /************************************************************************
-INCOMING SUBSCRIPTION HANDLERS
+OUTGOING SUBSCRIPTION HANDLERS
 ************************************************************************/
 
 typedef void(*outg_subscription_status_change)(outgoing_subscription *osbs, SubscriptionStatus status, void *usr_data);

@@ -1,80 +1,91 @@
-//
-//  blz_os_support.m
-//
-//  Created by Giuseppe Baccini on 27/04/15.
-//  Copyright (c) 2015 blaze. All rights reserved.
-//
+/*
+ * vulgaris
+ * (C) 2018 - giuseppe.baccini@gmail.com
+ *
+ */
 
-#import "blz_os_support.h"
+#import "vlg_objc.h"
 
-/*******************************************************************************
- peer
- ******************************************************************************/
+/************************************************************************
+ PEER
+ ************************************************************************/
 
-const char *peer_name_handler_wr_native(peer_wr p, void *ud)
+void (peer_status_change_c)(peer *p, PeerStatus status, void *usr_data)
 {
-    peer_name_handler_swift pnhs = (__bridge id)ud;
-    return pnhs(p);
+    peer_status_change_swf pscs = (__bridge id)usr_data;
+    return pscs(p, status, NULL);
 }
 
-const unsigned int *peer_version_handler_wr_native(peer_wr p, void *ud)
+const char *(peer_name_handler_c)(peer *p, void *usr_data)
 {
-    peer_version_handler_swift pvhs = (__bridge id)ud;
-    return pvhs(p);
+    peer_name_handler_swf pnhs = (__bridge id)usr_data;
+    return pnhs(p, NULL);
 }
 
-RetCode peer_load_config_handler_wr_native(peer_wr p, int pnum,
-                                           const char *param, const char *value, void *ud)
+const unsigned int *(peer_version_handler_c)(peer *p, void *usr_data)
 {
-    peer_load_config_handler_swift plchs = (__bridge id)ud;
-    return plchs(p, pnum, param, value);
+    peer_version_handler_swf pvhs = (__bridge id)usr_data;
+    return pvhs(p, NULL);
 }
 
-RetCode peer_init_handler_wr_native(peer_wr p, void *ud)
+RetCode(peer_load_config_handler_c)(peer *p, int pnum, const char *param, const char *value, void *usr_data)
 {
-    peer_init_handler_swift pihs = (__bridge id)ud;
-    return pihs(p);
+    peer_load_config_handler_swf plchs = (__bridge id)usr_data;
+    return plchs(p, pnum, param, value, NULL);
 }
 
-RetCode peer_starting_handler_wr_native(peer_wr p, void *ud)
+RetCode(peer_init_handler_c)(peer *p, void *usr_data)
 {
-    peer_starting_handler_swift pshs = (__bridge id)ud;
-    return pshs(p);
+    peer_init_handler_swf pihs = (__bridge id)usr_data;
+    return pihs(p, NULL);
 }
 
-RetCode peer_stopping_handler_wr_native(peer_wr p, void *ud)
+RetCode(peer_starting_handler_c)(peer *p, void *usr_data)
 {
-    peer_stopping_handler_swift pshs = (__bridge id)ud;
-    return pshs(p);
+    peer_starting_handler_swf pihs = (__bridge id)usr_data;
+    return pihs(p, NULL);
 }
 
-RetCode peer_transit_on_air_handler_wr_native(peer_wr p, void *ud)
+RetCode(peer_stopping_handler_c)(peer *p, void *usr_data)
 {
-    peer_transit_on_air_handler_swift ptoahs = (__bridge id)ud;
-    return ptoahs(p);
+    peer_stopping_handler_swf pihs = (__bridge id)usr_data;
+    return pihs(p, NULL);
 }
 
-void peer_error_handler_wr_native(peer_wr p, void *ud)
+RetCode(peer_on_move_running_handler_c)(peer *p, void *usr_data)
 {
-    peer_error_handler_swift pehs = (__bridge id)ud;
-    return pehs(p);
+    peer_move_running_handler_swf pihs = (__bridge id)usr_data;
+    return pihs(p, NULL);
 }
 
-void peer_dying_breath_handler_wr_native(peer_wr p, void *ud)
+void(peer_dying_breath_handler_c)(peer *p, void *usr_data)
 {
-    peer_dying_breath_handler_swift pdbhs = (__bridge id)ud;
-    return pdbhs(p);
+    peer_dying_breath_handler_swf pihs = (__bridge id)usr_data;
+    return pihs(p, NULL);
 }
 
-void peer_status_change_wr_native(peer_wr p, PeerStatus status, void *ud)
+RetCode(peer_on_incoming_connection_handler_c)(peer *p, shr_incoming_connection *ic, void *usr_data)
 {
-    peer_status_change_swift pscs = (__bridge id)ud;
-    return pscs(p, status);
+    peer_on_incoming_connection_handler_swf poichs = (__bridge id)usr_data;
+    return poichs(p, ic, NULL);
 }
 
-//------------------------------------------------------------------------------
-// LIFECYCLE - User mandatory entrypoints
-//------------------------------------------------------------------------------
+void peer_set_name_handler_swf(peer *p, peer_name_handler_swf hndl, void *usr_data)
+{
+    peer_set_name_handler(p, peer_set_name_handler_c, (__bridge_retained void *)hndl);
+}
+
+void peer_set_version_handler_swf(peer *p, peer_version_handler_swf hndl, void *usr_data);
+void peer_set_load_config_handler_swf(peer *p, peer_load_config_handler_swf hndl, void *usr_data);
+void peer_set_init_handler_swf(peer *p, peer_init_handler_swf hndl, void *usr_data);
+void peer_set_starting_handler_swf(peer *p, peer_starting_handler_swf hndl, void *usr_data);
+void peer_set_stopping_handler_swf(peer *p, peer_stopping_handler_swf hndl, void *usr_data);
+void peer_set_on_move_running_handler_swf(peer *p, peer_on_move_running_handler_swf hndl, void *usr_data);
+void peer_set_dying_breath_handler_swf(peer *p, peer_dying_breath_handler_swf hndl, void *usr_data);
+void peer_set_status_change_handler_swf(peer *p, peer_status_change_swf handler, void *usr_data);
+void peer_set_peer_on_incoming_connection_handler_swf(peer *p, peer_on_incoming_connection_handler_swf handler, void *usr_data);
+
+
 void peer_set_name_handler_swift(peer_wr p, peer_name_handler_swift cllbk)
 {
     peer_set_name_handler(p, peer_name_handler_wr_native,
@@ -87,9 +98,6 @@ void peer_set_version_handler_swift(peer_wr p, peer_version_handler_swift cllbk)
                              (__bridge_retained void *)cllbk);
 }
 
-//------------------------------------------------------------------------------
-// LIFECYCLE - User opt. entrypoints
-//------------------------------------------------------------------------------
 void peer_set_load_config_handler_swift(peer_wr p,
                                         peer_load_config_handler_swift cllbk)
 {
@@ -137,9 +145,6 @@ void peer_set_dying_breath_handler_swift(peer_wr p,
                                   (__bridge_retained void *)cllbk);
 }
 
-//------------------------------------------------------------------------------
-// STATUS
-//------------------------------------------------------------------------------
 void peer_set_status_change_handler_swift(peer_wr p,
                                           peer_status_change_swift cllbk)
 {
