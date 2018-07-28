@@ -44,7 +44,7 @@ void peer_set_peer_on_incoming_connection_handler_swf(peer *p, peer_on_incoming_
 typedef void(ˆinco_connection_status_change_swf)(incoming_connection *conn, ConnectionStatus status, void *usr_data);
 typedef void(ˆinco_connection_on_disconnect_handler_swf)(incoming_connection *conn, ConnectivityEventResult con_evt_res, ConnectivityEventType c_evt_type, void *usr_data);
 typedef RetCode(ˆinco_connection_on_incoming_transaction_handler_swf)(incoming_connection *conn, shr_incoming_transaction *itx, void *usr_data);
-typedef RetCode(inco_connection_on_incoming_subscription_handler_swf)(incoming_connection *conn, shr_incoming_subscription *isbs, void *usr_data);
+typedef RetCode(ˆinco_connection_on_incoming_subscription_handler_swf)(incoming_connection *conn, shr_incoming_subscription *isbs, void *usr_data);
 
 void inco_connection_set_status_change_handler_swf(incoming_connection *ic, inco_connection_status_change_swf handler, void *usr_data);
 void inco_connection_set_on_disconnect_handler_swf(incoming_connection *ic, inco_connection_on_disconnect_handler_swf hndl, void *usr_data);
