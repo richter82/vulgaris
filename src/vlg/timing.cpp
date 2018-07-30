@@ -130,8 +130,7 @@ void rt_mark_time(rt_time_t *T)
 #else
     clock_gettime(CLOCK_MONOTONIC, &tspec);
 #endif
-    *T = (rt_time_t)tspec.tv_sec * RT_ONEBILLION + (rt_time_t)tspec.tv_nsec +
-         rt_global_offset;
+    *T = (rt_time_t)tspec.tv_sec * RT_ONEBILLION + (rt_time_t)tspec.tv_nsec + rt_global_offset;
 #endif
 }
 
@@ -143,7 +142,7 @@ class time_zone_win_ts {
         time_zone_win_ts();
         LARGE_INTEGER start_quad;
         LARGE_INTEGER frequency;
-        int64_t       global_offset;
+        int64_t global_offset;
 };
 
 time_zone_win_ts::time_zone_win_ts()
@@ -215,7 +214,7 @@ int get_timestamp_ts(struct timespec *tv)
 /** get nanosecond timestamp. */
 uint64_t get_timestamp()
 {
-    struct timespec        _ts;
+    struct timespec _ts;
     clock_gettime(CLOCK_REALTIME, &_ts);
     return (uint64_t)((int64_t)_ts.tv_sec * 1000000000LL + (int64_t)_ts.tv_nsec);
 }

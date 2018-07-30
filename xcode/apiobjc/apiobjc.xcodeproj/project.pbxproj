@@ -7,8 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E3EDF5E521066F6700B455CC /* apiobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5E421066F6700B455CC /* apiobjc.m */; };
-		E3EDF5E621066F6700B455CC /* apiobjc.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = E3EDF5E321066F6700B455CC /* apiobjc.h */; };
+		E390538B210E1E9B009B33B9 /* vlg_objc.m in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5DC21066E4E00B455CC /* vlg_objc.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -18,7 +17,6 @@
 			dstPath = "include/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
-				E3EDF5E621066F6700B455CC /* apiobjc.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -27,8 +25,6 @@
 /* Begin PBXFileReference section */
 		E3EDF5DC21066E4E00B455CC /* vlg_objc.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = vlg_objc.m; path = ../../../src/apiobjc/vlg_objc.m; sourceTree = "<group>"; };
 		E3EDF5E121066F6700B455CC /* libapiobjc.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libapiobjc.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		E3EDF5E321066F6700B455CC /* apiobjc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = apiobjc.h; sourceTree = "<group>"; };
-		E3EDF5E421066F6700B455CC /* apiobjc.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = apiobjc.m; sourceTree = "<group>"; };
 		E3EDF5EA21066FE200B455CC /* vlg_objc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = vlg_objc.h; path = ../../../public/objc/vlg_objc.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -47,7 +43,6 @@
 			isa = PBXGroup;
 			children = (
 				E3EDF5DB21066E2100B455CC /* src */,
-				E3EDF5E221066F6700B455CC /* apiobjc */,
 				E3527DD91AF0C44900171956 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -67,15 +62,6 @@
 				E3EDF5DC21066E4E00B455CC /* vlg_objc.m */,
 			);
 			path = src;
-			sourceTree = "<group>";
-		};
-		E3EDF5E221066F6700B455CC /* apiobjc */ = {
-			isa = PBXGroup;
-			children = (
-				E3EDF5E321066F6700B455CC /* apiobjc.h */,
-				E3EDF5E421066F6700B455CC /* apiobjc.m */,
-			);
-			path = apiobjc;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -136,7 +122,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E3EDF5E521066F6700B455CC /* apiobjc.m in Sources */,
+				E390538B210E1E9B009B33B9 /* vlg_objc.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -189,6 +175,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -236,6 +223,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
@@ -255,13 +243,14 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = GN9B6VM38Y;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_C_LANGUAGE_STANDARD = "compiler-default";
 				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
+				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = NO;
 			};
 			name = Debug;
 		};
@@ -277,14 +266,14 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = GN9B6VM38Y;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_C_LANGUAGE_STANDARD = "compiler-default";
 				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
+				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALIDATE_PRODUCT = YES;
+				VALIDATE_PRODUCT = NO;
 			};
 			name = Release;
 		};

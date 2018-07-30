@@ -54,7 +54,7 @@ RetCode peer_stopping_handler_c(peer *p, void *usr_data)
 
 RetCode peer_on_move_running_handler_c(peer *p, void *usr_data)
 {
-    peer_move_running_handler_swf pihs = (__bridge id)usr_data;
+    peer_on_move_running_handler_swf pihs = (__bridge id)usr_data;
     return pihs(p, NULL);
 }
 
@@ -72,7 +72,7 @@ RetCode peer_on_incoming_connection_handler_c(peer *p, shr_incoming_connection *
 
 void peer_set_name_handler_swf(peer *p, peer_name_handler_swf hndl, void *usr_data)
 {
-    peer_set_name_handler(p, peer_set_name_handler_c, (__bridge_retained void *)hndl);
+    peer_set_name_handler(p, peer_name_handler_c, (__bridge_retained void *)hndl);
 }
 
 void peer_set_version_handler_swf(peer *p, peer_version_handler_swf hndl, void *usr_data){
@@ -100,7 +100,7 @@ void peer_set_on_move_running_handler_swf(peer *p, peer_on_move_running_handler_
 }
 
 void peer_set_dying_breath_handler_swf(peer *p, peer_dying_breath_handler_swf hndl, void *usr_data){
-    peer_set_error_handler(p, peer_dying_breath_handler_c, (__bridge_retained void *)hndl);
+    peer_set_dying_breath_handler(p, peer_dying_breath_handler_c, (__bridge_retained void *)hndl);
 }
 
 void peer_set_status_change_handler_swf(peer *p, peer_status_change_swf hndl, void *usr_data){
@@ -127,20 +127,20 @@ void inco_connection_on_disconnect_handler_c(incoming_connection *conn, Connecti
 
 RetCode inco_connection_on_incoming_transaction_handler_c(incoming_connection *conn, shr_incoming_transaction *itx, void *usr_data){
     inco_connection_on_incoming_transaction_handler_swf icoiths = (__bridge id)usr_data;
-    icoiths(conn, itx, NULL);
+    return icoiths(conn, itx, NULL);
 }
 
 RetCode inco_connection_on_incoming_subscription_handler_c(incoming_connection *conn, shr_incoming_subscription *isbs, void *usr_data){
     inco_connection_on_incoming_subscription_handler_swf icoishs = (__bridge id)usr_data;
-    icoishs(conn, isbs, NULL);
+    return icoishs(conn, isbs, NULL);
 }
 
 void inco_connection_set_status_change_handler_swf(incoming_connection *ic, inco_connection_status_change_swf hndl, void *usr_data){
-    inco_connection_set_status_change_handler(ic, inco_connection_set_status_change_handler_c, (__bridge_retained void *)hndl);
+    inco_connection_set_status_change_handler(ic, inco_connection_status_change_c, (__bridge_retained void *)hndl);
 }
 
 void inco_connection_set_on_disconnect_handler_swf(incoming_connection *ic, inco_connection_on_disconnect_handler_swf hndl, void *usr_data){
-    inco_connection_set_on_disconnect_handler(ic, inco_connection_set_on_disconnect_handler_c, (__bridge_retained void *)hndl);
+    inco_connection_set_on_disconnect_handler(ic, inco_connection_on_disconnect_handler_c, (__bridge_retained void *)hndl);
 }
 
 void inco_connection_set_on_incoming_transaction_handler_swf(incoming_connection *ic, inco_connection_on_incoming_transaction_handler_swf hndl, void *usr_data){
@@ -151,21 +151,31 @@ void inco_connection_set_on_incoming_subscription_handler_swf(incoming_connectio
     inco_connection_set_on_incoming_subscription_handler(ic, inco_connection_on_incoming_subscription_handler_c, (__bridge_retained void *)hndl);
 }
 
+/************************************************************************
+ OUTGOING CONNECTION
+ ************************************************************************/
 
+void outg_connection_status_change_c(outgoing_connection *oc, ConnectionStatus status, void *usr_data){
+    outg_connection_status_change_swf ocscs = (__bridge id)usr_data;
+    ocscs(oc, status, NULL);
+}
 
+void outg_connection_on_connect_handler_c(outgoing_connection *oc, ConnectivityEventResult con_evt_res, ConnectivityEventType c_evt_type, void *usr_data){
+    
+}
 
+void outg_connection_on_disconnect_handler_c(outgoing_connection *oc, ConnectivityEventResult con_evt_res, ConnectivityEventType c_evt_type, void *usr_data){
+    
+}
 
+void outg_connection_set_status_change_handler_swf(outgoing_connection *oc, outg_connection_status_change_swf hndl, void *usr_data){
+    
+}
 
+void outg_connection_set_on_connect_handler_swf(outgoing_connection *oc, outg_connection_on_connect_handler_swf hndl, void *usr_data){
+    
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
+void outg_connection_set_on_disconnect_handler_swf(outgoing_connection *oc, outg_connection_on_disconnect_handler_swf hndl, void *usr_data){
+    
+}
