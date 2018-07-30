@@ -9,8 +9,9 @@
 
 #ifdef __GNUG__
 #include <string.h>
-#include <errno.h>
 #include <stdarg.h>
+#endif
+#if defined (__GNUG__) || defined(__MACH__) || defined(__APPLE__)
 #define SOCKET int
 #define INVALID_SOCKET (~0)
 #define SOCKET_ERROR   (-1)
@@ -553,7 +554,7 @@ extern "C" {
 namespace vlg {
 #endif
 
-typedef nclass *(*nclass_alloc)();
+typedef nclass *(*nclass_alloc)(void);
 
 #if defined(__cplusplus)
 }
