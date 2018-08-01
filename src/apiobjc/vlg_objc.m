@@ -273,3 +273,96 @@ void inco_transaction_set_inco_transaction_request_handler_swf(incoming_transact
 {
 	inco_transaction_set_inco_transaction_request_handler(tx, inco_transaction_request_c, (__bridge_retained void *)hndl);		
 }
+
+/************************************************************************
+ OUTGOING TRANSACTION
+ ************************************************************************/
+
+void outg_transaction_status_change_c(outgoing_transaction *tx, TransactionStatus status, void *usr_data){
+    outg_transaction_status_change_swf otscs = (__bridge id)usr_data;
+    otscs(tx, status, NULL);
+}
+
+void outg_transaction_closure_c(outgoing_transaction *tx, void *usr_data){
+    outg_transaction_closure_swf otcs = (__bridge id)usr_data;
+    otcs(tx, NULL);
+}
+
+void outg_transaction_set_transaction_status_change_handler_swf(outgoing_transaction *tx, outg_transaction_status_change_swf hndl, void *usr_data){
+    outg_transaction_set_transaction_status_change_handler(tx, outg_transaction_status_change_c, (__bridge_retained void *)hndl);
+}
+
+void outg_transaction_set_transaction_closure_handler_swf(outgoing_transaction *tx, outg_transaction_closure_swf hndl, void *usr_data){
+    outg_transaction_set_transaction_closure_handler(tx, outg_transaction_closure_c, (__bridge_retained void *)hndl);
+}
+
+/************************************************************************
+ INCOMING SUBSCRIPTION
+ ************************************************************************/
+
+void inco_subscription_status_change_c(incoming_subscription *isbs, SubscriptionStatus status, void *usr_data){
+    inco_subscription_status_change_swf isscs = (__bridge id)usr_data;
+    isscs(isbs, status, NULL);
+}
+
+RetCode inco_subscription_accept_distribution_c(incoming_subscription *isbs, const subscription_event *sbs_evt, void *usr_data){
+    inco_subscription_accept_distribution_swf isadf = (__bridge id)usr_data;
+    return isadf(isbs, sbs_evt, NULL);
+}
+
+void inco_subscription_on_stop_c(incoming_subscription *isbs, void *usr_data){
+    inco_subscription_on_stop_swf isoss = (__bridge id)usr_data;
+    isoss(isbs, NULL);
+}
+
+void inco_subscription_set_status_change_handler_swf(incoming_subscription *sbs, inco_subscription_status_change_swf hndl, void *usr_data){
+    inco_subscription_set_status_change_handler(sbs, inco_subscription_status_change_c, (__bridge_retained void *)hndl);
+}
+
+void inco_subscription_set_accept_distribution_handler_swf(incoming_subscription *sbs, inco_subscription_accept_distribution_swf hndl, void *usr_data){
+    inco_subscription_set_accept_distribution_handler(sbs, inco_subscription_accept_distribution_c, (__bridge_retained void *)hndl);
+}
+
+void inco_subscription_set_on_stop_handler_swf(incoming_subscription *sbs, inco_subscription_on_stop_swf hndl, void *usr_data){
+    inco_subscription_set_on_stop_handler(sbs, inco_subscription_on_stop_c, (__bridge_retained void *)hndl);
+}
+
+/************************************************************************
+ OUTGOING SUBSCRIPTION
+ ************************************************************************/
+
+void outg_subscription_status_change_c(outgoing_subscription *osbs, SubscriptionStatus status, void *usr_data){
+    outg_subscription_status_change_swf osscs = (__bridge id)usr_data;
+    osscs(osbs, status, NULL);
+}
+
+void outg_subscription_notify_event_c(outgoing_subscription *osbs, const subscription_event *sbs_evt, void *usr_data){
+    outg_subscription_notify_event_swf osnes = (__bridge id)usr_data;
+    osnes(osbs, sbs_evt, NULL);
+}
+
+void outg_subscription_on_start_c(outgoing_subscription *osbs, void *usr_data){
+    outg_subscription_on_start_swf ososs = (__bridge id)usr_data;
+    ososs(osbs, NULL);
+}
+
+void outg_subscription_on_stop_c(outgoing_subscription *osbs, void *usr_data){
+    outg_subscription_on_stop_swf ososs = (__bridge id)usr_data;
+    ososs(osbs, NULL);
+}
+
+void outg_subscription_set_status_change_handler_swf(outgoing_subscription *sbs, outg_subscription_status_change_swf hndl, void *usr_data){
+    outg_subscription_set_status_change_handler(sbs, outg_subscription_status_change_c, (__bridge_retained void *)hndl);
+}
+
+void outg_subscription_set_event_notify_handler_swf(outgoing_subscription *sbs, outg_subscription_notify_event_swf hndl, void *usr_data){
+    outg_subscription_set_event_notify_handler(sbs, outg_subscription_notify_event_c, (__bridge_retained void *)hndl);
+}
+
+void outg_subscription_set_on_start_handler_swf(outgoing_subscription *sbs, outg_subscription_on_start_swf hndl, void *usr_data){
+    outg_subscription_set_on_start_handler(sbs, outg_subscription_on_start_c, (__bridge_retained void *)hndl);
+}
+
+void outg_subscription_set_on_stop_handler_swf(outgoing_subscription *sbs, outg_subscription_on_stop_swf hndl, void *usr_data){
+    outg_subscription_set_on_stop_handler(sbs, outg_subscription_on_stop_c, (__bridge_retained void *)hndl);
+}
