@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:template_app/template_app.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:test_smplmdl/test_smplmdl.xcodeproj">
    </FileRef>
    <FileRef
