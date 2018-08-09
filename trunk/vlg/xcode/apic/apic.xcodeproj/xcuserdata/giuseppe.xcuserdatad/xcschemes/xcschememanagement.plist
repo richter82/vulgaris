@@ -4,14 +4,21 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
-		<key>apic.xcscheme</key>
+		<key>apic.xcscheme_^#shared#^_</key>
 		<dict>
+			<key>isShown</key>
+			<true/>
 			<key>orderHint</key>
-			<integer>2</integer>
+			<integer>5</integer>
 		</dict>
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
+		<key>E357C6E11FD5E6FC009CD894</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
 		<key>E3F7CC531AF11FBB0087EBB2</key>
 		<dict>
 			<key>primary</key>
