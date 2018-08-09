@@ -390,6 +390,17 @@ struct c_peer : public peer {
     void *ptoah_wr_ud_;
     void *pdbh_wr_ud_;
     void *sic_wr_ud_;
+    
+    void *psc_ud2_;
+    void *pnh_wr_ud2_;
+    void *pvh_wr_ud2_;
+    void *plch_wr_ud2_;
+    void *pih_wr_ud2_;
+    void *pstarth_wr_ud2_;
+    void *pstoph_wr_ud2_;
+    void *ptoah_wr_ud2_;
+    void *pdbh_wr_ud2_;
+    void *sic_wr_ud2_;
 };
 
 struct c_peer_listener : public peer_listener {
@@ -477,7 +488,17 @@ c_peer::c_peer() :
     pstoph_wr_ud_(nullptr),
     ptoah_wr_ud_(nullptr),
     pdbh_wr_ud_(nullptr),
-    sic_wr_ud_(nullptr)
+    sic_wr_ud_(nullptr),
+    psc_ud2_(nullptr),
+    pnh_wr_ud2_(nullptr),
+    pvh_wr_ud2_(nullptr),
+    plch_wr_ud2_(nullptr),
+    pih_wr_ud2_(nullptr),
+    pstarth_wr_ud2_(nullptr),
+    pstoph_wr_ud2_(nullptr),
+    ptoah_wr_ud2_(nullptr),
+    pdbh_wr_ud2_(nullptr),
+    sic_wr_ud2_(nullptr)
 {
     set_incoming_connection_factory(cicf);
 }
