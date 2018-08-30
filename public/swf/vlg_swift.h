@@ -5,4 +5,4 @@
  */
 
 #import "vlg_objc.h"
-#import "vlg.h"
+#import "vlg_c_persistence.h"

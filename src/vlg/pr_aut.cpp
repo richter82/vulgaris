@@ -406,4 +406,10 @@ void peer_automa::step_dying_breath()
 
 logger *v_log_ = logger::get_logger("vlg");
 
+RetCode load_vlg_logger()
+{
+    v_log_ = logger::get_logger("vlg");
+    return v_log_ ? RetCode_OK : RetCode_KO;
+}
+
 }

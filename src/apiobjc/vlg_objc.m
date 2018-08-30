@@ -10,115 +10,105 @@
  PEER
  ************************************************************************/
 
-void peer_status_change_c(peer *p, PeerStatus status, void *usr_data)
+void peer_status_change_c(peer *p, PeerStatus status, void *usr_data, void *usr_data2)
 {
-    peer_status_change_swf pscs = (__bridge id)usr_data;
-    return pscs(p, status, NULL);
+    return ((__bridge peer_status_change_swf)usr_data)(p, status, usr_data2);
 }
 
-const char *peer_name_handler_c(peer *p, void *usr_data)
+const char *peer_name_handler_c(peer *p, void *usr_data, void *usr_data2)
 {
-    peer_name_handler_swf pnhs = (__bridge id)usr_data;
-    return pnhs(p, NULL);
+    return ((__bridge peer_name_handler_swf)usr_data)(p, usr_data2);
 }
 
-const unsigned int *peer_version_handler_c(peer *p, void *usr_data)
+const unsigned int *peer_version_handler_c(peer *p, void *usr_data, void *usr_data2)
 {
-    peer_version_handler_swf pvhs = (__bridge id)usr_data;
-    return pvhs(p, NULL);
+    return ((__bridge peer_version_handler_swf)usr_data)(p, usr_data2);
 }
 
-RetCode peer_load_config_handler_c(peer *p, int pnum, const char *param, const char *value, void *usr_data)
+RetCode peer_load_config_handler_c(peer *p, int pnum, const char *param, const char *value, void *usr_data, void *usr_data2)
 {
-    peer_load_config_handler_swf plchs = (__bridge id)usr_data;
-    return plchs(p, pnum, param, value, NULL);
+    return ((__bridge peer_load_config_handler_swf)usr_data)(p, pnum, param, value, usr_data2);
 }
 
-RetCode peer_init_handler_c(peer *p, void *usr_data)
+RetCode peer_init_handler_c(peer *p, void *usr_data, void *usr_data2)
 {
-    peer_init_handler_swf pihs = (__bridge id)usr_data;
-    return pihs(p, NULL);
+    return ((__bridge peer_init_handler_swf)usr_data)(p, usr_data2);
 }
 
-RetCode peer_starting_handler_c(peer *p, void *usr_data)
+RetCode peer_starting_handler_c(peer *p, void *usr_data, void *usr_data2)
 {
-    peer_starting_handler_swf pihs = (__bridge id)usr_data;
-    return pihs(p, NULL);
+    return ((__bridge peer_starting_handler_swf)usr_data)(p, usr_data2);
 }
 
-RetCode peer_stopping_handler_c(peer *p, void *usr_data)
+RetCode peer_stopping_handler_c(peer *p, void *usr_data, void *usr_data2)
 {
-    peer_stopping_handler_swf pihs = (__bridge id)usr_data;
-    return pihs(p, NULL);
+    return ((__bridge peer_stopping_handler_swf)usr_data)(p, usr_data2);
 }
 
-RetCode peer_on_move_running_handler_c(peer *p, void *usr_data)
+RetCode peer_on_move_running_handler_c(peer *p, void *usr_data, void *usr_data2)
 {
-    peer_on_move_running_handler_swf pihs = (__bridge id)usr_data;
-    return pihs(p, NULL);
+    return ((__bridge peer_on_move_running_handler_swf)usr_data)(p, usr_data2);
 }
 
-void peer_dying_breath_handler_c(peer *p, void *usr_data)
+void peer_dying_breath_handler_c(peer *p, void *usr_data, void *usr_data2)
 {
-    peer_dying_breath_handler_swf pihs = (__bridge id)usr_data;
-    return pihs(p, NULL);
+    return ((__bridge peer_dying_breath_handler_swf)usr_data)(p, usr_data2);
 }
 
-RetCode peer_on_incoming_connection_handler_c(peer *p, shr_incoming_connection *ic, void *usr_data)
+RetCode peer_on_incoming_connection_handler_c(peer *p, shr_incoming_connection *ic, void *usr_data, void *usr_data2)
 {
-    peer_on_incoming_connection_handler_swf poichs = (__bridge id)usr_data;
-    return poichs(p, ic, NULL);
+    return ((__bridge peer_on_incoming_connection_handler_swf)usr_data)(p, ic, usr_data2);
 }
 
 void peer_set_name_handler_swf(peer *p, peer_name_handler_swf hndl, void *usr_data)
 {
-    peer_set_name_handler(p, peer_name_handler_c, (__bridge_retained void *)hndl);
+    peer_set_name_handler(p, peer_name_handler_c, (__bridge_retained void *)hndl, usr_data);
 }
 
 void peer_set_version_handler_swf(peer *p, peer_version_handler_swf hndl, void *usr_data)
 {
-    peer_set_version_handler(p, peer_version_handler_c, (__bridge_retained void *)hndl);
+    peer_set_version_handler(p, peer_version_handler_c, (__bridge_retained void *)hndl, usr_data);
 }
 
 void peer_set_load_config_handler_swf(peer *p, peer_load_config_handler_swf hndl, void *usr_data)
 {
-    peer_set_load_config_handler(p, peer_load_config_handler_c, (__bridge_retained void *)hndl);
+    peer_set_load_config_handler(p, peer_load_config_handler_c, (__bridge_retained void *)hndl, usr_data);
 }
 
 void peer_set_init_handler_swf(peer *p, peer_init_handler_swf hndl, void *usr_data)
 {
-    peer_set_init_handler(p, peer_init_handler_c, (__bridge_retained void *)hndl);
+    peer_set_init_handler(p, peer_init_handler_c, (__bridge_retained void *)hndl, usr_data);
 }
 
 void peer_set_starting_handler_swf(peer *p, peer_starting_handler_swf hndl, void *usr_data)
 {
-    peer_set_starting_handler(p, peer_starting_handler_c, (__bridge_retained void *)hndl);
+    peer_set_starting_handler(p, peer_starting_handler_c, (__bridge_retained void *)hndl, usr_data);
 }
 
 void peer_set_stopping_handler_swf(peer *p, peer_stopping_handler_swf hndl, void *usr_data)
 {
-    peer_set_stopping_handler(p, peer_stopping_handler_c, (__bridge_retained void *)hndl);
+    peer_set_stopping_handler(p, peer_stopping_handler_c, (__bridge_retained void *)hndl, usr_data);
 }
 
 void peer_set_on_move_running_handler_swf(peer *p, peer_on_move_running_handler_swf hndl, void *usr_data)
 {
-    peer_set_on_move_running_handler(p, peer_on_move_running_handler_c, (__bridge_retained void *)hndl);
+    peer_set_on_move_running_handler(p, peer_on_move_running_handler_c, (__bridge_retained void *)hndl, usr_data);
 }
 
 void peer_set_dying_breath_handler_swf(peer *p, peer_dying_breath_handler_swf hndl, void *usr_data)
 {
-    peer_set_dying_breath_handler(p, peer_dying_breath_handler_c, (__bridge_retained void *)hndl);
+    peer_set_dying_breath_handler(p, peer_dying_breath_handler_c, (__bridge_retained void *)hndl, usr_data);
 }
 
 void peer_set_status_change_handler_swf(peer *p, peer_status_change_swf hndl, void *usr_data)
 {
-    peer_set_status_change_handler(p, peer_status_change_c, (__bridge_retained void *)hndl);
+    peer_set_status_change_handler(p, peer_status_change_c, (__bridge_retained void *)hndl, usr_data);
 }
 
 void peer_set_peer_on_incoming_connection_handler_swf(peer *p, peer_on_incoming_connection_handler_swf hndl,
                                                       void *usr_data)
 {
-    peer_set_peer_on_incoming_connection_handler(p, peer_on_incoming_connection_handler_c, (__bridge_retained void *)hndl);
+    peer_set_peer_on_incoming_connection_handler(p, peer_on_incoming_connection_handler_c, (__bridge_retained void *)hndl, usr_data);
 }
 
 /************************************************************************
