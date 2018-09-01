@@ -278,6 +278,7 @@ struct persistence_manager_impl {
         static persistence_manager_impl &get_instance();
         static RetCode set_cfg_file_dir(const char *dir);
         static RetCode set_cfg_file_path_name(const char *file_path);
+        static RetCode set_db_data_dir(const char *dir);
 
         /*dyna*/
         static RetCode load_pers_driver_dyna(const char *drivers[],

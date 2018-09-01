@@ -8,6 +8,15 @@
 #include "vlg/prs_impl.h"
 #include "sqlite3.h"
 
+#define SQLITE_DB_DATA_DIR_LEN 1024
+static char sqlite_db_data_dir[SQLITE_DB_DATA_DIR_LEN] = {0};
+
+extern "C" vlg::RetCode set_db_data_dir_sqlite(const char *dir)
+{
+    strncpy(sqlite_db_data_dir, dir, SQLITE_DB_DATA_DIR_LEN);
+    return vlg::RetCode_OK;
+}
+
 namespace vlg {
 
 enum VLG_SQLITE_DATATYPE {
@@ -27,7 +36,7 @@ enum VLG_SQLITE_DATATYPE {
 
 #define SQLITE_VAL_BUFF 256
 #define SQLITE_FIDX_BUFF 16
-
+    
 //utils
 
 const char *SQLITE_TypeStr_From_VLGType(Type type)
@@ -597,10 +606,16 @@ inline RetCode pers_conn_sqlite::sqlite_connect(const char *filename, int flags)
 {
     IFLOG(trc(TH_ID, LS_OPN "[filename:%s, flags:%d]", __func__, filename, flags))
     RetCode rcode = RetCode_OK;
-    int last_rc = sqlite3_open_v2(filename, &db_, flags, 0);
+    std::string db_path;
+    if(sqlite_db_data_dir[0]){
+        db_path = sqlite_db_data_dir;
+        db_path.append(CR_FS_SEP);
+    }
+    db_path.append(filename);
+    int last_rc = sqlite3_open_v2(db_path.c_str(), &db_, flags, 0);
     if(last_rc) {
         IFLOG(err(TH_ID, LS_TRL"[filename:%s][sqlite3_open_v2 - rc:%d - errdesc:%s]",
-                  __func__, filename, last_rc, sqlite3_errstr(last_rc)))
+                  __func__, db_path.c_str(), last_rc, sqlite3_errstr(last_rc)))
         status_ = PersistenceConnectionStatus_DISCONNECTED;
         rcode = RetCode_DBERR;
     } else {

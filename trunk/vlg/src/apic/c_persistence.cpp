@@ -15,12 +15,17 @@ extern "C" {
         return persistence_manager::load_driver_dynamic(drivers, drivers_num);
     }
 
-    RetCode persistence_manager_load_persistence_driver(persistence_driver *drivers[],
+    RetCode persistence_manager_load_persistence_drivers(persistence_driver *drivers[],
                                                         int drivers_num)
     {
         return persistence_manager::load_driver(drivers, drivers_num);
     }
 
+    RetCode persistence_manager_load_persistence_driver(persistence_driver *driver)
+    {
+        return persistence_manager::load_driver(&driver, 1);
+    }
+    
     RetCode persistence_manager_set_cfg_file_dir(const char *dir)
     {
         return persistence_manager::set_config_file_dir(dir);

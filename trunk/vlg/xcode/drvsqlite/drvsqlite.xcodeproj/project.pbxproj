@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E36D64152139CB4500B430A4 /* sqlite3.c in Sources */ = {isa = PBXBuildFile; fileRef = E3AA74CB1EB79236004C4423 /* sqlite3.c */; };
 		E3EDF5D821051EDF00B455CC /* drv_sqlite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EDF5D721051EDF00B455CC /* drv_sqlite.cpp */; };
 /* End PBXBuildFile section */
 
@@ -24,6 +25,7 @@
 
 /* Begin PBXFileReference section */
 		E357C6A51FD5E559009CD894 /* libdrvsqlite.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libdrvsqlite.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		E36D64162139DF7800B430A4 /* vlg_drv_sqlite.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = vlg_drv_sqlite.h; path = ../../public/vlg_drv_sqlite.h; sourceTree = "<group>"; };
 		E3AA74CB1EB79236004C4423 /* sqlite3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sqlite3.c; path = ../../contrib/sqlite/sqlite3.c; sourceTree = "<group>"; };
 		E3EDF5D721051EDF00B455CC /* drv_sqlite.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = drv_sqlite.cpp; path = ../../src/drisqlite/drv_sqlite.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -59,6 +61,7 @@
 		E38789A51A8A71B0005A753E /* src */ = {
 			isa = PBXGroup;
 			children = (
+				E36D64162139DF7800B430A4 /* vlg_drv_sqlite.h */,
 				E3EDF5D721051EDF00B455CC /* drv_sqlite.cpp */,
 			);
 			name = src;
@@ -131,6 +134,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E3EDF5D821051EDF00B455CC /* drv_sqlite.cpp in Sources */,
+				E36D64152139CB4500B430A4 /* sqlite3.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -44,6 +44,23 @@
 
 /* Begin PBXFileReference section */
 		E357C6491FC819A6009CD894 /* libvlg.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libvlg.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		E36D63FB2139C8FE00B430A4 /* pr_aut.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pr_aut.h; path = ../../../src/vlg/pr_aut.h; sourceTree = "<group>"; };
+		E36D63FC2139C8FE00B430A4 /* cfg.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = cfg.h; path = ../../../src/vlg/cfg.h; sourceTree = "<group>"; };
+		E36D63FD2139C8FE00B430A4 /* timing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = timing.h; path = ../../../src/vlg/timing.h; sourceTree = "<group>"; };
+		E36D63FE2139C8FE00B430A4 /* tx_impl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = tx_impl.h; path = ../../../src/vlg/tx_impl.h; sourceTree = "<group>"; };
+		E36D63FF2139C8FE00B430A4 /* bbuf.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = bbuf.h; path = ../../../src/vlg/bbuf.h; sourceTree = "<group>"; };
+		E36D64002139C8FE00B430A4 /* selector.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = selector.h; path = ../../../src/vlg/selector.h; sourceTree = "<group>"; };
+		E36D64012139C8FE00B430A4 /* conn_impl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = conn_impl.h; path = ../../../src/vlg/conn_impl.h; sourceTree = "<group>"; };
+		E36D64022139C8FE00B430A4 /* parse.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = parse.h; path = ../../../src/vlg/parse.h; sourceTree = "<group>"; };
+		E36D64032139C8FE00B430A4 /* pr_impl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pr_impl.h; path = ../../../src/vlg/pr_impl.h; sourceTree = "<group>"; };
+		E36D64042139C8FF00B430A4 /* prs_impl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = prs_impl.h; path = ../../../src/vlg/prs_impl.h; sourceTree = "<group>"; };
+		E36D64052139C8FF00B430A4 /* concurr.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = concurr.h; path = ../../../src/vlg/concurr.h; sourceTree = "<group>"; };
+		E36D64062139C8FF00B430A4 /* sbs_impl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = sbs_impl.h; path = ../../../src/vlg/sbs_impl.h; sourceTree = "<group>"; };
+		E36D64072139C8FF00B430A4 /* proto.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = proto.h; path = ../../../src/vlg/proto.h; sourceTree = "<group>"; };
+		E36D64082139C8FF00B430A4 /* structs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = structs.h; path = ../../../src/vlg/structs.h; sourceTree = "<group>"; };
+		E36D64092139C8FF00B430A4 /* acceptor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = acceptor.h; path = ../../../src/vlg/acceptor.h; sourceTree = "<group>"; };
+		E36D640A2139C8FF00B430A4 /* dl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = dl.h; path = ../../../src/vlg/dl.h; sourceTree = "<group>"; };
+		E36D64172139E2C200B430A4 /* glob.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = glob.h; path = ../../../src/glob.h; sourceTree = "<group>"; };
 		E3EDF59721051E5200B455CC /* sbs_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sbs_impl.cpp; path = ../../src/vlg/sbs_impl.cpp; sourceTree = "<group>"; };
 		E3EDF59821051E5200B455CC /* structs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = structs.cpp; path = ../../src/vlg/structs.cpp; sourceTree = "<group>"; };
 		E3EDF59921051E5200B455CC /* conn_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = conn_impl.cpp; path = ../../src/vlg/conn_impl.cpp; sourceTree = "<group>"; };
@@ -78,9 +95,34 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E36D63FA2139C8C700B430A4 /* hdr */ = {
+			isa = PBXGroup;
+			children = (
+				E36D64172139E2C200B430A4 /* glob.h */,
+				E36D64092139C8FF00B430A4 /* acceptor.h */,
+				E36D63FF2139C8FE00B430A4 /* bbuf.h */,
+				E36D63FC2139C8FE00B430A4 /* cfg.h */,
+				E36D64052139C8FF00B430A4 /* concurr.h */,
+				E36D64012139C8FE00B430A4 /* conn_impl.h */,
+				E36D640A2139C8FF00B430A4 /* dl.h */,
+				E36D64022139C8FE00B430A4 /* parse.h */,
+				E36D63FB2139C8FE00B430A4 /* pr_aut.h */,
+				E36D64032139C8FE00B430A4 /* pr_impl.h */,
+				E36D64072139C8FF00B430A4 /* proto.h */,
+				E36D64042139C8FF00B430A4 /* prs_impl.h */,
+				E36D64062139C8FF00B430A4 /* sbs_impl.h */,
+				E36D64002139C8FE00B430A4 /* selector.h */,
+				E36D64082139C8FF00B430A4 /* structs.h */,
+				E36D63FD2139C8FE00B430A4 /* timing.h */,
+				E36D63FE2139C8FE00B430A4 /* tx_impl.h */,
+			);
+			path = hdr;
+			sourceTree = "<group>";
+		};
 		E38785601A852398005A753E = {
 			isa = PBXGroup;
 			children = (
+				E36D63FA2139C8C700B430A4 /* hdr */,
 				E38785781A8523D3005A753E /* src */,
 				E387856A1A852398005A753E /* Products */,
 			);
