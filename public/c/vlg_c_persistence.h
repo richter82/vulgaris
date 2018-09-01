@@ -12,7 +12,8 @@
 RetCode persistence_manager_load_persistence_driver_dynamic(const char *drivers[], int drivers_num);
 
 //static
-RetCode persistence_manager_load_persistence_driver(persistence_driver *drivers[], int drivers_num);
+RetCode persistence_manager_load_persistence_drivers(persistence_driver *drivers[], int drivers_num);
+RetCode persistence_manager_load_persistence_driver(persistence_driver *driver);
 
 persistence_driver *persistence_manager_available_driver(unsigned int nclass_id);
 RetCode persistence_manager_set_cfg_file_dir(const char *dir);

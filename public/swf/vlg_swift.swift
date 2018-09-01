@@ -7,6 +7,10 @@
 import Foundation
 import UIKit
 
+/**
+ * low level c-ptr bridging utils
+ */
+
 func bridge<T : AnyObject>(obj : T) -> UnsafeMutableRawPointer {
     return UnsafeMutableRawPointer(Unmanaged.passUnretained(obj).toOpaque())
 }
@@ -22,6 +26,10 @@ func bridgeRetained<T : AnyObject>(obj : T) -> UnsafeMutableRawPointer {
 func bridgeTransfer<T : AnyObject>(ptr : UnsafeRawPointer) -> T {
     return Unmanaged<T>.fromOpaque(ptr).takeRetainedValue()
 }
+
+/**
+ * CString
+ */
 
 class CString {
     fileprivate let _len: Int
@@ -40,6 +48,10 @@ class CString {
     }
 }
 
+/**
+ * Peer
+ */
+
 class Peer
 {
     init(peer_name: CString, peer_ver: [CUnsignedInt]) {
@@ -52,19 +64,19 @@ class Peer
         if let filePath = Bundle.main.path(forResource: "logger", ofType:"cfg") {
             set_logger_cfg_file_path_name(filePath)
         } else {
-            print("logger.cfg not found")
+            fatalError("logger.cfg not found")
         }
         
         if let filePath = Bundle.main.path(forResource: "perscfg", ofType:"") {
             persistence_manager_set_cfg_file_path_name(filePath)
         } else {
-            print("perscfg not found")
+            fatalError("perscfg not found")
         }
         
         if let filePath = Bundle.main.path(forResource: "params", ofType:"") {
             peer_set_params_file_path_name(peer_, filePath)
         } else {
-            print("params not found")
+            fatalError("params not found")
         }
         
         load_logger_config()
@@ -85,6 +97,15 @@ class Peer
         let arg1 = CString("-file");
         argv[0] = arg0.buffer;
         argv[1] = arg1.buffer;
+        do {
+            let documentDirectory = try fileManager_.url(for: .documentDirectory, in: .userDomainMask, appropriateFor:nil, create:false)
+            let dd_fpath = CString(documentDirectory.path)
+            set_db_data_dir_sqlite(dd_fpath.buffer)
+        }catch{
+            fatalError("failed get documentDirectory")
+        }
+        persistence_manager_load_persistence_driver(get_pers_driv_sqlite())
+        peer_extend_model_with_nem(peer_, get_c_nem_smplmdl())
         peer_start(peer_, 2, argv, 1);
         argv.deallocate()
     }
@@ -189,6 +210,7 @@ class Peer
         }
     }
     
+    let fileManager_ = FileManager.default
     var peer_own_: OpaquePointer
     var peer_: OpaquePointer
     let peer_name_: CString
@@ -203,4 +225,52 @@ class Peer
             vc_ = newValue
         }
     }
+}
+
+/**
+ * OutgoingConnection
+ */
+
+class OutgoingConnection
+{
+}
+
+/**
+ * IngoingConnection
+ */
+
+class IngoingConnection
+{
+}
+
+/**
+ * OutgoingTransaction
+ */
+
+class OutgoingTransaction
+{
+}
+
+/**
+ * IngoingTransaction
+ */
+
+class IngoingTransaction
+{
+}
+
+/**
+ * OutgoingSubscription
+ */
+
+class OutgoingSubscription
+{
+}
+
+/**
+ * IngoingSubscription
+ */
+
+class IngoingSubscription
+{
 }

@@ -19,6 +19,10 @@
  *
  */
 
+#ifndef VLG_DRV_SQLITE_H_
+#define VLG_DRV_SQLITE_H_
+#include "vlg.h"
+
 #if defined WIN32 && defined _MSC_VER
 #ifdef VLG_PERS_DRIV_EXPORTS
 #define EXP_SYM __declspec(dllexport)
@@ -59,6 +63,14 @@ EXP_SYM const char *get_pers_driv_ver_sqlite();
 }
 #endif
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+EXP_SYM RetCode set_db_data_dir_sqlite(const char *dir);
+#if defined(__cplusplus)
+}
+#endif
+    
 /*******************************
 VLG_PERS_DRIV_SQLITE ENTRY POINT
 *******************************/
@@ -72,5 +84,6 @@ EXP_SYM persistence_driver *get_pers_driv_sqlite();
 
 #if defined(__cplusplus)
 }
+#endif
 #endif
 

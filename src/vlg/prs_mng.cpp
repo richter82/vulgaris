@@ -134,10 +134,10 @@ RetCode VLG_PERS_MNG_ReadRBR(unsigned long &lnum,
 
 // VLG_PERS_MANAGER
 
-#define PERS_CFG_FILE_DIR_LEN 512
+#define PERS_CFG_FILE_DIR_LEN 1024
 static char pers_cfg_file_dir[PERS_CFG_FILE_DIR_LEN] = {0};
 
-#define PERS_CFG_FILE_PATH_NAME_LEN 512
+#define PERS_CFG_FILE_PATH_NAME_LEN 1024
 static char pers_cfg_file_path_name[PERS_CFG_FILE_PATH_NAME_LEN] = {0};
 
 persistence_manager_impl *p_mng_snglt = nullptr;
@@ -152,14 +152,13 @@ persistence_manager_impl &persistence_manager_impl::get_instance()
 
 RetCode persistence_manager_impl::set_cfg_file_dir(const char *dir)
 {
-    strncpy(pers_cfg_file_dir,dir, PERS_CFG_FILE_DIR_LEN);
+    strncpy(pers_cfg_file_dir, dir, PERS_CFG_FILE_DIR_LEN);
     return RetCode_OK;
 }
 
-RetCode persistence_manager_impl::set_cfg_file_path_name(
-    const char *file_path)
+RetCode persistence_manager_impl::set_cfg_file_path_name(const char *file_path)
 {
-    strncpy(pers_cfg_file_path_name,file_path, PERS_CFG_FILE_PATH_NAME_LEN);
+    strncpy(pers_cfg_file_path_name, file_path, PERS_CFG_FILE_PATH_NAME_LEN);
     return RetCode_OK;
 }
 

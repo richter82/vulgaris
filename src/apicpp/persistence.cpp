@@ -39,7 +39,7 @@ RetCode persistence_manager::load_config(const char *file_name)
 {
     return persistence_manager_impl::get_instance().load_cfg(file_name);
 }
-
+    
 RetCode persistence_manager::start_all_drivers()
 {
     return persistence_manager_impl::get_instance().start_all_drivers();

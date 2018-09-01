@@ -29,6 +29,12 @@
 
 /* Begin PBXFileReference section */
 		E357C6E21FD5E6FC009CD894 /* libapic.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libapic.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		E36D63F42139C8BC00B430A4 /* vlg_c_transaction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = vlg_c_transaction.h; path = ../../../public/c/vlg_c_transaction.h; sourceTree = "<group>"; };
+		E36D63F52139C8BD00B430A4 /* vlg_c_connection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = vlg_c_connection.h; path = ../../../public/c/vlg_c_connection.h; sourceTree = "<group>"; };
+		E36D63F62139C8BD00B430A4 /* vlg_c_subscription.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = vlg_c_subscription.h; path = ../../../public/c/vlg_c_subscription.h; sourceTree = "<group>"; };
+		E36D63F72139C8BD00B430A4 /* vlg_c_peer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = vlg_c_peer.h; path = ../../../public/c/vlg_c_peer.h; sourceTree = "<group>"; };
+		E36D63F82139C8BD00B430A4 /* vlg_c_model.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = vlg_c_model.h; path = ../../../public/c/vlg_c_model.h; sourceTree = "<group>"; };
+		E36D63F92139C8BD00B430A4 /* vlg_c_persistence.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = vlg_c_persistence.h; path = ../../../public/c/vlg_c_persistence.h; sourceTree = "<group>"; };
 		E3EDF5C121051E8400B455CC /* c_persistence.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = c_persistence.cpp; path = ../../src/apic/c_persistence.cpp; sourceTree = "<group>"; };
 		E3EDF5C221051E8400B455CC /* c_model.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = c_model.cpp; path = ../../src/apic/c_model.cpp; sourceTree = "<group>"; };
 		E3EDF5C321051E8400B455CC /* c_subscription.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = c_subscription.cpp; path = ../../src/apic/c_subscription.cpp; sourceTree = "<group>"; };
@@ -51,6 +57,7 @@
 		E3136A8A1AE635EA00CCA990 = {
 			isa = PBXGroup;
 			children = (
+				E36D63F32139C8A100B430A4 /* hdr */,
 				E3136AA11AE6361200CCA990 /* src */,
 				E3136A941AE635EA00CCA990 /* Products */,
 			);
@@ -75,6 +82,19 @@
 				E3EDF5C421051E8400B455CC /* c_transaction.cpp */,
 			);
 			name = src;
+			sourceTree = "<group>";
+		};
+		E36D63F32139C8A100B430A4 /* hdr */ = {
+			isa = PBXGroup;
+			children = (
+				E36D63F52139C8BD00B430A4 /* vlg_c_connection.h */,
+				E36D63F82139C8BD00B430A4 /* vlg_c_model.h */,
+				E36D63F72139C8BD00B430A4 /* vlg_c_peer.h */,
+				E36D63F92139C8BD00B430A4 /* vlg_c_persistence.h */,
+				E36D63F62139C8BD00B430A4 /* vlg_c_subscription.h */,
+				E36D63F42139C8BC00B430A4 /* vlg_c_transaction.h */,
+			);
+			path = hdr;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

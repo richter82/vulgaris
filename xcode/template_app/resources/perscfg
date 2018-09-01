@@ -21,6 +21,5 @@ map_config_begin
 
 700		anag
 800		anag
-#900		msgs
 
 map_config_end

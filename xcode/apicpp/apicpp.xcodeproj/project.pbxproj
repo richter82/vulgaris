@@ -28,6 +28,14 @@
 
 /* Begin PBXFileReference section */
 		E357C6D51FD5E6EC009CD894 /* libapicpp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libapicpp.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		E36D640C2139C92E00B430A4 /* vlg_model.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = vlg_model.h; path = ../../../public/cpp/vlg_model.h; sourceTree = "<group>"; };
+		E36D640D2139C92E00B430A4 /* vlg_connection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = vlg_connection.h; path = ../../../public/cpp/vlg_connection.h; sourceTree = "<group>"; };
+		E36D640E2139C92F00B430A4 /* vlg_transaction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = vlg_transaction.h; path = ../../../public/cpp/vlg_transaction.h; sourceTree = "<group>"; };
+		E36D640F2139C92F00B430A4 /* vlg_persistence.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = vlg_persistence.h; path = ../../../public/cpp/vlg_persistence.h; sourceTree = "<group>"; };
+		E36D64102139C92F00B430A4 /* vlg_subscription.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = vlg_subscription.h; path = ../../../public/cpp/vlg_subscription.h; sourceTree = "<group>"; };
+		E36D64112139C92F00B430A4 /* vlg_logger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = vlg_logger.h; path = ../../../public/cpp/vlg_logger.h; sourceTree = "<group>"; };
+		E36D64122139C92F00B430A4 /* vlg_peer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = vlg_peer.h; path = ../../../public/cpp/vlg_peer.h; sourceTree = "<group>"; };
+		E36D64142139C93D00B430A4 /* vlg.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = vlg.h; path = ../../../public/vlg.h; sourceTree = "<group>"; };
 		E3EDF5CD21051EA000B455CC /* peer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = peer.cpp; path = ../../src/apicpp/peer.cpp; sourceTree = "<group>"; };
 		E3EDF5CE21051EA000B455CC /* subscription.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = subscription.cpp; path = ../../src/apicpp/subscription.cpp; sourceTree = "<group>"; };
 		E3EDF5CF21051EA000B455CC /* transaction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = transaction.cpp; path = ../../src/apicpp/transaction.cpp; sourceTree = "<group>"; };
@@ -49,6 +57,7 @@
 		E3136AAE1AE63B5300CCA990 = {
 			isa = PBXGroup;
 			children = (
+				E36D640B2139C91100B430A4 /* hdr */,
 				E3136AC51AE63BFD00CCA990 /* src */,
 				E3136AB81AE63B5400CCA990 /* Products */,
 			);
@@ -72,6 +81,21 @@
 				E3EDF5CF21051EA000B455CC /* transaction.cpp */,
 			);
 			name = src;
+			sourceTree = "<group>";
+		};
+		E36D640B2139C91100B430A4 /* hdr */ = {
+			isa = PBXGroup;
+			children = (
+				E36D64142139C93D00B430A4 /* vlg.h */,
+				E36D640D2139C92E00B430A4 /* vlg_connection.h */,
+				E36D64112139C92F00B430A4 /* vlg_logger.h */,
+				E36D640C2139C92E00B430A4 /* vlg_model.h */,
+				E36D64122139C92F00B430A4 /* vlg_peer.h */,
+				E36D640F2139C92F00B430A4 /* vlg_persistence.h */,
+				E36D64102139C92F00B430A4 /* vlg_subscription.h */,
+				E36D640E2139C92F00B430A4 /* vlg_transaction.h */,
+			);
+			path = hdr;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
