@@ -24,6 +24,7 @@
 		E361F0F92120DBBB004F80CF /* perscfg in Resources */ = {isa = PBXBuildFile; fileRef = E361F0F72120DBBB004F80CF /* perscfg */; };
 		E361F0FA2120DBEB004F80CF /* logger.cfg in Resources */ = {isa = PBXBuildFile; fileRef = E361F0F42120CE1A004F80CF /* logger.cfg */; };
 		E36D63F02139C28400B430A4 /* libtest_smplmdl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E36D63EF2139C28400B430A4 /* libtest_smplmdl.a */; };
+		E36D641B213C902800B430A4 /* unused.txt in Resources */ = {isa = PBXBuildFile; fileRef = E36D641A213C902800B430A4 /* unused.txt */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,6 +62,7 @@
 		E36D63EF2139C28400B430A4 /* libtest_smplmdl.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libtest_smplmdl.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		E36D63F12139C54600B430A4 /* vlg_swift.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = vlg_swift.h; path = ../../../public/swf/vlg_swift.h; sourceTree = "<group>"; };
 		E36D63F22139C59300B430A4 /* app_bridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = app_bridge.h; sourceTree = "<group>"; };
+		E36D641A213C902800B430A4 /* unused.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = unused.txt; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -121,6 +123,7 @@
 				E33697D221179C33002F61CD /* Assets.xcassets */,
 				E33697D421179C33002F61CD /* LaunchScreen.storyboard */,
 				E33697D721179C33002F61CD /* Info.plist */,
+				E36D641A213C902800B430A4 /* unused.txt */,
 			);
 			path = template_app;
 			sourceTree = "<group>";
@@ -241,6 +244,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E33697D621179C33002F61CD /* LaunchScreen.storyboard in Resources */,
+				E36D641B213C902800B430A4 /* unused.txt in Resources */,
 				E33697D321179C33002F61CD /* Assets.xcassets in Resources */,
 				E361F0F82120DBBB004F80CF /* params in Resources */,
 				E361F0F92120DBBB004F80CF /* perscfg in Resources */,
