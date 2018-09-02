@@ -153,10 +153,12 @@ extern "C" {
 
     typedef void(*outg_transaction_status_change)(outgoing_transaction *tx,
                                                   TransactionStatus status,
-                                                  void *usr_data);
+                                                  void *usr_data,
+                                                  void *usr_data2);
 
     typedef void(*outg_transaction_closure)(outgoing_transaction *tx,
-                                            void *usr_data);
+                                            void *usr_data,
+                                            void *usr_data2);
 }
 
 //c_outg_tx
@@ -168,14 +170,16 @@ struct c_outg_tx : public outgoing_transaction {
     outg_transaction_status_change tsc_wr_;
     void *tc_ud_;
     void *tsc_ud_;
+    void *tc_ud2_;
+    void *tsc_ud2_;
 };
 
 struct c_outg_tx_listener : public outgoing_transaction_listener {
     virtual void on_status_change(outgoing_transaction &ot, TransactionStatus status) override {
-        ((c_outg_tx &)ot).tsc_wr_(&ot, status, ((c_outg_tx &)ot).tsc_ud_);
+        ((c_outg_tx &)ot).tsc_wr_(&ot, status, ((c_outg_tx &)ot).tsc_ud_, ((c_outg_tx &)ot).tsc_ud2_);
     }
     virtual void on_close(outgoing_transaction &ot) override {
-        ((c_outg_tx &)ot).tc_wr_(&ot, ((c_outg_tx &)ot).tc_ud_);
+        ((c_outg_tx &)ot).tc_wr_(&ot, ((c_outg_tx &)ot).tc_ud_, ((c_outg_tx &)ot).tc_ud2_);
     }
 };
 
@@ -186,7 +190,9 @@ c_outg_tx::c_outg_tx() :
     tc_wr_(nullptr),
     tsc_wr_(nullptr),
     tc_ud_(nullptr),
-    tsc_ud_(nullptr) {}
+    tsc_ud_(nullptr),
+    tc_ud2_(nullptr),
+    tsc_ud2_(nullptr){}
 
 extern "C" {
     own_outgoing_transaction *outg_transaction_create()
@@ -354,17 +360,22 @@ extern "C" {
 
     void outg_transaction_set_transaction_status_change_handler(outgoing_transaction *tx,
                                                                 outg_transaction_status_change handler,
-                                                                void *usr_data)
+                                                                void *usr_data,
+                                                                void *usr_data2)
     {
         static_cast<c_outg_tx *>(tx)->tsc_wr_ = handler;
         static_cast<c_outg_tx *>(tx)->tsc_ud_ = usr_data;
+        static_cast<c_outg_tx *>(tx)->tsc_ud2_ = usr_data2;
     }
 
     void outg_transaction_set_transaction_closure_handler(outgoing_transaction *tx,
-                                                          outg_transaction_closure handler, void *usr_data)
+                                                          outg_transaction_closure handler,
+                                                          void *usr_data,
+                                                          void *usr_data2)
     {
         static_cast<c_outg_tx *>(tx)->tc_wr_ = handler;
         static_cast<c_outg_tx *>(tx)->tc_ud_ = usr_data;
+        static_cast<c_outg_tx *>(tx)->tc_ud2_ = usr_data2;
     }
 
     tx_id *outg_transaction_get_transaction_id(outgoing_transaction *tx)

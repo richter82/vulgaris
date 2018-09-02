@@ -233,6 +233,16 @@ class Peer
 
 class OutgoingConnection
 {
+    init(peer: Peer) {
+        outg_conn_ = outg_connection_create()
+        outg_connection_bind(outg_conn_, peer.peer_)
+    }
+    
+    deinit {
+        outg_connection_destroy(outg_conn_)
+    }
+    
+    var outg_conn_: OpaquePointer
 }
 
 /**
