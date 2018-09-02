@@ -82,16 +82,17 @@ class Peer
         load_logger_config()
         load_vlg_logger()
         
-        peer_set_name_handler_swf(peer_, Peer.peer_name_handler, bridge(obj:self))
-        peer_set_version_handler_swf(peer_, Peer.peer_version_handler, bridge(obj:self))
-        peer_set_status_change_handler_swf(peer_, Peer.peer_status_change, bridge(obj:self))
+        peer_set_name_handler_swf(peer_, { _,_ in return UnsafePointer(self.peer_name_.buffer) }, bridge(obj:self))
+        peer_set_version_handler_swf(peer_, { _,_ in return UnsafePointer(self.peer_ver_) }, bridge(obj:self))
+        peer_set_status_change_handler_swf(peer_, peer_status_change, bridge(obj:self))
+        peer_set_peer_on_incoming_connection_handler_swf(peer_, { _,_,_ in return RetCode_OK}, bridge(obj:self))
     }
     
     deinit {
         peer_destroy(peer_own_)
     }
     
-    func StartPeer(){
+    func startPeer(){
         let argv = UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>.allocate(capacity: 2);
         let arg0 = CString("");
         let arg1 = CString("-file");
@@ -110,26 +111,13 @@ class Peer
         argv.deallocate()
     }
     
-    func StopPeer(){
+    func stopPeer(){
         peer_stop(peer_, 0)
     }
     
-    fileprivate static func peer_name_handler(c_peer: OpaquePointer!, ud: UnsafeMutableRawPointer!) -> UnsafePointer<CChar>
+    fileprivate func peer_status_change(c_peer: OpaquePointer!, status: PeerStatus, ud: UnsafeMutableRawPointer!)
     {
-        let peer : Peer = bridge(ptr:ud)
-        return UnsafePointer(peer.peer_name_.buffer)
-    }
-    
-    fileprivate static func peer_version_handler(c_peer: OpaquePointer!, ud: UnsafeMutableRawPointer!) -> UnsafePointer<UInt32>
-    {
-        let peer : Peer = bridge(ptr:ud)
-        return UnsafePointer(peer.peer_ver_)
-    }
-    
-    fileprivate static func peer_status_change(c_peer: OpaquePointer!, status: PeerStatus, ud: UnsafeMutableRawPointer!)
-    {
-        let peer : Peer = bridge(ptr:ud)
-        if let vc = peer.vc_ {
+        if let vc = vc_ {
             switch (status){
             case PeerStatus_ZERO:
                 DispatchQueue.main.async {
@@ -203,7 +191,7 @@ class Peer
                 }
                 break
             default:
-                print("unmanaged status:")
+                print("unmanaged status:\(status)")
             }
         } else {
             fatalError("peer.vc_ == nil")

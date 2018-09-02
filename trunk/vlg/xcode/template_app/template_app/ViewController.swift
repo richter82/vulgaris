@@ -31,12 +31,12 @@ class ViewController: UIViewController {
 
     @IBAction func StartPeer(_ sender: UIButton) {
         print("start")
-        peer_.StartPeer()
+        peer_.startPeer()
     }
     
     @IBAction func StopPeer(_ sender: UIButton) {
         print("stop")
-        peer_.StopPeer()
+        peer_.stopPeer()
     }
     
     let peer_ : Peer

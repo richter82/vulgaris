@@ -1,0 +1,12 @@
+
+fileprivate func peer_name_handler(c_peer: OpaquePointer!, ud: UnsafeMutableRawPointer!) -> UnsafePointer<CChar>
+{
+let peer : Peer = bridge(ptr:ud)
+return UnsafePointer(peer.peer_name_.buffer)
+}
+
+fileprivate static func peer_version_handler(c_peer: OpaquePointer!, ud: UnsafeMutableRawPointer!) -> UnsafePointer<UInt32>
+{
+let peer : Peer = bridge(ptr:ud)
+return UnsafePointer(peer.peer_ver_)
+}
