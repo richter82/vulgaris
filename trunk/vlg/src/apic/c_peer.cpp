@@ -66,45 +66,55 @@ extern "C" {
 
     typedef void(*inco_connection_status_change)(incoming_connection *conn,
                                                  ConnectionStatus status,
-                                                 void *usr_data);
+                                                 void *usr_data,
+                                                 void *usr_data2);
 
     typedef void(*inco_connection_on_disconnect_handler)(incoming_connection *conn,
                                                          ConnectivityEventResult con_evt_res,
                                                          ConnectivityEventType c_evt_type,
-                                                         void *usr_data);
+                                                         void *usr_data,
+                                                         void *usr_data2);
 
     typedef RetCode(*inco_connection_on_incoming_transaction_handler)(incoming_connection *conn,
                                                                       shr_incoming_transaction *itx,
-                                                                      void *usr_data);
+                                                                      void *usr_data,
+                                                                      void *usr_data2);
 
     typedef RetCode(*inco_connection_on_incoming_subscription_handler)(incoming_connection *conn,
                                                                        shr_incoming_subscription *isbs,
-                                                                       void *usr_data);
+                                                                       void *usr_data,
+                                                                       void *usr_data2);
 
     //incoming tx
 
     typedef void(*inco_transaction_status_change)(incoming_transaction *tx,
                                                   TransactionStatus status,
-                                                  void *usr_data);
+                                                  void *usr_data,
+                                                  void *usr_data2);
 
     typedef void(*inco_transaction_request)(incoming_transaction *tx,
-                                            void *usr_data);
+                                            void *usr_data,
+                                            void *usr_data2);
 
     typedef void(*inco_transaction_closure)(incoming_transaction *tx,
-                                            void *usr_data);
+                                            void *usr_data,
+                                            void *usr_data2);
 
     //incoming sbs
 
     typedef void(*inco_subscription_status_change)(incoming_subscription *isbs,
                                                    SubscriptionStatus status,
-                                                   void *usr_data);
+                                                   void *usr_data,
+                                                   void *usr_data2);
 
     typedef RetCode(*inco_subscription_accept_distribution)(incoming_subscription *isbs,
                                                             const subscription_event *sbs_evt,
-                                                            void *usr_data);
+                                                            void *usr_data,
+                                                            void *usr_data2);
 
     typedef void(*inco_subscription_on_stop)(incoming_subscription *isbs,
-                                             void *usr_data);
+                                             void *usr_data,
+                                             void *usr_data2);
 }
 
 //c_inco_tx
@@ -118,17 +128,20 @@ struct c_inco_tx : public incoming_transaction {
     void *tr_ud_;
     void *tc_ud_;
     void *tsc_ud_;
+    void *tr_ud2_;
+    void *tc_ud2_;
+    void *tsc_ud2_;
 };
 
 struct c_inco_tx_listener : public incoming_transaction_listener {
     virtual void on_status_change(incoming_transaction &it, TransactionStatus status) override {
-        ((c_inco_tx &)it).tsc_wr_(&it, status, ((c_inco_tx &)it).tsc_ud_);
+        ((c_inco_tx &)it).tsc_wr_(&it, status, ((c_inco_tx &)it).tsc_ud_, ((c_inco_tx &)it).tsc_ud2_);
     };
     virtual void on_request(incoming_transaction &it) override {
-        ((c_inco_tx &)it).tr_wr_(&it, ((c_inco_tx &)it).tr_ud_);
+        ((c_inco_tx &)it).tr_wr_(&it, ((c_inco_tx &)it).tr_ud_, ((c_inco_tx &)it).tr_ud2_);
     };
     virtual void on_close(incoming_transaction &it) override {
-        ((c_inco_tx &)it).tc_wr_(&it, ((c_inco_tx &)it).tc_ud_);
+        ((c_inco_tx &)it).tc_wr_(&it, ((c_inco_tx &)it).tc_ud_, ((c_inco_tx &)it).tc_ud2_);
     };
 };
 
@@ -141,7 +154,10 @@ c_inco_tx::c_inco_tx(std::shared_ptr<incoming_connection> &c) :
     tsc_wr_(nullptr),
     tr_ud_(nullptr),
     tc_ud_(nullptr),
-    tsc_ud_(nullptr) {}
+    tsc_ud_(nullptr),
+    tr_ud2_(nullptr),
+    tc_ud2_(nullptr),
+    tsc_ud2_(nullptr) {}
 
 //c_inco_tx_factory
 
@@ -164,26 +180,32 @@ extern "C" {
 
     void inco_transaction_set_transaction_status_change_handler(incoming_transaction *tx,
                                                                 inco_transaction_status_change handler,
-                                                                void *usr_data)
+                                                                void *usr_data,
+                                                                void *usr_data2)
     {
         static_cast<c_inco_tx *>(tx)->tsc_wr_ = handler;
         static_cast<c_inco_tx *>(tx)->tsc_ud_ = usr_data;
+        static_cast<c_inco_tx *>(tx)->tsc_ud2_ = usr_data2;
     }
 
     void inco_transaction_set_transaction_closure_handler(incoming_transaction *tx,
                                                           inco_transaction_closure handler,
-                                                          void *usr_data)
+                                                          void *usr_data,
+                                                          void *usr_data2)
     {
         static_cast<c_inco_tx *>(tx)->tc_wr_ = handler;
         static_cast<c_inco_tx *>(tx)->tc_ud_ = usr_data;
+        static_cast<c_inco_tx *>(tx)->tc_ud2_ = usr_data2;
     }
 
     void inco_transaction_set_inco_transaction_request_handler(incoming_transaction *tx,
                                                                inco_transaction_request handler,
-                                                               void *usr_data)
+                                                               void *usr_data,
+                                                               void *usr_data2)
     {
         static_cast<c_inco_tx *>(tx)->tr_wr_ = handler;
         static_cast<c_inco_tx *>(tx)->tr_ud_ = usr_data;
+        static_cast<c_inco_tx *>(tx)->tr_ud2_ = usr_data2;
     }
 }
 
@@ -200,17 +222,20 @@ struct c_inco_sbs : public incoming_subscription {
     void *issc_ud_;
     void *isad_ud_;
     void *isos_ud_;
+    void *issc_ud2_;
+    void *isad_ud2_;
+    void *isos_ud2_;
 };
 
 struct c_inco_sbs_listener : public incoming_subscription_listener {
     virtual void on_status_change(incoming_subscription &is, SubscriptionStatus status) override {
-        ((c_inco_sbs &)is).issc_wr_(&is, status, ((c_inco_sbs &)is).issc_ud_);
+        ((c_inco_sbs &)is).issc_wr_(&is, status, ((c_inco_sbs &)is).issc_ud_, ((c_inco_sbs &)is).issc_ud2_);
     }
     virtual void on_stop(incoming_subscription &is) override {
-        ((c_inco_sbs &)is).isos_(&is, ((c_inco_sbs &)is).isos_ud_);
+        ((c_inco_sbs &)is).isos_(&is, ((c_inco_sbs &)is).isos_ud_, ((c_inco_sbs &)is).isos_ud2_);
     }
     virtual RetCode on_accept_event(incoming_subscription &is, const subscription_event &se) override {
-        return ((c_inco_sbs &)is).isad_wr_(&is, &se, ((c_inco_sbs &)is).isad_ud_);
+        return ((c_inco_sbs &)is).isad_wr_(&is, &se, ((c_inco_sbs &)is).isad_ud_, ((c_inco_sbs &)is).isad_ud2_);
     }
 };
 
@@ -223,7 +248,10 @@ c_inco_sbs::c_inco_sbs(std::shared_ptr<incoming_connection> &c) :
     isos_(nullptr),
     issc_ud_(nullptr),
     isad_ud_(nullptr),
-    isos_ud_(nullptr) {}
+    isos_ud_(nullptr),
+    issc_ud2_(nullptr),
+    isad_ud2_(nullptr),
+    isos_ud2_(nullptr){}
 
 //c_inco_sbs_factory
 
@@ -248,26 +276,32 @@ extern "C" {
 
     void inco_subscription_set_status_change_handler(incoming_subscription *subscription,
                                                      inco_subscription_status_change handler,
-                                                     void *usr_data)
+                                                     void *usr_data,
+                                                     void *usr_data2)
     {
         static_cast<c_inco_sbs *>(subscription)->issc_wr_ = handler;
         static_cast<c_inco_sbs *>(subscription)->issc_ud_ = usr_data;
+        static_cast<c_inco_sbs *>(subscription)->issc_ud2_ = usr_data2;
     }
 
     void inco_subscription_set_accept_distribution_handler(incoming_subscription *subscription,
                                                            inco_subscription_accept_distribution handler,
-                                                           void *usr_data)
+                                                           void *usr_data,
+                                                           void *usr_data2)
     {
         static_cast<c_inco_sbs *>(subscription)->isad_wr_ = handler;
         static_cast<c_inco_sbs *>(subscription)->isad_ud_ = usr_data;
+        static_cast<c_inco_sbs *>(subscription)->isad_ud2_ = usr_data2;
     }
 
     void inco_subscription_set_on_stop_handler(incoming_subscription *sbs,
                                                inco_subscription_on_stop handler,
-                                               void *usr_data)
+                                               void *usr_data,
+                                               void *usr_data2)
     {
         static_cast<c_inco_sbs *>(sbs)->isos_ = handler;
         static_cast<c_inco_sbs *>(sbs)->isos_ud_ = usr_data;
+        static_cast<c_inco_sbs *>(sbs)->isos_ud2_ = usr_data2;
     }
 }
 
@@ -285,28 +319,38 @@ struct c_inco_conn : public incoming_connection {
     void *icodh_ud_;
     void *icoith_ud_;
     void *icoish_ud_;
+    void *icsc_ud2_;
+    void *icodh_ud2_;
+    void *icoith_ud2_;
+    void *icoish_ud2_;
 };
 
 struct c_inco_conn_listener : public incoming_connection_listener {
     virtual void on_status_change(incoming_connection &ic,
                                   ConnectionStatus current) override {
-        ((c_inco_conn &)ic).icsc_(&ic, current, ((c_inco_conn &)ic).icsc_ud_);
+        ((c_inco_conn &)ic).icsc_(&ic, current, ((c_inco_conn &)ic).icsc_ud_, ((c_inco_conn &)ic).icsc_ud2_);
     }
 
     virtual void on_disconnect(incoming_connection &ic,
                                ConnectivityEventResult con_evt_res,
                                ConnectivityEventType c_evt_type) override {
-        ((c_inco_conn &)ic).icodh_(&ic, con_evt_res, c_evt_type, ((c_inco_conn &)ic).icodh_ud_);
+        ((c_inco_conn &)ic).icodh_(&ic, con_evt_res, c_evt_type, ((c_inco_conn &)ic).icodh_ud_, ((c_inco_conn &)ic).icodh_ud2_);
     }
 
     virtual RetCode on_incoming_transaction(incoming_connection &ic,
                                             std::shared_ptr<incoming_transaction> &it) override {
-        return ((c_inco_conn &)ic).icoith_(&ic, (shr_incoming_transaction *)new std::shared_ptr<incoming_transaction>(it), ((c_inco_conn &)ic).icoith_ud_);
+        return ((c_inco_conn &)ic).icoith_(&ic,
+                                           (shr_incoming_transaction *)new std::shared_ptr<incoming_transaction>(it),
+                                           ((c_inco_conn &)ic).icoith_ud_,
+                                           ((c_inco_conn &)ic).icoith_ud2_);
     }
 
     virtual RetCode on_incoming_subscription(incoming_connection &ic,
                                              std::shared_ptr<incoming_subscription> &is) override {
-        return ((c_inco_conn &)ic).icoish_(&ic, (shr_incoming_subscription *)new std::shared_ptr<incoming_subscription>(is), ((c_inco_conn &)ic).icoish_ud_);
+        return ((c_inco_conn &)ic).icoish_(&ic,
+                                           (shr_incoming_subscription *)new std::shared_ptr<incoming_subscription>(is),
+                                           ((c_inco_conn &)ic).icoish_ud_,
+                                           ((c_inco_conn &)ic).icoish_ud2_);
     }
 };
 
@@ -320,7 +364,11 @@ c_inco_conn::c_inco_conn(peer &p) : incoming_connection(p, cicl),
     icsc_ud_(nullptr),
     icodh_ud_(nullptr),
     icoith_ud_(nullptr),
-    icoish_ud_(nullptr)
+    icoish_ud_(nullptr),
+    icsc_ud2_(nullptr),
+    icodh_ud2_(nullptr),
+    icoith_ud2_(nullptr),
+    icoish_ud2_(nullptr)
 {
     set_incoming_transaction_factory(citf);
     set_incoming_subscription_factory(cisf);
@@ -344,34 +392,42 @@ extern "C" {
 
     void inco_connection_set_status_change_handler(incoming_connection *ic,
                                                    inco_connection_status_change hndl,
-                                                   void *usr_data)
+                                                   void *usr_data,
+                                                   void *usr_data2)
     {
         static_cast<c_inco_conn *>(ic)->icsc_ = hndl;
         static_cast<c_inco_conn *>(ic)->icsc_ud_ = usr_data;
+        static_cast<c_inco_conn *>(ic)->icsc_ud2_ = usr_data2;
     }
 
     void inco_connection_set_on_disconnect_handler(incoming_connection *ic,
                                                    inco_connection_on_disconnect_handler hndl,
-                                                   void *usr_data)
+                                                   void *usr_data,
+                                                   void *usr_data2)
     {
         static_cast<c_inco_conn *>(ic)->icodh_ = hndl;
         static_cast<c_inco_conn *>(ic)->icodh_ud_ = usr_data;
+        static_cast<c_inco_conn *>(ic)->icodh_ud2_ = usr_data2;
     }
 
     void inco_connection_set_on_incoming_transaction_handler(incoming_connection *ic,
                                                              inco_connection_on_incoming_transaction_handler hndl,
-                                                             void *usr_data)
+                                                             void *usr_data,
+                                                             void *usr_data2)
     {
         static_cast<c_inco_conn *>(ic)->icoith_ = hndl;
         static_cast<c_inco_conn *>(ic)->icoith_ud_ = usr_data;
+        static_cast<c_inco_conn *>(ic)->icoith_ud2_ = usr_data2;
     }
 
     void inco_connection_set_on_incoming_subscription_handler(incoming_connection *ic,
                                                               inco_connection_on_incoming_subscription_handler hndl,
-                                                              void *usr_data)
+                                                              void *usr_data,
+                                                              void *usr_data2)
     {
         static_cast<c_inco_conn *>(ic)->icoish_ = hndl;
         static_cast<c_inco_conn *>(ic)->icoish_ud_ = usr_data;
+        static_cast<c_inco_conn *>(ic)->icoish_ud2_ = usr_data2;
     }
 }
 
@@ -415,7 +471,6 @@ struct c_peer : public peer {
     void *ptoah_wr_ud_;
     void *pdbh_wr_ud_;
     void *sic_wr_ud_;
-    
     void *psc_ud2_;
     void *pnh_wr_ud2_;
     void *pvh_wr_ud2_;

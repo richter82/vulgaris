@@ -12,10 +12,10 @@
 INCOMING CONNECTION HANDLERS
 ************************************************************************/
 
-typedef void(*inco_connection_status_change)(incoming_connection *conn, ConnectionStatus status, void *usr_data);
-typedef void(*inco_connection_on_disconnect_handler)(incoming_connection *conn, ConnectivityEventResult con_evt_res, ConnectivityEventType c_evt_type, void *usr_data);
-typedef RetCode(*inco_connection_on_incoming_transaction_handler)(incoming_connection *conn, shr_incoming_transaction *itx, void *usr_data);
-typedef RetCode(*inco_connection_on_incoming_subscription_handler)(incoming_connection *conn, shr_incoming_subscription *isbs, void *usr_data);
+typedef void(*inco_connection_status_change)(incoming_connection *conn, ConnectionStatus status, void *usr_data, void *usr_data2);
+typedef void(*inco_connection_on_disconnect_handler)(incoming_connection *conn, ConnectivityEventResult con_evt_res, ConnectivityEventType c_evt_type, void *usr_data, void *usr_data2);
+typedef RetCode(*inco_connection_on_incoming_transaction_handler)(incoming_connection *conn, shr_incoming_transaction *itx, void *usr_data, void *usr_data2);
+typedef RetCode(*inco_connection_on_incoming_subscription_handler)(incoming_connection *conn, shr_incoming_subscription *isbs, void *usr_data, void *usr_data2);
 
 /************************************************************************
 INCOMING CONNECTION
@@ -29,23 +29,23 @@ unsigned short inco_connection_get_server_agreed_heartbeat(incoming_connection *
 ConnectionStatus inco_connection_get_status(incoming_connection *ic);
 RetCode inco_connection_await_for_status_reached(incoming_connection *ic, ConnectionStatus test, ConnectionStatus *current, time_t sec, long nsec);
 RetCode inco_connection_await_for_status_change(incoming_connection *ic, ConnectionStatus *status, time_t sec, long nsec);
-void inco_connection_set_status_change_handler(incoming_connection *ic, inco_connection_status_change handler, void *usr_data);
+void inco_connection_set_status_change_handler(incoming_connection *ic, inco_connection_status_change handler, void *usr_data, void *usr_data2);
 RetCode inco_connection_disconnect(incoming_connection *ic, ProtocolCode reason_code);
 RetCode inco_connection_await_for_disconnection_result(incoming_connection *ic, ConnectivityEventResult *con_evt_res, ConnectivityEventType *c_evt_type, time_t sec, long nsec);
-void inco_connection_set_on_disconnect_handler(incoming_connection *ic, inco_connection_on_disconnect_handler hndl, void *usr_data);
-void inco_connection_set_on_incoming_transaction_handler(incoming_connection *ic, inco_connection_on_incoming_transaction_handler hndl, void *usr_data);
-void inco_connection_set_on_incoming_subscription_handler(incoming_connection *ic, inco_connection_on_incoming_subscription_handler hndl, void *usr_data);
+void inco_connection_set_on_disconnect_handler(incoming_connection *ic, inco_connection_on_disconnect_handler hndl, void *usr_data, void *usr_data2);
+void inco_connection_set_on_incoming_transaction_handler(incoming_connection *ic, inco_connection_on_incoming_transaction_handler hndl, void *usr_data, void *usr_data2);
+void inco_connection_set_on_incoming_subscription_handler(incoming_connection *ic, inco_connection_on_incoming_subscription_handler hndl, void *usr_data, void *usr_data2);
 SOCKET inco_connection_get_socket(incoming_connection *ic);
 const char *inco_connection_get_host_ip(incoming_connection *ic);
 unsigned short inco_connection_get_host_port(incoming_connection *ic);
 
 /************************************************************************
-INCOMING CONNECTION HANDLERS
+OUTGOING CONNECTION HANDLERS
 ************************************************************************/
 
-typedef void(*outg_connection_status_change)(outgoing_connection *oc, ConnectionStatus status, void *usr_data);
-typedef void(*outg_connection_on_connect_handler)(outgoing_connection *oc, ConnectivityEventResult con_evt_res, ConnectivityEventType c_evt_type, void *usr_data);
-typedef void(*outg_connection_on_disconnect_handler)(outgoing_connection *oc, ConnectivityEventResult con_evt_res, ConnectivityEventType c_evt_type, void *usr_data);
+typedef void(*outg_connection_status_change)(outgoing_connection *oc, ConnectionStatus status, void *usr_data, void *usr_data2);
+typedef void(*outg_connection_on_connect_handler)(outgoing_connection *oc, ConnectivityEventResult con_evt_res, ConnectivityEventType c_evt_type, void *usr_data, void *usr_data2);
+typedef void(*outg_connection_on_disconnect_handler)(outgoing_connection *oc, ConnectivityEventResult con_evt_res, ConnectivityEventType c_evt_type, void *usr_data, void *usr_data2);
 
 /************************************************************************
 OUTGOING CONNECTION
@@ -65,13 +65,13 @@ ProtocolCode outg_connection_get_disconnection_reason_code(outgoing_connection *
 ConnectionStatus outg_connection_get_status(outgoing_connection *oc);
 RetCode outg_connection_await_for_status_reached(outgoing_connection *oc, ConnectionStatus test, ConnectionStatus *current, time_t sec, long nsec);
 RetCode outg_connection_await_for_status_change(outgoing_connection *oc, ConnectionStatus *status, time_t sec, long nsec);
-void outg_connection_set_status_change_handler(outgoing_connection *oc, outg_connection_status_change handler, void *usr_data);
+void outg_connection_set_status_change_handler(outgoing_connection *oc, outg_connection_status_change handler, void *usr_data, void *usr_data2);
 RetCode outg_connection_connect(outgoing_connection *oc, struct sockaddr_in *conn_params);
 RetCode outg_connection_await_for_connection_result(outgoing_connection *oc, ConnectivityEventResult *con_evt_res, ConnectivityEventType *c_evt_type, time_t sec, long nsec);
 RetCode outg_connection_disconnect(outgoing_connection *oc, ProtocolCode reason_code);
 RetCode outg_connection_await_for_disconnection_result(outgoing_connection *oc, ConnectivityEventResult *con_evt_res, ConnectivityEventType *c_evt_type, time_t sec, long nsec);
-void outg_connection_set_on_connect_handler(outgoing_connection *oc, outg_connection_on_connect_handler hndl, void *usr_data);
-void outg_connection_set_on_disconnect_handler(outgoing_connection *oc, outg_connection_on_disconnect_handler hndl, void *usr_data);
+void outg_connection_set_on_connect_handler(outgoing_connection *oc, outg_connection_on_connect_handler hndl, void *usr_data, void *usr_data2);
+void outg_connection_set_on_disconnect_handler(outgoing_connection *oc, outg_connection_on_disconnect_handler hndl, void *usr_data, void *usr_data2);
 SOCKET outg_connection_get_socket(outgoing_connection *oc);
 const char *outg_connection_get_host_ip(outgoing_connection *oc);
 unsigned short outg_connection_get_host_port(outgoing_connection *oc);
