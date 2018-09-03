@@ -135,12 +135,15 @@ struct c_inco_tx : public incoming_transaction {
 
 struct c_inco_tx_listener : public incoming_transaction_listener {
     virtual void on_status_change(incoming_transaction &it, TransactionStatus status) override {
+        if(((c_inco_tx &)it).tsc_wr_)
         ((c_inco_tx &)it).tsc_wr_(&it, status, ((c_inco_tx &)it).tsc_ud_, ((c_inco_tx &)it).tsc_ud2_);
     };
     virtual void on_request(incoming_transaction &it) override {
+        if(((c_inco_tx &)it).tr_wr_)
         ((c_inco_tx &)it).tr_wr_(&it, ((c_inco_tx &)it).tr_ud_, ((c_inco_tx &)it).tr_ud2_);
     };
     virtual void on_close(incoming_transaction &it) override {
+        if(((c_inco_tx &)it).tc_wr_)
         ((c_inco_tx &)it).tc_wr_(&it, ((c_inco_tx &)it).tc_ud_, ((c_inco_tx &)it).tc_ud2_);
     };
 };
@@ -229,13 +232,17 @@ struct c_inco_sbs : public incoming_subscription {
 
 struct c_inco_sbs_listener : public incoming_subscription_listener {
     virtual void on_status_change(incoming_subscription &is, SubscriptionStatus status) override {
+        if(((c_inco_sbs &)is).issc_wr_)
         ((c_inco_sbs &)is).issc_wr_(&is, status, ((c_inco_sbs &)is).issc_ud_, ((c_inco_sbs &)is).issc_ud2_);
     }
     virtual void on_stop(incoming_subscription &is) override {
+        if(((c_inco_sbs &)is).isos_)
         ((c_inco_sbs &)is).isos_(&is, ((c_inco_sbs &)is).isos_ud_, ((c_inco_sbs &)is).isos_ud2_);
     }
     virtual RetCode on_accept_event(incoming_subscription &is, const subscription_event &se) override {
+        if(((c_inco_sbs &)is).isad_wr_)
         return ((c_inco_sbs &)is).isad_wr_(&is, &se, ((c_inco_sbs &)is).isad_ud_, ((c_inco_sbs &)is).isad_ud2_);
+        return RetCode_OK;
     }
 };
 
@@ -328,29 +335,39 @@ struct c_inco_conn : public incoming_connection {
 struct c_inco_conn_listener : public incoming_connection_listener {
     virtual void on_status_change(incoming_connection &ic,
                                   ConnectionStatus current) override {
-        ((c_inco_conn &)ic).icsc_(&ic, current, ((c_inco_conn &)ic).icsc_ud_, ((c_inco_conn &)ic).icsc_ud2_);
+        if(((c_inco_conn &)ic).icsc_){
+            ((c_inco_conn &)ic).icsc_(&ic, current, ((c_inco_conn &)ic).icsc_ud_, ((c_inco_conn &)ic).icsc_ud2_);
+        }
     }
 
     virtual void on_disconnect(incoming_connection &ic,
                                ConnectivityEventResult con_evt_res,
                                ConnectivityEventType c_evt_type) override {
-        ((c_inco_conn &)ic).icodh_(&ic, con_evt_res, c_evt_type, ((c_inco_conn &)ic).icodh_ud_, ((c_inco_conn &)ic).icodh_ud2_);
+        if(((c_inco_conn &)ic).icodh_){
+            ((c_inco_conn &)ic).icodh_(&ic, con_evt_res, c_evt_type, ((c_inco_conn &)ic).icodh_ud_, ((c_inco_conn &)ic).icodh_ud2_);
+        }
     }
 
     virtual RetCode on_incoming_transaction(incoming_connection &ic,
                                             std::shared_ptr<incoming_transaction> &it) override {
-        return ((c_inco_conn &)ic).icoith_(&ic,
-                                           (shr_incoming_transaction *)new std::shared_ptr<incoming_transaction>(it),
-                                           ((c_inco_conn &)ic).icoith_ud_,
-                                           ((c_inco_conn &)ic).icoith_ud2_);
+        if(((c_inco_conn &)ic).icoith_){
+            return ((c_inco_conn &)ic).icoith_(&ic,
+                                               (shr_incoming_transaction *)new std::shared_ptr<incoming_transaction>(it),
+                                               ((c_inco_conn &)ic).icoith_ud_,
+                                               ((c_inco_conn &)ic).icoith_ud2_);
+        }
+        return RetCode_OK;
     }
 
     virtual RetCode on_incoming_subscription(incoming_connection &ic,
                                              std::shared_ptr<incoming_subscription> &is) override {
-        return ((c_inco_conn &)ic).icoish_(&ic,
-                                           (shr_incoming_subscription *)new std::shared_ptr<incoming_subscription>(is),
-                                           ((c_inco_conn &)ic).icoish_ud_,
-                                           ((c_inco_conn &)ic).icoish_ud2_);
+        if(((c_inco_conn &)ic).icoish_){
+            return ((c_inco_conn &)ic).icoish_(&ic,
+                                               (shr_incoming_subscription *)new std::shared_ptr<incoming_subscription>(is),
+                                               ((c_inco_conn &)ic).icoish_ud_,
+                                               ((c_inco_conn &)ic).icoish_ud2_);
+        }
+        return RetCode_OK;
     }
 };
 

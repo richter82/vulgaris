@@ -15,34 +15,45 @@ class ViewController: UIViewController {
     
     required init?(coder aDecoder: NSCoder) {
         peer_ = Peer(peer_name: PEER_NAME, peer_ver: PEER_VER)
+        oc_ = OutgoingConnection(peer: peer_)
         super.init(coder: aDecoder)
         peer_.ViewController = self
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+        connectOC_.isEnabled = false
+        disconnectOC_.isEnabled = false
     }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-
+    
     @IBAction func StartPeer(_ sender: UIButton) {
-        print("start")
         peer_.startPeer()
+        connectOC_.isEnabled = true
+        disconnectOC_.isEnabled = false
     }
     
     @IBAction func StopPeer(_ sender: UIButton) {
-        print("stop")
         peer_.stopPeer()
+        connectOC_.isEnabled = false
+        disconnectOC_.isEnabled = false
     }
     
-    let peer_ : Peer
+    @IBAction func connectOC(_ sender: UIButton) {
+        oc_.connect()
+    }
+    
+    @IBAction func disconnectOC(_ sender: UIButton) {
+    }
+    
+    let peer_: Peer
+    let oc_: OutgoingConnection
     
     @IBOutlet weak var startB_: UIButton!
     @IBOutlet weak var stopB_: UIButton!
     @IBOutlet weak var peerStatus_: UILabel!
+    
+    @IBOutlet weak var connectOC_: UIButton!
+    @IBOutlet weak var disconnectOC_: UIButton!
+    @IBOutlet weak var ocStatus_: UILabel!
 }
 
