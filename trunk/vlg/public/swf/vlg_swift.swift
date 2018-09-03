@@ -230,6 +230,15 @@ class OutgoingConnection
         outg_connection_destroy(outg_conn_)
     }
     
+    func connect(){
+        var oc_params: sockaddr_in = sockaddr_in()
+        oc_params.sin_family = UInt8(AF_INET)
+        oc_params.sin_addr.s_addr = inet_addr("127.0.0.1")
+        let port: UInt16 = 12345
+        oc_params.sin_port = port.bigEndian
+        outg_connection_connect(outg_conn_, UnsafeMutablePointer<sockaddr_in>(&oc_params))
+    }
+    
     var outg_conn_: OpaquePointer
 }
 
