@@ -16,7 +16,7 @@ extern "C" {
     }
 
     RetCode persistence_manager_load_persistence_drivers(persistence_driver *drivers[],
-                                                        int drivers_num)
+                                                         int drivers_num)
     {
         return persistence_manager::load_driver(drivers, drivers_num);
     }
@@ -25,7 +25,7 @@ extern "C" {
     {
         return persistence_manager::load_driver(&driver, 1);
     }
-    
+
     RetCode persistence_manager_set_cfg_file_dir(const char *dir)
     {
         return persistence_manager::set_config_file_dir(dir);

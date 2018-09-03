@@ -70,7 +70,7 @@ EXP_SYM RetCode set_db_data_dir_sqlite(const char *dir);
 #if defined(__cplusplus)
 }
 #endif
-    
+
 /*******************************
 VLG_PERS_DRIV_SQLITE ENTRY POINT
 *******************************/

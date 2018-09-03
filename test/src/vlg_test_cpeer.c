@@ -15,11 +15,11 @@
 #include "vlg_drv_sqlite.h"
 #include "vlg_model_sample.h"
 
-const char *cpeer_name_handler(peer *p, void *usr_data){
+const char *cpeer_name_handler(peer *p, void *ud, void *ud2){
     return "c_peer[" __DATE__"]";
 }
 
-const unsigned int *cpeer_version_handler(peer *p, void *usr_data){
+const unsigned int *cpeer_version_handler(peer *p, void *ud, void *ud2){
     static unsigned int peer_c_ver_[4] = {0,0,0,0};
     return peer_c_ver_;
 }
@@ -28,15 +28,14 @@ const unsigned int *cpeer_version_handler(peer *p, void *usr_data){
 int main(int argc, char *argv[])
 {
     nentity_manager *smplm = get_c_nem_smplmdl();
-    persistence_driver *pd = get_pers_driv_sqlite();
     own_peer *op = peer_create();
     peer *p = own_peer_get_ptr(op);
 
-    peer_set_name_handler(p, cpeer_name_handler, NULL);
-    peer_set_version_handler(p, cpeer_version_handler, NULL);
+    peer_set_name_handler(p, cpeer_name_handler, NULL, NULL);
+    peer_set_version_handler(p, cpeer_version_handler, NULL, NULL);
 
     peer_extend_model_with_nem(p, smplm);
-    persistence_manager_load_persistence_driver(&pd, 1);
+    persistence_manager_load_persistence_driver(get_pers_driv_sqlite());
 
     peer_start(p, argc, argv, 1);
 

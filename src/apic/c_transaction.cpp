@@ -153,12 +153,12 @@ extern "C" {
 
     typedef void(*outg_transaction_status_change)(outgoing_transaction *tx,
                                                   TransactionStatus status,
-                                                  void *usr_data,
-                                                  void *usr_data2);
+                                                  void *ud,
+                                                  void *ud2);
 
     typedef void(*outg_transaction_closure)(outgoing_transaction *tx,
-                                            void *usr_data,
-                                            void *usr_data2);
+                                            void *ud,
+                                            void *ud2);
 }
 
 //c_outg_tx
@@ -192,7 +192,7 @@ c_outg_tx::c_outg_tx() :
     tc_ud_(nullptr),
     tsc_ud_(nullptr),
     tc_ud2_(nullptr),
-    tsc_ud2_(nullptr){}
+    tsc_ud2_(nullptr) {}
 
 extern "C" {
     own_outgoing_transaction *outg_transaction_create()
@@ -360,22 +360,22 @@ extern "C" {
 
     void outg_transaction_set_transaction_status_change_handler(outgoing_transaction *tx,
                                                                 outg_transaction_status_change handler,
-                                                                void *usr_data,
-                                                                void *usr_data2)
+                                                                void *ud,
+                                                                void *ud2)
     {
         static_cast<c_outg_tx *>(tx)->tsc_wr_ = handler;
-        static_cast<c_outg_tx *>(tx)->tsc_ud_ = usr_data;
-        static_cast<c_outg_tx *>(tx)->tsc_ud2_ = usr_data2;
+        static_cast<c_outg_tx *>(tx)->tsc_ud_ = ud;
+        static_cast<c_outg_tx *>(tx)->tsc_ud2_ = ud2;
     }
 
     void outg_transaction_set_transaction_closure_handler(outgoing_transaction *tx,
                                                           outg_transaction_closure handler,
-                                                          void *usr_data,
-                                                          void *usr_data2)
+                                                          void *ud,
+                                                          void *ud2)
     {
         static_cast<c_outg_tx *>(tx)->tc_wr_ = handler;
-        static_cast<c_outg_tx *>(tx)->tc_ud_ = usr_data;
-        static_cast<c_outg_tx *>(tx)->tc_ud2_ = usr_data2;
+        static_cast<c_outg_tx *>(tx)->tc_ud_ = ud;
+        static_cast<c_outg_tx *>(tx)->tc_ud2_ = ud2;
     }
 
     tx_id *outg_transaction_get_transaction_id(outgoing_transaction *tx)

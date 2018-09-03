@@ -616,8 +616,8 @@ struct peer_sbs_task : public p_tsk {
     static void enum_srv_connid_connection_map_ashsnd(const s_hm &map,
                                                       const void *key,
                                                       void *ptr,
-                                                      void *usr_data) {
-        srv_connid_condesc_set_ashsnd_rud *rud = static_cast<srv_connid_condesc_set_ashsnd_rud *>(usr_data);
+                                                      void *ud) {
+        srv_connid_condesc_set_ashsnd_rud *rud = static_cast<srv_connid_condesc_set_ashsnd_rud *>(ud);
         std::shared_ptr<incoming_connection> *conn = (std::shared_ptr<incoming_connection> *)ptr;
         std::shared_ptr<incoming_subscription> sbs_sh;
         if((*conn)->impl_->inco_nclassid_sbs_map_.get(&rud->nclass_id, &sbs_sh)) {

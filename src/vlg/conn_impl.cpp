@@ -858,9 +858,9 @@ incoming_connection_impl::~incoming_connection_impl()
 static void(release_all_inco_sbs)(const s_hm &map,
                                   const void *key,
                                   void *ptr,
-                                  void *usr_data)
+                                  void *ud)
 {
-    incoming_connection_impl *iconn = (incoming_connection_impl *)usr_data;
+    incoming_connection_impl *iconn = (incoming_connection_impl *)ud;
     std::shared_ptr<incoming_subscription> *isbs_sh = (std::shared_ptr<incoming_subscription> *)ptr;
     iconn->release_subscription(isbs_sh->get()->impl_.get());
 }
@@ -1288,7 +1288,7 @@ unsigned int outgoing_connection_impl::next_reqid()
 static void(stop_all_outg_sbs)(const s_hm &map,
                                const void *key,
                                void *ptr,
-                               void *usr_data)
+                               void *ud)
 {
     outgoing_subscription_impl *osbs = *(outgoing_subscription_impl **)ptr;
     osbs->set_stopped();

@@ -167,11 +167,11 @@ void cfg_ldr::enum_params(param_callback usr_clbk)
     });
 }
 
-void cfg_ldr::enum_params(param_callback_ud usr_clbk_ud, void *usr_data)
+void cfg_ldr::enum_params(param_callback_ud usr_clbk_ud, void *ud)
 {
     int i = 1;
     std::for_each(lpap_.begin(), lpap_.end(), [&](param_arg_pair &pap) {
-        usr_clbk_ud(i++, pap.param, pap.arg, usr_data);
+        usr_clbk_ud(i++, pap.param, pap.arg, ud);
     });
 }
 
