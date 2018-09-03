@@ -249,12 +249,12 @@ struct s_hm;
 typedef void(*s_hm_enm_func)(const s_hm &map,
                              const void *key,
                              void *ptr,
-                             void *usr_data);
+                             void *ud);
 
 typedef void(*s_hm_enm_func_br)(const s_hm &map,
                                 const void *key,
                                 void *ptr,
-                                void *usr_data,
+                                void *ud,
                                 bool &brk);
 
 const unsigned int HMSz_23 = 23U;
@@ -327,35 +327,35 @@ struct s_hm : public brep {
         }
 
         void enum_elements_safe_read(s_hm_enm_func enum_f,
-                                     void *usr_data) const {
+                                     void *ud) const {
             scoped_rd_lock rl(lock_);
-            enm(*this, enum_f, usr_data);
+            enm(*this, enum_f, ud);
         }
 
         void enum_elements_safe_write(s_hm_enm_func enum_f,
-                                      void *usr_data) const {
+                                      void *ud) const {
             scoped_wr_lock wl(lock_);
-            enm(*this, enum_f, usr_data);
+            enm(*this, enum_f, ud);
         }
 
         void enum_elements_breakable_safe_read(s_hm_enm_func_br enum_f,
-                                               void *usr_data) const {
+                                               void *ud) const {
             scoped_rd_lock rl(lock_);
-            enmbr(*this, enum_f, usr_data);
+            enmbr(*this, enum_f, ud);
         }
 
         void enum_elements_breakable_safe_write(s_hm_enm_func_br enum_f,
-                                                void *usr_data) const {
+                                                void *ud) const {
             scoped_wr_lock wl(lock_);
-            enmbr(*this, enum_f, usr_data);
+            enmbr(*this, enum_f, ud);
         }
 
     protected:
         void init(pthread_rwlockattr_t *attr);
         uint32_t gidx(const void *key) const;
         void rm(hm_node *del_mn, uint32_t idx);
-        void enm(const s_hm &map, s_hm_enm_func enum_f, void *usr_data) const;
-        void enmbr(const s_hm &map, s_hm_enm_func_br enum_f, void *usr_data) const;
+        void enm(const s_hm &map, s_hm_enm_func enum_f, void *ud) const;
+        void enmbr(const s_hm &map, s_hm_enm_func_br enum_f, void *ud) const;
 
     public:
         const obj_mng elem_manager_, key_manager_;

@@ -24,9 +24,9 @@ own_nclass *subscription_event_get_object(subscription_event *sev);
 INCOMING SUBSCRIPTION HANDLERS
 ************************************************************************/
 
-typedef void(*inco_subscription_status_change)(incoming_subscription *isbs, SubscriptionStatus status, void *usr_data, void *usr_data2);
-typedef RetCode(*inco_subscription_accept_distribution)(incoming_subscription *isbs, const subscription_event *sbs_evt, void *usr_data, void *usr_data2);
-typedef void(*inco_subscription_on_stop)(incoming_subscription *isbs, void *usr_data, void *usr_data2);
+typedef void(*inco_subscription_status_change)(incoming_subscription *isbs, SubscriptionStatus status, void *ud, void *ud2);
+typedef RetCode(*inco_subscription_accept_distribution)(incoming_subscription *isbs, const subscription_event *sbs_evt, void *ud, void *ud2);
+typedef void(*inco_subscription_on_stop)(incoming_subscription *isbs, void *ud, void *ud2);
 
 /************************************************************************
 INCOMING SUBSCRIPTION
@@ -54,9 +54,9 @@ void inco_subscription_set_nclass_encode(incoming_subscription *sbs, Encode ncla
 void inco_subscription_set_open_timestamp_0(incoming_subscription *sbs, unsigned int ts0);
 void inco_subscription_set_open_timestamp_1(incoming_subscription *sbs, unsigned int ts1);
 RetCode inco_subscription_await_for_status_reached(incoming_subscription *sbs, SubscriptionStatus test, SubscriptionStatus *current, time_t sec, long nsec);
-void inco_subscription_set_status_change_handler(incoming_subscription *sbs, inco_subscription_status_change handler, void *usr_data, void *usr_data2);
-void inco_subscription_set_accept_distribution_handler(incoming_subscription *sbs, inco_subscription_accept_distribution handler, void *usr_data, void *usr_data2);
-void inco_subscription_set_on_stop_handler(incoming_subscription *sbs, inco_subscription_on_stop handler, void *usr_data, void *usr_data2);
+void inco_subscription_set_status_change_handler(incoming_subscription *sbs, inco_subscription_status_change handler, void *ud, void *ud2);
+void inco_subscription_set_accept_distribution_handler(incoming_subscription *sbs, inco_subscription_accept_distribution handler, void *ud, void *ud2);
+void inco_subscription_set_on_stop_handler(incoming_subscription *sbs, inco_subscription_on_stop handler, void *ud, void *ud2);
 RetCode inco_subscription_stop(incoming_subscription *sbs);
 RetCode inco_subscription_await_for_stop_result(incoming_subscription *sbs, SubscriptionResponse *stop_result, ProtocolCode *stop_protocode, time_t sec, long nsec);
 
@@ -64,10 +64,10 @@ RetCode inco_subscription_await_for_stop_result(incoming_subscription *sbs, Subs
 OUTGOING SUBSCRIPTION HANDLERS
 ************************************************************************/
 
-typedef void(*outg_subscription_status_change)(outgoing_subscription *osbs, SubscriptionStatus status, void *usr_data, void *usr_data2);
-typedef void(*outg_subscription_notify_event)(outgoing_subscription *osbs, const subscription_event *sbs_evt, void *usr_data, void *usr_data2);
-typedef void(*outg_subscription_on_start)(outgoing_subscription *osbs, void *usr_data, void *usr_data2);
-typedef void(*outg_subscription_on_stop)(outgoing_subscription *osbs, void *usr_data, void *usr_data2);
+typedef void(*outg_subscription_status_change)(outgoing_subscription *osbs, SubscriptionStatus status, void *ud, void *ud2);
+typedef void(*outg_subscription_notify_event)(outgoing_subscription *osbs, const subscription_event *sbs_evt, void *ud, void *ud2);
+typedef void(*outg_subscription_on_start)(outgoing_subscription *osbs, void *ud, void *ud2);
+typedef void(*outg_subscription_on_stop)(outgoing_subscription *osbs, void *ud, void *ud2);
 
 /************************************************************************
 OUTGOING SUBSCRIPTION
@@ -96,10 +96,10 @@ void outg_subscription_set_nclass_encode(outgoing_subscription *sbs, Encode ncla
 void outg_subscription_set_open_timestamp_0(outgoing_subscription *sbs, unsigned int ts0);
 void outg_subscription_set_open_timestamp_1(outgoing_subscription *sbs, unsigned int ts1);
 RetCode outg_subscription_await_for_status_reached(outgoing_subscription *sbs, SubscriptionStatus test, SubscriptionStatus *current, time_t sec, long nsec);
-void outg_subscription_set_status_change_handler(outgoing_subscription *sbs, outg_subscription_status_change handler, void *usr_data, void *usr_data2);
-void outg_subscription_set_event_notify_handler(outgoing_subscription *sbs, outg_subscription_notify_event handler, void *usr_data, void *usr_data2);
-void outg_subscription_set_on_start_handler(outgoing_subscription *sbs, outg_subscription_on_start handler, void *usr_data, void *usr_data2);
-void outg_subscription_set_on_stop_handler(outgoing_subscription *sbs, outg_subscription_on_stop handler, void *usr_data, void *usr_data2);
+void outg_subscription_set_status_change_handler(outgoing_subscription *sbs, outg_subscription_status_change handler, void *ud, void *ud2);
+void outg_subscription_set_event_notify_handler(outgoing_subscription *sbs, outg_subscription_notify_event handler, void *ud, void *ud2);
+void outg_subscription_set_on_start_handler(outgoing_subscription *sbs, outg_subscription_on_start handler, void *ud, void *ud2);
+void outg_subscription_set_on_stop_handler(outgoing_subscription *sbs, outg_subscription_on_stop handler, void *ud, void *ud2);
 RetCode outg_subscription_start(outgoing_subscription *sbs);
 
 RetCode outg_subscription_start_full(outgoing_subscription *sbs,

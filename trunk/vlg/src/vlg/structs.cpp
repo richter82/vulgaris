@@ -278,26 +278,26 @@ void s_hm::rm(hm_node *del_mn, uint32_t idx)
 
 void s_hm::enm(const s_hm &map,
                s_hm_enm_func enum_f,
-               void *usr_data) const
+               void *ud) const
 {
     hm_node *it = head_, *prev = nullptr;
     while(it) {
         prev = it;
         it = it->insrt_next_;
-        enum_f(map, prev->key_ptr_, prev->ptr_, usr_data);
+        enum_f(map, prev->key_ptr_, prev->ptr_, ud);
     }
 }
 
 void s_hm::enmbr(const s_hm &map,
                  s_hm_enm_func_br enum_f,
-                 void *usr_data) const
+                 void *ud) const
 {
     hm_node *it = head_, *prev = nullptr;
     bool brk = false;
     while(!brk && it) {
         prev = it;
         it = it->insrt_next_;
-        enum_f(map, prev->key_ptr_, prev->ptr_, usr_data, brk);
+        enum_f(map, prev->key_ptr_, prev->ptr_, ud, brk);
     }
 }
 

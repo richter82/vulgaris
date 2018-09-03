@@ -138,9 +138,9 @@ extern "C" {
 
     void nentity_desc_enum_member_descriptors(nentity_desc *edesc,
                                               enum_member_desc emd_f,
-                                              void *usr_data)
+                                              void *ud)
     {
-        edesc->enum_member_descriptors(emd_f, usr_data);
+        edesc->enum_member_descriptors(emd_f, ud);
     }
 
     unsigned int nclass_get_nclass_id(nclass *obj)
@@ -408,9 +408,9 @@ extern "C" {
         return nem->get_nentity_descriptor(nentity_name);
     }
 
-    void nentity_manager_enum_nentity_descriptors(nentity_manager *nem, enum_nentity_desc eedf, void *usr_data)
+    void nentity_manager_enum_nentity_descriptors(nentity_manager *nem, enum_nentity_desc eedf, void *ud)
     {
-        nem->enum_nentity_descriptors(eedf, usr_data);
+        nem->enum_nentity_descriptors(eedf, ud);
     }
 
     RetCode nentity_manager_extend_with_model_name(nentity_manager *nem, const char *model_name)
@@ -418,14 +418,14 @@ extern "C" {
         return nem->extend(model_name);
     }
 
-    void nentity_manager_enum_nenum_descriptors(nentity_manager *nem, enum_nentity_desc eedf, void *usr_data)
+    void nentity_manager_enum_nenum_descriptors(nentity_manager *nem, enum_nentity_desc eedf, void *ud)
     {
-        nem->enum_nenum_descriptors(eedf, usr_data);
+        nem->enum_nenum_descriptors(eedf, ud);
     }
 
-    void nentity_manager_enum_nclass_descriptors(nentity_manager *nem, enum_nentity_desc eedf, void *usr_data)
+    void nentity_manager_enum_nclass_descriptors(nentity_manager *nem, enum_nentity_desc eedf, void *ud)
     {
-        nem->enum_nclass_descriptors(eedf, usr_data);
+        nem->enum_nclass_descriptors(eedf, ud);
     }
 
     RetCode nentity_manager_new_nclass_instance(nentity_manager *nem,

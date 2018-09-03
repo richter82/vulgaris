@@ -12,8 +12,8 @@
 
 using namespace vlg;
 
-namespace vlg{
-    RetCode load_vlg_logger();
+namespace vlg {
+RetCode load_vlg_logger();
 }
 
 extern "C" {
@@ -36,7 +36,7 @@ extern "C" {
     {
         return logger::set_logger_cfg_file_path_name(file_path);
     }
-    
+
     RetCode load_vlg_logger()
     {
         return vlg::load_vlg_logger();
@@ -51,70 +51,70 @@ extern "C" {
 
     //peer
 
-    typedef void (*peer_status_change)(peer *p, PeerStatus status, void *usr_data, void *usr_data2);
-    typedef const char *(*peer_name_handler)(peer *p, void *usr_data, void *usr_data2);
-    typedef const unsigned int *(*peer_version_handler)(peer *p, void *usr_data, void *usr_data2);
-    typedef RetCode(*peer_load_config_handler)(peer *p, int pnum, const char *param, const char *value, void *usr_data, void *usr_data2);
-    typedef RetCode(*peer_init_handler)(peer *p, void *usr_data, void *usr_data2);
-    typedef RetCode(*peer_starting_handler)(peer *p, void *usr_data, void *usr_data2);
-    typedef RetCode(*peer_stopping_handler)(peer *p, void *usr_data, void *usr_data2);
-    typedef RetCode(*peer_on_move_running_handler)(peer *p, void *usr_data, void *usr_data2);
-    typedef void(*peer_dying_breath_handler)(peer *p, void *usr_data, void *usr_data2);
-    typedef RetCode(*peer_on_incoming_connection_handler)(peer *p, shr_incoming_connection *ic, void *usr_data, void *usr_data2);
+    typedef void (*peer_status_change)(peer *p, PeerStatus status, void *ud, void *ud2);
+    typedef const char *(*peer_name_handler)(peer *p, void *ud, void *ud2);
+    typedef const unsigned int *(*peer_version_handler)(peer *p, void *ud, void *ud2);
+    typedef RetCode(*peer_load_config_handler)(peer *p, int pnum, const char *param, const char *value, void *ud, void *ud2);
+    typedef RetCode(*peer_init_handler)(peer *p, void *ud, void *ud2);
+    typedef RetCode(*peer_starting_handler)(peer *p, void *ud, void *ud2);
+    typedef RetCode(*peer_stopping_handler)(peer *p, void *ud, void *ud2);
+    typedef RetCode(*peer_on_move_running_handler)(peer *p, void *ud, void *ud2);
+    typedef void(*peer_dying_breath_handler)(peer *p, void *ud, void *ud2);
+    typedef RetCode(*peer_on_incoming_connection_handler)(peer *p, shr_incoming_connection *ic, void *ud, void *ud2);
 
     //incoming connection
 
     typedef void(*inco_connection_status_change)(incoming_connection *conn,
                                                  ConnectionStatus status,
-                                                 void *usr_data,
-                                                 void *usr_data2);
+                                                 void *ud,
+                                                 void *ud2);
 
     typedef void(*inco_connection_on_disconnect_handler)(incoming_connection *conn,
                                                          ConnectivityEventResult con_evt_res,
                                                          ConnectivityEventType c_evt_type,
-                                                         void *usr_data,
-                                                         void *usr_data2);
+                                                         void *ud,
+                                                         void *ud2);
 
     typedef RetCode(*inco_connection_on_incoming_transaction_handler)(incoming_connection *conn,
                                                                       shr_incoming_transaction *itx,
-                                                                      void *usr_data,
-                                                                      void *usr_data2);
+                                                                      void *ud,
+                                                                      void *ud2);
 
     typedef RetCode(*inco_connection_on_incoming_subscription_handler)(incoming_connection *conn,
                                                                        shr_incoming_subscription *isbs,
-                                                                       void *usr_data,
-                                                                       void *usr_data2);
+                                                                       void *ud,
+                                                                       void *ud2);
 
     //incoming tx
 
     typedef void(*inco_transaction_status_change)(incoming_transaction *tx,
                                                   TransactionStatus status,
-                                                  void *usr_data,
-                                                  void *usr_data2);
+                                                  void *ud,
+                                                  void *ud2);
 
     typedef void(*inco_transaction_request)(incoming_transaction *tx,
-                                            void *usr_data,
-                                            void *usr_data2);
+                                            void *ud,
+                                            void *ud2);
 
     typedef void(*inco_transaction_closure)(incoming_transaction *tx,
-                                            void *usr_data,
-                                            void *usr_data2);
+                                            void *ud,
+                                            void *ud2);
 
     //incoming sbs
 
     typedef void(*inco_subscription_status_change)(incoming_subscription *isbs,
                                                    SubscriptionStatus status,
-                                                   void *usr_data,
-                                                   void *usr_data2);
+                                                   void *ud,
+                                                   void *ud2);
 
     typedef RetCode(*inco_subscription_accept_distribution)(incoming_subscription *isbs,
                                                             const subscription_event *sbs_evt,
-                                                            void *usr_data,
-                                                            void *usr_data2);
+                                                            void *ud,
+                                                            void *ud2);
 
     typedef void(*inco_subscription_on_stop)(incoming_subscription *isbs,
-                                             void *usr_data,
-                                             void *usr_data2);
+                                             void *ud,
+                                             void *ud2);
 }
 
 //c_inco_tx
@@ -180,32 +180,32 @@ extern "C" {
 
     void inco_transaction_set_transaction_status_change_handler(incoming_transaction *tx,
                                                                 inco_transaction_status_change handler,
-                                                                void *usr_data,
-                                                                void *usr_data2)
+                                                                void *ud,
+                                                                void *ud2)
     {
         static_cast<c_inco_tx *>(tx)->tsc_wr_ = handler;
-        static_cast<c_inco_tx *>(tx)->tsc_ud_ = usr_data;
-        static_cast<c_inco_tx *>(tx)->tsc_ud2_ = usr_data2;
+        static_cast<c_inco_tx *>(tx)->tsc_ud_ = ud;
+        static_cast<c_inco_tx *>(tx)->tsc_ud2_ = ud2;
     }
 
     void inco_transaction_set_transaction_closure_handler(incoming_transaction *tx,
                                                           inco_transaction_closure handler,
-                                                          void *usr_data,
-                                                          void *usr_data2)
+                                                          void *ud,
+                                                          void *ud2)
     {
         static_cast<c_inco_tx *>(tx)->tc_wr_ = handler;
-        static_cast<c_inco_tx *>(tx)->tc_ud_ = usr_data;
-        static_cast<c_inco_tx *>(tx)->tc_ud2_ = usr_data2;
+        static_cast<c_inco_tx *>(tx)->tc_ud_ = ud;
+        static_cast<c_inco_tx *>(tx)->tc_ud2_ = ud2;
     }
 
     void inco_transaction_set_inco_transaction_request_handler(incoming_transaction *tx,
                                                                inco_transaction_request handler,
-                                                               void *usr_data,
-                                                               void *usr_data2)
+                                                               void *ud,
+                                                               void *ud2)
     {
         static_cast<c_inco_tx *>(tx)->tr_wr_ = handler;
-        static_cast<c_inco_tx *>(tx)->tr_ud_ = usr_data;
-        static_cast<c_inco_tx *>(tx)->tr_ud2_ = usr_data2;
+        static_cast<c_inco_tx *>(tx)->tr_ud_ = ud;
+        static_cast<c_inco_tx *>(tx)->tr_ud2_ = ud2;
     }
 }
 
@@ -251,7 +251,7 @@ c_inco_sbs::c_inco_sbs(std::shared_ptr<incoming_connection> &c) :
     isos_ud_(nullptr),
     issc_ud2_(nullptr),
     isad_ud2_(nullptr),
-    isos_ud2_(nullptr){}
+    isos_ud2_(nullptr) {}
 
 //c_inco_sbs_factory
 
@@ -276,32 +276,32 @@ extern "C" {
 
     void inco_subscription_set_status_change_handler(incoming_subscription *subscription,
                                                      inco_subscription_status_change handler,
-                                                     void *usr_data,
-                                                     void *usr_data2)
+                                                     void *ud,
+                                                     void *ud2)
     {
         static_cast<c_inco_sbs *>(subscription)->issc_wr_ = handler;
-        static_cast<c_inco_sbs *>(subscription)->issc_ud_ = usr_data;
-        static_cast<c_inco_sbs *>(subscription)->issc_ud2_ = usr_data2;
+        static_cast<c_inco_sbs *>(subscription)->issc_ud_ = ud;
+        static_cast<c_inco_sbs *>(subscription)->issc_ud2_ = ud2;
     }
 
     void inco_subscription_set_accept_distribution_handler(incoming_subscription *subscription,
                                                            inco_subscription_accept_distribution handler,
-                                                           void *usr_data,
-                                                           void *usr_data2)
+                                                           void *ud,
+                                                           void *ud2)
     {
         static_cast<c_inco_sbs *>(subscription)->isad_wr_ = handler;
-        static_cast<c_inco_sbs *>(subscription)->isad_ud_ = usr_data;
-        static_cast<c_inco_sbs *>(subscription)->isad_ud2_ = usr_data2;
+        static_cast<c_inco_sbs *>(subscription)->isad_ud_ = ud;
+        static_cast<c_inco_sbs *>(subscription)->isad_ud2_ = ud2;
     }
 
     void inco_subscription_set_on_stop_handler(incoming_subscription *sbs,
                                                inco_subscription_on_stop handler,
-                                               void *usr_data,
-                                               void *usr_data2)
+                                               void *ud,
+                                               void *ud2)
     {
         static_cast<c_inco_sbs *>(sbs)->isos_ = handler;
-        static_cast<c_inco_sbs *>(sbs)->isos_ud_ = usr_data;
-        static_cast<c_inco_sbs *>(sbs)->isos_ud2_ = usr_data2;
+        static_cast<c_inco_sbs *>(sbs)->isos_ud_ = ud;
+        static_cast<c_inco_sbs *>(sbs)->isos_ud2_ = ud2;
     }
 }
 
@@ -392,42 +392,42 @@ extern "C" {
 
     void inco_connection_set_status_change_handler(incoming_connection *ic,
                                                    inco_connection_status_change hndl,
-                                                   void *usr_data,
-                                                   void *usr_data2)
+                                                   void *ud,
+                                                   void *ud2)
     {
         static_cast<c_inco_conn *>(ic)->icsc_ = hndl;
-        static_cast<c_inco_conn *>(ic)->icsc_ud_ = usr_data;
-        static_cast<c_inco_conn *>(ic)->icsc_ud2_ = usr_data2;
+        static_cast<c_inco_conn *>(ic)->icsc_ud_ = ud;
+        static_cast<c_inco_conn *>(ic)->icsc_ud2_ = ud2;
     }
 
     void inco_connection_set_on_disconnect_handler(incoming_connection *ic,
                                                    inco_connection_on_disconnect_handler hndl,
-                                                   void *usr_data,
-                                                   void *usr_data2)
+                                                   void *ud,
+                                                   void *ud2)
     {
         static_cast<c_inco_conn *>(ic)->icodh_ = hndl;
-        static_cast<c_inco_conn *>(ic)->icodh_ud_ = usr_data;
-        static_cast<c_inco_conn *>(ic)->icodh_ud2_ = usr_data2;
+        static_cast<c_inco_conn *>(ic)->icodh_ud_ = ud;
+        static_cast<c_inco_conn *>(ic)->icodh_ud2_ = ud2;
     }
 
     void inco_connection_set_on_incoming_transaction_handler(incoming_connection *ic,
                                                              inco_connection_on_incoming_transaction_handler hndl,
-                                                             void *usr_data,
-                                                             void *usr_data2)
+                                                             void *ud,
+                                                             void *ud2)
     {
         static_cast<c_inco_conn *>(ic)->icoith_ = hndl;
-        static_cast<c_inco_conn *>(ic)->icoith_ud_ = usr_data;
-        static_cast<c_inco_conn *>(ic)->icoith_ud2_ = usr_data2;
+        static_cast<c_inco_conn *>(ic)->icoith_ud_ = ud;
+        static_cast<c_inco_conn *>(ic)->icoith_ud2_ = ud2;
     }
 
     void inco_connection_set_on_incoming_subscription_handler(incoming_connection *ic,
                                                               inco_connection_on_incoming_subscription_handler hndl,
-                                                              void *usr_data,
-                                                              void *usr_data2)
+                                                              void *ud,
+                                                              void *ud2)
     {
         static_cast<c_inco_conn *>(ic)->icoish_ = hndl;
-        static_cast<c_inco_conn *>(ic)->icoish_ud_ = usr_data;
-        static_cast<c_inco_conn *>(ic)->icoish_ud2_ = usr_data2;
+        static_cast<c_inco_conn *>(ic)->icoish_ud_ = ud;
+        static_cast<c_inco_conn *>(ic)->icoish_ud2_ = ud2;
     }
 }
 
@@ -534,7 +534,7 @@ struct c_peer_listener : public peer_listener {
     }
 
     virtual void on_status_change(peer &p, PeerStatus status) override {
-        if(((c_peer &)p).psc_wr_){
+        if(((c_peer &)p).psc_wr_) {
             ((c_peer &)p).psc_wr_(&p, status, ((c_peer &)p).psc_ud_, ((c_peer &)p).psc_ud2_);
         }
     }
@@ -759,60 +759,60 @@ extern "C" {
         return p->extend_model(model_name);
     }
 
-    void peer_set_name_handler(peer *p, peer_name_handler hndl, void *usr_data, void *usr_data2)
+    void peer_set_name_handler(peer *p, peer_name_handler hndl, void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->pnh_wr_ = hndl;
-        static_cast<c_peer *>(p)->pnh_wr_ud_ = usr_data;
-        static_cast<c_peer *>(p)->pnh_wr_ud2_ = usr_data2;
+        static_cast<c_peer *>(p)->pnh_wr_ud_ = ud;
+        static_cast<c_peer *>(p)->pnh_wr_ud2_ = ud2;
     }
 
-    void peer_set_version_handler(peer *p, peer_version_handler hndl, void *usr_data, void *usr_data2)
+    void peer_set_version_handler(peer *p, peer_version_handler hndl, void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->pvh_wr_ = hndl;
-        static_cast<c_peer *>(p)->pvh_wr_ud_ = usr_data;
-        static_cast<c_peer *>(p)->pvh_wr_ud2_ = usr_data2;
+        static_cast<c_peer *>(p)->pvh_wr_ud_ = ud;
+        static_cast<c_peer *>(p)->pvh_wr_ud2_ = ud2;
     }
 
-    void peer_set_load_config_handler(peer *p, peer_load_config_handler hndl, void *usr_data, void *usr_data2)
+    void peer_set_load_config_handler(peer *p, peer_load_config_handler hndl, void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->plch_wr_ = hndl;
-        static_cast<c_peer *>(p)->plch_wr_ud_ = usr_data;
-        static_cast<c_peer *>(p)->plch_wr_ud2_ = usr_data2;
+        static_cast<c_peer *>(p)->plch_wr_ud_ = ud;
+        static_cast<c_peer *>(p)->plch_wr_ud2_ = ud2;
     }
 
-    void peer_set_init_handler(peer *p, peer_init_handler hndl, void *usr_data, void *usr_data2)
+    void peer_set_init_handler(peer *p, peer_init_handler hndl, void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->pih_wr_ = hndl;
-        static_cast<c_peer *>(p)->pih_wr_ud_ = usr_data;
-        static_cast<c_peer *>(p)->pih_wr_ud2_ = usr_data2;
+        static_cast<c_peer *>(p)->pih_wr_ud_ = ud;
+        static_cast<c_peer *>(p)->pih_wr_ud2_ = ud2;
     }
 
-    void peer_set_starting_handler(peer *p, peer_starting_handler hndl, void *usr_data, void *usr_data2)
+    void peer_set_starting_handler(peer *p, peer_starting_handler hndl, void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->pstarth_wr_ = hndl;
-        static_cast<c_peer *>(p)->pstarth_wr_ud_ = usr_data;
-        static_cast<c_peer *>(p)->pstarth_wr_ud2_ = usr_data2;
+        static_cast<c_peer *>(p)->pstarth_wr_ud_ = ud;
+        static_cast<c_peer *>(p)->pstarth_wr_ud2_ = ud2;
     }
 
-    void peer_set_stopping_handler(peer *p, peer_stopping_handler hndl, void *usr_data, void *usr_data2)
+    void peer_set_stopping_handler(peer *p, peer_stopping_handler hndl, void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->pstoph_wr_ = hndl;
-        static_cast<c_peer *>(p)->pstoph_wr_ud_ = usr_data;
-        static_cast<c_peer *>(p)->pstoph_wr_ud2_ = usr_data2;
+        static_cast<c_peer *>(p)->pstoph_wr_ud_ = ud;
+        static_cast<c_peer *>(p)->pstoph_wr_ud2_ = ud2;
     }
 
-    void peer_set_on_move_running_handler(peer *p, peer_on_move_running_handler hndl, void *usr_data, void *usr_data2)
+    void peer_set_on_move_running_handler(peer *p, peer_on_move_running_handler hndl, void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->ptoah_wr_ = hndl;
-        static_cast<c_peer *>(p)->ptoah_wr_ud_ = usr_data;
-        static_cast<c_peer *>(p)->ptoah_wr_ud2_ = usr_data2;
+        static_cast<c_peer *>(p)->ptoah_wr_ud_ = ud;
+        static_cast<c_peer *>(p)->ptoah_wr_ud2_ = ud2;
     }
 
-    void peer_set_dying_breath_handler(peer *p, peer_dying_breath_handler hndl, void *usr_data, void *usr_data2)
+    void peer_set_dying_breath_handler(peer *p, peer_dying_breath_handler hndl, void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->pdbh_wr_ = hndl;
-        static_cast<c_peer *>(p)->pdbh_wr_ud_ = usr_data;
-        static_cast<c_peer *>(p)->pdbh_wr_ud2_ = usr_data2;
+        static_cast<c_peer *>(p)->pdbh_wr_ud_ = ud;
+        static_cast<c_peer *>(p)->pdbh_wr_ud2_ = ud2;
     }
 
     void peer_set_configured(peer *p, int configured)
@@ -825,21 +825,21 @@ extern "C" {
         return p->get_status();
     }
 
-    void peer_set_status_change_handler(peer *p, peer_status_change handler, void *usr_data, void *usr_data2)
+    void peer_set_status_change_handler(peer *p, peer_status_change handler, void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->psc_wr_ = handler;
-        static_cast<c_peer *>(p)->psc_ud_ = usr_data;
-        static_cast<c_peer *>(p)->psc_ud2_ = usr_data2;
+        static_cast<c_peer *>(p)->psc_ud_ = ud;
+        static_cast<c_peer *>(p)->psc_ud2_ = ud2;
     }
 
     void peer_set_peer_on_incoming_connection_handler(peer *p,
                                                       peer_on_incoming_connection_handler handler,
-                                                      void *usr_data,
-                                                      void *usr_data2)
+                                                      void *ud,
+                                                      void *ud2)
     {
         static_cast<c_peer *>(p)->sic_wr_ = handler;
-        static_cast<c_peer *>(p)->sic_wr_ud_ = usr_data;
-        static_cast<c_peer *>(p)->sic_wr_ud2_ = usr_data2;
+        static_cast<c_peer *>(p)->sic_wr_ud_ = ud;
+        static_cast<c_peer *>(p)->sic_wr_ud2_ = ud2;
     }
 
     RetCode peer_await_for_status_reached(peer *p,

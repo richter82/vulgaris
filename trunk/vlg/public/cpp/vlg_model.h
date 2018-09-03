@@ -49,7 +49,7 @@ struct member_desc {
 };
 
 typedef bool(*enum_member_desc)(const member_desc &member_descriptor,
-                                void *usr_data);
+                                void *ud);
 
 /** @brief key_desc describes a key of a nclass type.
  */
@@ -66,13 +66,13 @@ struct key_desc {
     bool is_primary() const;
 
     void enum_member_descriptors(enum_member_desc emd_f,
-                                 void *usr_data) const;
+                                 void *ud) const;
 
     std::unique_ptr<key_desc_impl> impl_;
 };
 
 typedef bool(*enum_key_desc)(const key_desc &key_descriptor,
-                             void *usr_data);
+                             void *ud);
 
 /** @brief nentity_desc describes nentity types.
     nentity_desc can describe both a nclass type or a nenum type.
@@ -107,12 +107,12 @@ struct nentity_desc {
     const member_desc *get_member_desc_by_offset(size_t) const;
 
     void enum_member_descriptors(enum_member_desc emd_f,
-                                 void *usr_data) const;
+                                 void *ud) const;
 
     const key_desc *get_key_desc_by_id(unsigned short) const;
 
     void enum_key_descriptors(enum_key_desc ekd_f,
-                              void *usr_data) const;
+                              void *ud) const;
 
     std::unique_ptr<nentity_desc_impl> impl_;
 };
@@ -220,7 +220,7 @@ typedef const char *(*model_version_func)();
 typedef nentity_manager *(*nentity_manager_func)();
 
 typedef bool (*enum_nentity_desc)(const nentity_desc &nentity_descriptor,
-                                  void *usr_data);
+                                  void *ud);
 
 /** @brief nentity_manager holds nentity_desc objects.
  */
@@ -234,13 +234,13 @@ struct nentity_manager {
     const nentity_desc *get_nentity_descriptor(const char *nentity_name) const;
 
     void enum_nentity_descriptors(enum_nentity_desc eedf,
-                                  void *usr_data) const;
+                                  void *ud) const;
 
     void enum_nenum_descriptors(enum_nentity_desc eedf,
-                                void *usr_data)   const;
+                                void *ud)   const;
 
     void enum_nclass_descriptors(enum_nentity_desc eedf,
-                                 void *usr_data)  const;
+                                 void *ud)  const;
 
     RetCode new_nclass_instance(unsigned int nclass_id,
                                 std::unique_ptr<nclass> &new_nclass_obj) const;

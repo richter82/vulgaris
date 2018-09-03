@@ -25,7 +25,7 @@ struct cfg_ldr {
         typedef void(*param_callback_ud)(int pnum,
                                          const char *param,
                                          const char *value,
-                                         void *usr_data);
+                                         void *ud);
 
         explicit cfg_ldr();
 
@@ -37,7 +37,7 @@ struct cfg_ldr {
         void dump_config();
         void dump_config(FILE *fd);
         void enum_params(param_callback usr_clbk);
-        void enum_params(param_callback_ud usr_clbk_ud, void *usr_data);
+        void enum_params(param_callback_ud usr_clbk_ud, void *ud);
 
     private:
         RetCode r_load_data(const char *filename);

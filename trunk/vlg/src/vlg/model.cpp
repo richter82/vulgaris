@@ -113,10 +113,10 @@ bool key_desc::is_primary() const
     return impl_->primary_;
 }
 
-void key_desc::enum_member_descriptors(enum_member_desc emd_f, void *usr_data)  const
+void key_desc::enum_member_descriptors(enum_member_desc emd_f, void *ud)  const
 {
     for(auto it = impl_->fieldset_.begin(); it != impl_->fieldset_.end(); it++) {
-        if(!emd_f(**it, usr_data)) {
+        if(!emd_f(**it, ud)) {
             break;
         }
     }
@@ -412,10 +412,10 @@ const member_desc *nentity_desc::get_member_desc_by_offset(size_t fldoffst) cons
     }
 }
 
-void nentity_desc::enum_member_descriptors(enum_member_desc emdf, void *usr_data) const
+void nentity_desc::enum_member_descriptors(enum_member_desc emdf, void *ud) const
 {
     for(auto it = impl_->mmbrid_mdesc_.begin(); it != impl_->mmbrid_mdesc_.end(); it++) {
-        if(!emdf(*it->second, usr_data)) {
+        if(!emdf(*it->second, ud)) {
             break;
         }
     }
@@ -431,10 +431,10 @@ const key_desc *nentity_desc::get_key_desc_by_id(unsigned short keyid) const
     }
 }
 
-void nentity_desc::enum_key_descriptors(enum_key_desc ekd_f, void *usr_data) const
+void nentity_desc::enum_key_descriptors(enum_key_desc ekd_f, void *ud) const
 {
     for(auto it = impl_->keyid_kdesc_.begin(); it != impl_->keyid_kdesc_.end(); it++) {
-        if(!ekd_f(*it->second, usr_data)) {
+        if(!ekd_f(*it->second, ud)) {
             break;
         }
     }
@@ -534,21 +534,21 @@ const nentity_desc *nentity_manager::get_nentity_descriptor(const char *nclassna
 }
 
 void nentity_manager::enum_nentity_descriptors(enum_nentity_desc eedf,
-                                               void *usr_data) const
+                                               void *ud) const
 {
     for(auto it = impl_->entnm_edesc_.begin(); it != impl_->entnm_edesc_.end(); it++) {
-        if(!eedf(*it->second, usr_data)) {
+        if(!eedf(*it->second, ud)) {
             break;
         }
     }
 }
 
 void nentity_manager::enum_nenum_descriptors(enum_nentity_desc eedf,
-                                             void *usr_data) const
+                                             void *ud) const
 {
     for(auto it = impl_->entnm_edesc_.begin(); it != impl_->entnm_edesc_.end(); it++) {
         if(it->second->get_nentity_type() == NEntityType_NENUM) {
-            if(!eedf(*it->second, usr_data)) {
+            if(!eedf(*it->second, ud)) {
                 break;
             }
         }
@@ -556,10 +556,10 @@ void nentity_manager::enum_nenum_descriptors(enum_nentity_desc eedf,
 }
 
 void nentity_manager::enum_nclass_descriptors(enum_nentity_desc eedf,
-                                              void *usr_data) const
+                                              void *ud) const
 {
     for(auto it = impl_->entid_edesc_.begin(); it != impl_->entid_edesc_.end(); it++) {
-        if(!eedf(*it->second, usr_data)) {
+        if(!eedf(*it->second, ud)) {
             break;
         }
     }
@@ -1121,9 +1121,9 @@ struct prim_key_str_value_rec_ud {
 };
 
 bool enum_prim_key_str_value(const key_desc &kdsc,
-                             void *usr_data)
+                             void *ud)
 {
-    prim_key_str_value_rec_ud *rud = static_cast<prim_key_str_value_rec_ud *>(usr_data);
+    prim_key_str_value_rec_ud *rud = static_cast<prim_key_str_value_rec_ud *>(ud);
     if(kdsc.is_primary()) {
         for(auto it = kdsc.impl_->fieldset_.begin(); it != kdsc.impl_->fieldset_.end(); ++it) {
             const char *obj_f_ptr = nullptr;

@@ -36,7 +36,7 @@ enum VLG_SQLITE_DATATYPE {
 
 #define SQLITE_VAL_BUFF 256
 #define SQLITE_FIDX_BUFF 16
-    
+
 //utils
 
 const char *SQLITE_TypeStr_From_VLGType(Type type)
@@ -182,9 +182,9 @@ struct SQLTE_ENM_SELECT_REC_UD {
 };
 
 // enum_mmbrs_fill_entity
-bool enum_mmbrs_fill_entity(const member_desc &mmbrd, void *usr_data)
+bool enum_mmbrs_fill_entity(const member_desc &mmbrd, void *ud)
 {
-    SQLTE_ENM_SELECT_REC_UD *rud = static_cast<SQLTE_ENM_SELECT_REC_UD *>(usr_data);
+    SQLTE_ENM_SELECT_REC_UD *rud = static_cast<SQLTE_ENM_SELECT_REC_UD *>(ud);
     char *obj_f_ptr = nullptr;
     if(mmbrd.get_field_vlg_type() == Type_ENTITY) {
         if(mmbrd.get_field_nentity_type() == NEntityType_NENUM) {
@@ -607,7 +607,7 @@ inline RetCode pers_conn_sqlite::sqlite_connect(const char *filename, int flags)
     IFLOG(trc(TH_ID, LS_OPN "[filename:%s, flags:%d]", __func__, filename, flags))
     RetCode rcode = RetCode_OK;
     std::string db_path;
-    if(sqlite_db_data_dir[0]){
+    if(sqlite_db_data_dir[0]) {
         db_path = sqlite_db_data_dir;
         db_path.append(CR_FS_SEP);
     }
@@ -678,9 +678,9 @@ struct k_bind_w_c {
     const nentity_manager *nem;
 };
 
-bool enum_keyset_bind_where_clause(const member_desc &mmbrd, void *usr_data)
+bool enum_keyset_bind_where_clause(const member_desc &mmbrd, void *ud)
 {
-    k_bind_w_c &kbwc = *(k_bind_w_c *)usr_data;
+    k_bind_w_c &kbwc = *(k_bind_w_c *)ud;
     const char *obj_f_ptr = kbwc.obj_ptr + mmbrd.get_field_offset();
     if(mmbrd.get_field_vlg_type() == Type_ENTITY) {
         //treat enum as int
@@ -709,9 +709,9 @@ inline RetCode pers_conn_sqlite::sqlite_bind_where_clause(unsigned int key,
     return RetCode_OK;
 }
 
-bool enum_bind_obj_fields(const member_desc &mmbrd, void *usr_data)
+bool enum_bind_obj_fields(const member_desc &mmbrd, void *ud)
 {
-    k_bind_w_c &kbwc = *(k_bind_w_c *)usr_data;
+    k_bind_w_c &kbwc = *(k_bind_w_c *)ud;
     if(mmbrd.get_field_vlg_type() == Type_ENTITY) {
         if(mmbrd.get_field_nentity_type() == NEntityType_NENUM) {
             size_t i = 0;
@@ -858,9 +858,9 @@ struct SQLTE_ENM_CREATE_REC_UD {
     std::string *last_error_msg;
 };
 
-bool enum_mmbrs_create_table(const member_desc &mmbrd, void *usr_data)
+bool enum_mmbrs_create_table(const member_desc &mmbrd, void *ud)
 {
-    SQLTE_ENM_CREATE_REC_UD *rud = static_cast<SQLTE_ENM_CREATE_REC_UD *>(usr_data);
+    SQLTE_ENM_CREATE_REC_UD *rud = static_cast<SQLTE_ENM_CREATE_REC_UD *>(ud);
     std::string idx_prfx;
     char idx_b[SQLITE_FIDX_BUFF] = {0};
     idx_prfx.assign(*(rud->prfx));
@@ -956,9 +956,9 @@ bool enum_mmbrs_create_table(const member_desc &mmbrd, void *usr_data)
     return true;
 }
 
-bool enum_keyset_create_table(const member_desc &mmbrd, void *usr_data)
+bool enum_keyset_create_table(const member_desc &mmbrd, void *ud)
 {
-    SQLTE_ENM_CREATE_REC_UD *rud = static_cast<SQLTE_ENM_CREATE_REC_UD *>(usr_data);
+    SQLTE_ENM_CREATE_REC_UD *rud = static_cast<SQLTE_ENM_CREATE_REC_UD *>(ud);
     //coma handling
     if(*(rud->first_key_mmbr)) {
         *(rud->first_key_mmbr) = false;
@@ -969,9 +969,9 @@ bool enum_keyset_create_table(const member_desc &mmbrd, void *usr_data)
     return true;
 }
 
-bool enum_keys_create_table(const key_desc &kdsc, void *usr_data)
+bool enum_keys_create_table(const key_desc &kdsc, void *ud)
 {
-    SQLTE_ENM_CREATE_REC_UD *rud = static_cast<SQLTE_ENM_CREATE_REC_UD *>(usr_data);
+    SQLTE_ENM_CREATE_REC_UD *rud = static_cast<SQLTE_ENM_CREATE_REC_UD *>(ud);
     //coma handling
     if(*(rud->first_key)) {
         *(rud->first_key) = false;
@@ -1045,9 +1045,9 @@ struct SQLTE_ENM_KSET_SELECT_REC_UD {
     bool *first_key;
 };
 
-bool enum_keyset_select_table(const member_desc &mmbrd, void *usr_data)
+bool enum_keyset_select_table(const member_desc &mmbrd, void *ud)
 {
-    SQLTE_ENM_KSET_SELECT_REC_UD &rud = *static_cast<SQLTE_ENM_KSET_SELECT_REC_UD *>(usr_data);
+    SQLTE_ENM_KSET_SELECT_REC_UD &rud = *static_cast<SQLTE_ENM_KSET_SELECT_REC_UD *>(ud);
     if(*(rud.first_key)) {
         *(rud.first_key) = false;
     } else {
@@ -1141,9 +1141,9 @@ struct SQLTE_ENM_UPDATE_REC_UD {
     std::string *last_error_msg;
 };
 
-bool enum_mmbrs_update(const member_desc &mmbrd, void *usr_data)
+bool enum_mmbrs_update(const member_desc &mmbrd, void *ud)
 {
-    SQLTE_ENM_UPDATE_REC_UD *rud = static_cast<SQLTE_ENM_UPDATE_REC_UD *>(usr_data);
+    SQLTE_ENM_UPDATE_REC_UD *rud = static_cast<SQLTE_ENM_UPDATE_REC_UD *>(ud);
     std::string idx_prfx;
     char idx_b[SQLITE_FIDX_BUFF] = { 0 };
     idx_prfx.assign(*(rud->prfx));
@@ -1254,9 +1254,9 @@ bool enum_mmbrs_update(const member_desc &mmbrd, void *usr_data)
     return true;
 }
 
-bool enum_keyset_update_table(const member_desc &mmbrd, void *usr_data)
+bool enum_keyset_update_table(const member_desc &mmbrd, void *ud)
 {
-    SQLTE_ENM_UPDATE_REC_UD &rud = *static_cast<SQLTE_ENM_UPDATE_REC_UD *>(usr_data);
+    SQLTE_ENM_UPDATE_REC_UD &rud = *static_cast<SQLTE_ENM_UPDATE_REC_UD *>(ud);
     if(*(rud.first_key)) {
         *(rud.first_key) = false;
     } else {
@@ -1361,9 +1361,9 @@ struct SQLTE_ENM_DELETE_REC_UD {
     std::string *last_error_msg;
 };
 
-bool enum_keyset_delete_table(const member_desc &mmbrd, void *usr_data)
+bool enum_keyset_delete_table(const member_desc &mmbrd, void *ud)
 {
-    SQLTE_ENM_DELETE_REC_UD &rud = *static_cast<SQLTE_ENM_DELETE_REC_UD *>(usr_data);
+    SQLTE_ENM_DELETE_REC_UD &rud = *static_cast<SQLTE_ENM_DELETE_REC_UD *>(ud);
     if(*(rud.first_key)) {
         *(rud.first_key) = false;
     } else {
@@ -1474,9 +1474,9 @@ struct SQLTE_ENM_INSERT_REC_UD {
     std::string *last_error_msg;
 };
 
-bool enum_mmbrs_insert(const member_desc &mmbrd, void *usr_data)
+bool enum_mmbrs_insert(const member_desc &mmbrd, void *ud)
 {
-    SQLTE_ENM_INSERT_REC_UD *rud = static_cast<SQLTE_ENM_INSERT_REC_UD *>(usr_data);
+    SQLTE_ENM_INSERT_REC_UD *rud = static_cast<SQLTE_ENM_INSERT_REC_UD *>(ud);
     std::string idx_prfx;
     char idx_b[SQLITE_FIDX_BUFF] = {0};
     idx_prfx.assign(*(rud->prfx));
