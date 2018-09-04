@@ -132,26 +132,26 @@ struct persistence_connection_impl {
                                  const nentity_desc &edesc);
 
     RetCode save_entity(const nentity_manager &nem,
-                        unsigned int ts0,
-                        unsigned int ts1,
+                        unsigned int ts_0,
+                        unsigned int ts_1,
                         const nclass &in);
 
     RetCode update_entity(unsigned short key,
                           const nentity_manager &nem,
-                          unsigned int ts0,
-                          unsigned int ts1,
+                          unsigned int ts_0,
+                          unsigned int ts_1,
                           const nclass &in);
 
     RetCode save_or_update_entity(unsigned short key,
                                   const nentity_manager &nem,
-                                  unsigned int ts0,
-                                  unsigned int ts1,
+                                  unsigned int ts_0,
+                                  unsigned int ts_1,
                                   const nclass &in);
 
     RetCode remove_entity(unsigned short key,
                           const nentity_manager &nem,
-                          unsigned int ts0,
-                          unsigned int ts1,
+                          unsigned int ts_0,
+                          unsigned int ts_1,
                           PersistenceDeletionMode mode,
                           const nclass &in);
 
@@ -185,20 +185,20 @@ struct persistence_connection_impl {
 
     virtual RetCode do_update(unsigned int key,
                               const nentity_manager &nem,
-                              unsigned int ts0,
-                              unsigned int ts1,
+                              unsigned int ts_0,
+                              unsigned int ts_1,
                               const nclass &in) = 0;
 
     virtual RetCode do_delete(unsigned int key,
                               const nentity_manager &nem,
-                              unsigned int ts0,
-                              unsigned int ts1,
+                              unsigned int ts_0,
+                              unsigned int ts_1,
                               PersistenceDeletionMode mode,
                               const nclass &in) = 0;
 
     virtual RetCode do_insert(const nentity_manager &nem,
-                              unsigned int ts0,
-                              unsigned int ts1,
+                              unsigned int ts_0,
+                              unsigned int ts_1,
                               const nclass &in,
                               bool fail_is_error = true) = 0;
 

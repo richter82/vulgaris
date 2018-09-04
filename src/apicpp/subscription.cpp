@@ -166,14 +166,14 @@ void incoming_subscription::set_nclass_encode(Encode nclass_encode)
     impl_->enctyp_ = nclass_encode;
 }
 
-void incoming_subscription::set_open_timestamp_0(unsigned int ts0)
+void incoming_subscription::set_open_timestamp_0(unsigned int ts_0)
 {
-    impl_->open_tmstp0_ = ts0;
+    impl_->open_tmstp0_ = ts_0;
 }
 
-void incoming_subscription::set_open_timestamp_1(unsigned int ts1)
+void incoming_subscription::set_open_timestamp_1(unsigned int ts_1)
 {
-    impl_->open_tmstp1_ = ts1;
+    impl_->open_tmstp1_ = ts_1;
 }
 
 SubscriptionStatus incoming_subscription::get_status() const
@@ -327,14 +327,14 @@ void outgoing_subscription::set_nclass_encode(Encode nclass_encode)
     impl_->enctyp_ = nclass_encode;
 }
 
-void outgoing_subscription::set_open_timestamp_0(unsigned int ts0)
+void outgoing_subscription::set_open_timestamp_0(unsigned int ts_0)
 {
-    impl_->open_tmstp0_ = ts0;
+    impl_->open_tmstp0_ = ts_0;
 }
 
-void outgoing_subscription::set_open_timestamp_1(unsigned int ts1)
+void outgoing_subscription::set_open_timestamp_1(unsigned int ts_1)
 {
-    impl_->open_tmstp1_ = ts1;
+    impl_->open_tmstp1_ = ts_1;
 }
 
 SubscriptionStatus outgoing_subscription::get_status() const
@@ -364,16 +364,16 @@ RetCode outgoing_subscription::start(SubscriptionType sbs_type,
                                      SubscriptionDownloadType sbs_dwnl_type,
                                      Encode nclass_encode,
                                      unsigned int nclass_id,
-                                     unsigned int open_timestamp_0,
-                                     unsigned int open_timestamp_1)
+                                     unsigned int ts_0,
+                                     unsigned int ts_1)
 {
     return impl_->start(sbs_type,
                         sbs_mode,
                         sbs_flow_type,
                         sbs_dwnl_type,
                         nclass_encode, nclass_id,
-                        open_timestamp_0,
-                        open_timestamp_1);
+                        ts_0,
+                        ts_1);
 }
 
 RetCode outgoing_subscription::await_for_start_result(SubscriptionResponse

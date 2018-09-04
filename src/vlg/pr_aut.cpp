@@ -326,7 +326,7 @@ RetCode peer_automa::step_init()
         return RetCode_BADCFG;
     }
     if((peer_last_error_ = on_automa_init())) {
-        IFLOG(err(TH_ID, LS_APL"#init FAIL# [user handler]"))
+        IFLOG(err(TH_ID, LS_APL"#init FAIL# [user hndl]"))
         return peer_last_error_;
     }
     IFLOG(inf(TH_ID, LS_APL"#init#"))

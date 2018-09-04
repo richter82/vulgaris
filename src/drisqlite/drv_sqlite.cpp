@@ -293,20 +293,20 @@ struct pers_conn_sqlite : public persistence_connection_impl {
 
         virtual RetCode do_update(unsigned int key,
                                   const nentity_manager &nem,
-                                  unsigned int ts0,
-                                  unsigned int ts1,
+                                  unsigned int ts_0,
+                                  unsigned int ts_1,
                                   const nclass &in) override;
 
         virtual RetCode do_delete(unsigned int key,
                                   const nentity_manager &nem,
-                                  unsigned int ts0,
-                                  unsigned int ts1,
+                                  unsigned int ts_0,
+                                  unsigned int ts_1,
                                   PersistenceDeletionMode mode,
                                   const nclass &in) override;
 
         virtual RetCode do_insert(const nentity_manager &nem,
-                                  unsigned int ts0,
-                                  unsigned int ts1,
+                                  unsigned int ts_0,
+                                  unsigned int ts_1,
                                   const nclass &in,
                                   bool fail_is_error = true) override;
 
@@ -327,8 +327,8 @@ struct pers_conn_sqlite : public persistence_connection_impl {
     private:
         static inline RetCode read_timestamp_and_del_from_record(sqlite3_stmt *stmt,
                                                                  int &sqlite_rc,
-                                                                 unsigned int *ts0,
-                                                                 unsigned int *ts1,
+                                                                 unsigned int *ts_0,
+                                                                 unsigned int *ts_1,
                                                                  bool *del);
     protected:
         sqlite3 *db_;
@@ -403,7 +403,7 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                                                                    in_out_ts0_,
                                                                    in_out_ts1_,
                                                                    nullptr);
-                                int column_idx = 3; //column idx, [ts0, ts1, del] we start from 3.
+                                int column_idx = 3; //column idx, [ts_0, ts_1, del] we start from 3.
                                 SQLTE_ENM_SELECT_REC_UD rud = { *in_nem_,
                                                                 reinterpret_cast<char *>(&in_out_obj_),
                                                                 &column_idx,
@@ -564,7 +564,7 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                                                                in_out_ts0_,
                                                                in_out_ts1_,
                                                                nullptr);
-                            int column_idx = 3; //column idx, [ts0, ts1, del] we start from 3.
+                            int column_idx = 3; //column idx, [ts_0, ts_1, del] we start from 3.
                             SQLTE_ENM_SELECT_REC_UD rud = { *in_nem_,
                                                             reinterpret_cast<char *>(in_out_obj_),
                                                             &column_idx,
@@ -809,15 +809,15 @@ inline RetCode pers_conn_sqlite::sqlite_release_stmt(sqlite3_stmt *stmt)
 
 inline RetCode pers_conn_sqlite::read_timestamp_and_del_from_record(sqlite3_stmt *stmt,
                                                                     int &sqlite_rc,
-                                                                    unsigned int *ts0,
-                                                                    unsigned int *ts1,
+                                                                    unsigned int *ts_0,
+                                                                    unsigned int *ts_1,
                                                                     bool *del)
 {
     RetCode rcode = RetCode_OK;
     //TS0
-    *ts0 = (unsigned int)sqlite3_column_int(stmt, 0);
+    *ts_0 = (unsigned int)sqlite3_column_int(stmt, 0);
     //TS1
-    *ts1 = (unsigned int)sqlite3_column_int(stmt, 1);
+    *ts_1 = (unsigned int)sqlite3_column_int(stmt, 1);
     //DEL
     if(del) {
         *del = sqlite3_column_int(stmt, 2) ? true : false;
@@ -1269,8 +1269,8 @@ bool enum_keyset_update_table(const member_desc &mmbrd, void *ud)
 
 RetCode pers_conn_sqlite::do_update(unsigned int key,
                                     const nentity_manager &nem,
-                                    unsigned int ts0,
-                                    unsigned int ts1,
+                                    unsigned int ts_0,
+                                    unsigned int ts_1,
                                     const nclass &in)
 {
     static pthread_rwlock_t upd_stmt_m_l = PTHREAD_RWLOCK_INITIALIZER;
@@ -1337,8 +1337,8 @@ RetCode pers_conn_sqlite::do_update(unsigned int key,
     task->in_nem_ = &nem;
     task->in_key_ = key;
     task->in_obj_ = &in;
-    task->in_out_ts0_ = &ts0;
-    task->in_out_ts1_ = &ts1;
+    task->in_out_ts0_ = &ts_0;
+    task->in_out_ts1_ = &ts_1;
     task->stmt_bf_ = upd_stmt;
     IFLOG(dbg(TH_ID, LS_STM "[update_stmt:%s]", __func__, upd_stmt))
     if((rcode = worker_->submit(*task))) {
@@ -1376,8 +1376,8 @@ bool enum_keyset_delete_table(const member_desc &mmbrd, void *ud)
 
 RetCode pers_conn_sqlite::do_delete(unsigned int key,
                                     const nentity_manager &nem,
-                                    unsigned int ts0,
-                                    unsigned int ts1,
+                                    unsigned int ts_0,
+                                    unsigned int ts_1,
                                     PersistenceDeletionMode mode,
                                     const nclass &in)
 {
@@ -1443,8 +1443,8 @@ RetCode pers_conn_sqlite::do_delete(unsigned int key,
     std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_DELETE));
     task->in_nem_ = &nem;
     task->in_key_ = key;
-    task->in_out_ts0_ = &ts0;
-    task->in_out_ts1_ = &ts1;
+    task->in_out_ts0_ = &ts_0;
+    task->in_out_ts1_ = &ts_1;
     task->in_mode_ = mode;
     task->in_obj_ = &in;
     task->stmt_bf_ = del_stmt;
@@ -1592,8 +1592,8 @@ bool enum_mmbrs_insert(const member_desc &mmbrd, void *ud)
 }
 
 RetCode pers_conn_sqlite::do_insert(const nentity_manager &nem,
-                                    unsigned int ts0,
-                                    unsigned int ts1,
+                                    unsigned int ts_0,
+                                    unsigned int ts_1,
                                     const nclass &in,
                                     bool fail_is_error)
 {
@@ -1648,8 +1648,8 @@ RetCode pers_conn_sqlite::do_insert(const nentity_manager &nem,
     std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_INSERT));
     task->in_nem_ = &nem;
     task->in_obj_ = &in;
-    task->in_out_ts0_ = &ts0;
-    task->in_out_ts1_ = &ts1;
+    task->in_out_ts0_ = &ts_0;
+    task->in_out_ts1_ = &ts_1;
     task->in_fail_is_error_ = fail_is_error;
     task->stmt_bf_ = ins_stmt;
     IFLOG(dbg(TH_ID, LS_STM "[insert_stmt:%s]", __func__, ins_stmt))
