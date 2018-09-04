@@ -15,8 +15,8 @@ struct subscription_event_impl {
                                      unsigned int evtid,
                                      SubscriptionEventType set,
                                      ProtocolCode pc,
-                                     unsigned int ts0,
-                                     unsigned int ts1,
+                                     unsigned int ts_0,
+                                     unsigned int ts_1,
                                      Action act,
                                      const nclass &data);
 
@@ -24,8 +24,8 @@ struct subscription_event_impl {
                                      unsigned int evtid,
                                      SubscriptionEventType set,
                                      ProtocolCode pc,
-                                     unsigned int ts0,
-                                     unsigned int ts1,
+                                     unsigned int ts_0,
+                                     unsigned int ts_1,
                                      Action act,
                                      std::unique_ptr<nclass> &data);
 

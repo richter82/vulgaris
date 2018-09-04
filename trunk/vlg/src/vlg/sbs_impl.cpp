@@ -22,16 +22,16 @@ subscription_event_impl::subscription_event_impl(unsigned int sbsid,
                                                  unsigned int evtid,
                                                  SubscriptionEventType set,
                                                  ProtocolCode pc,
-                                                 unsigned int ts0,
-                                                 unsigned int ts1,
+                                                 unsigned int ts_0,
+                                                 unsigned int ts_1,
                                                  Action act,
                                                  const nclass &data) :
     sbs_sbsid_(sbsid),
     sbs_evtid_(evtid),
     sbs_evttype_(set),
     sbs_protocode_(pc),
-    sbs_tmstp0_(ts0),
-    sbs_tmstp1_(ts1),
+    sbs_tmstp0_(ts_0),
+    sbs_tmstp1_(ts_1),
     sbs_act_(act),
     sbs_data_(data.clone())
 {}
@@ -40,16 +40,16 @@ subscription_event_impl::subscription_event_impl(unsigned int sbsid,
                                                  unsigned int evtid,
                                                  SubscriptionEventType set,
                                                  ProtocolCode pc,
-                                                 unsigned int ts0,
-                                                 unsigned int ts1,
+                                                 unsigned int ts_0,
+                                                 unsigned int ts_1,
                                                  Action act,
                                                  std::unique_ptr<nclass> &data) :
     sbs_sbsid_(sbsid),
     sbs_evtid_(evtid),
     sbs_evttype_(set),
     sbs_protocode_(pc),
-    sbs_tmstp0_(ts0),
-    sbs_tmstp1_(ts1),
+    sbs_tmstp0_(ts_0),
+    sbs_tmstp1_(ts_1),
     sbs_act_(act),
     sbs_data_(std::move(data))
 {}
@@ -355,7 +355,7 @@ RetCode incoming_subscription_impl::send_initial_query()
     per_nclass_id_conn_set *sdr = nullptr;
     subscription_event_impl *sbs_dwnl_evt_impl = nullptr;
     std::unique_ptr<nclass> dwnl_obj;
-    unsigned int ts0 = 0, ts1 = 0;
+    unsigned int ts_0 = 0, ts_1 = 0;
     if((rcode = conn_->peer_->get_per_nclassid_helper_rec(nclassid_, &sdr))) {
         IFLOG(cri(TH_ID, LS_CLO "[failed get per-nclass_id helper class][res:%d]", __func__, rcode))
         return rcode;
@@ -363,13 +363,13 @@ RetCode incoming_subscription_impl::send_initial_query()
 
     do {
         conn_->peer_->nem_.new_nclass_instance(nclassid_, dwnl_obj);
-        if((rcode = initial_query_->load_next_entity(ts0, ts1, *dwnl_obj)) == RetCode_DBROW) {
+        if((rcode = initial_query_->load_next_entity(ts_0, ts_1, *dwnl_obj)) == RetCode_DBROW) {
             sbs_dwnl_evt_impl = new subscription_event_impl(sbsid_,
                                                             sdr->next_sbs_evt_id(),
                                                             SubscriptionEventType_DOWNLOAD,
                                                             ProtocolCode_SUCCESS,
-                                                            ts0,
-                                                            ts1,
+                                                            ts_0,
+                                                            ts_1,
                                                             Action_INSERT,
                                                             dwnl_obj);
             std::shared_ptr<subscription_event> sbs_evt(new subscription_event(*sbs_dwnl_evt_impl));
@@ -464,10 +464,9 @@ outgoing_subscription_impl::~outgoing_subscription_impl()
         await_for_stop_result(sres, spc);
     }
 
-    /*BUG!*/
-    auto *oconn = dynamic_cast<outgoing_connection_impl *>(conn_);
-    if(oconn) {
-        oconn->release_subscription(this);
+    /*BUG?*/
+    if(conn_) {
+        static_cast<outgoing_connection_impl *>(conn_)->release_subscription(this);
     }
 }
 
@@ -496,7 +495,7 @@ RetCode outgoing_subscription_impl::start()
         return RetCode_BADSTTS;
     }
     RetCode rcode = RetCode_OK;
-    auto &oconn = *dynamic_cast<outgoing_connection_impl *>(conn_);
+    auto &oconn = *static_cast<outgoing_connection_impl *>(conn_);
     reqid_ = oconn.next_reqid();
     outgoing_subscription_impl *self = this;
     rcode = oconn.outg_reqid_sbs_map_.put(&reqid_, &self);
@@ -516,7 +515,7 @@ RetCode outgoing_subscription_impl::start(SubscriptionType sbscr_type,
                                           unsigned int start_timestamp_1)
 {
     IFLOG(trc(TH_ID,
-              LS_OPN"[sbsid:%d, sbscr_type:%d, sbscr_mode:%d, sbscr_flow_type:%d, sbscr_dwnld_type:%d, sbscr_nclass_encode:%d, nclass_id:%u, ts0:%u, ts1:%u]",
+              LS_OPN"[sbsid:%d, sbscr_type:%d, sbscr_mode:%d, sbscr_flow_type:%d, sbscr_dwnld_type:%d, sbscr_nclass_encode:%d, nclass_id:%u, ts_0:%u, ts_1:%u]",
               __func__,
               sbsid_,
               sbscr_type,

@@ -87,47 +87,47 @@ RetCode persistence_connection::create_entity_schema(PersistenceAlteringMode mod
 }
 
 RetCode persistence_connection::save_obj(const nentity_manager &nem,
-                                         unsigned int ts0,
-                                         unsigned int ts1,
+                                         unsigned int ts_0,
+                                         unsigned int ts_1,
                                          const nclass &in)
 {
     persistence_connection_impl *pc = driver_.available_connection(in.get_id());
     if(!pc) {
         return RetCode_UNVRSC;
     }
-    return pc->save_entity(nem, ts0, ts1, in);
+    return pc->save_entity(nem, ts_0, ts_1, in);
 }
 
 RetCode persistence_connection::update_obj(unsigned short key,
                                            const nentity_manager &nem,
-                                           unsigned int ts0,
-                                           unsigned int ts1,
+                                           unsigned int ts_0,
+                                           unsigned int ts_1,
                                            const nclass &in)
 {
     persistence_connection_impl *pc = driver_.available_connection(in.get_id());
     if(!pc) {
         return RetCode_UNVRSC;
     }
-    return pc->update_entity(key, nem, ts0, ts1, in);
+    return pc->update_entity(key, nem, ts_0, ts_1, in);
 }
 
 RetCode persistence_connection::save_or_update_obj(unsigned short key,
                                                    const nentity_manager &nem,
-                                                   unsigned int ts0,
-                                                   unsigned int ts1,
+                                                   unsigned int ts_0,
+                                                   unsigned int ts_1,
                                                    const nclass &in)
 {
     persistence_connection_impl *pc = driver_.available_connection(in.get_id());
     if(!pc) {
         return RetCode_UNVRSC;
     }
-    return pc->save_or_update_entity(key, nem, ts0, ts1, in);
+    return pc->save_or_update_entity(key, nem, ts_0, ts_1, in);
 }
 
 RetCode persistence_connection::remove_obj(unsigned short key,
                                            const nentity_manager &nem,
-                                           unsigned int ts0,
-                                           unsigned int ts1,
+                                           unsigned int ts_0,
+                                           unsigned int ts_1,
                                            PersistenceDeletionMode mode,
                                            const nclass &in)
 {
@@ -135,7 +135,7 @@ RetCode persistence_connection::remove_obj(unsigned short key,
     if(!pc) {
         return RetCode_UNVRSC;
     }
-    return pc->remove_entity(key, nem, ts0, ts1, mode, in);
+    return pc->remove_entity(key, nem, ts_0, ts_1, mode, in);
 }
 
 RetCode persistence_connection::load_obj(unsigned short key,

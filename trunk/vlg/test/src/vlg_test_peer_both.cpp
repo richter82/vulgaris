@@ -15,12 +15,12 @@
 #define TEST_TMOUT 4
 
 int save_nclass_position(const char *filename,
-                         unsigned int ts0,
-                         unsigned int ts1)
+                         unsigned int ts_0,
+                         unsigned int ts_1)
 {
     FILE *f;
     if((f = fopen(filename,"w+"))) {
-        fprintf(f, "%u\n%u\n", ts0, ts1);
+        fprintf(f, "%u\n%u\n", ts_0, ts_1);
         fclose(f);
         return 0;
     } else {
@@ -29,15 +29,15 @@ int save_nclass_position(const char *filename,
 }
 
 int load_nclass_position(const char *filename,
-                         unsigned int &ts0,
-                         unsigned int &ts1)
+                         unsigned int &ts_0,
+                         unsigned int &ts_1)
 {
     FILE *f;
     if((f = fopen(filename,"r"))) {
-        fscanf(f, "%u%u", &ts0, &ts1);
+        fscanf(f, "%u%u", &ts_0, &ts_1);
         fclose(f);
     } else {
-        ts0 = ts1 = 0;
+        ts_0 = ts_1 = 0;
     }
     return 0;
 }
@@ -430,9 +430,9 @@ struct entry_point {
 
         vlg::RetCode start_user_sbs() {
             //READ LAST RECEIVED POSITION TS0, TS1
-            unsigned int ts0 = 0, ts1 = 0;
+            unsigned int ts_0 = 0, ts_1 = 0;
 
-            //load_nclass_position("user.pos", ts0, ts1);
+            //load_nclass_position("user.pos", ts_0, ts_1);
 
             out_sbs_.bind(out_conn_);
             out_sbs_.start(vlg::SubscriptionType_SNAPSHOT,
@@ -441,8 +441,8 @@ struct entry_point {
                            vlg::SubscriptionDownloadType_PARTIAL,
                            vlg::Encode_INDEXED_NOT_ZERO,
                            USER_ENTITY_ID,
-                           ts0,
-                           ts1);
+                           ts_0,
+                           ts_1);
 
             vlg::ProtocolCode pcode = vlg::ProtocolCode_SUCCESS;
             vlg::SubscriptionResponse resp = vlg::SubscriptionResponse_UNDEFINED;
@@ -530,8 +530,8 @@ struct entry_point {
                 void do_qry_distr(vlg::persistence_query &p_qry,
                                   vlg::nclass &qry_obj) {
                     vlg::RetCode rcode = vlg::RetCode_OK;
-                    unsigned int ts0 = 0, ts1 = 0;
-                    while((rcode = p_qry.next_obj(ts0, ts1, qry_obj)) == vlg::RetCode_DBROW) {
+                    unsigned int ts_0 = 0, ts_1 = 0;
+                    while((rcode = p_qry.next_obj(ts_0, ts_1, qry_obj)) == vlg::RetCode_DBROW) {
                         ep_.tpeer_.obj_distribute(vlg::SubscriptionEventType_LIVE,
                                                   vlg::Action_UPDATE,
                                                   qry_obj);

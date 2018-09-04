@@ -152,8 +152,8 @@ struct outgoing_subscription {
                   SubscriptionDownloadType sbs_dwnl_type,
                   Encode nclass_encode,
                   unsigned int nclass_id,
-                  unsigned int open_timestamp_0 = 0,
-                  unsigned int open_timestamp_1 = 0);
+                  unsigned int ts_0 = 0,
+                  unsigned int ts_1 = 0);
 
     RetCode await_for_start_result(SubscriptionResponse &start_result,
                                    ProtocolCode &start_protocode,

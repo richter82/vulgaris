@@ -23,15 +23,15 @@ PEER HANDLERS
 ************************************************************************/
 
 typedef void (*peer_status_change)(peer *p, PeerStatus status, void *ud, void *ud2);
-typedef const char *(*peer_name_handler)(peer *p, void *ud, void *ud2);
-typedef const unsigned int *(*peer_version_handler)(peer *p, void *ud, void *ud2);
-typedef RetCode(*peer_load_config_handler)(peer *p, int pnum, const char *param, const char *value, void *ud, void *ud2);
-typedef RetCode(*peer_init_handler)(peer *p, void *ud, void *ud2);
-typedef RetCode(*peer_starting_handler)(peer *p, void *ud, void *ud2);
-typedef RetCode(*peer_stopping_handler)(peer *p, void *ud, void *ud2);
-typedef RetCode(*peer_on_move_running_handler)(peer *p, void *ud, void *ud2);
-typedef void(*peer_dying_breath_handler)(peer *p, void *ud, void *ud2);
-typedef RetCode(*peer_on_incoming_connection_handler)(peer *p, shr_incoming_connection *ic, void *ud, void *ud2);
+typedef const char *(*peer_name)(peer *p, void *ud, void *ud2);
+typedef const unsigned int *(*peer_version)(peer *p, void *ud, void *ud2);
+typedef RetCode(*peer_load_config)(peer *p, int pnum, const char *param, const char *value, void *ud, void *ud2);
+typedef RetCode(*peer_init)(peer *p, void *ud, void *ud2);
+typedef RetCode(*peer_starting)(peer *p, void *ud, void *ud2);
+typedef RetCode(*peer_stopping)(peer *p, void *ud, void *ud2);
+typedef RetCode(*peer_on_move_running)(peer *p, void *ud, void *ud2);
+typedef void(*peer_dying_breath)(peer *p, void *ud, void *ud2);
+typedef RetCode(*peer_on_incoming_connection)(peer *p, shr_incoming_connection *ic, void *ud, void *ud2);
 
 /************************************************************************
 PEER
@@ -71,17 +71,17 @@ void peer_set_dropping_existing_schema(peer *p, int drop_existing_schema);
 void peer_add_load_persistent_driver(peer *p, const char *driver);
 RetCode peer_extend_model_with_nem(peer *p, nentity_manager *nem);
 RetCode peer_extend_model_with_model_name(peer *p, const char *model_name);
-void peer_set_name_handler(peer *p, peer_name_handler hndl, void *ud, void *ud2);
-void peer_set_version_handler(peer *p, peer_version_handler hndl, void *ud, void *ud2);
-void peer_set_load_config_handler(peer *p, peer_load_config_handler hndl, void *ud, void *ud2);
-void peer_set_init_handler(peer *p, peer_init_handler hndl, void *ud, void *ud2);
-void peer_set_starting_handler(peer *p, peer_starting_handler hndl, void *ud, void *ud2);
-void peer_set_stopping_handler(peer *p, peer_stopping_handler hndl, void *ud, void *ud2);
-void peer_set_on_move_running_handler(peer *p, peer_on_move_running_handler hndl, void *ud, void *ud2);
-void peer_set_dying_breath_handler(peer *p, peer_dying_breath_handler hndl, void *ud, void *ud2);
+void peer_set_name(peer *p, peer_name hndl, void *ud, void *ud2);
+void peer_set_version(peer *p, peer_version hndl, void *ud, void *ud2);
+void peer_set_load_config(peer *p, peer_load_config hndl, void *ud, void *ud2);
+void peer_set_init(peer *p, peer_init hndl, void *ud, void *ud2);
+void peer_set_starting(peer *p, peer_starting hndl, void *ud, void *ud2);
+void peer_set_stopping(peer *p, peer_stopping hndl, void *ud, void *ud2);
+void peer_set_on_move_running(peer *p, peer_on_move_running hndl, void *ud, void *ud2);
+void peer_set_dying_breath(peer *p, peer_dying_breath hndl, void *ud, void *ud2);
 void peer_set_configured(peer *p, int configured);
-void peer_set_status_change_handler(peer *p, peer_status_change handler, void *ud, void *ud2);
-void peer_set_peer_on_incoming_connection_handler(peer *p, peer_on_incoming_connection_handler handler, void *ud, void *ud2);
+void peer_set_status_change(peer *p, peer_status_change hndl, void *ud, void *ud2);
+void peer_set_peer_on_incoming_connection(peer *p, peer_on_incoming_connection hndl, void *ud, void *ud2);
 PeerStatus peer_get_status(peer *p);
 RetCode peer_await_for_status_reached(peer *p, PeerStatus test, PeerStatus *current, time_t sec, long nsec);
 RetCode peer_await_for_status_change(peer *p, PeerStatus *peer_status, time_t sec, long nsec);

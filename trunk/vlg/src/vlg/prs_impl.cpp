@@ -290,8 +290,8 @@ RetCode persistence_connection_impl::load_entity(unsigned short key,
 
 RetCode persistence_connection_impl::save_entity(const nentity_manager
                                                  &nem,
-                                                 unsigned int ts0,
-                                                 unsigned int ts1,
+                                                 unsigned int ts_0,
+                                                 unsigned int ts_1,
                                                  const nclass &in)
 {
     RetCode rcode = RetCode_OK;
@@ -299,14 +299,14 @@ RetCode persistence_connection_impl::save_entity(const nentity_manager
     if(!edesc.is_persistent()) {
         return RetCode_BADARG;
     }
-    rcode = do_insert(nem, ts0, ts1, in);
+    rcode = do_insert(nem, ts_0, ts_1, in);
     return rcode;
 }
 
 RetCode persistence_connection_impl::update_entity(unsigned short key,
                                                    const nentity_manager &nem,
-                                                   unsigned int ts0,
-                                                   unsigned int ts1,
+                                                   unsigned int ts_0,
+                                                   unsigned int ts_1,
                                                    const nclass &in)
 {
     RetCode rcode = RetCode_OK;
@@ -314,14 +314,14 @@ RetCode persistence_connection_impl::update_entity(unsigned short key,
     if(!edesc.is_persistent()) {
         return RetCode_BADARG;
     }
-    rcode = do_update(key, nem, ts0, ts1, in);
+    rcode = do_update(key, nem, ts_0, ts_1, in);
     return rcode;
 }
 
 RetCode persistence_connection_impl::save_or_update_entity(unsigned short key,
                                                            const nentity_manager &nem,
-                                                           unsigned int ts0,
-                                                           unsigned int ts1,
+                                                           unsigned int ts_0,
+                                                           unsigned int ts_1,
                                                            const nclass &in)
 {
     RetCode rcode = RetCode_OK;
@@ -329,17 +329,17 @@ RetCode persistence_connection_impl::save_or_update_entity(unsigned short key,
     if(!edesc.is_persistent()) {
         return RetCode_BADARG;
     }
-    rcode = do_insert(nem, ts0, ts1, in, false);
+    rcode = do_insert(nem, ts_0, ts_1, in, false);
     if(rcode) {
-        rcode = do_update(key, nem, ts0, ts1, in);
+        rcode = do_update(key, nem, ts_0, ts_1, in);
     }
     return rcode;
 }
 
 RetCode persistence_connection_impl::remove_entity(unsigned short key,
                                                    const nentity_manager &nem,
-                                                   unsigned int ts0,
-                                                   unsigned int ts1,
+                                                   unsigned int ts_0,
+                                                   unsigned int ts_1,
                                                    PersistenceDeletionMode mode,
                                                    const nclass &in)
 {
@@ -348,7 +348,7 @@ RetCode persistence_connection_impl::remove_entity(unsigned short key,
     if(!edesc.is_persistent()) {
         return RetCode_BADARG;
     }
-    rcode = do_delete(key, nem, ts0, ts1, mode, in);
+    rcode = do_delete(key, nem, ts_0, ts_1, mode, in);
     return rcode;
 }
 

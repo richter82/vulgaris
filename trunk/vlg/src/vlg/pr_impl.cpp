@@ -548,16 +548,16 @@ unsigned int per_nclass_id_conn_set::next_sbs_evt_id()
     return ++sbsevtid_;
 }
 
-void per_nclass_id_conn_set::next_time_stamp(unsigned int &ts0,
-                                             unsigned int &ts1)
+void per_nclass_id_conn_set::next_time_stamp(unsigned int &ts_0,
+                                             unsigned int &ts_1)
 {
     scoped_mx smx(mon_);
-    ts0 = (unsigned int)time(nullptr);
-    if(ts0 == ts0_) {
-        ts1 = ++ts1_;
+    ts_0 = (unsigned int)time(nullptr);
+    if(ts_0 == ts0_) {
+        ts_1 = ++ts1_;
     } else {
-        ts0_ = ts0;
-        ts1 = ts1_ = 0;
+        ts0_ = ts_0;
+        ts_1 = ts1_ = 0;
     }
 }
 

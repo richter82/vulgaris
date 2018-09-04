@@ -44,15 +44,15 @@ struct peer_recv_task_outg_conn : public p_tsk {
 an helper class used to server peer
 to generate a progressive
 - per nclass_id - subscription event id.
-It is also used to generate ts0, ts1.
+It is also used to generate ts_0, ts_1.
 ***********************************/
 struct per_nclass_id_conn_set {
     explicit per_nclass_id_conn_set();
 
     unsigned int next_sbs_evt_id();
 
-    void next_time_stamp(unsigned int &ts0,
-                         unsigned int &ts1);
+    void next_time_stamp(unsigned int &ts_0,
+                         unsigned int &ts_1);
 
     unsigned int sbsevtid_;
     unsigned int ts0_;

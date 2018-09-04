@@ -16,28 +16,28 @@ extern "C" {
                                                  void *ud,
                                                  void *ud2);
 
-    typedef void(*inco_connection_on_disconnect_handler)(incoming_connection *ic,
-                                                         ConnectivityEventResult con_evt_res,
-                                                         ConnectivityEventType c_evt_type,
-                                                         void *ud,
-                                                         void *ud2);
+    typedef void(*inco_connection_on_disconnect)(incoming_connection *ic,
+                                                 ConnectivityEventResult con_evt_res,
+                                                 ConnectivityEventType c_evt_type,
+                                                 void *ud,
+                                                 void *ud2);
 
     typedef void(*outg_connection_status_change)(outgoing_connection *oc,
                                                  ConnectionStatus status,
                                                  void *ud,
                                                  void *ud2);
 
-    typedef void(*outg_connection_on_connect_handler)(outgoing_connection *oc,
-                                                      ConnectivityEventResult con_evt_res,
-                                                      ConnectivityEventType c_evt_type,
-                                                      void *ud,
-                                                      void *ud2);
+    typedef void(*outg_connection_on_connect)(outgoing_connection *oc,
+                                              ConnectivityEventResult con_evt_res,
+                                              ConnectivityEventType c_evt_type,
+                                              void *ud,
+                                              void *ud2);
 
-    typedef void(*outg_connection_on_disconnect_handler)(outgoing_connection *oc,
-                                                         ConnectivityEventResult con_evt_res,
-                                                         ConnectivityEventType c_evt_type,
-                                                         void *ud,
-                                                         void *ud2);
+    typedef void(*outg_connection_on_disconnect)(outgoing_connection *oc,
+                                                 ConnectivityEventResult con_evt_res,
+                                                 ConnectivityEventType c_evt_type,
+                                                 void *ud,
+                                                 void *ud2);
 }
 
 //inco_connection
@@ -125,8 +125,8 @@ struct c_outg_conn : public outgoing_connection {
     c_outg_conn();
 
     outg_connection_status_change ocsc_;
-    outg_connection_on_connect_handler ococh_;
-    outg_connection_on_disconnect_handler ocodh_;
+    outg_connection_on_connect ococh_;
+    outg_connection_on_disconnect ocodh_;
 
     void *ocsc_ud_;
     void *ococh_ud_;
@@ -139,19 +139,25 @@ struct c_outg_conn : public outgoing_connection {
 struct c_outg_conn_listener : public outgoing_connection_listener {
     virtual void on_status_change(outgoing_connection &oc,
                                   ConnectionStatus current) override {
-        ((c_outg_conn &)oc).ocsc_(&oc, current, ((c_outg_conn &)oc).ocsc_ud_, ((c_outg_conn &)oc).ocsc_ud2_);
+        if(((c_outg_conn &)oc).ocsc_) {
+            ((c_outg_conn &)oc).ocsc_(&oc, current, ((c_outg_conn &)oc).ocsc_ud_, ((c_outg_conn &)oc).ocsc_ud2_);
+        }
     }
 
     virtual void on_connect(outgoing_connection &oc,
                             ConnectivityEventResult con_evt_res,
                             ConnectivityEventType c_evt_type) override {
-        ((c_outg_conn &)oc).ococh_(&oc, con_evt_res, c_evt_type, ((c_outg_conn &)oc).ococh_ud_, ((c_outg_conn &)oc).ococh_ud2_);
+        if(((c_outg_conn &)oc).ococh_) {
+            ((c_outg_conn &)oc).ococh_(&oc, con_evt_res, c_evt_type, ((c_outg_conn &)oc).ococh_ud_, ((c_outg_conn &)oc).ococh_ud2_);
+        }
     }
 
     virtual void on_disconnect(outgoing_connection &oc,
                                ConnectivityEventResult con_evt_res,
                                ConnectivityEventType c_evt_type) override {
-        ((c_outg_conn &)oc).ocodh_(&oc, con_evt_res, c_evt_type, ((c_outg_conn &)oc).ocodh_ud_, ((c_outg_conn &)oc).ocodh_ud2_);
+        if(((c_outg_conn &)oc).ocodh_) {
+            ((c_outg_conn &)oc).ocodh_(&oc, con_evt_res, c_evt_type, ((c_outg_conn &)oc).ocodh_ud_, ((c_outg_conn &)oc).ocodh_ud2_);
+        }
     }
 };
 
@@ -249,12 +255,12 @@ extern "C" {
         return oc->await_for_status_change(*status, sec, nsec);
     }
 
-    void outg_connection_set_status_change_handler(outgoing_connection *oc,
-                                                   outg_connection_status_change handler,
-                                                   void *ud,
-                                                   void *ud2)
+    void outg_connection_set_status_change(outgoing_connection *oc,
+                                           outg_connection_status_change hndl,
+                                           void *ud,
+                                           void *ud2)
     {
-        static_cast<c_outg_conn *>(oc)->ocsc_ = handler;
+        static_cast<c_outg_conn *>(oc)->ocsc_ = hndl;
         static_cast<c_outg_conn *>(oc)->ocsc_ud_ = ud;
         static_cast<c_outg_conn *>(oc)->ocsc_ud2_ = ud2;
     }
@@ -288,20 +294,20 @@ extern "C" {
         return oc->await_for_disconnection_result(*con_evt_res, *connectivity_evt_type, sec, nsec);
     }
 
-    void outg_connection_set_on_connect_handler(outgoing_connection *oc,
-                                                outg_connection_on_connect_handler hndl,
-                                                void *ud,
-                                                void *ud2)
+    void outg_connection_set_on_connect(outgoing_connection *oc,
+                                        outg_connection_on_connect hndl,
+                                        void *ud,
+                                        void *ud2)
     {
         static_cast<c_outg_conn *>(oc)->ococh_ = hndl;
         static_cast<c_outg_conn *>(oc)->ococh_ud_ = ud;
         static_cast<c_outg_conn *>(oc)->ococh_ud2_ = ud2;
     }
 
-    void outg_connection_set_on_disconnect_handler(outgoing_connection *oc,
-                                                   outg_connection_on_disconnect_handler hndl,
-                                                   void *ud,
-                                                   void *ud2)
+    void outg_connection_set_on_disconnect(outgoing_connection *oc,
+                                           outg_connection_on_disconnect hndl,
+                                           void *ud,
+                                           void *ud2)
     {
         static_cast<c_outg_conn *>(oc)->ocodh_ = hndl;
         static_cast<c_outg_conn *>(oc)->ocodh_ud_ = ud;

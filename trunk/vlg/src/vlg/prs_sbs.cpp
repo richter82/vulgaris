@@ -156,7 +156,7 @@ RetCode peer_impl::obj_save(const nclass &in)
     }
     RetCode rcode = RetCode_OK;
     per_nclass_id_conn_set *sdr = nullptr;
-    unsigned int ts0 = 0, ts1 = 0;
+    unsigned int ts_0 = 0, ts_1 = 0;
     unsigned int nclass_id = in.get_id();
     const nentity_desc *nclass_desc = nem_.get_nentity_descriptor(nclass_id);
     if(nclass_desc) {
@@ -168,8 +168,8 @@ RetCode peer_impl::obj_save(const nclass &in)
                     if((rcode = get_per_nclassid_helper_rec(in.get_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_CLO "[failed get per-nclass_id helper class][res:%d]", __func__, rcode))
                     } else {
-                        sdr->next_time_stamp(ts0, ts1);
-                        rcode = conn->save_entity(nem_, ts0, ts1, in);
+                        sdr->next_time_stamp(ts_0, ts_1);
+                        rcode = conn->save_entity(nem_, ts_0, ts_1, in);
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "[no available persistence-connection for nclass_id:%d]", __func__, nclass_id))
@@ -199,7 +199,7 @@ RetCode peer_impl::obj_update(unsigned short key,
     }
     RetCode rcode = RetCode_OK;
     per_nclass_id_conn_set *sdr = nullptr;
-    unsigned int ts0 = 0, ts1 = 0;
+    unsigned int ts_0 = 0, ts_1 = 0;
     unsigned int nclass_id = in.get_id();
     const nentity_desc *nclass_desc = nem_.get_nentity_descriptor(nclass_id);
     if(nclass_desc) {
@@ -211,8 +211,8 @@ RetCode peer_impl::obj_update(unsigned short key,
                     if((rcode = get_per_nclassid_helper_rec(in.get_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_CLO "[failed get per-nclass_id helper class][res:%d]", __func__, rcode))
                     } else {
-                        sdr->next_time_stamp(ts0, ts1);
-                        rcode = conn->update_entity(key, nem_, ts0, ts1, in);
+                        sdr->next_time_stamp(ts_0, ts_1);
+                        rcode = conn->update_entity(key, nem_, ts_0, ts_1, in);
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "[no available persistence-connection for nclass_id:%d]", __func__, nclass_id))
@@ -241,7 +241,7 @@ RetCode peer_impl::obj_update_or_save(unsigned short key,
         return RetCode_KO;
     }
     RetCode rcode = RetCode_OK;
-    unsigned int ts0 = 0, ts1 = 0;
+    unsigned int ts_0 = 0, ts_1 = 0;
     per_nclass_id_conn_set *sdr = nullptr;
     unsigned int nclass_id = in.get_id();
     const nentity_desc *nclass_desc = nem_.get_nentity_descriptor(nclass_id);
@@ -254,8 +254,8 @@ RetCode peer_impl::obj_update_or_save(unsigned short key,
                     if((rcode = get_per_nclassid_helper_rec(in.get_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_TRL "%s() - failed get per-nclass_id helper class [res:%d]", __func__, rcode))
                     } else {
-                        sdr->next_time_stamp(ts0, ts1);
-                        rcode = conn->save_or_update_entity(key, nem_, ts0, ts1, in);
+                        sdr->next_time_stamp(ts_0, ts_1);
+                        rcode = conn->save_or_update_entity(key, nem_, ts_0, ts_1, in);
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "[no available persistence-connection for nclass_id:%d]", __func__, nclass_id))
@@ -286,7 +286,7 @@ RetCode peer_impl::obj_remove(unsigned short key,
     }
     RetCode rcode = RetCode_OK;
     per_nclass_id_conn_set *sdr = nullptr;
-    unsigned int ts0 = 0, ts1 = 0;
+    unsigned int ts_0 = 0, ts_1 = 0;
     unsigned int nclass_id = in.get_id();
     const nentity_desc *nclass_desc = nem_.get_nentity_descriptor(nclass_id);
     if(nclass_desc) {
@@ -298,8 +298,8 @@ RetCode peer_impl::obj_remove(unsigned short key,
                     if((rcode = get_per_nclassid_helper_rec(in.get_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_TRL "%s() - failed get per-nclass_id helper class [res:%d]", __func__, rcode))
                     } else {
-                        sdr->next_time_stamp(ts0, ts1);
-                        rcode = conn->remove_entity(key, nem_, ts0, ts1, mode, in);
+                        sdr->next_time_stamp(ts_0, ts_1);
+                        rcode = conn->remove_entity(key, nem_, ts_0, ts_1, mode, in);
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "[no available persistence-connection for nclass_id:%d]", __func__, nclass_id))
@@ -329,18 +329,18 @@ RetCode peer_impl::obj_distribute(SubscriptionEventType evt_type,
 {
     RetCode rcode = RetCode_OK;
     per_nclass_id_conn_set *sdr = nullptr;
-    unsigned int ts0 = 0, ts1 = 0;
+    unsigned int ts_0 = 0, ts_1 = 0;
     if((rcode = get_per_nclassid_helper_rec(in.get_id(), &sdr))) {
         IFLOG(cri(TH_ID, LS_TRL "failed get per-nclass_id helper class [res:%d]", __func__, rcode))
     } else {
-        sdr->next_time_stamp(ts0, ts1);
+        sdr->next_time_stamp(ts_0, ts_1);
         if(sdr->connid_condesc_set_.size()) {
             subscription_event_impl *sbs_evt = new subscription_event_impl(0,
                                                                            sdr->next_sbs_evt_id(),
                                                                            evt_type,
                                                                            proto_code,
-                                                                           ts0,
-                                                                           ts1,
+                                                                           ts_0,
+                                                                           ts_1,
                                                                            act,
                                                                            in);
             if((rcode = submit_sbs_evt_task(*sbs_evt, sdr->connid_condesc_set_))) {
@@ -362,7 +362,7 @@ RetCode peer_impl::obj_save_and_distribute(const nclass &in)
     }
     RetCode rcode = RetCode_OK;
     per_nclass_id_conn_set *sdr = nullptr;
-    unsigned int ts0 = 0, ts1 = 0;
+    unsigned int ts_0 = 0, ts_1 = 0;
     unsigned int nclass_id = in.get_id();
     const nentity_desc *nclass_desc = nem_.get_nentity_descriptor(nclass_id);
     if(nclass_desc) {
@@ -374,8 +374,8 @@ RetCode peer_impl::obj_save_and_distribute(const nclass &in)
                     if((rcode = get_per_nclassid_helper_rec(in.get_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_CLO "[failed get per-nclass_id helper class][res:%d]", __func__, rcode))
                     } else {
-                        sdr->next_time_stamp(ts0, ts1);
-                        rcode = conn->save_entity(nem_, ts0, ts1, in);
+                        sdr->next_time_stamp(ts_0, ts_1);
+                        rcode = conn->save_entity(nem_, ts_0, ts_1, in);
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "[no available persistence-connection for nclass_id:%d]", __func__, nclass_id))
@@ -396,13 +396,13 @@ RetCode peer_impl::obj_save_and_distribute(const nclass &in)
     //**** SBS MNG BG
     if(!rcode) {
         if(sdr->connid_condesc_set_.size()) {
-            unsigned int ts1 = 0;
+            unsigned int ts_1 = 0;
             subscription_event_impl *sbs_evt = new subscription_event_impl(0,
                                                                            sdr->next_sbs_evt_id(),
                                                                            SubscriptionEventType_LIVE,
                                                                            ProtocolCode_SUCCESS,
-                                                                           ts0,
-                                                                           ts1,
+                                                                           ts_0,
+                                                                           ts_1,
                                                                            Action_INSERT,
                                                                            in);
             rcode = submit_sbs_evt_task(*sbs_evt, sdr->connid_condesc_set_);
@@ -421,7 +421,7 @@ RetCode peer_impl::obj_update_and_distribute(unsigned short key,
     }
     RetCode rcode = RetCode_OK;
     per_nclass_id_conn_set *sdr = nullptr;
-    unsigned int ts0 = 0, ts1 = 0;
+    unsigned int ts_0 = 0, ts_1 = 0;
     unsigned int nclass_id = in.get_id();
     const nentity_desc *nclass_desc = nem_.get_nentity_descriptor(nclass_id);
     if(nclass_desc) {
@@ -433,8 +433,8 @@ RetCode peer_impl::obj_update_and_distribute(unsigned short key,
                     if((rcode = get_per_nclassid_helper_rec(in.get_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_CLO "[failed get per-nclass_id helper class][res:%d]", __func__, rcode))
                     } else {
-                        sdr->next_time_stamp(ts0, ts1);
-                        rcode = conn->update_entity(key, nem_, ts0, ts1, in);
+                        sdr->next_time_stamp(ts_0, ts_1);
+                        rcode = conn->update_entity(key, nem_, ts_0, ts_1, in);
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "[no available persistence-connection for nclass_id:%d]", __func__, nclass_id))
@@ -459,8 +459,8 @@ RetCode peer_impl::obj_update_and_distribute(unsigned short key,
                                                                            sdr->next_sbs_evt_id(),
                                                                            SubscriptionEventType_LIVE,
                                                                            ProtocolCode_SUCCESS,
-                                                                           ts0,
-                                                                           ts1,
+                                                                           ts_0,
+                                                                           ts_1,
                                                                            Action_UPDATE,
                                                                            in);
             rcode = submit_sbs_evt_task(*sbs_evt, sdr->connid_condesc_set_);
@@ -478,7 +478,7 @@ RetCode peer_impl::obj_update_or_save_and_distribute(unsigned short key,
         return RetCode_KO;
     }
     RetCode rcode = RetCode_OK;
-    unsigned int ts0 = 0, ts1 = 0;
+    unsigned int ts_0 = 0, ts_1 = 0;
     per_nclass_id_conn_set *sdr = nullptr;
     unsigned int nclass_id = in.get_id();
     const nentity_desc *nclass_desc = nem_.get_nentity_descriptor(nclass_id);
@@ -491,8 +491,8 @@ RetCode peer_impl::obj_update_or_save_and_distribute(unsigned short key,
                     if((rcode = get_per_nclassid_helper_rec(in.get_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_TRL "%s() - failed get per-nclass_id helper class [res:%d]", __func__, rcode))
                     } else {
-                        sdr->next_time_stamp(ts0, ts1);
-                        rcode = conn->save_or_update_entity(key, nem_, ts0, ts1, in);
+                        sdr->next_time_stamp(ts_0, ts_1);
+                        rcode = conn->save_or_update_entity(key, nem_, ts_0, ts_1, in);
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "[no available persistence-connection for nclass_id:%d]", __func__, nclass_id))
@@ -517,8 +517,8 @@ RetCode peer_impl::obj_update_or_save_and_distribute(unsigned short key,
                                                                            sdr->next_sbs_evt_id(),
                                                                            SubscriptionEventType_LIVE,
                                                                            ProtocolCode_SUCCESS,
-                                                                           ts0,
-                                                                           ts1,
+                                                                           ts_0,
+                                                                           ts_1,
                                                                            Action_UPDATE,
                                                                            in);
             rcode = submit_sbs_evt_task(*sbs_evt, sdr->connid_condesc_set_);
@@ -538,7 +538,7 @@ RetCode peer_impl::obj_remove_and_distribute(unsigned short key,
     }
     RetCode rcode = RetCode_OK;
     per_nclass_id_conn_set *sdr = nullptr;
-    unsigned int ts0 = 0, ts1 = 0;
+    unsigned int ts_0 = 0, ts_1 = 0;
     unsigned int nclass_id = in.get_id();
     const nentity_desc *nclass_desc = nem_.get_nentity_descriptor(nclass_id);
     if(nclass_desc) {
@@ -550,8 +550,8 @@ RetCode peer_impl::obj_remove_and_distribute(unsigned short key,
                     if((rcode = get_per_nclassid_helper_rec(in.get_id(), &sdr))) {
                         IFLOG(cri(TH_ID, LS_TRL "%s() - failed get per-nclass_id helper class [res:%d]", __func__, rcode))
                     } else {
-                        sdr->next_time_stamp(ts0, ts1);
-                        rcode = conn->remove_entity(key, nem_, ts0, ts1, mode, in);
+                        sdr->next_time_stamp(ts_0, ts_1);
+                        rcode = conn->remove_entity(key, nem_, ts_0, ts_1, mode, in);
                     }
                 } else {
                     IFLOG(err(TH_ID, LS_TRL "[no available persistence-connection for nclass_id:%d]", __func__, nclass_id))
@@ -576,8 +576,8 @@ RetCode peer_impl::obj_remove_and_distribute(unsigned short key,
                                                                            sdr->next_sbs_evt_id(),
                                                                            SubscriptionEventType_LIVE,
                                                                            ProtocolCode_SUCCESS,
-                                                                           ts0,
-                                                                           ts1,
+                                                                           ts_0,
+                                                                           ts_1,
                                                                            (mode == PersistenceDeletionMode_LOGICAL) ? Action_DELETE : Action_REMOVE,
                                                                            in);
             rcode = submit_sbs_evt_task(*sbs_evt, sdr->connid_condesc_set_);

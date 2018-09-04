@@ -101,8 +101,7 @@ extern "C" {
         return subscription->get_flow_type();
     }
 
-    SubscriptionDownloadType inco_subscription_get_subscription_download_type(
-        incoming_subscription *subscription)
+    SubscriptionDownloadType inco_subscription_get_subscription_download_type(incoming_subscription *subscription)
     {
         return subscription->get_download_type();
     }
@@ -162,14 +161,14 @@ extern "C" {
         subscription->set_nclass_encode(nclass_encode);
     }
 
-    void inco_subscription_set_open_timestamp_0(incoming_subscription *subscription, unsigned int ts0)
+    void inco_subscription_set_open_timestamp_0(incoming_subscription *subscription, unsigned int ts_0)
     {
-        subscription->set_open_timestamp_0(ts0);
+        subscription->set_open_timestamp_0(ts_0);
     }
 
-    void inco_subscription_set_open_timestamp_1(incoming_subscription *subscription, unsigned int ts1)
+    void inco_subscription_set_open_timestamp_1(incoming_subscription *subscription, unsigned int ts_1)
     {
-        subscription->set_open_timestamp_0(ts1);
+        subscription->set_open_timestamp_0(ts_1);
     }
 
     RetCode inco_subscription_await_for_status_reached(incoming_subscription *subscription,
@@ -207,8 +206,8 @@ extern "C" {
 struct c_outg_sbs : public outgoing_subscription {
     c_outg_sbs();
 
-    outg_subscription_notify_event osad_wr_;
-    outg_subscription_status_change ossc_wr_;
+    outg_subscription_notify_event osad_;
+    outg_subscription_status_change ossc_;
     outg_subscription_on_start ososrt_;
     outg_subscription_on_stop osostp_;
     void *ossc_ud_;
@@ -223,16 +222,24 @@ struct c_outg_sbs : public outgoing_subscription {
 
 struct c_outg_sbs_listener : public outgoing_subscription_listener {
     virtual void on_status_change(outgoing_subscription &os, SubscriptionStatus status) override {
-        ((c_outg_sbs &)os).ossc_wr_(&os, status, ((c_outg_sbs &)os).ossc_ud_, ((c_outg_sbs &)os).ossc_ud2_);
+        if(((c_outg_sbs &)os).ossc_) {
+            ((c_outg_sbs &)os).ossc_(&os, status, ((c_outg_sbs &)os).ossc_ud_, ((c_outg_sbs &)os).ossc_ud2_);
+        }
     }
     virtual void on_start(outgoing_subscription &os) override {
-        ((c_outg_sbs &)os).ososrt_(&os, ((c_outg_sbs &)os).ososrt_ud_, ((c_outg_sbs &)os).ososrt_ud2_);
+        if(((c_outg_sbs &)os).ososrt_) {
+            ((c_outg_sbs &)os).ososrt_(&os, ((c_outg_sbs &)os).ososrt_ud_, ((c_outg_sbs &)os).ososrt_ud2_);
+        }
     }
     virtual void on_stop(outgoing_subscription &os) override {
-        ((c_outg_sbs &)os).osostp_(&os, ((c_outg_sbs &)os).osostp_ud_, ((c_outg_sbs &)os).osostp_ud2_);
+        if(((c_outg_sbs &)os).osostp_) {
+            ((c_outg_sbs &)os).osostp_(&os, ((c_outg_sbs &)os).osostp_ud_, ((c_outg_sbs &)os).osostp_ud2_);
+        }
     }
     virtual void on_incoming_event(outgoing_subscription &os, std::unique_ptr<subscription_event> &sev) override {
-        ((c_outg_sbs &)os).osad_wr_(&os, sev.get(), ((c_outg_sbs &)os).osad_ud_, ((c_outg_sbs &)os).osad_ud2_);
+        if(((c_outg_sbs &)os).osad_) {
+            ((c_outg_sbs &)os).osad_(&os, sev.get(), ((c_outg_sbs &)os).osad_ud_, ((c_outg_sbs &)os).osad_ud2_);
+        }
     }
 };
 
@@ -240,8 +247,8 @@ static c_outg_sbs_listener coslst;
 
 c_outg_sbs::c_outg_sbs() :
     outgoing_subscription(coslst),
-    osad_wr_(nullptr),
-    ossc_wr_(nullptr),
+    osad_(nullptr),
+    ossc_(nullptr),
     ososrt_(nullptr),
     osostp_(nullptr),
     ossc_ud_(nullptr),
@@ -359,14 +366,14 @@ extern "C" {
         subscription->set_nclass_encode(nclass_encode);
     }
 
-    void outg_subscription_set_open_timestamp_0(outgoing_subscription *subscription, unsigned int ts0)
+    void outg_subscription_set_open_timestamp_0(outgoing_subscription *subscription, unsigned int ts_0)
     {
-        subscription->set_open_timestamp_0(ts0);
+        subscription->set_open_timestamp_0(ts_0);
     }
 
-    void outg_subscription_set_open_timestamp_1(outgoing_subscription *subscription, unsigned int ts1)
+    void outg_subscription_set_open_timestamp_1(outgoing_subscription *subscription, unsigned int ts_1)
     {
-        subscription->set_open_timestamp_0(ts1);
+        subscription->set_open_timestamp_0(ts_1);
     }
 
     RetCode outg_subscription_await_for_status_reached(outgoing_subscription *subscription,
@@ -381,42 +388,42 @@ extern "C" {
                                                       nsec);
     }
 
-    void outg_subscription_set_status_change_handler(outgoing_subscription *subscription,
-                                                     outg_subscription_status_change handler,
-                                                     void *ud,
-                                                     void *ud2)
+    void outg_subscription_set_status_change(outgoing_subscription *subscription,
+                                             outg_subscription_status_change hndl,
+                                             void *ud,
+                                             void *ud2)
     {
-        static_cast<c_outg_sbs *>(subscription)->ossc_wr_ = handler;
+        static_cast<c_outg_sbs *>(subscription)->ossc_ = hndl;
         static_cast<c_outg_sbs *>(subscription)->ossc_ud_ = ud;
         static_cast<c_outg_sbs *>(subscription)->ossc_ud2_ = ud2;
     }
 
-    void outg_subscription_set_event_notify_handler(outgoing_subscription *subscription,
-                                                    outg_subscription_notify_event handler,
-                                                    void *ud,
-                                                    void *ud2)
+    void outg_subscription_set_event_notify(outgoing_subscription *subscription,
+                                            outg_subscription_notify_event hndl,
+                                            void *ud,
+                                            void *ud2)
     {
-        static_cast<c_outg_sbs *>(subscription)->osad_wr_ = handler;
+        static_cast<c_outg_sbs *>(subscription)->osad_ = hndl;
         static_cast<c_outg_sbs *>(subscription)->osad_ud_ = ud;
         static_cast<c_outg_sbs *>(subscription)->osad_ud2_ = ud2;
     }
 
-    void outg_subscription_set_on_start_handler(outgoing_subscription *sbs,
-                                                outg_subscription_on_start handler,
-                                                void *ud,
-                                                void *ud2)
+    void outg_subscription_set_on_start(outgoing_subscription *sbs,
+                                        outg_subscription_on_start hndl,
+                                        void *ud,
+                                        void *ud2)
     {
-        static_cast<c_outg_sbs *>(sbs)->ososrt_ = handler;
+        static_cast<c_outg_sbs *>(sbs)->ososrt_ = hndl;
         static_cast<c_outg_sbs *>(sbs)->ososrt_ud_ = ud;
         static_cast<c_outg_sbs *>(sbs)->ososrt_ud2_ = ud2;
     }
 
-    void outg_subscription_set_on_stop_handler(outgoing_subscription *sbs,
-                                               outg_subscription_on_stop handler,
-                                               void *ud,
-                                               void *ud2)
+    void outg_subscription_set_on_stop(outgoing_subscription *sbs,
+                                       outg_subscription_on_stop hndl,
+                                       void *ud,
+                                       void *ud2)
     {
-        static_cast<c_outg_sbs *>(sbs)->osostp_ = handler;
+        static_cast<c_outg_sbs *>(sbs)->osostp_ = hndl;
         static_cast<c_outg_sbs *>(sbs)->osostp_ud_ = ud;
         static_cast<c_outg_sbs *>(sbs)->osostp_ud2_ = ud2;
     }
@@ -433,8 +440,8 @@ extern "C" {
                                          SubscriptionDownloadType sbs_dwnl_type,
                                          Encode nclass_encode,
                                          unsigned int nclass_id,
-                                         unsigned int open_timestamp_0,
-                                         unsigned int open_timestamp_1)
+                                         unsigned int ts_0,
+                                         unsigned int ts_1)
     {
         return subscription->start(sbs_type,
                                    sbs_mode,
@@ -442,8 +449,8 @@ extern "C" {
                                    sbs_dwnl_type,
                                    nclass_encode,
                                    nclass_id,
-                                   open_timestamp_0,
-                                   open_timestamp_1);
+                                   ts_0,
+                                   ts_1);
     }
 
     RetCode outg_subscription_await_for_start_result(outgoing_subscription *subscription,

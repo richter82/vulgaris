@@ -69,42 +69,42 @@ extern "C" {
 
     RetCode persistence_connection_save_nclass(persistence_connection *pconn,
                                                const nentity_manager *nem,
-                                               unsigned int ts0,
-                                               unsigned int ts1,
+                                               unsigned int ts_0,
+                                               unsigned int ts_1,
                                                const nclass *in)
     {
-        return pconn->save_obj(*(const nentity_manager *)nem, ts0, ts1, *in);
+        return pconn->save_obj(*(const nentity_manager *)nem, ts_0, ts_1, *in);
     }
 
     RetCode persistence_connection_update_nclass(persistence_connection *pconn,
                                                  unsigned short key,
                                                  const nentity_manager *nem,
-                                                 unsigned int ts0,
-                                                 unsigned int ts1,
+                                                 unsigned int ts_0,
+                                                 unsigned int ts_1,
                                                  const nclass *in)
     {
-        return pconn->update_obj(key, *nem, ts0, ts1, *in);
+        return pconn->update_obj(key, *nem, ts_0, ts_1, *in);
     }
 
     RetCode persistence_connection_save_or_update_nclass(persistence_connection *pconn,
                                                          unsigned short key,
                                                          const nentity_manager *nem,
-                                                         unsigned int ts0,
-                                                         unsigned int ts1,
+                                                         unsigned int ts_0,
+                                                         unsigned int ts_1,
                                                          const nclass *in)
     {
-        return pconn->save_or_update_obj(key, *nem, ts0, ts1, *in);
+        return pconn->save_or_update_obj(key, *nem, ts_0, ts_1, *in);
     }
 
     RetCode persistence_connection_remove_nclass(persistence_connection *pconn,
                                                  unsigned short key,
                                                  const nentity_manager *nem,
-                                                 unsigned int ts0,
-                                                 unsigned int ts1,
+                                                 unsigned int ts_0,
+                                                 unsigned int ts_1,
                                                  PersistenceDeletionMode mode,
                                                  const nclass *in)
     {
-        return pconn->remove_obj(key, *nem, ts0, ts1, mode, *in);
+        return pconn->remove_obj(key, *nem, ts_0, ts_1, mode, *in);
     }
 
     RetCode persistence_connection_load_nclass(persistence_connection *pconn,

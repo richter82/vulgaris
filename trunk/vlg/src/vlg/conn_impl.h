@@ -12,12 +12,12 @@ namespace vlg {
 struct conn_pkt {
     conn_pkt(std::unique_ptr<char> *key,
              g_bbuf &&pkt_b,
-             unsigned int ts0 = 0,
-             unsigned int ts1 = 0) :
+             unsigned int ts_0 = 0,
+             unsigned int ts_1 = 0) :
         key_(key ? std::move(*key) : nullptr),
         pkt_b_(pkt_b),
-        ts0_(ts0),
-        ts1_(ts1) {}
+        ts0_(ts_0),
+        ts1_(ts_1) {}
 
     std::unique_ptr<char> key_;
     g_bbuf pkt_b_;

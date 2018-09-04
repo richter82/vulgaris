@@ -45,26 +45,26 @@ struct persistence_connection {
                                  const nentity_desc &desc);
 
     RetCode save_obj(const nentity_manager &nem,
-                     unsigned int ts0,
-                     unsigned int ts1,
+                     unsigned int ts_0,
+                     unsigned int ts_1,
                      const nclass &in);
 
     RetCode update_obj(unsigned short key,
                        const nentity_manager &nem,
-                       unsigned int ts0,
-                       unsigned int ts1,
+                       unsigned int ts_0,
+                       unsigned int ts_1,
                        const nclass &in);
 
     RetCode save_or_update_obj(unsigned short key,
                                const nentity_manager &nem,
-                               unsigned int ts0,
-                               unsigned int ts1,
+                               unsigned int ts_0,
+                               unsigned int ts_1,
                                const nclass &in);
 
     RetCode remove_obj(unsigned short key,
                        const nentity_manager &nem,
-                       unsigned int ts0,
-                       unsigned int ts1,
+                       unsigned int ts_0,
+                       unsigned int ts_1,
                        PersistenceDeletionMode mode,
                        const nclass &in);
 
