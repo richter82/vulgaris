@@ -94,10 +94,12 @@ peer_impl::peer_impl(peer &publ, peer_listener &listener) :
     srv_sbs_exectrs_(0),
     selector_(*this),
     prgr_conn_id_(0),
+    nem_(log_),
     pers_enabled_(false),
     pers_mng_(persistence_manager_impl::get_instance()),
     pers_schema_create_(false),
     drop_existing_schema_(false),
+    srv_sbs_exec_serv_(log_),
     srv_sbs_nclassid_condesc_set_(HMSz_1031, sngl_ptr_obj_mng(), sizeof(unsigned int)),
     inco_conn_factory_(nullptr)
 {
