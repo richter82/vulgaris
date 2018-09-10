@@ -450,10 +450,6 @@ struct nentity_manager_impl {
             entid_edesc_[nent_desc.get_nclass_id()] = &nent_desc;
         }
         entnm_edesc_[nent_desc.get_nentity_name()] = &nent_desc;
-        IFLOG(trc(TH_ID, LS_CLO"[num_nenum:%d, num_nclass:%d, num_nentity:%d]", __func__,
-                  entnm_edesc_.size() - entid_edesc_.size(),
-                  entid_edesc_.size(),
-                  entnm_edesc_.size()))
         return RetCode_OK;
     }
 

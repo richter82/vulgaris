@@ -125,15 +125,13 @@ const extern std_shared_ptr_obj_mng<incoming_transaction> tx_std_shp_omng;
 const extern std_shared_ptr_obj_mng<incoming_subscription> sbs_std_shp_omng;
 const extern std_shared_ptr_obj_mng<subscription_event> sbse_std_shp_omng;
 
-extern logger *v_log_;
-
-#define IFLOG(meth)\
-if(vlg::v_log_){\
-    vlg::v_log_->meth;\
+#define IFLOG(log, meth)\
+if(log){\
+log->meth;\
 }
-
-#define CTOR_TRC IFLOG(trc(TH_ID, LS_CTR "[%p]", __func__, this))
-#define DTOR_TRC IFLOG(trc(TH_ID, LS_DTR "[%p]", __func__, this))
+    
+#define CTOR_TRC(log) IFLOG(log, trc(TH_ID, LS_CTR "[%p]", __func__, this))
+#define DTOR_TRC(log) IFLOG(log, trc(TH_ID, LS_DTR "[%p]", __func__, this))
 
 inline void *grow_buff_or_die(void *buffer, size_t current_size, size_t amount)
 {

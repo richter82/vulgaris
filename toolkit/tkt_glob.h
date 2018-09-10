@@ -9,6 +9,7 @@
 
 #include <sstream>
 #include <iomanip>
+#include <algorithm>
 
 #include <QtCore>
 #include <QVector>

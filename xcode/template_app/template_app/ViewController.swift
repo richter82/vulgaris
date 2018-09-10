@@ -39,7 +39,7 @@ class ViewController: UIViewController {
     }
     
     @IBAction func connectOC(_ sender: UIButton) {
-        oc_.connect()
+        oc_.connect("10.67.82.10", 12345)
     }
     
     @IBAction func disconnectOC(_ sender: UIButton) {
