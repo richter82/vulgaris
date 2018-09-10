@@ -6,6 +6,7 @@
 
 #include "vlg_connection.h"
 #include "vlg_subscription.h"
+#include "vlg/pr_impl.h"
 #include "vlg/conn_impl.h"
 #include "vlg/sbs_impl.h"
 
@@ -71,12 +72,12 @@ incoming_subscription::incoming_subscription(std::shared_ptr<incoming_connection
                                              incoming_subscription_listener &listener) :
     impl_(new incoming_subscription_impl(*this, conn, listener))
 {
-    CTOR_TRC
+    CTOR_TRC(impl_->conn_->peer_->log_)
 }
 
 incoming_subscription::~incoming_subscription()
 {
-    DTOR_TRC
+    DTOR_TRC(impl_->conn_->peer_->log_)
 }
 
 incoming_connection &incoming_subscription::get_connection()
@@ -230,12 +231,12 @@ outgoing_subscription_listener &outgoing_subscription_listener::default_listener
 outgoing_subscription::outgoing_subscription(outgoing_subscription_listener &listener) :
     impl_(new outgoing_subscription_impl(*this, listener))
 {
-    CTOR_TRC
+    CTOR_TRC(impl_->conn_->peer_->log_)
 }
 
 outgoing_subscription::~outgoing_subscription()
 {
-    DTOR_TRC
+    DTOR_TRC(impl_->conn_->peer_->log_)
 }
 
 RetCode outgoing_subscription::bind(outgoing_connection &conn)

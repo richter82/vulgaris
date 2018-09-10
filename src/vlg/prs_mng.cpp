@@ -211,7 +211,7 @@ RetCode persistence_manager_impl::load_pers_driver(persistence_driver *drivers[]
     return RetCode_OK;
 }
 
-    persistence_manager_impl::persistence_manager_impl() :
+persistence_manager_impl::persistence_manager_impl() :
     log_(logger::get_logger("persistence"))
 {}
 

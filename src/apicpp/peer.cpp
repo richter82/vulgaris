@@ -46,12 +46,12 @@ peer_listener &peer_listener::default_listener()
 
 peer::peer(peer_listener &listener) : impl_(new peer_impl(*this, listener))
 {
-    CTOR_TRC
+    CTOR_TRC(impl_->log_)
 }
 
 peer::~peer()
 {
-    DTOR_TRC
+    DTOR_TRC(impl_->log_)
 }
 
 RetCode peer::set_params_file_dir(const char *dir)

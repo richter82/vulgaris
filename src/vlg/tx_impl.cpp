@@ -70,7 +70,7 @@ RetCode tx_impl::await_for_status_reached(TransactionStatus test,
 {
     scoped_mx smx(mon_);
     if(status_ < TransactionStatus_INITIALIZED) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
+        IFLOG(conn_->peer_->log_, err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
     RetCode rcode = RetCode_OK;
@@ -84,10 +84,10 @@ RetCode tx_impl::await_for_status_reached(TransactionStatus test,
         }
     }
     current = status_;
-    IFLOG(log(rcode ? TL_WRN : TL_DBG, TH_ID, LS_CLO "test:%d [reached] current:%d",
-              __func__,
-              test,
-              status_))
+    IFLOG(conn_->peer_->log_, log(rcode ? TL_WRN : TL_DBG, TH_ID, LS_CLO "test:%d [reached] current:%d",
+                                  __func__,
+                                  test,
+                                  status_))
     return rcode;
 }
 
@@ -95,7 +95,7 @@ RetCode tx_impl::await_for_closure(time_t sec, long nsec)
 {
     scoped_mx smx(mon_);
     if(status_ < TransactionStatus_INITIALIZED) {
-        IFLOG(err(TH_ID, LS_CLO, __func__))
+        IFLOG(conn_->peer_->log_, err(TH_ID, LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
     RetCode rcode = RetCode_OK;
@@ -108,8 +108,8 @@ RetCode tx_impl::await_for_closure(time_t sec, long nsec)
             }
         }
     }
-    IFLOG(log(rcode ? TL_WRN : TL_DBG, TH_ID, LS_CLO "[res:%d][closed %s]",
-              __func__, rcode, rcode ? "not reached" : "reached"))
+    IFLOG(conn_->peer_->log_, log(rcode ? TL_WRN : TL_DBG, TH_ID, LS_CLO "[res:%d][closed %s]",
+                                  __func__, rcode, rcode ? "not reached" : "reached"))
     return rcode;
 }
 
@@ -150,89 +150,89 @@ inline void tx_impl::trace_tx_closure(const char *tx_res_str)
     ss << std::setw(14) << dt_mark_tim;
     if(ipubl_) {
         if(request_obj_) {
-            IFLOG(inf_nclass(TH_ID,
-                             request_obj_.get(),
-                             true,
-                             LS_TXI"[%08x%08x%08x%08x]",
-                             txid_.txplid,
-                             txid_.txsvid,
-                             txid_.txcnid,
-                             txid_.txprid))
+            IFLOG(conn_->peer_->log_, inf_nclass(TH_ID,
+                                                 request_obj_.get(),
+                                                 true,
+                                                 LS_TXI"[%08x%08x%08x%08x]",
+                                                 txid_.txplid,
+                                                 txid_.txsvid,
+                                                 txid_.txcnid,
+                                                 txid_.txprid))
         } else {
-            IFLOG(inf(TH_ID,
-                      LS_TXI"[%08x%08x%08x%08x]{%s}",
-                      txid_.txplid,
-                      txid_.txsvid,
-                      txid_.txcnid,
-                      txid_.txprid,
-                      TX_NO_OBJ))
+            IFLOG(conn_->peer_->log_, inf(TH_ID,
+                                          LS_TXI"[%08x%08x%08x%08x]{%s}",
+                                          txid_.txplid,
+                                          txid_.txsvid,
+                                          txid_.txcnid,
+                                          txid_.txprid,
+                                          TX_NO_OBJ))
         }
         if(result_obj_) {
-            IFLOG(inf_nclass(TH_ID,
-                             result_obj_.get(),
-                             true,
-                             LS_TXO"[%08x%08x%08x%08x]",
-                             txid_.txplid,
-                             txid_.txsvid,
-                             txid_.txcnid,
-                             txid_.txprid))
+            IFLOG(conn_->peer_->log_, inf_nclass(TH_ID,
+                                                 result_obj_.get(),
+                                                 true,
+                                                 LS_TXO"[%08x%08x%08x%08x]",
+                                                 txid_.txplid,
+                                                 txid_.txsvid,
+                                                 txid_.txcnid,
+                                                 txid_.txprid))
         } else {
-            IFLOG(inf(TH_ID,
-                      LS_TXO"[%08x%08x%08x%08x]{%s}",
-                      txid_.txplid,
-                      txid_.txsvid,
-                      txid_.txcnid,
-                      txid_.txprid,
-                      TX_NO_OBJ))
+            IFLOG(conn_->peer_->log_, inf(TH_ID,
+                                          LS_TXO"[%08x%08x%08x%08x]{%s}",
+                                          txid_.txplid,
+                                          txid_.txsvid,
+                                          txid_.txcnid,
+                                          txid_.txprid,
+                                          TX_NO_OBJ))
         }
     } else {
         if(request_obj_) {
-            IFLOG(inf_nclass(TH_ID,
-                             request_obj_.get(),
-                             true,
-                             LS_TXO"[%08x%08x%08x%08x]",
-                             txid_.txplid,
-                             txid_.txsvid,
-                             txid_.txcnid,
-                             txid_.txprid))
+            IFLOG(conn_->peer_->log_, inf_nclass(TH_ID,
+                                                 request_obj_.get(),
+                                                 true,
+                                                 LS_TXO"[%08x%08x%08x%08x]",
+                                                 txid_.txplid,
+                                                 txid_.txsvid,
+                                                 txid_.txcnid,
+                                                 txid_.txprid))
         } else {
-            IFLOG(inf(TH_ID,
-                      LS_TXO"[%08x%08x%08x%08x]{%s}",
-                      txid_.txplid,
-                      txid_.txsvid,
-                      txid_.txcnid,
-                      txid_.txprid,
-                      TX_NO_OBJ))
+            IFLOG(conn_->peer_->log_, inf(TH_ID,
+                                          LS_TXO"[%08x%08x%08x%08x]{%s}",
+                                          txid_.txplid,
+                                          txid_.txsvid,
+                                          txid_.txcnid,
+                                          txid_.txprid,
+                                          TX_NO_OBJ))
         }
         if(result_obj_) {
-            IFLOG(inf_nclass(TH_ID,
-                             result_obj_.get(),
-                             true,
-                             LS_TXI"[%08x%08x%08x%08x]",
-                             txid_.txplid,
-                             txid_.txsvid,
-                             txid_.txcnid,
-                             txid_.txprid))
+            IFLOG(conn_->peer_->log_, inf_nclass(TH_ID,
+                                                 result_obj_.get(),
+                                                 true,
+                                                 LS_TXI"[%08x%08x%08x%08x]",
+                                                 txid_.txplid,
+                                                 txid_.txsvid,
+                                                 txid_.txcnid,
+                                                 txid_.txprid))
         } else {
-            IFLOG(inf(TH_ID, LS_TXI"[%08x%08x%08x%08x]{%s}",
-                      txid_.txplid,
-                      txid_.txsvid,
-                      txid_.txcnid,
-                      txid_.txprid,
-                      TX_NO_OBJ))
+            IFLOG(conn_->peer_->log_, inf(TH_ID, LS_TXI"[%08x%08x%08x%08x]{%s}",
+                                          txid_.txplid,
+                                          txid_.txsvid,
+                                          txid_.txcnid,
+                                          txid_.txprid,
+                                          TX_NO_OBJ))
         }
     }
-    IFLOG(inf(TH_ID,
-              LS_TRX"[%08x%08x%08x%08x][%s][TXRES:%d, TXRESCODE:%d, RESCLS:%d][RTT-NS:%s]",
-              txid_.txplid,
-              txid_.txsvid,
-              txid_.txcnid,
-              txid_.txprid,
-              tx_res_str,
-              tx_res_,
-              result_code_,
-              rescls_,
-              ss.str().c_str()))
+    IFLOG(conn_->peer_->log_, inf(TH_ID,
+                                  LS_TRX"[%08x%08x%08x%08x][%s][TXRES:%d, TXRESCODE:%d, RESCLS:%d][RTT-NS:%s]",
+                                  txid_.txplid,
+                                  txid_.txsvid,
+                                  txid_.txcnid,
+                                  txid_.txprid,
+                                  tx_res_str,
+                                  tx_res_,
+                                  result_code_,
+                                  rescls_,
+                                  ss.str().c_str()))
 }
 
 RetCode tx_impl::set_closed()
@@ -292,7 +292,7 @@ incoming_transaction_impl::incoming_transaction_impl(incoming_transaction &publ,
 incoming_transaction_impl::~incoming_transaction_impl()
 {
     if(status_ ==  TransactionStatus_FLYING) {
-        IFLOG(cri(TH_ID, LS_DTR"[transaction is not in a safe state::%d]" LS_EXUNX, __func__, status_))
+        IFLOG(conn_->peer_->log_, cri(TH_ID, LS_DTR"[transaction is not in a safe state::%d]" LS_EXUNX, __func__, status_))
     }
 }
 
@@ -342,14 +342,14 @@ outgoing_transaction_impl::outgoing_transaction_impl(outgoing_transaction &publ,
 outgoing_transaction_impl::~outgoing_transaction_impl()
 {
     if(status_ ==  TransactionStatus_FLYING) {
-        IFLOG(cri(TH_ID, LS_DTR"[transaction is not in a safe state::%d]" LS_EXUNX, __func__, status_))
+        IFLOG(conn_->peer_->log_, cri(TH_ID, LS_DTR"[transaction is not in a safe state::%d]" LS_EXUNX, __func__, status_))
     }
 }
 
 RetCode outgoing_transaction_impl::re_new()
 {
     if(status_ == TransactionStatus_FLYING) {
-        IFLOG(err(TH_ID, LS_CLO "[transaction is flying, cannot renew]", __func__))
+        IFLOG(conn_->peer_->log_, err(TH_ID, LS_CLO "[transaction is flying, cannot renew]", __func__))
         return RetCode_BADSTTS;
     }
     static_cast<outgoing_connection_impl *>(conn_)->next_tx_id(txid_);
@@ -376,16 +376,16 @@ RetCode outgoing_transaction_impl::send()
     set_flying();
     outgoing_transaction_impl *self = this;
     static_cast<outgoing_connection_impl *>(conn_)->outg_flytx_map_.put(&txid_, &self);
-    IFLOG(inf(TH_ID,
-              LS_OUT"[%08x%08x%08x%08x][TXTYPE:%d, TXACT:%d, CLSENC:%d, RSCLREQ:%d]",
-              txid_.txplid,
-              txid_.txsvid,
-              txid_.txcnid,
-              txid_.txprid,
-              txtype_,
-              txactn_,
-              req_clsenc_,
-              rsclrq_))
+    IFLOG(conn_->peer_->log_, inf(TH_ID,
+                                  LS_OUT"[%08x%08x%08x%08x][TXTYPE:%d, TXACT:%d, CLSENC:%d, RSCLREQ:%d]",
+                                  txid_.txplid,
+                                  txid_.txsvid,
+                                  txid_.txcnid,
+                                  txid_.txprid,
+                                  txtype_,
+                                  txactn_,
+                                  req_clsenc_,
+                                  rsclrq_))
 
     g_bbuf gbb;
     build_PKT_TXRQST(txtype_,

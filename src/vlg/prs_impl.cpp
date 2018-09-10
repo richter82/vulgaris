@@ -8,23 +8,6 @@
 
 namespace vlg {
 
-persistence_task::persistence_task(VLG_PERS_TASK_OP op_code) :
-    op_code_(op_code),
-    op_res_(RetCode_OK),
-    in_nem_(nullptr),
-    in_mode_(PersistenceDeletionMode_UNDEFINED),
-    in_out_obj_(nullptr),
-    in_sql_(nullptr),
-    in_key_(0),
-    in_edesc_((nullptr)),
-    in_drop_if_exist_(false),
-    in_out_ts0_(nullptr),
-    in_out_ts1_(nullptr),
-    in_out_query_(nullptr),
-    in_fail_is_error_(false),
-    stmt_bf_(nullptr)
-{}
-
 RetCode persistence_task::execute()
 {
     switch(op_code_) {
@@ -486,12 +469,12 @@ RetCode persistence_driver::add_pool(const char *conn_pool_name,
                                      unsigned int conn_pool_th_max_sz)
 {
     IFLOG(log_, trc(TH_ID, LS_OPN"[conn_pool_name:%s, url:%s, usr:%s, conn_pool_sz:%d, thread_sz:%d]",
-              __func__,
-              conn_pool_name,
-              url,
-              usr,
-              conn_pool_sz,
-              conn_pool_th_max_sz))
+                    __func__,
+                    conn_pool_name,
+                    url,
+                    usr,
+                    conn_pool_sz,
+                    conn_pool_th_max_sz))
     persistence_connection_pool *conn_pool = new persistence_connection_pool(*this,
                                                                              url,
                                                                              usr,

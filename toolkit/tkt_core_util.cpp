@@ -141,7 +141,8 @@ void FillFldValue_Qstring(const QVariant &value,
             break;
         case vlg::Type_BYTE:
             memset(fld_ptr, 0, mdesc.get_field_nmemb());
-            memcpy(fld_ptr, value.toByteArray().constData(), std::min((uint32_t)value.toByteArray().size(), (uint32_t)mdesc.get_field_nmemb()));
+            memcpy(fld_ptr, value.toByteArray().constData(), std::min((uint32_t)value.toByteArray().size(),
+                                                                      (uint32_t)mdesc.get_field_nmemb()));
             break;
         default:
             break;

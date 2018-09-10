@@ -129,7 +129,7 @@ const extern std_shared_ptr_obj_mng<subscription_event> sbse_std_shp_omng;
 if(log){\
 log->meth;\
 }
-    
+
 #define CTOR_TRC(log) IFLOG(log, trc(TH_ID, LS_CTR "[%p]", __func__, this))
 #define DTOR_TRC(log) IFLOG(log, trc(TH_ID, LS_DTR "[%p]", __func__, this))
 

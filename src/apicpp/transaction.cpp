@@ -6,6 +6,7 @@
 
 #include "vlg_connection.h"
 #include "vlg_transaction.h"
+#include "vlg/pr_impl.h"
 #include "vlg/conn_impl.h"
 #include "vlg/tx_impl.h"
 
@@ -28,12 +29,12 @@ incoming_transaction::incoming_transaction(std::shared_ptr<incoming_connection> 
                                            incoming_transaction_listener &listener) :
     impl_(new incoming_transaction_impl(*this, conn, listener))
 {
-    CTOR_TRC
+    CTOR_TRC(impl_->conn_->peer_->log_)
 }
 
 incoming_transaction::~incoming_transaction()
 {
-    DTOR_TRC
+    DTOR_TRC(impl_->conn_->peer_->log_)
 }
 
 incoming_connection &incoming_transaction::get_connection()
@@ -186,12 +187,12 @@ outgoing_transaction_listener &outgoing_transaction_listener::default_listener()
 outgoing_transaction::outgoing_transaction(outgoing_transaction_listener &listener) :
     impl_(new outgoing_transaction_impl(*this, listener))
 {
-    CTOR_TRC
+    CTOR_TRC(impl_->conn_->peer_->log_)
 }
 
 outgoing_transaction::~outgoing_transaction()
 {
-    DTOR_TRC
+    DTOR_TRC(impl_->conn_->peer_->log_)
 }
 
 RetCode outgoing_transaction::bind(outgoing_connection &conn)
