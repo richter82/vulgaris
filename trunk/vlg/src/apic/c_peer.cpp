@@ -12,10 +12,6 @@
 
 using namespace vlg;
 
-namespace vlg {
-RetCode load_vlg_logger();
-}
-
 extern "C" {
     RetCode set_logger_cfg_file_dir(const char *dir)
     {
@@ -35,11 +31,6 @@ extern "C" {
     RetCode load_logger_config_file_path_name(const char *file_path)
     {
         return logger::set_logger_cfg_file_path_name(file_path);
-    }
-
-    RetCode load_vlg_logger()
-    {
-        return vlg::load_vlg_logger();
     }
 }
 
@@ -625,6 +616,11 @@ extern "C" {
     peer *own_peer_get_ptr(own_peer *p)
     {
         return (c_peer *)p;
+    }
+    
+    logger *peer_get_logger(peer *p)
+    {
+        return p->get_logger();
     }
 
     RetCode peer_set_params_file_dir(peer *p, const char *dir)

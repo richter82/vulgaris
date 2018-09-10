@@ -173,7 +173,7 @@ RetCode persistence_manager_impl::load_pers_driver_dyna(const char *drivers[],
             continue;
         }
         persistence_driver *driv = nullptr;
-        if((rcode = persistence_driver::load_driver_dyna(drivers[i], &driv))) {
+        if((rcode = persistence_driver::load_driver_dyna(drivers[i], &driv, get_instance().log_))) {
             IFLOG(get_instance().log_, cri(TH_ID, LS_CLO "[failed loading driver:%s][res:%d]", __func__, drivers[i], rcode))
             return rcode;
         }
@@ -188,7 +188,7 @@ RetCode persistence_manager_impl::load_pers_driver_dyna(std::set<std::string> &d
     RetCode rcode = RetCode_OK;
     for(auto it = drivmap.begin(); it != drivmap.end(); it++) {
         persistence_driver *driv = nullptr;
-        if((rcode = persistence_driver::load_driver_dyna(it->c_str(), &driv))) {
+        if((rcode = persistence_driver::load_driver_dyna(it->c_str(), &driv, get_instance().log_))) {
             IFLOG(get_instance().log_, cri(TH_ID, LS_CLO "[failed loading driver:%s][res:%d]", __func__, it->c_str(), rcode))
             return rcode;
         }

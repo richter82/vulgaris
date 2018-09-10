@@ -55,14 +55,14 @@ class CString {
 class Peer
 {
     init(peer_name: CString, peer_ver: [CUnsignedInt]) {
-        peer_own_ = peer_create()
-        peer_ = own_peer_get_ptr(peer_own_)
         peer_name_ = peer_name
         peer_ver_ = peer_ver
         vc_ = nil
         
         if let filePath = Bundle.main.path(forResource: "logger", ofType:"cfg") {
             set_logger_cfg_file_path_name(filePath)
+            peer_own_ = peer_create()
+            peer_ = own_peer_get_ptr(peer_own_)
         } else {
             fatalError("logger.cfg not found")
         }
@@ -78,10 +78,7 @@ class Peer
         } else {
             fatalError("params not found")
         }
-        
-        load_logger_config()
-        load_vlg_logger()
-        
+                
         peer_set_name_swf(peer_, { _,_ in return UnsafePointer(self.peer_name_.buffer) }, bridge(obj:self))
         peer_set_version_swf(peer_, { _,_ in return UnsafePointer(self.peer_ver_) }, bridge(obj:self))
         peer_set_status_change_swf(peer_, peer_status_change, bridge(obj:self))
@@ -105,8 +102,8 @@ class Peer
         }catch{
             fatalError("failed get documentDirectory")
         }
-        persistence_manager_load_persistence_driver(get_pers_driv_sqlite())
-        peer_extend_model_with_nem(peer_, get_c_nem_smplmdl())
+        persistence_manager_load_persistence_driver(get_pers_driv_sqlite(peer_get_logger(peer_)))
+        peer_extend_model_with_nem(peer_, get_c_nem_smplmdl(peer_get_logger(peer_)))
         peer_start(peer_, 2, argv, 1);
         argv.deallocate()
     }
@@ -205,8 +202,8 @@ class Peer
     }
     
     let fileManager_ = FileManager.default
-    var peer_own_: OpaquePointer
-    var peer_: OpaquePointer
+    var peer_own_: OpaquePointer?
+    var peer_: OpaquePointer?
     let peer_name_: CString
     let peer_ver_: [CUnsignedInt]
     var vc_: ViewController?

@@ -1328,23 +1328,25 @@ RetCode VLG_COMP_Gen_ClassManager__CPP_(compile_unit &cunit,
     vlg::str_tok tknz(cunit.get_file_name());
     tknz.next_token(name, VLG_COMP_DOT);
     fprintf(file, OPN_CMMNT_LN "MODEL:%s NEM\n" CLS_CMMNT_LN, cunit.model_name());
-    fprintf(file, "vlg::nentity_manager NEM_%s;\n", cunit.model_name());
+    fprintf(file, "std::unique_ptr<vlg::nentity_manager> NEM_%s;\n", cunit.model_name());
     return vlg::RetCode_OK;
 }
 
 #define VLG_COMP_CPP_ENTRY_PT_OPN \
-"vlg::nentity_manager* get_nem_%s()\n"\
-"{\n"
+"vlg::nentity_manager* get_nem_%s(vlg::logger *log)\n"\
+"{\n"\
+ CR_1IND "if(NEM_%s) return NEM_%s.get();\n"\
+ CR_1IND "NEM_%s.reset(new vlg::nentity_manager(log));\n"
 
 #define VLG_COMP_CPP_ENTRY_PT_CLS \
- CR_1IND "return &NEM_%s;\n"\
+ CR_1IND "return NEM_%s.get();\n"\
 "}\n"
 
 #define VLG_COMP_CPP_ADD_MMBRDESC \
  CR_1IND "COMMAND_IF_NOT_OK(%s_EntityDesc.add_member_desc(%s), exit(1))\n"\
 
 #define VLG_COMP_CPP_ADD_ENTDESC \
- CR_1IND "COMMAND_IF_NOT_OK(NEM_%s.extend(%s_EntityDesc), exit(1))\n"\
+ CR_1IND "COMMAND_IF_NOT_OK(NEM_%s->extend(%s_EntityDesc), exit(1))\n"\
 
 /***********************************
 GEN- VLG_COMP_Gen_EntryPoint
@@ -1356,7 +1358,11 @@ RetCode VLG_COMP_Gen_EntryPoint__CPP_(compile_unit &cunit, FILE *file)
     tknz.next_token(name, VLG_COMP_DOT);
     fprintf(file, OPN_CMMNT_LN "MODEL:%s ENTRYPOINT\n" CLS_CMMNT_LN, cunit.model_name());
     fprintf(file, "extern \"C\"{\n");
-    fprintf(file, EXPORT_SYMBOL VLG_COMP_CPP_ENTRY_PT_OPN, cunit.model_name());
+    fprintf(file, EXPORT_SYMBOL VLG_COMP_CPP_ENTRY_PT_OPN, 
+        cunit.model_name(), 
+        cunit.model_name(),
+        cunit.model_name(),
+        cunit.model_name());
     std::map<std::string, entity_desc_comp *> &entitymap = cunit.get_nentity_map();
     for(auto edsc = entitymap.begin(); edsc != entitymap.end(); edsc++) {
         auto &mmbrmap = edsc->second->get_map_id_MMBRDSC();
@@ -1408,8 +1414,8 @@ RetCode VLG_COMP_Gen_EntryPoint_C__CPP_(compile_unit &cunit,
     fprintf(file, OPN_CMMNT_LN"MODEL:%s C ENTRYPOINT\n" CLS_CMMNT_LN, cunit.model_name());
     fprintf(file, "typedef struct nentity_manager nentity_manager;\n");
     fprintf(file, "extern \"C\"{\n");
-    fprintf(file, "nentity_manager* get_c_nem_%s()\n{\n", cunit.model_name());
-    fprintf(file, CR_1IND"return (nentity_manager*)get_nem_%s();\n", cunit.model_name());
+    fprintf(file, "nentity_manager* get_c_nem_%s(vlg::logger *log)\n{\n", cunit.model_name());
+    fprintf(file, CR_1IND"return (nentity_manager*)get_nem_%s(log);\n", cunit.model_name());
     fprintf(file, "}\n");
     fprintf(file, "}\n\n");
     return vlg::RetCode_OK;

@@ -53,6 +53,11 @@ peer::~peer()
 {
     DTOR_TRC(impl_->log_)
 }
+    
+logger *peer::get_logger()
+{
+    return impl_->log_;
+}
 
 RetCode peer::set_params_file_dir(const char *dir)
 {
