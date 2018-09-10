@@ -159,17 +159,12 @@ struct pers_query_sqlite : public persistence_query_impl {
     pers_query_sqlite(unsigned int id,
                       persistence_connection_impl &conn,
                       const nentity_manager &nem,
-                      sqlite3_stmt *stmt);
+                      sqlite3_stmt *stmt,
+                      logger *log) :
+        persistence_query_impl(id, conn, nem, log),
+        stmt_(stmt) {}
     sqlite3_stmt *stmt_;
 };
-
-pers_query_sqlite::pers_query_sqlite(unsigned int id,
-                                     persistence_connection_impl &conn,
-                                     const nentity_manager &nem,
-                                     sqlite3_stmt *stmt) :
-    persistence_query_impl(id, conn, nem),
-    stmt_(stmt)
-{}
 
 //SQLTE_ENM_SELECT_REC_UD
 
@@ -249,7 +244,7 @@ bool enum_mmbrs_fill_entity(const member_desc &mmbrd, void *ud)
 
 //pers_conn_sqlite
 struct pers_conn_sqlite : public persistence_connection_impl {
-        pers_conn_sqlite(persistence_connection_pool &conn_pool);
+        pers_conn_sqlite(persistence_connection_pool &conn_pool, logger *log);
 
         inline RetCode sqlite_connect(const char *filename,
                                       int flags);
@@ -338,20 +333,20 @@ struct pers_conn_sqlite : public persistence_connection_impl {
 
         // persistence_task_sqlite
         struct persistence_task_sqlite : public persistence_task {
-                persistence_task_sqlite(pers_conn_sqlite &sql_conn, VLG_PERS_TASK_OP op_code) :
-                    persistence_task(op_code),
+                persistence_task_sqlite(pers_conn_sqlite &sql_conn, VLG_PERS_TASK_OP op_code, logger *log) :
+                    persistence_task(op_code, log),
                     sql_conn_(sql_conn),
                     sel_stmt_(nullptr) {
                 }
 
             protected:
                 virtual RetCode do_connect() override {
-                    IFLOG(trc(TH_ID, LS_OPN "[url:%s, user:%s, password:%s]", __func__,
-                              sql_conn_.conn_pool_.url_.c_str(),
-                              sql_conn_.conn_pool_.usr_.c_str(),
-                              sql_conn_.conn_pool_.psswd_.c_str()))
+                    IFLOG(log_, trc(TH_ID, LS_OPN "[url:%s, user:%s, password:%s]", __func__,
+                                    sql_conn_.conn_pool_.url_.c_str(),
+                                    sql_conn_.conn_pool_.usr_.c_str(),
+                                    sql_conn_.conn_pool_.psswd_.c_str()))
                     RetCode rcode = sql_conn_.sqlite_connect(sql_conn_.conn_pool_.url_.c_str(), SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
-                    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
+                    IFLOG(log_, trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
                     return rcode;
                 }
 
@@ -363,17 +358,17 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                             drop_stmt.assign("DROP TABLE ");
                             drop_stmt.append(in_edesc_->get_nentity_name());
                             drop_stmt.append(";");
-                            IFLOG(dbg(TH_ID, LS_STM "[drop_stmt:%s]", __func__, drop_stmt.c_str()))
+                            IFLOG(log_, dbg(TH_ID, LS_STM "[drop_stmt:%s]", __func__, drop_stmt.c_str()))
                             if((rcode = sql_conn_.sqlite_exec_stmt(drop_stmt.c_str()))) {
-                                IFLOG(err(TH_ID, LS_CLO "[drop failed][res:%d].", __func__, rcode))
+                                IFLOG(log_, err(TH_ID, LS_CLO "[drop failed][res:%d].", __func__, rcode))
                                 return rcode;
                             }
                             if((rcode = sql_conn_.sqlite_exec_stmt(stmt_bf_))) {
-                                IFLOG(err(TH_ID, LS_CLO "[create after drop failed][res:%d]", __func__, rcode))
+                                IFLOG(log_, err(TH_ID, LS_CLO "[create after drop failed][res:%d]", __func__, rcode))
                                 return rcode;
                             }
                         } else {
-                            IFLOG(err(TH_ID, LS_CLO "[create failed][res:%d]", __func__, rcode))
+                            IFLOG(log_, err(TH_ID, LS_CLO "[create failed][res:%d]", __func__, rcode))
                             return rcode;
                         }
                     }
@@ -387,14 +382,14 @@ struct pers_conn_sqlite : public persistence_connection_impl {
 
                     //prepare
                     if((rcode = sql_conn_.sqlite_prepare_stmt(stmt_bf_, &stmt))) {
-                        IFLOG(err(TH_ID, LS_CLO "[sqlite_prepare_stmt failed][res:%d]", __func__, rcode))
+                        IFLOG(log_, err(TH_ID, LS_CLO "[sqlite_prepare_stmt failed][res:%d]", __func__, rcode))
                     } else {
                         //bind
                         if((rcode = sql_conn_.sqlite_bind_where_clause(in_key_, 1, *in_out_obj_, stmt))) {
-                            IFLOG(err(TH_ID, LS_CLO "[sqlite_bind_where_clause failed][res:%d]", __func__, rcode))
+                            IFLOG(log_, err(TH_ID, LS_CLO "[sqlite_bind_where_clause failed][res:%d]", __func__, rcode))
                             RetCode rels_rcode = RetCode_OK;
                             if((rels_rcode = sql_conn_.sqlite_release_stmt(stmt))) {
-                                IFLOG(err(TH_ID, LS_TRL "[res:%d][sqlite_release_stmt failed]", __func__, rels_rcode))
+                                IFLOG(log_, err(TH_ID, LS_TRL "[res:%d][sqlite_release_stmt failed]", __func__, rels_rcode))
                             }
                         } else if(!(rcode = sql_conn_.sqlite_step_stmt(stmt, sqlite_rc))) {
                             if(sqlite_rc == SQLITE_ROW) {
@@ -414,15 +409,15 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                             } else if(sqlite_rc == SQLITE_DONE) {
                                 rcode = RetCode_NODATA;
                             } else {
-                                IFLOG(err(TH_ID, LS_TRL "[rc:%d][sqlite_step_stmt: unhandled sqlite code]", __func__, sqlite_rc))
+                                IFLOG(log_, err(TH_ID, LS_TRL "[rc:%d][sqlite_step_stmt: unhandled sqlite code]", __func__, sqlite_rc))
                                 rcode = RetCode_DBERR;
                             }
                             RetCode rels_rcode = RetCode_OK;
                             if((rels_rcode = sql_conn_.sqlite_release_stmt(stmt))) {
-                                IFLOG(err(TH_ID, LS_TRL "[res:%d][sqlite_release_stmt failed]", __func__, rels_rcode))
+                                IFLOG(log_, err(TH_ID, LS_TRL "[res:%d][sqlite_release_stmt failed]", __func__, rels_rcode))
                             }
                         } else {
-                            IFLOG(err(TH_ID, LS_TRL "[res:%d][sqlite_step_stmt failed]", __func__, rcode))
+                            IFLOG(log_, err(TH_ID, LS_TRL "[res:%d][sqlite_step_stmt failed]", __func__, rcode))
                         }
                     }
                     return rcode;
@@ -435,28 +430,28 @@ struct pers_conn_sqlite : public persistence_connection_impl {
 
                     //prepare
                     if((rcode = sql_conn_.sqlite_prepare_stmt(stmt_bf_, &stmt))) {
-                        IFLOG(err(TH_ID, LS_CLO "[sqlite_prepare_stmt failed][res:%d]", __func__, rcode))
+                        IFLOG(log_, err(TH_ID, LS_CLO "[sqlite_prepare_stmt failed][res:%d]", __func__, rcode))
                     } else {
                         //bind
                         if((rcode = sql_conn_.sqlite_bind_obj_fields(*in_out_ts0_, *in_out_ts1_, *in_obj_, *in_nem_, stmt))) {
-                            IFLOG(err(TH_ID, LS_CLO "[sqlite_bind_obj_fields failed][res:%d]", __func__, rcode))
+                            IFLOG(log_, err(TH_ID, LS_CLO "[sqlite_bind_obj_fields failed][res:%d]", __func__, rcode))
                             RetCode rels_rcode = RetCode_OK;
                             if((rels_rcode = sql_conn_.sqlite_release_stmt(stmt))) {
-                                IFLOG(err(TH_ID, LS_TRL "[res:%d][sqlite_release_stmt failed]", __func__, rels_rcode))
+                                IFLOG(log_, err(TH_ID, LS_TRL "[res:%d][sqlite_release_stmt failed]", __func__, rels_rcode))
                             }
                         } else if(!(rcode = sql_conn_.sqlite_step_stmt(stmt, sqlite_rc))) {
                             if(sqlite_rc == SQLITE_DONE) {
                                 rcode = RetCode_OK;
                             } else {
-                                IFLOG(err(TH_ID, LS_TRL "[rc:%d][sqlite_step_stmt: unhandled sqlite code]", __func__, sqlite_rc))
+                                IFLOG(log_, err(TH_ID, LS_TRL "[rc:%d][sqlite_step_stmt: unhandled sqlite code]", __func__, sqlite_rc))
                                 rcode = RetCode_DBERR;
                             }
                             RetCode rels_rcode = RetCode_OK;
                             if((rels_rcode = sql_conn_.sqlite_release_stmt(stmt))) {
-                                IFLOG(err(TH_ID, LS_TRL "[res:%d][sqlite_release_stmt failed]", __func__, rels_rcode))
+                                IFLOG(log_, err(TH_ID, LS_TRL "[res:%d][sqlite_release_stmt failed]", __func__, rels_rcode))
                             }
                         } else {
-                            IFLOG(err(TH_ID, LS_TRL "[res:%d][sqlite_step_stmt failed]", __func__, rcode))
+                            IFLOG(log_, err(TH_ID, LS_TRL "[res:%d][sqlite_step_stmt failed]", __func__, rcode))
                         }
                     }
                     return rcode;
@@ -469,35 +464,35 @@ struct pers_conn_sqlite : public persistence_connection_impl {
 
                     //prepare
                     if((rcode = sql_conn_.sqlite_prepare_stmt(stmt_bf_, &stmt))) {
-                        IFLOG(err(TH_ID, LS_CLO "[sqlite_prepare_stmt failed][res:%d]", __func__, rcode))
+                        IFLOG(log_, err(TH_ID, LS_CLO "[sqlite_prepare_stmt failed][res:%d]", __func__, rcode))
                     } else {
                         //bind
                         unsigned int bnd_col_idx = 0;
                         if((rcode = sql_conn_.sqlite_bind_obj_fields(*in_out_ts0_, *in_out_ts1_, *in_obj_, *in_nem_, stmt, &bnd_col_idx))) {
-                            IFLOG(err(TH_ID, LS_CLO "[sqlite_bind_obj_fields failed][res:%d]", __func__, rcode))
+                            IFLOG(log_, err(TH_ID, LS_CLO "[sqlite_bind_obj_fields failed][res:%d]", __func__, rcode))
                             RetCode rels_rcode = RetCode_OK;
                             if((rels_rcode = sql_conn_.sqlite_release_stmt(stmt))) {
-                                IFLOG(err(TH_ID, LS_TRL "[res:%d][sqlite_release_stmt failed]", __func__, rels_rcode))
+                                IFLOG(log_, err(TH_ID, LS_TRL "[res:%d][sqlite_release_stmt failed]", __func__, rels_rcode))
                             }
                         } else if((rcode = sql_conn_.sqlite_bind_where_clause(in_key_, bnd_col_idx, *in_obj_, stmt))) {
-                            IFLOG(err(TH_ID, LS_CLO "[sqlite_bind_where_clause failed][res:%d]", __func__, rcode))
+                            IFLOG(log_, err(TH_ID, LS_CLO "[sqlite_bind_where_clause failed][res:%d]", __func__, rcode))
                             RetCode rels_rcode = RetCode_OK;
                             if((rels_rcode = sql_conn_.sqlite_release_stmt(stmt))) {
-                                IFLOG(err(TH_ID, LS_TRL "[res:%d][sqlite_release_stmt failed]", __func__, rels_rcode))
+                                IFLOG(log_, err(TH_ID, LS_TRL "[res:%d][sqlite_release_stmt failed]", __func__, rels_rcode))
                             }
                         } else if(!(rcode = sql_conn_.sqlite_step_stmt(stmt, sqlite_rc))) {
                             if(sqlite_rc == SQLITE_DONE) {
                                 rcode = RetCode_OK;
                             } else {
-                                IFLOG(err(TH_ID, LS_TRL "[rc:%d][sqlite_step_stmt: unhandled sqlite code]", __func__, sqlite_rc))
+                                IFLOG(log_, err(TH_ID, LS_TRL "[rc:%d][sqlite_step_stmt: unhandled sqlite code]", __func__, sqlite_rc))
                                 rcode = RetCode_DBERR;
                             }
                             RetCode rels_rcode = RetCode_OK;
                             if((rels_rcode = sql_conn_.sqlite_release_stmt(stmt))) {
-                                IFLOG(err(TH_ID, LS_TRL "[res:%d][sqlite_release_stmt failed]", __func__, rels_rcode))
+                                IFLOG(log_, err(TH_ID, LS_TRL "[res:%d][sqlite_release_stmt failed]", __func__, rels_rcode))
                             }
                         } else {
-                            IFLOG(err(TH_ID, LS_TRL "[res:%d][sqlite_step_stmt failed]", __func__, rcode))
+                            IFLOG(log_, err(TH_ID, LS_TRL "[res:%d][sqlite_step_stmt failed]", __func__, rcode))
                         }
                     }
                     return rcode;
@@ -510,28 +505,28 @@ struct pers_conn_sqlite : public persistence_connection_impl {
 
                     //prepare
                     if((rcode = sql_conn_.sqlite_prepare_stmt(stmt_bf_, &stmt))) {
-                        IFLOG(err(TH_ID, LS_CLO "[sqlite_prepare_stmt failed][res:%d]", __func__, rcode))
+                        IFLOG(log_, err(TH_ID, LS_CLO "[sqlite_prepare_stmt failed][res:%d]", __func__, rcode))
                     } else {
                         //bind
                         if((rcode = sql_conn_.sqlite_bind_where_clause(in_key_, 1, *in_out_obj_, stmt))) {
-                            IFLOG(err(TH_ID, LS_CLO "[sqlite_bind_where_clause failed][res:%d]", __func__, rcode))
+                            IFLOG(log_, err(TH_ID, LS_CLO "[sqlite_bind_where_clause failed][res:%d]", __func__, rcode))
                             RetCode rels_rcode = RetCode_OK;
                             if((rels_rcode = sql_conn_.sqlite_release_stmt(stmt))) {
-                                IFLOG(err(TH_ID, LS_TRL "[res:%d][sqlite_release_stmt failed]", __func__, rels_rcode))
+                                IFLOG(log_, err(TH_ID, LS_TRL "[res:%d][sqlite_release_stmt failed]", __func__, rels_rcode))
                             }
                         } else if(!(rcode = sql_conn_.sqlite_step_stmt(stmt, sqlite_rc))) {
                             if(sqlite_rc == SQLITE_DONE) {
                                 rcode = RetCode_OK;
                             } else {
-                                IFLOG(err(TH_ID, LS_TRL "[rc:%d][sqlite_step_stmt: unhandled sqlite code]", __func__, sqlite_rc))
+                                IFLOG(log_, err(TH_ID, LS_TRL "[rc:%d][sqlite_step_stmt: unhandled sqlite code]", __func__, sqlite_rc))
                                 rcode = RetCode_DBERR;
                             }
                             RetCode rels_rcode = RetCode_OK;
                             if((rels_rcode = sql_conn_.sqlite_release_stmt(stmt))) {
-                                IFLOG(err(TH_ID, LS_TRL "[res:%d][sqlite_release_stmt failed]", __func__, rels_rcode))
+                                IFLOG(log_, err(TH_ID, LS_TRL "[res:%d][sqlite_release_stmt failed]", __func__, rels_rcode))
                             }
                         } else {
-                            IFLOG(err(TH_ID, LS_TRL "[res:%d][sqlite_step_stmt failed]", __func__, rcode))
+                            IFLOG(log_, err(TH_ID, LS_TRL "[res:%d][sqlite_step_stmt failed]", __func__, rcode))
                         }
                     }
                     return rcode;
@@ -541,10 +536,10 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                     RetCode rcode = RetCode_OK;
                     sqlite3_stmt *stmt = nullptr;
                     if((rcode = sql_conn_.sqlite_prepare_stmt(in_sql_, &stmt))) {
-                        IFLOG(err(TH_ID, LS_CLO "[sqlite_prepare_stmt failed][res:%d]", __func__, rcode))
+                        IFLOG(log_, err(TH_ID, LS_CLO "[sqlite_prepare_stmt failed][res:%d]", __func__, rcode))
                         return rcode;
                     }
-                    in_out_query_ = new pers_query_sqlite(0, sql_conn_, *in_nem_, stmt);  //@fixme sanity and id..
+                    in_out_query_ = new pers_query_sqlite(0, sql_conn_, *in_nem_, stmt, log_);  //@fixme sanity and id..
                     return rcode;
                 }
 
@@ -575,11 +570,11 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                         } else if(sqlite_rc == SQLITE_DONE) {
                             rcode = RetCode_QRYEND;
                         } else {
-                            IFLOG(err(TH_ID, LS_TRL "[rc:%d][sqlite_step_stmt unhandled sqlite code]", __func__, sqlite_rc))
+                            IFLOG(log_, err(TH_ID, LS_TRL "[rc:%d][sqlite_step_stmt unhandled sqlite code]", __func__, sqlite_rc))
                             rcode = RetCode_DBERR;
                         }
                     } else {
-                        IFLOG(err(TH_ID, LS_TRL "[res:%d][sqlite_step_stmt failed]", __func__, rcode))
+                        IFLOG(log_, err(TH_ID, LS_TRL "[res:%d][sqlite_step_stmt failed]", __func__, rcode))
                     }
                     return rcode;
                 }
@@ -596,15 +591,15 @@ struct pers_conn_sqlite : public persistence_connection_impl {
         };
 };
 
-pers_conn_sqlite::pers_conn_sqlite(persistence_connection_pool &conn_pool) :
-    persistence_connection_impl(conn_pool),
+pers_conn_sqlite::pers_conn_sqlite(persistence_connection_pool &conn_pool, logger *log) :
+    persistence_connection_impl(conn_pool, log),
     db_(nullptr),
     worker_(nullptr)
 {}
 
 inline RetCode pers_conn_sqlite::sqlite_connect(const char *filename, int flags)
 {
-    IFLOG(trc(TH_ID, LS_OPN "[filename:%s, flags:%d]", __func__, filename, flags))
+    IFLOG(log_, trc(TH_ID, LS_OPN "[filename:%s, flags:%d]", __func__, filename, flags))
     RetCode rcode = RetCode_OK;
     std::string db_path;
     if(sqlite_db_data_dir[0]) {
@@ -614,8 +609,8 @@ inline RetCode pers_conn_sqlite::sqlite_connect(const char *filename, int flags)
     db_path.append(filename);
     int last_rc = sqlite3_open_v2(db_path.c_str(), &db_, flags, 0);
     if(last_rc) {
-        IFLOG(err(TH_ID, LS_TRL"[filename:%s][sqlite3_open_v2 - rc:%d - errdesc:%s]",
-                  __func__, db_path.c_str(), last_rc, sqlite3_errstr(last_rc)))
+        IFLOG(log_, err(TH_ID, LS_TRL"[filename:%s][sqlite3_open_v2 - rc:%d - errdesc:%s]",
+                        __func__, db_path.c_str(), last_rc, sqlite3_errstr(last_rc)))
         status_ = PersistenceConnectionStatus_DISCONNECTED;
         rcode = RetCode_DBERR;
     } else {
@@ -629,9 +624,8 @@ inline RetCode pers_conn_sqlite::sqlite_disconnect()
     RetCode rcode = RetCode_OK;
     int last_rc = sqlite3_close_v2(db_);
     if(last_rc) {
-        IFLOG(err(TH_ID, LS_CLO "[sqlite3_close_v2(rc:%d) - errdesc[%s] - db error]", __func__,
-                  last_rc,
-                  sqlite3_errstr(last_rc)))
+        IFLOG(log_, err(TH_ID, LS_CLO "[sqlite3_close_v2(rc:%d) - errdesc[%s] - db error]",
+                        __func__, last_rc, sqlite3_errstr(last_rc)))
         status_ = PersistenceConnectionStatus_CONNECTED;
         rcode = RetCode_DBERR;
     } else {
@@ -647,9 +641,9 @@ inline RetCode pers_conn_sqlite::sqlite_exec_stmt(const char *stmt, bool fail_is
     int last_rc = sqlite3_exec(db_, stmt, 0, 0, &zErrMsg);
     if(last_rc != SQLITE_OK) {
         if(fail_is_error) {
-            IFLOG(err(TH_ID, LS_TRL"[sqlite3_exec - rc:%d - errdesc:%s]", __func__, last_rc, zErrMsg))
+            IFLOG(log_, err(TH_ID, LS_TRL"[sqlite3_exec - rc:%d - errdesc:%s]", __func__, last_rc, zErrMsg))
         } else {
-            IFLOG(dbg(TH_ID, LS_TRL"[sqlite3_exec - rc:%d - errdesc:%s]", __func__, last_rc, zErrMsg))
+            IFLOG(log_, dbg(TH_ID, LS_TRL"[sqlite3_exec - rc:%d - errdesc:%s]", __func__, last_rc, zErrMsg))
         }
         sqlite3_free(zErrMsg);
         rcode = RetCode_DBOPFAIL;
@@ -665,7 +659,7 @@ inline RetCode pers_conn_sqlite::sqlite_prepare_stmt(const char *sql_stmt, sqlit
     RetCode rcode = RetCode_OK;
     int last_rc = sqlite3_prepare_v2(db_, sql_stmt, (int)strlen(sql_stmt), stmt, 0);
     if(last_rc != SQLITE_OK) {
-        IFLOG(err(TH_ID, LS_TRL "[sqlite3_prepare_v2 rc:%d - errdesc:%s]", __func__, last_rc, sqlite3_errstr(last_rc)))
+        IFLOG(log_, err(TH_ID, LS_TRL "[sqlite3_prepare_v2 rc:%d - errdesc:%s]", __func__, last_rc, sqlite3_errstr(last_rc)))
         rcode = RetCode_DBERR;
     }
     return rcode;
@@ -687,10 +681,7 @@ bool enum_keyset_bind_where_clause(const member_desc &mmbrd, void *ud)
         sqlite3_bind_int(kbwc.stmt, kbwc.col_idx++, *(int *)obj_f_ptr);
     } else {
         //can be only a primitive type
-        int br = bind_stmt_fld(mmbrd, obj_f_ptr, kbwc.col_idx++, kbwc.stmt);
-        if(br) {
-            IFLOG(err(TH_ID, LS_CLO "[bind failed:%d]", __func__, br))
-        }
+        bind_stmt_fld(mmbrd, obj_f_ptr, kbwc.col_idx++, kbwc.stmt);
     }
     return true;
 }
@@ -716,12 +707,9 @@ bool enum_bind_obj_fields(const member_desc &mmbrd, void *ud)
         if(mmbrd.get_field_nentity_type() == NEntityType_NENUM) {
             size_t i = 0;
             do {
-                int br = sqlite3_bind_int(kbwc.stmt,
-                                          kbwc.col_idx++,
-                                          *(int *)(kbwc.obj_ptr + mmbrd.get_field_offset() + mmbrd.get_field_type_size()*i++));
-                if(br) {
-                    IFLOG(err(TH_ID, LS_CLO "[bind failed:%d, %s]", __func__, br, mmbrd.get_member_name()))
-                }
+                sqlite3_bind_int(kbwc.stmt,
+                                 kbwc.col_idx++,
+                                 *(int *)(kbwc.obj_ptr + mmbrd.get_field_offset() + mmbrd.get_field_type_size()*i++));
             } while(i < mmbrd.get_field_nmemb());
         } else {
             //class, struct is a recursive step.
@@ -739,23 +727,17 @@ bool enum_bind_obj_fields(const member_desc &mmbrd, void *ud)
     } else {
         //primitive type
         if(mmbrd.get_field_vlg_type() == Type_ASCII || mmbrd.get_field_vlg_type() == Type_BYTE) {
-            int br = bind_stmt_fld(mmbrd,
-                                   kbwc.obj_ptr + mmbrd.get_field_offset(),
-                                   kbwc.col_idx++,
-                                   kbwc.stmt);
-            if(br) {
-                IFLOG(err(TH_ID, LS_CLO "[bind failed:%d, %s]", __func__, br, mmbrd.get_member_name()))
-            }
+            bind_stmt_fld(mmbrd,
+                          kbwc.obj_ptr + mmbrd.get_field_offset(),
+                          kbwc.col_idx++,
+                          kbwc.stmt);
         } else {
             size_t i = 0;
             do {
-                int br = bind_stmt_fld(mmbrd,
-                                       kbwc.obj_ptr + mmbrd.get_field_offset() + mmbrd.get_field_type_size()*i++,
-                                       kbwc.col_idx++,
-                                       kbwc.stmt);
-                if(br) {
-                    IFLOG(err(TH_ID, LS_CLO "[bind failed:%d, %s]", __func__, br, mmbrd.get_member_name()))
-                }
+                bind_stmt_fld(mmbrd,
+                              kbwc.obj_ptr + mmbrd.get_field_offset() + mmbrd.get_field_type_size()*i++,
+                              kbwc.col_idx++,
+                              kbwc.stmt);
             } while(i < mmbrd.get_field_nmemb());
         }
     }
@@ -787,7 +769,7 @@ inline RetCode pers_conn_sqlite::sqlite_step_stmt(sqlite3_stmt *stmt, int &sqlit
     }
     sqlite_rc = sqlite3_step(stmt);
     if(sqlite_rc != SQLITE_ROW && sqlite_rc != SQLITE_DONE) {
-        IFLOG(inf(TH_ID, LS_TRL "[sqlite3_step rc:%d - errdesc:%s]", __func__, sqlite_rc, sqlite3_errstr(sqlite_rc)))
+        IFLOG(log_, inf(TH_ID, LS_TRL "[sqlite3_step rc:%d - errdesc:%s]", __func__, sqlite_rc, sqlite3_errstr(sqlite_rc)))
         rcode = RetCode_DBERR;
     }
     return rcode;
@@ -801,7 +783,7 @@ inline RetCode pers_conn_sqlite::sqlite_release_stmt(sqlite3_stmt *stmt)
     }
     int last_rc = sqlite3_finalize(stmt);
     if(last_rc != SQLITE_OK) {
-        IFLOG(err(TH_ID, LS_TRL "[sqlite3_finalize rc:%d]", __func__, last_rc))
+        IFLOG(log_, err(TH_ID, LS_TRL "[sqlite3_finalize rc:%d]", __func__, last_rc))
         rcode = RetCode_DBERR;
     }
     return rcode;
@@ -832,10 +814,10 @@ inline RetCode pers_conn_sqlite::do_connect()
     RetCode rcode = RetCode_OK;
     worker_ = conn_pool_.get_worker_rr_can_create_start();
     if(worker_ == nullptr) {
-        IFLOG(cri(TH_ID, LS_CLO "[thread unavailable]", __func__, RetCode_UNVRSC))
+        IFLOG(log_, cri(TH_ID, LS_CLO "[thread unavailable]", __func__, RetCode_UNVRSC))
         return RetCode_UNVRSC;
     }
-    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_CONNECT));
+    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_CONNECT, log_));
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
@@ -1025,11 +1007,11 @@ RetCode pers_conn_sqlite::do_create_table(const nentity_manager &nem,
     edesc.enum_key_descriptors(enum_keys_create_table, &rud);
 
     create_stmt.append(");");
-    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_CREATETABLE));
+    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_CREATETABLE, log_));
     task->in_edesc_ = &edesc;
     task->in_drop_if_exist_ = drop_if_exist;
     task->stmt_bf_ = create_stmt.c_str();
-    IFLOG(dbg(TH_ID, LS_STM "[create_stmt:%s]", __func__, create_stmt.c_str()))
+    IFLOG(log_, dbg(TH_ID, LS_STM "[create_stmt:%s]", __func__, create_stmt.c_str()))
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
@@ -1104,7 +1086,7 @@ RetCode pers_conn_sqlite::do_select(unsigned int key,
         }
     }
 
-    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_SELECT));
+    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_SELECT, log_));
     task->in_nem_ = &nem;
     task->in_key_ = key;
     task->in_out_ts0_ = &ts0_out;
@@ -1112,7 +1094,7 @@ RetCode pers_conn_sqlite::do_select(unsigned int key,
     task->in_out_obj_ = &in_out;
     task->stmt_bf_ = sel_stmt;
 
-    IFLOG(trc(TH_ID, LS_QRY "[select_stmt:%s]", __func__, sel_stmt))
+    IFLOG(log_, trc(TH_ID, LS_QRY "[select_stmt:%s]", __func__, sel_stmt))
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
@@ -1333,14 +1315,14 @@ RetCode pers_conn_sqlite::do_update(unsigned int key,
         }
     }
 
-    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_UPDATE));
+    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_UPDATE, log_));
     task->in_nem_ = &nem;
     task->in_key_ = key;
     task->in_obj_ = &in;
     task->in_out_ts0_ = &ts_0;
     task->in_out_ts1_ = &ts_1;
     task->stmt_bf_ = upd_stmt;
-    IFLOG(dbg(TH_ID, LS_STM "[update_stmt:%s]", __func__, upd_stmt))
+    IFLOG(log_, dbg(TH_ID, LS_STM "[update_stmt:%s]", __func__, upd_stmt))
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
@@ -1440,7 +1422,7 @@ RetCode pers_conn_sqlite::do_delete(unsigned int key,
         }
     }
 
-    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_DELETE));
+    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_DELETE, log_));
     task->in_nem_ = &nem;
     task->in_key_ = key;
     task->in_out_ts0_ = &ts_0;
@@ -1448,7 +1430,7 @@ RetCode pers_conn_sqlite::do_delete(unsigned int key,
     task->in_mode_ = mode;
     task->in_obj_ = &in;
     task->stmt_bf_ = del_stmt;
-    IFLOG(dbg(TH_ID, LS_STM "[delete_stmt:%s]", __func__, del_stmt))
+    IFLOG(log_, dbg(TH_ID, LS_STM "[delete_stmt:%s]", __func__, del_stmt))
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
@@ -1645,14 +1627,14 @@ RetCode pers_conn_sqlite::do_insert(const nentity_manager &nem,
         }
     }
 
-    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_INSERT));
+    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_INSERT, log_));
     task->in_nem_ = &nem;
     task->in_obj_ = &in;
     task->in_out_ts0_ = &ts_0;
     task->in_out_ts1_ = &ts_1;
     task->in_fail_is_error_ = fail_is_error;
     task->stmt_bf_ = ins_stmt;
-    IFLOG(dbg(TH_ID, LS_STM "[insert_stmt:%s]", __func__, ins_stmt))
+    IFLOG(log_, dbg(TH_ID, LS_STM "[insert_stmt:%s]", __func__, ins_stmt))
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
@@ -1668,8 +1650,8 @@ RetCode pers_conn_sqlite::do_execute_query(const nentity_manager &nem,
                                            std::unique_ptr<persistence_query_impl> &qry_out)
 {
     RetCode rcode = RetCode_OK;
-    IFLOG(trc(TH_ID, LS_QRY "[query-sql:%s]", __func__, sql))
-    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_EXECUTEQUERY));
+    IFLOG(log_, trc(TH_ID, LS_QRY "[query-sql:%s]", __func__, sql))
+    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_EXECUTEQUERY, log_));
     task->in_nem_ = &nem;
     task->in_sql_ = sql;
     if((rcode = worker_->submit(*task))) {
@@ -1684,7 +1666,7 @@ RetCode pers_conn_sqlite::do_execute_query(const nentity_manager &nem,
 RetCode pers_conn_sqlite::do_release_query(persistence_query_impl &qry)
 {
     RetCode rcode = RetCode_OK;
-    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_RELEASEQUERY));
+    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_RELEASEQUERY, log_));
     task->in_out_query_ = &qry;
     if((rcode = worker_->submit(*task))) {
         return rcode;
@@ -1701,7 +1683,8 @@ RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_impl &qry,
 {
     pers_query_sqlite *qry_sqlite = static_cast<pers_query_sqlite *>(&qry);
     RetCode rcode = RetCode_OK;
-    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_NEXTENTITYFROMQUERY));
+    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_NEXTENTITYFROMQUERY,
+                                                                              log_));
     task->in_out_ts0_ = &ts0_out;
     task->in_out_ts1_ = &ts1_out;
     task->in_out_obj_ = &out;
@@ -1720,8 +1703,9 @@ RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_impl &qry,
 RetCode pers_conn_sqlite::do_execute_statement(const char *sql)
 {
     RetCode rcode = RetCode_OK;
-    IFLOG(trc(TH_ID, LS_STM "[sql:%s]", __func__, sql))
-    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_EXECUTESTATEMENT));
+    IFLOG(log_, trc(TH_ID, LS_STM "[sql:%s]", __func__, sql))
+    std::unique_ptr<persistence_task_sqlite> task(new persistence_task_sqlite(*this, VLG_PERS_TASK_OP_EXECUTESTATEMENT,
+                                                                              log_));
     task->in_sql_= sql;
     if((rcode = worker_->submit(*task))) {
         return rcode;
@@ -1736,8 +1720,8 @@ RetCode pers_conn_sqlite::do_execute_statement(const char *sql)
 // pers_driv_sqlite
 
 struct pers_driv_sqlite : public persistence_driver {
-    static pers_driv_sqlite &get_instance();
-    explicit pers_driv_sqlite();
+    static pers_driv_sqlite &get_instance(logger *log);
+    explicit pers_driv_sqlite(logger *log) : persistence_driver(VLG_PERS_DRIV_SQLITE_ID, log) {}
 
     virtual RetCode new_connection(persistence_connection_pool &conn_pool,
                                    persistence_connection_impl **new_conn) override;
@@ -1748,35 +1732,32 @@ struct pers_driv_sqlite : public persistence_driver {
 
 std::unique_ptr<pers_driv_sqlite> drv_sqlite_instance;
 
-pers_driv_sqlite &pers_driv_sqlite::get_instance()
+pers_driv_sqlite &pers_driv_sqlite::get_instance(logger *log)
 {
     if(!drv_sqlite_instance) {
-        drv_sqlite_instance.reset(new pers_driv_sqlite());
+        drv_sqlite_instance.reset(new pers_driv_sqlite(log));
     }
     return *drv_sqlite_instance;
 }
 
-pers_driv_sqlite::pers_driv_sqlite() : persistence_driver(VLG_PERS_DRIV_SQLITE_ID)
-{}
-
 RetCode pers_driv_sqlite::new_connection(persistence_connection_pool &conn_pool,
                                          persistence_connection_impl **new_conn)
 {
-    IFLOG(trc(TH_ID, LS_OPN "[url:%s, user:%s, password:%s]", __func__,
-              conn_pool.url_.c_str(),
-              conn_pool.usr_.c_str(),
-              conn_pool.psswd_.c_str()))
+    IFLOG(log_, trc(TH_ID, LS_OPN "[url:%s, user:%s, password:%s]", __func__,
+                    conn_pool.url_.c_str(),
+                    conn_pool.usr_.c_str(),
+                    conn_pool.psswd_.c_str()))
     RetCode rcode = RetCode_OK;
-    pers_conn_sqlite *new_conn_instance = new pers_conn_sqlite(conn_pool);
+    pers_conn_sqlite *new_conn_instance = new pers_conn_sqlite(conn_pool, log_);
     *new_conn = new_conn_instance;
-    IFLOG(trc(TH_ID, LS_CLO "[new_conn_instance:%p, id:%d]", __func__, new_conn_instance, new_conn_instance->id_))
+    IFLOG(log_, trc(TH_ID, LS_CLO "[new_conn_instance:%p, id:%d]", __func__, new_conn_instance, new_conn_instance->id_))
     return rcode;
 }
 
 RetCode pers_driv_sqlite::close_connection(persistence_connection_impl &conn)
 {
     RetCode res = static_cast<pers_conn_sqlite &>(conn).sqlite_disconnect();
-    IFLOG(trc(TH_ID, LS_CLO "[id:%d]", __func__, conn.id_))
+    IFLOG(log_, trc(TH_ID, LS_CLO "[id:%d]", __func__, conn.id_))
     return res;
 }
 
@@ -1799,9 +1780,9 @@ extern "C" {
 VLG_PERS_DRIV_SQLITE ENTRY POINT
 *******************************/
 extern "C" {
-    EXP_SYM persistence_driver *get_pers_driv_sqlite()
+    EXP_SYM persistence_driver *get_pers_driv_sqlite(logger *log)
     {
-        return &pers_driv_sqlite::get_instance();
+        return &pers_driv_sqlite::get_instance(log);
     }
 }
 

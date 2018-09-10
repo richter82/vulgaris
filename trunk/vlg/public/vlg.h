@@ -483,6 +483,7 @@ typedef struct {
 #endif
 
 #if defined(__cplusplus)
+struct logger;
 struct nclass;
 struct nentity_desc;
 struct nentity_manager;
@@ -516,6 +517,7 @@ struct persistence_connection_pool;
 struct persistence_worker;
 struct g_bbuf;
 #else
+typedef struct logger logger;
 typedef struct nclass nclass;
 typedef struct shr_nclass shr_nclass;
 typedef struct own_nclass own_nclass;

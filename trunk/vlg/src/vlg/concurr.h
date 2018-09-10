@@ -223,7 +223,7 @@ enum PExecSrvStatus {
            to execute asynchronously a set of p_task(s).
 */
 struct p_exec_srv {
-        explicit p_exec_srv();
+        explicit p_exec_srv(logger *log);
         ~p_exec_srv();
 
         RetCode init(unsigned int executor_num);
@@ -314,6 +314,9 @@ struct p_exec_srv {
         std::vector<std::unique_ptr<p_exectr>> exec_pool_;
         b_qu task_queue_;
         mutable mx mon_;
+
+    public:
+        logger *log_;
 };
 
 }

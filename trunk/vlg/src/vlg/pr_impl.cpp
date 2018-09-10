@@ -55,7 +55,8 @@ RetCode peer_recv_task_inco_conn::execute()
 {
     RetCode rcode = RetCode_OK;
     if((rcode = conn_sh_->impl_->peer_->recv_and_route_pkt(conn_sh_, &pkt_hdr_, pkt_body_.get()))) {
-        IFLOG(conn_sh_->impl_->peer_->log_, trc(TH_ID, LS_EXE "[recv task:%d - execution failed - res:%d]", __func__, get_id(), rcode))
+        IFLOG(conn_sh_->impl_->peer_->log_, trc(TH_ID, LS_EXE "[recv task:%d - execution failed - res:%d]", __func__, get_id(),
+                                                rcode))
     }
     return rcode;
 }
@@ -77,7 +78,8 @@ RetCode peer_recv_task_outg_conn::execute()
 {
     RetCode rcode = RetCode_OK;
     if((rcode = conn_.impl_->peer_->recv_and_route_pkt(conn_, &pkt_hdr_, pkt_body_.get()))) {
-        IFLOG(conn_.impl_->peer_->log_, trc(TH_ID, LS_EXE "[recv task:%d - execution failed - res:%d]", __func__, get_id(), rcode))
+        IFLOG(conn_.impl_->peer_->log_, trc(TH_ID, LS_EXE "[recv task:%d - execution failed - res:%d]", __func__, get_id(),
+                                            rcode))
     }
     return rcode;
 }
@@ -356,8 +358,8 @@ RetCode peer_impl::on_automa_start()
     SelectorStatus current = SelectorStatus_UNDEF;
     RetCode rcode = RetCode_OK;
     IFLOG(log_, inf(TH_ID, LS_APL"[peer personality: << %s >>]",
-              (personality_ == PeerPersonality_BOTH) ? "both" :
-              (personality_ == PeerPersonality_PURE_SERVER) ? "pure-server" : "pure-client"))
+                    (personality_ == PeerPersonality_BOTH) ? "both" :
+                    (personality_ == PeerPersonality_PURE_SERVER) ? "pure-server" : "pure-client"))
     if(personality_ == PeerPersonality_PURE_SERVER || personality_ == PeerPersonality_BOTH) {
         PExecSrvStatus current_exc_srv = PExecSrvStatus_TOINIT;
         if((rcode = srv_sbs_exec_serv_.start())) {
@@ -570,8 +572,8 @@ RetCode peer_impl::add_subscriber(incoming_subscription_impl *sbsdesc)
     }
     sdrec->connid_condesc_set_.put(&sbsdesc->conn_->connid_, &sbsdesc->conn_sh_);
     IFLOG(log_, dbg(TH_ID, LS_SBS"[added subscriber: connid:%d, nclass_id:%d]",
-              sbsdesc->conn_->connid_,
-              sbsdesc->nclassid_))
+                    sbsdesc->conn_->connid_,
+                    sbsdesc->nclassid_))
     return RetCode_OK;
 }
 
@@ -580,16 +582,16 @@ RetCode peer_impl::remove_subscriber(incoming_subscription_impl *sbsdesc)
     per_nclass_id_conn_set *sdrec = nullptr;
     if(srv_sbs_nclassid_condesc_set_.get(&sbsdesc->nclassid_, &sdrec)) {
         IFLOG(log_, cri(TH_ID, LS_CLO"[subscriber: connid:%d not found for nclass_id:%d]",
-                  __func__,
-                  sbsdesc->conn_->connid_,
-                  sbsdesc->nclassid_))
+                        __func__,
+                        sbsdesc->conn_->connid_,
+                        sbsdesc->nclassid_))
         return RetCode_GENERR;
     }
     if(sdrec->connid_condesc_set_.remove(&sbsdesc->conn_->connid_, nullptr)) {
         IFLOG(log_, cri(TH_ID, LS_CLO"[subscriber: connid:%d not found for nclass_id:%d]",
-                  __func__,
-                  sbsdesc->conn_->connid_,
-                  sbsdesc->nclassid_))
+                        __func__,
+                        sbsdesc->conn_->connid_,
+                        sbsdesc->nclassid_))
         return RetCode_GENERR;
     }
     return RetCode_OK;
@@ -621,7 +623,8 @@ struct peer_sbs_task : public p_tsk {
         std::shared_ptr<incoming_connection> *conn = (std::shared_ptr<incoming_connection> *)ptr;
         std::shared_ptr<incoming_subscription> sbs_sh;
         if((*conn)->impl_->inco_nclassid_sbs_map_.get(&rud->nclass_id, &sbs_sh)) {
-            IFLOG((*conn)->impl_->peer_->log_, wrn(TH_ID, LS_EXE "[no more active subscriptions on connection:%u]", __func__, (*conn)->get_id()))
+            IFLOG((*conn)->impl_->peer_->log_, wrn(TH_ID, LS_EXE "[no more active subscriptions on connection:%u]", __func__,
+                                                   (*conn)->get_id()))
             return;
         }
         sbs_sh->impl_->submit_evt(rud->tsk->sbs_evt_);

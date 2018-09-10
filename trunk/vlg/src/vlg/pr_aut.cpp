@@ -113,9 +113,9 @@ RetCode peer_automa::await_for_status_reached(PeerStatus test,
     }
     current = peer_status_;
     IFLOG(log_, dbg(TH_ID, LS_CLO "test:%d [reached] current:%d",
-              __func__,
-              test,
-              peer_status_))
+                    __func__,
+                    test,
+                    peer_status_))
     return rcode;
 }
 
@@ -138,9 +138,9 @@ RetCode peer_automa::await_for_status_change(PeerStatus &peer_status,
         }
     }
     IFLOG(log_, dbg(TH_ID,
-              LS_CLO "status:%d [changed] current:%d", __func__,
-              peer_status,
-              peer_status_))
+                    LS_CLO "status:%d [changed] current:%d", __func__,
+                    peer_status,
+                    peer_status_))
     peer_status = peer_status_;
     return rcode;
 }
@@ -277,13 +277,13 @@ RetCode peer_automa::step_welcome()
         return RetCode_BADSTTS;
     }
     IFLOG(log_, inf(TH_ID, peer_welcome_fmt, "PEER:",
-              peer_name_.c_str(),
-              "VER:",
-              peer_ver_[0],
-              peer_ver_[1],
-              peer_ver_[2],
-              "ARCH:",
-              get_arch()))
+                    peer_name_.c_str(),
+                    "VER:",
+                    peer_ver_[0],
+                    peer_ver_[1],
+                    peer_ver_[2],
+                    "ARCH:",
+                    get_arch()))
     set_status(PeerStatus_WELCOMED);
     IFLOG(log_, inf(TH_ID, LS_APL"#welcomed#"))
     return RetCode_OK;

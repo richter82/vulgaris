@@ -36,7 +36,24 @@ typedef enum  {
 } VLG_PERS_TASK_OP;
 
 struct persistence_task : public p_tsk {
-    persistence_task(VLG_PERS_TASK_OP op_code);
+    persistence_task(VLG_PERS_TASK_OP op_code, logger *log) :
+        op_code_(op_code),
+        op_res_(RetCode_OK),
+        in_nem_(nullptr),
+        in_mode_(PersistenceDeletionMode_UNDEFINED),
+        in_out_obj_(nullptr),
+        in_sql_(nullptr),
+        in_key_(0),
+        in_edesc_((nullptr)),
+        in_drop_if_exist_(false),
+        in_out_ts0_(nullptr),
+        in_out_ts1_(nullptr),
+        in_out_query_(nullptr),
+        in_fail_is_error_(false),
+        stmt_bf_(nullptr),
+        log_(log)
+    {}
+
     virtual RetCode execute() override;
 
     virtual RetCode do_connect() = 0;
@@ -65,6 +82,7 @@ struct persistence_task : public p_tsk {
     persistence_query_impl *in_out_query_;
     bool in_fail_is_error_;
     const char *stmt_bf_;
+    logger *log_;
 };
 
 struct persistence_connection_pool {
