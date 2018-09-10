@@ -165,16 +165,16 @@ RetCode persistence_manager_impl::set_cfg_file_path_name(const char *file_path)
 RetCode persistence_manager_impl::load_pers_driver_dyna(const char *drivers[],
                                                         int drivers_num)
 {
-    IFLOG(trc(TH_ID, LS_OPN "[drivers_num:%d]", __func__, drivers_num))
+    IFLOG(get_instance().log_, trc(TH_ID, LS_OPN "[drivers_num:%d]", __func__, drivers_num))
     RetCode rcode = RetCode_OK;
     for(int i = 0; i < drivers_num; i++) {
         if(get_instance().drivname_driv_hm_.find(drivers[i]) != get_instance().drivname_driv_hm_.end()) {
-            IFLOG(wrn(TH_ID, LS_TRL "[driver already loaded, skipping:%s]", __func__, drivers[i]))
+            IFLOG(get_instance().log_, wrn(TH_ID, LS_TRL "[driver already loaded, skipping:%s]", __func__, drivers[i]))
             continue;
         }
         persistence_driver *driv = nullptr;
         if((rcode = persistence_driver::load_driver_dyna(drivers[i], &driv))) {
-            IFLOG(cri(TH_ID, LS_CLO "[failed loading driver:%s][res:%d]", __func__, drivers[i], rcode))
+            IFLOG(get_instance().log_, cri(TH_ID, LS_CLO "[failed loading driver:%s][res:%d]", __func__, drivers[i], rcode))
             return rcode;
         }
         get_instance().drivname_driv_hm_[drivers[i]] = driv;
@@ -184,12 +184,12 @@ RetCode persistence_manager_impl::load_pers_driver_dyna(const char *drivers[],
 
 RetCode persistence_manager_impl::load_pers_driver_dyna(std::set<std::string> &drivmap)
 {
-    IFLOG(trc(TH_ID, LS_OPN "[drivers_num:%d]", __func__, drivmap.size()))
+    IFLOG(get_instance().log_, trc(TH_ID, LS_OPN "[drivers_num:%d]", __func__, drivmap.size()))
     RetCode rcode = RetCode_OK;
     for(auto it = drivmap.begin(); it != drivmap.end(); it++) {
         persistence_driver *driv = nullptr;
         if((rcode = persistence_driver::load_driver_dyna(it->c_str(), &driv))) {
-            IFLOG(cri(TH_ID, LS_CLO "[failed loading driver:%s][res:%d]", __func__, it->c_str(), rcode))
+            IFLOG(get_instance().log_, cri(TH_ID, LS_CLO "[failed loading driver:%s][res:%d]", __func__, it->c_str(), rcode))
             return rcode;
         }
         get_instance().drivname_driv_hm_[it->c_str()] = driv;
@@ -200,10 +200,10 @@ RetCode persistence_manager_impl::load_pers_driver_dyna(std::set<std::string> &d
 RetCode persistence_manager_impl::load_pers_driver(persistence_driver *drivers[],
                                                    int drivers_num)
 {
-    IFLOG(trc(TH_ID, LS_OPN "[drivers_num:%d]", __func__, drivers_num))
+    IFLOG(get_instance().log_, trc(TH_ID, LS_OPN "[drivers_num:%d]", __func__, drivers_num))
     for(int i = 0; i < drivers_num; i++) {
         if(get_instance().drivname_driv_hm_.find(drivers[i]->get_driver_name()) != get_instance().drivname_driv_hm_.end()) {
-            IFLOG(wrn(TH_ID, LS_TRL "[driver already loaded, skipping:%s]", __func__, drivers[i]))
+            IFLOG(get_instance().log_, wrn(TH_ID, LS_TRL "[driver already loaded, skipping:%s]", __func__, drivers[i]))
             continue;
         }
         get_instance().drivname_driv_hm_[drivers[i]->get_driver_name()] = drivers[i];
@@ -211,7 +211,8 @@ RetCode persistence_manager_impl::load_pers_driver(persistence_driver *drivers[]
     return RetCode_OK;
 }
 
-persistence_manager_impl::persistence_manager_impl()
+    persistence_manager_impl::persistence_manager_impl() :
+    log_(logger::get_logger("persistence"))
 {}
 
 RetCode persistence_manager_impl::map_classid_driver(unsigned int nclass_id,
@@ -226,11 +227,11 @@ RetCode persistence_manager_impl::start_all_drivers()
     RetCode rcode = RetCode_OK;
     for(auto it = drivname_driv_hm_.begin(); it != drivname_driv_hm_.end(); it++) {
         if((rcode = it->second->start_all_pools())) {
-            IFLOG(cri(TH_ID, LS_TRL "[failed to start persistence-driver:%s]", __func__, it->first.c_str()))
+            IFLOG(log_, cri(TH_ID, LS_TRL "[failed to start persistence-driver:%s]", __func__, it->first.c_str()))
             break;
         }
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
+    IFLOG(log_, trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 
@@ -238,7 +239,7 @@ persistence_driver *persistence_manager_impl::available_driver(unsigned int ncla
 {
     auto it = nclassid_driv_hm_.find(nclass_id);
     if(it == nclassid_driv_hm_.end()) {
-        IFLOG(err(TH_ID, LS_TRL "[nclass_id:%d has no persistence-driver available]", __func__, nclass_id))
+        IFLOG(log_, err(TH_ID, LS_TRL "[nclass_id:%d has no persistence-driver available]", __func__, nclass_id))
     }
     return it->second;
 }
@@ -276,7 +277,7 @@ RetCode persistence_manager_impl::parse_URI(unsigned long &lnum,
         if(tkn == VLG_RWRD_URL) {
             break;
         } else {
-            IFLOG(cri(TH_ID, LS_PRS "[line:%d, unexpected token:%s]", __func__, lnum, tkn.c_str()))
+            IFLOG(log_, cri(TH_ID, LS_PRS "[line:%d, unexpected token:%s]", __func__, lnum, tkn.c_str()))
             return RetCode_BADCFG;
         }
     }
@@ -291,7 +292,7 @@ RetCode persistence_manager_impl::parse_URI(unsigned long &lnum,
         if(tkn == VLG_RWRD_USR) {
             break;
         } else {
-            IFLOG(cri(TH_ID, LS_PRS "[line:%d, unexpected token:%s]", __func__, lnum, tkn.c_str()))
+            IFLOG(log_, cri(TH_ID, LS_PRS "[line:%d, unexpected token:%s]", __func__, lnum, tkn.c_str()))
             return RetCode_BADCFG;
         }
     }
@@ -306,7 +307,7 @@ RetCode persistence_manager_impl::parse_URI(unsigned long &lnum,
         if(tkn == VLG_RWRD_PSSWD) {
             break;
         } else {
-            IFLOG(cri(TH_ID, LS_PRS "[line:%d, unexpected token:%s]", __func__, lnum, tkn.c_str()))
+            IFLOG(log_, cri(TH_ID, LS_PRS "[line:%d, unexpected token:%s]", __func__, lnum, tkn.c_str()))
             return RetCode_BADCFG;
         }
     }
@@ -334,7 +335,7 @@ RetCode persistence_manager_impl::parse_single_conn_pool_cfg(unsigned long &lnum
         CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
         auto it = drivname_driv_hm_.find(tkn);
         if(it == drivname_driv_hm_.end()) {
-            IFLOG(cri(TH_ID, LS_PRS "[line:%d, driver not loaded:%s]", __func__, lnum, tkn.c_str()))
+            IFLOG(log_, cri(TH_ID, LS_PRS "[line:%d, driver not loaded:%s]", __func__, lnum, tkn.c_str()))
             return RetCode_BADCFG;
         } else {
             driv = it->second;
@@ -349,7 +350,7 @@ RetCode persistence_manager_impl::parse_single_conn_pool_cfg(unsigned long &lnum
             RET_ON_KO(parse_URI(lnum, tknz, url, usr, psswd))
             break;
         } else {
-            IFLOG(cri(TH_ID, LS_PRS "[line:%d, unexpected token:%s]", __func__, lnum, tkn.c_str()))
+            IFLOG(log_, cri(TH_ID, LS_PRS "[line:%d, unexpected token:%s]", __func__, lnum, tkn.c_str()))
             return RetCode_BADCFG;
         }
         break;
@@ -362,7 +363,7 @@ RetCode persistence_manager_impl::parse_single_conn_pool_cfg(unsigned long &lnum
             RET_ON_KO(parse_impl_after_colon(lnum, tknz, pool_size))
             break;
         } else {
-            IFLOG(cri(TH_ID, LS_PRS "[line:%d, unexpected token:%s]", __func__, lnum, tkn.c_str()))
+            IFLOG(log_, cri(TH_ID, LS_PRS "[line:%d, unexpected token:%s]", __func__, lnum, tkn.c_str()))
             return RetCode_BADCFG;
         }
     }
@@ -374,7 +375,7 @@ RetCode persistence_manager_impl::parse_single_conn_pool_cfg(unsigned long &lnum
             RET_ON_KO(parse_impl_after_colon(lnum, tknz, th_size))
             break;
         } else {
-            IFLOG(cri(TH_ID, LS_PRS "[line:%d, unexpected token:%s]", __func__, lnum, tkn.c_str()))
+            IFLOG(log_, cri(TH_ID, LS_PRS "[line:%d, unexpected token:%s]", __func__, lnum, tkn.c_str()))
             return RetCode_BADCFG;
         }
     }
@@ -422,7 +423,7 @@ RetCode persistence_manager_impl::parse_single_nclass_map_cfg(unsigned long &lnu
         CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
         auto it = conn_pool_name_to_driv.find(tkn);
         if(it == conn_pool_name_to_driv.end()) {
-            IFLOG(cri(TH_ID, LS_PRS "[line:%d, connection pool not defined:%s]", __func__, lnum, tkn.c_str()))
+            IFLOG(log_, cri(TH_ID, LS_PRS "[line:%d, connection pool not defined:%s]", __func__, lnum, tkn.c_str()))
             return RetCode_BADCFG;
         } else {
             driv = it->second;
@@ -447,7 +448,7 @@ RetCode persistence_manager_impl::parse_nclass_mapping_cfg(unsigned long &lnum,
         } else {
             nclass_id.assign(tkn);
             if(!string_is_number(nclass_id.c_str())) {
-                IFLOG(cri(TH_ID, LS_PRS "[line:%d, bad nclass_id:%s]", __func__, lnum, nclass_id.c_str()))
+                IFLOG(log_, cri(TH_ID, LS_PRS "[line:%d, bad nclass_id:%s]", __func__, lnum, nclass_id.c_str()))
                 return RetCode_BADCFG;
             }
             unsigned int classid_n = atoi(nclass_id.c_str());
@@ -490,13 +491,13 @@ RetCode persistence_manager_impl::parse_data(std::string &data)
                 //comment begin
                 parsing_comment = true;
             } else {
-                IFLOG(cri(TH_ID, LS_PRS "[line:%d, unexpected token:%s]", __func__, lnum, tkn.c_str()))
+                IFLOG(log_, cri(TH_ID, LS_PRS "[line:%d, unexpected token:%s]", __func__, lnum, tkn.c_str()))
                 return RetCode_BADCFG;
             }
         }
     }
     if(!conn_cfg_done || !mapping_cfg_done) {
-        IFLOG(cri(TH_ID, LS_PRS "%s() - bad persistence configuration", __func__))
+        IFLOG(log_, cri(TH_ID, LS_PRS "%s() - bad persistence configuration", __func__))
         return RetCode_BADCFG;
     }
     return RetCode_OK;
@@ -504,7 +505,7 @@ RetCode persistence_manager_impl::parse_data(std::string &data)
 
 RetCode persistence_manager_impl::load_cfg(const char *filename)
 {
-    IFLOG(trc(TH_ID, LS_OPN "[filename:%s]", __func__, filename))
+    IFLOG(log_, trc(TH_ID, LS_OPN "[filename:%s]", __func__, filename))
     std::string path;
     path.assign(pers_cfg_file_dir);
     if(path.length() > 0) {
@@ -513,7 +514,7 @@ RetCode persistence_manager_impl::load_cfg(const char *filename)
     path.append(filename);
     FILE *fdesc = fopen(path.c_str(), "r");
     if(!fdesc) {
-        IFLOG(wrn(TH_ID, LS_CLO "[cannot open persistent configuration file:%s]", __func__, filename))
+        IFLOG(log_, wrn(TH_ID, LS_CLO "[cannot open persistent configuration file:%s]", __func__, filename))
         return RetCode_IOERR;
     }
     std::string data;
@@ -530,7 +531,7 @@ RetCode persistence_manager_impl::load_cfg()
     } else {
         rcode = load_cfg("perscfg");
     }
-    IFLOG(trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
+    IFLOG(log_, trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
     return rcode;
 }
 

@@ -88,6 +88,7 @@ struct peer_automa {
     public:
         peer &publ_;
         peer_listener &listener_;
+        logger *log_;
 };
 
 

@@ -37,47 +37,47 @@ void FillQstring_FldValue(const char *fld_ptr,
         }
         break;
         case vlg::Type_BOOL: {
-            bool val = *(bool *)fld_ptr;
+            bool val = *(const bool *)fld_ptr;
             out = QString("%1").arg(val);
         }
         break;
         case vlg::Type_INT16: {
-            short val = *(short *)fld_ptr;
+            short val = *(const short *)fld_ptr;
             out = QString("%1").arg(val);
         }
         break;
         case vlg::Type_UINT16: {
-            unsigned short val = *(unsigned short *)fld_ptr;
+            unsigned short val = *(const unsigned short *)fld_ptr;
             out = QString("%1").arg(val);
         }
         break;
         case vlg::Type_INT32: {
-            int val = *(int *)fld_ptr;
+            int val = *(const int *)fld_ptr;
             out = QString("%1").arg(val);
         }
         break;
         case vlg::Type_UINT32: {
-            unsigned int val = *(unsigned int *)fld_ptr;
+            unsigned int val = *(const unsigned int *)fld_ptr;
             out = QString("%1").arg(val);
         }
         break;
         case vlg::Type_INT64: {
-            int64_t val = *(int64_t *)fld_ptr;
+            int64_t val = *(const int64_t *)fld_ptr;
             out = QString("%1").arg(val);
         }
         break;
         case vlg::Type_UINT64: {
-            uint64_t val = *(uint64_t *)fld_ptr;
+            uint64_t val = *(const uint64_t *)fld_ptr;
             out = QString("%1").arg(val);
         }
         break;
         case vlg::Type_FLOAT32: {
-            float val = *(float *)fld_ptr;
+            float val = *(const float *)fld_ptr;
             out = QString("%1").arg(val);
         }
         break;
         case vlg::Type_FLOAT64: {
-            double val = *(double *)fld_ptr;
+            double val = *(const double *)fld_ptr;
             out = QString("%1").arg(val);
         }
         break;
@@ -141,7 +141,7 @@ void FillFldValue_Qstring(const QVariant &value,
             break;
         case vlg::Type_BYTE:
             memset(fld_ptr, 0, mdesc.get_field_nmemb());
-            memcpy(fld_ptr, value.toByteArray().constData(), min(value.toByteArray().size(), mdesc.get_field_nmemb()));
+            memcpy(fld_ptr, value.toByteArray().constData(), std::min((uint32_t)value.toByteArray().size(), (uint32_t)mdesc.get_field_nmemb()));
             break;
         default:
             break;

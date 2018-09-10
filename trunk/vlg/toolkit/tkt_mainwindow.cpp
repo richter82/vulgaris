@@ -67,13 +67,13 @@ const unsigned int *toolkit_peer::get_version()
 
 vlg_toolkit_MainWindow::vlg_toolkit_MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::vlg_toolkit_MainWindow),
     peer_(*this),
     view_model_loaded_(false),
     vlgmodel_load_list_model_(this),
     pers_dri_file_load_list_model_(this),
     vlg_model_loaded_model_(peer_.get_nentity_manager(), this),
     pte_apnd_(this),
+    ui(new Ui::vlg_toolkit_MainWindow),
     flash_info_msg_val_(0)
 {
     ui->setupUi(this);

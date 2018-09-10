@@ -61,7 +61,7 @@ acceptor::~acceptor()
             if(shutdown(serv_socket_, SHUT_RDWR) == SOCKET_ERROR) {
 #endif
 #endif
-            IFLOG(err(TH_ID, LS_DTR "closesocket KO", __func__))
+            IFLOG(peer_.log_, err(TH_ID, LS_DTR "closesocket KO", __func__))
         }
     }
 }
@@ -72,18 +72,18 @@ RetCode acceptor::set_sockaddr_in(sockaddr_in &serv_sockaddr_in) {
 }
 
 RetCode acceptor::create_server_socket(SOCKET &serv_socket) {
-    IFLOG(inf(TH_ID, LS_OPN "[interface:%s, port:%d]",
+    IFLOG(peer_.log_, inf(TH_ID, LS_OPN "[interface:%s, port:%d]",
               __func__,
               inet_ntoa(serv_sockaddr_in_.sin_addr),
               ntohs(serv_sockaddr_in_.sin_port)))
     if((serv_socket = serv_socket_ = socket(AF_INET, SOCK_STREAM, 0)) != INVALID_SOCKET) {
-        IFLOG(dbg(TH_ID, LS_TRL "[socket:%d][OK]", __func__, serv_socket))
+        IFLOG(peer_.log_, dbg(TH_ID, LS_TRL "[socket:%d][OK]", __func__, serv_socket))
         if(!bind(serv_socket_, (sockaddr *)&serv_sockaddr_in_, sizeof(sockaddr_in))) {
-            IFLOG(dbg(TH_ID, LS_TRL "[bind OK]", __func__))
+            IFLOG(peer_.log_, dbg(TH_ID, LS_TRL "[bind OK]", __func__))
             if(!listen(serv_socket_, SOMAXCONN)) {
-                IFLOG(dbg(TH_ID, LS_TRL "[listen OK]", __func__))
+                IFLOG(peer_.log_, dbg(TH_ID, LS_TRL "[listen OK]", __func__))
             } else {
-                IFLOG(err(TH_ID, LS_CLO "[listen KO]", __func__))
+                IFLOG(peer_.log_, err(TH_ID, LS_CLO "[listen KO]", __func__))
                 return RetCode_SYSERR;
             }
         } else {
@@ -93,11 +93,11 @@ RetCode acceptor::create_server_socket(SOCKET &serv_socket) {
 #else
             err = errno;
 #endif
-            IFLOG(err(TH_ID, LS_CLO "[bind KO][err:%d]", __func__, err))
+            IFLOG(peer_.log_, err(TH_ID, LS_CLO "[bind KO][err:%d]", __func__, err))
             return RetCode_SYSERR;
         }
     } else {
-        IFLOG(err(TH_ID, LS_CLO "[socket KO]", __func__))
+        IFLOG(peer_.log_, err(TH_ID, LS_CLO "[socket KO]", __func__))
         return RetCode_SYSERR;
     }
     return RetCode_OK;
@@ -119,10 +119,10 @@ RetCode acceptor::accept(unsigned int new_connid, std::shared_ptr<incoming_conne
 #else
         err = errno;
 #endif
-        IFLOG(err(TH_ID, LS_CLO "[accept KO][err:%d]", __func__, err))
+        IFLOG(peer_.log_, err(TH_ID, LS_CLO "[accept KO][err:%d]", __func__, err))
         return RetCode_SYSERR;
     } else {
-        IFLOG(dbg(TH_ID, LS_TRL "[socket:%d, host:%s, port:%d][accept OK][candidate connid:%d]",
+        IFLOG(peer_.log_, dbg(TH_ID, LS_TRL "[socket:%d, host:%s, port:%d][accept OK][candidate connid:%d]",
                   __func__,
                   socket,
                   inet_ntoa(addr.sin_addr),
@@ -136,7 +136,7 @@ RetCode acceptor::accept(unsigned int new_connid, std::shared_ptr<incoming_conne
 
     RetCode rcode = RetCode_OK;
     if((rcode = new_connection->impl_->set_connection_established(socket))) {
-        IFLOG(err(TH_ID, LS_CLO "[new_connid:%d - setting connection established fail with res:%d]", __func__,
+        IFLOG(peer_.log_, err(TH_ID, LS_CLO "[new_connid:%d - setting connection established fail with res:%d]", __func__,
                   new_connid,
                   rcode))
     }

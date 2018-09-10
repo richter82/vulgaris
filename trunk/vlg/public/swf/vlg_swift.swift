@@ -82,10 +82,10 @@ class Peer
         load_logger_config()
         load_vlg_logger()
         
-        peer_set_name_handler_swf(peer_, { _,_ in return UnsafePointer(self.peer_name_.buffer) }, bridge(obj:self))
-        peer_set_version_handler_swf(peer_, { _,_ in return UnsafePointer(self.peer_ver_) }, bridge(obj:self))
-        peer_set_status_change_handler_swf(peer_, peer_status_change, bridge(obj:self))
-        peer_set_peer_on_incoming_connection_handler_swf(peer_, { _,_,_ in return RetCode_OK}, bridge(obj:self))
+        peer_set_name_swf(peer_, { _,_ in return UnsafePointer(self.peer_name_.buffer) }, bridge(obj:self))
+        peer_set_version_swf(peer_, { _,_ in return UnsafePointer(self.peer_ver_) }, bridge(obj:self))
+        peer_set_status_change_swf(peer_, peer_status_change, bridge(obj:self))
+        peer_set_peer_on_incoming_connection_swf(peer_, peer_on_incoming_connection, bridge(obj:self))
     }
     
     deinit {
@@ -113,6 +113,12 @@ class Peer
     
     func stopPeer(){
         peer_stop(peer_, 0)
+    }
+    
+    fileprivate func peer_on_incoming_connection(c_peer: OpaquePointer!, sh_ic: OpaquePointer!, ud: UnsafeMutableRawPointer!) -> RetCode
+    {
+        inco_connection_release(sh_ic)
+        return RetCode_OK;
     }
     
     fileprivate func peer_status_change(c_peer: OpaquePointer!, status: PeerStatus, ud: UnsafeMutableRawPointer!)
@@ -230,11 +236,10 @@ class OutgoingConnection
         outg_connection_destroy(outg_conn_)
     }
     
-    func connect(){
+    func connect(_ addr: String, _ port: UInt16){
         var oc_params: sockaddr_in = sockaddr_in()
         oc_params.sin_family = UInt8(AF_INET)
-        oc_params.sin_addr.s_addr = inet_addr("127.0.0.1")
-        let port: UInt16 = 12345
+        oc_params.sin_addr.s_addr = inet_addr(addr)
         oc_params.sin_port = port.bigEndian
         outg_connection_connect(outg_conn_, UnsafeMutablePointer<sockaddr_in>(&oc_params))
     }
