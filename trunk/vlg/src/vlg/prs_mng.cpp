@@ -59,8 +59,7 @@ RetCode VLG_PERS_MNG_ReadString(unsigned long &lnum,
             return RetCode_KO;
         }
     }
-    while(tknz.next_token(tkn, CR_NL_DLMT
-                          CR_TK_QT, true)) {
+    while(tknz.next_token(tkn, CR_NL_DLMT CR_TK_QT, true)) {
         //we expect a string, so we return with error if newline found.
         CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
         if(!out.length()) {
@@ -197,8 +196,8 @@ RetCode persistence_manager_impl::load_pers_driver_dyna(std::set<std::string> &d
     return rcode;
 }
 
-RetCode persistence_manager_impl::load_pers_driver(persistence_driver *drivers[],
-                                                   int drivers_num)
+RetCode persistence_manager_impl::persistence_driver_load(persistence_driver *drivers[],
+                                                          int drivers_num)
 {
     IFLOG(get_instance().log_, trc(TH_ID, LS_OPN "[drivers_num:%d]", __func__, drivers_num))
     for(int i = 0; i < drivers_num; i++) {
@@ -497,7 +496,7 @@ RetCode persistence_manager_impl::parse_data(std::string &data)
         }
     }
     if(!conn_cfg_done || !mapping_cfg_done) {
-        IFLOG(log_, cri(TH_ID, LS_PRS "%s() - bad persistence configuration", __func__))
+        IFLOG(log_, cri(TH_ID, LS_PRS "[bad persistence configuration]", __func__))
         return RetCode_BADCFG;
     }
     return RetCode_OK;

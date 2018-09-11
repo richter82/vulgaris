@@ -21,8 +21,8 @@ RetCode persistence_manager::load_driver_dynamic(const char *drivers[],
 RetCode persistence_manager::load_driver(persistence_driver *drivers[],
                                          int drivers_num)
 {
-    return persistence_manager_impl::get_instance().load_pers_driver(drivers,
-                                                                     drivers_num);
+    return persistence_manager_impl::get_instance().persistence_driver_load(drivers,
+                                                                            drivers_num);
 }
 
 RetCode persistence_manager::set_config_file_dir(const char *dir)

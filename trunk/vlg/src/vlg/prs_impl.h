@@ -241,9 +241,6 @@ struct persistence_connection_impl {
     logger *log_;
 };
 
-typedef const char *(*get_pers_driv_version)();
-typedef persistence_driver *(*load_pers_driver)();
-
 struct persistence_driver {
     static RetCode load_driver_dyna(const char *drvname,
                                     persistence_driver **driver,
@@ -312,8 +309,8 @@ struct persistence_manager_impl {
         static RetCode load_pers_driver_dyna(std::set<std::string> &drivmap);
 
         /*static*/
-        static RetCode load_pers_driver(persistence_driver *drivers[],
-                                        int drivers_num);
+        static RetCode persistence_driver_load(persistence_driver *drivers[],
+                                               int drivers_num);
 
         explicit persistence_manager_impl();
 

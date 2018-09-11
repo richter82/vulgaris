@@ -58,6 +58,7 @@
 
 #define LS_WEL "WL|"
 #define LS_EMP "  |"
+#define LS_SYS "SY|"
 #define LS_CTR "-C|%s"
 #define LS_DTR "~D|%s"
 #define LS_OPN "->|%s "
