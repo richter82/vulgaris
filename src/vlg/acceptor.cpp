@@ -23,10 +23,10 @@ RetCode WSA_init(logger *log)
     WSAData wsaData;
     int nCode;
     if((nCode = WSAStartup(MAKEWORD(2,2), &wsaData)) != 0) {
-        IFLOG(log, cri(TH_ID, LS_EMP"[WSADATA error code:%d]", nCode))
+        IFLOG(log, cri(TH_ID, LS_SYS"[WSADATA error code:%d]", nCode))
         return RetCode_KO;
     }
-    IFLOG(log, inf(TH_ID, LS_EMP"[WSADATA loaded]"))
+    IFLOG(log, inf(TH_ID, LS_SYS"[WSADATA loaded]"))
     init_WSA = true;
     return RetCode_OK;
 }
@@ -37,7 +37,7 @@ RetCode WSA_destroy(logger *log)
         return RetCode_OK;
     }
     WSACleanup();
-    IFLOG(log, inf(TH_ID, LS_EMP"[WSADATA cleaned up]"))
+    IFLOG(log, inf(TH_ID, LS_SYS"[WSADATA cleaned up]"))
     return RetCode_OK;
 }
 

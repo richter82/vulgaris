@@ -488,15 +488,15 @@ struct nentity_manager_impl {
         }
         char nem_ep_f[VLG_MDL_NAME_LEN] = {0};
         sprintf(nem_ep_f, "get_nem_%s", model_name);
-        nentity_manager_func nem_f = (nentity_manager_func)dynamic_lib_load_symbol(dynalib, nem_ep_f);
+        nentity_manager_load nem_f = (nentity_manager_load)dynamic_lib_load_symbol(dynalib, nem_ep_f);
         if(!nem_f) {
             IFLOG(log_, err(TH_ID, LS_CLO "[failed to locate nem entrypoint in so-lib for model:%s]", __func__, model_name))
             return RetCode_KO;
         }
-        extend(*nem_f()->impl_);
+        extend(*nem_f(log_)->impl_);
         char mdlv_f_n[VLG_MDL_NAME_LEN] = { 0 };
         sprintf(mdlv_f_n, "get_mdl_ver_%s", model_name);
-        model_version_func mdlv_f = (model_version_func)dynamic_lib_load_symbol(dynalib, mdlv_f_n);
+        model_version_get mdlv_f = (model_version_get)dynamic_lib_load_symbol(dynalib, mdlv_f_n);
         IFLOG(log_, inf(TH_ID, LS_MDL"model:%s [loaded]", __func__, mdlv_f()))
         return RetCode_OK;
     }

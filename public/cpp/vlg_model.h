@@ -216,9 +216,6 @@ struct nclass {
     virtual RetCode get_primary_key_value_as_string(std::unique_ptr<char> &);
 };
 
-typedef const char *(*model_version_func)();
-typedef nentity_manager *(*nentity_manager_func)();
-
 typedef bool (*enum_nentity_desc)(const nentity_desc &nentity_descriptor,
                                   void *ud);
 

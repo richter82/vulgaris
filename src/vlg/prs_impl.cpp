@@ -425,18 +425,18 @@ RetCode persistence_driver::load_driver_dyna(const char *drvname,
     }
     char dri_ep_f[VLG_DRV_NAME_LEN] = {0};
     sprintf(dri_ep_f, "get_pers_driv_%s", drvname);
-    load_pers_driver dri_f = (load_pers_driver)dynamic_lib_load_symbol(dynalib, dri_ep_f);
+    persistence_driver_load dri_f = (persistence_driver_load)dynamic_lib_load_symbol(dynalib, dri_ep_f);
     if(!dri_f) {
         IFLOG(log, err(TH_ID, LS_CLO "[failed to locate entrypoint in so-lib for driver:%s]", __func__, drvname))
         return RetCode_KO;
     }
-    if(!(*driver = dri_f())) {
+    if(!(*driver = dri_f(log))) {
         IFLOG(log, err(TH_ID, LS_CLO "[failed to get driver instance for driver:%s]", __func__, drvname))
         return RetCode_KO;
     } else {
         char driv_f_n[VLG_MDL_NAME_LEN] = {0};
         sprintf(driv_f_n, "get_pers_driv_ver_%s", drvname);
-        get_pers_driv_version driv_f = (get_pers_driv_version) dynamic_lib_load_symbol(dynalib, driv_f_n);
+        persistence_driver_version_get driv_f = (persistence_driver_version_get) dynamic_lib_load_symbol(dynalib, driv_f_n);
         IFLOG(log, inf(TH_ID, LS_DRV"driver:%s [loaded]", driv_f()))
     }
     return RetCode_OK;
