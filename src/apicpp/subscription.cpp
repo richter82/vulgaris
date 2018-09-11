@@ -71,9 +71,7 @@ incoming_subscription_listener &incoming_subscription_listener::default_listener
 incoming_subscription::incoming_subscription(std::shared_ptr<incoming_connection> &conn,
                                              incoming_subscription_listener &listener) :
     impl_(new incoming_subscription_impl(*this, conn, listener))
-{
-    CTOR_TRC(impl_->conn_->peer_->log_)
-}
+{}
 
 incoming_subscription::~incoming_subscription()
 {
@@ -230,9 +228,7 @@ outgoing_subscription_listener &outgoing_subscription_listener::default_listener
 
 outgoing_subscription::outgoing_subscription(outgoing_subscription_listener &listener) :
     impl_(new outgoing_subscription_impl(*this, listener))
-{
-    CTOR_TRC(impl_->conn_->peer_->log_)
-}
+{}
 
 outgoing_subscription::~outgoing_subscription()
 {

@@ -10,8 +10,8 @@
 namespace vlg {
 
 #if defined WIN32 && defined _MSC_VER
-RetCode WSA_init();
-RetCode WSA_destroy();
+RetCode WSA_init(logger *log);
+RetCode WSA_destroy(logger *log);
 #endif
 
 struct acceptor {

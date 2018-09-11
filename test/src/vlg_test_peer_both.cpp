@@ -73,16 +73,16 @@ struct outg_conn_listener : public vlg::outgoing_connection_listener {
                             vlg::ConnectivityEventResult con_evt_res,
                             vlg::ConnectivityEventType c_evt_type) override {
         IFLOG(oc.get_peer().get_logger(), inf(TH_ID, LS_TST"[%d, %d]", __func__,
-                  con_evt_res,
-                  c_evt_type))
+                                              con_evt_res,
+                                              c_evt_type))
     }
 
     virtual void on_disconnect(vlg::outgoing_connection &oc,
                                vlg::ConnectivityEventResult con_evt_res,
                                vlg::ConnectivityEventType c_evt_type) override {
         IFLOG(oc.get_peer().get_logger(), inf(TH_ID, LS_TST"[%d, %d]", __func__,
-                  con_evt_res,
-                  c_evt_type))
+                                              con_evt_res,
+                                              c_evt_type))
     }
 };
 

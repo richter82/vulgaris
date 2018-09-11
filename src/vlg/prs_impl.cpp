@@ -144,12 +144,10 @@ persistence_worker *persistence_connection_pool::get_worker_rr()
 // persistence_worker
 
 persistence_worker::persistence_worker(persistence_connection_pool &conn_pool,
-                                       bool surrogate_th,
-                                       logger *log) :
+                                       bool surrogate_th) :
     conn_pool_(conn_pool),
     task_queue_(sngl_ptr_obj_mng()),
-    surrogate_th_(surrogate_th),
-    log_(log)
+    surrogate_th_(surrogate_th)
 {}
 
 RetCode persistence_worker::submit(persistence_task &task)
@@ -163,7 +161,6 @@ RetCode persistence_worker::submit(persistence_task &task)
     persistence_task *task_ptr = &task;
     if((rcode = task_queue_.put(&task_ptr))) {
         task.set_status(PTskStatus_REJECTED);
-        IFLOG(log_, cri(TH_ID, LS_TRL "[res:%d]", __func__, rcode))
     } else {
         task.set_status(PTskStatus_SUBMITTED);
     }
@@ -179,7 +176,6 @@ void *persistence_worker::run()
             task->set_execution_result(task->execute());
             task->set_status(PTskStatus_EXECUTED);
         } else {
-            IFLOG(log_, cri(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
             return (void *)1;
         }
     } while(true);

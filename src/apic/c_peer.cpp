@@ -617,7 +617,7 @@ extern "C" {
     {
         return (c_peer *)p;
     }
-    
+
     logger *peer_get_logger(peer *p)
     {
         return p->get_logger();

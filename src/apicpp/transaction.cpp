@@ -28,9 +28,7 @@ incoming_transaction_listener &incoming_transaction_listener::default_listener()
 incoming_transaction::incoming_transaction(std::shared_ptr<incoming_connection> &conn,
                                            incoming_transaction_listener &listener) :
     impl_(new incoming_transaction_impl(*this, conn, listener))
-{
-    CTOR_TRC(impl_->conn_->peer_->log_)
-}
+{}
 
 incoming_transaction::~incoming_transaction()
 {
@@ -186,9 +184,7 @@ outgoing_transaction_listener &outgoing_transaction_listener::default_listener()
 
 outgoing_transaction::outgoing_transaction(outgoing_transaction_listener &listener) :
     impl_(new outgoing_transaction_impl(*this, listener))
-{
-    CTOR_TRC(impl_->conn_->peer_->log_)
-}
+{}
 
 outgoing_transaction::~outgoing_transaction()
 {
