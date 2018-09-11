@@ -19,7 +19,7 @@ class str_tok {
 
     public:
         bool next_token(std::string &out,
-                        const char *delimiters = NULL,
+                        const char *delimiters = nullptr,
                         bool return_delimiters = false);
 
         bool has_more_tokens(bool return_delimiters = false);

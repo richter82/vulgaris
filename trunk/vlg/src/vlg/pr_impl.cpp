@@ -331,7 +331,7 @@ RetCode peer_impl::on_automa_early_init()
 {
     rt_init_timers();
 #if defined WIN32 && defined _MSC_VER
-    RET_ON_KO(WSA_init())
+    RET_ON_KO(WSA_init(log_))
 #endif
     return RetCode_OK;
 }

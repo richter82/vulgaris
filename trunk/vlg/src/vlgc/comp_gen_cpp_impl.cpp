@@ -1358,11 +1358,11 @@ RetCode VLG_COMP_Gen_EntryPoint__CPP_(compile_unit &cunit, FILE *file)
     tknz.next_token(name, VLG_COMP_DOT);
     fprintf(file, OPN_CMMNT_LN "MODEL:%s ENTRYPOINT\n" CLS_CMMNT_LN, cunit.model_name());
     fprintf(file, "extern \"C\"{\n");
-    fprintf(file, EXPORT_SYMBOL VLG_COMP_CPP_ENTRY_PT_OPN, 
-        cunit.model_name(), 
-        cunit.model_name(),
-        cunit.model_name(),
-        cunit.model_name());
+    fprintf(file, EXPORT_SYMBOL VLG_COMP_CPP_ENTRY_PT_OPN,
+            cunit.model_name(),
+            cunit.model_name(),
+            cunit.model_name(),
+            cunit.model_name());
     std::map<std::string, entity_desc_comp *> &entitymap = cunit.get_nentity_map();
     for(auto edsc = entitymap.begin(); edsc != entitymap.end(); edsc++) {
         auto &mmbrmap = edsc->second->get_map_id_MMBRDSC();

@@ -40,7 +40,7 @@ struct peer {
     virtual ~peer();
 
     logger *get_logger();
-    
+
     RetCode set_params_file_dir(const char *);
     RetCode set_params_file_path_name(const char *);
 

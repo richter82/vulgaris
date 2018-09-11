@@ -41,9 +41,7 @@ incoming_connection_listener &incoming_connection_listener::default_listener()
 
 incoming_connection::incoming_connection(peer &p, incoming_connection_listener &listener) :
     impl_(new incoming_connection_impl(*this, p, listener))
-{
-    CTOR_TRC(impl_->peer_->log_)
-}
+{}
 
 incoming_connection::~incoming_connection()
 {
@@ -170,9 +168,7 @@ outgoing_connection_listener &outgoing_connection_listener::default_listener()
 
 outgoing_connection::outgoing_connection(outgoing_connection_listener &listener) :
     impl_(new outgoing_connection_impl(*this, listener))
-{
-    CTOR_TRC(impl_->peer_->log_)
-}
+{}
 
 outgoing_connection::~outgoing_connection()
 {

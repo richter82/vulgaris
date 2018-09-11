@@ -130,7 +130,6 @@ if(log){\
 log->meth;\
 }
 
-#define CTOR_TRC(log) IFLOG(log, trc(TH_ID, LS_CTR "[%p]", __func__, this))
 #define DTOR_TRC(log) IFLOG(log, trc(TH_ID, LS_DTR "[%p]", __func__, this))
 
 inline void *grow_buff_or_die(void *buffer, size_t current_size, size_t amount)

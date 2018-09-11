@@ -127,8 +127,7 @@ struct persistence_connection_pool {
 // we cannot use a thread-pool because we want 1 thread per connection.
 struct persistence_worker : public p_th {
     persistence_worker(persistence_connection_pool &conn_pool,
-                       bool surrogate_th = false,
-                       logger *log = nullptr);
+                       bool surrogate_th = false);
 
     RetCode submit(persistence_task &task);
     virtual void *run() override;
@@ -136,7 +135,6 @@ struct persistence_worker : public p_th {
     persistence_connection_pool &conn_pool_;
     b_qu task_queue_;
     bool surrogate_th_;
-    logger *log_;
 };
 
 struct persistence_connection_impl {

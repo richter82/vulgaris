@@ -27,15 +27,16 @@ const unsigned int *cpeer_version(peer *p, void *ud, void *ud2){
 // MAIN
 int main(int argc, char *argv[])
 {
-    nentity_manager *smplm = get_c_nem_smplmdl();
     own_peer *op = peer_create();
     peer *p = own_peer_get_ptr(op);
+	
+	nentity_manager *smplm = get_c_nem_smplmdl(peer_get_logger(p));
 
     peer_set_name(p, cpeer_name, NULL, NULL);
     peer_set_version(p, cpeer_version, NULL, NULL);
 
     peer_extend_model_with_nem(p, smplm);
-    persistence_manager_load_persistence_driver(get_pers_driv_sqlite());
+    persistence_manager_load_persistence_driver(get_pers_driv_sqlite(peer_get_logger(p)));
 
     peer_start(p, argc, argv, 1);
 
