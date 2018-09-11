@@ -46,9 +46,9 @@ void vlg_comp_param_clbk(int pnum, const char *param, const char *value)
     }
     if(!strcmp(param, VLG_COMP_START_PAR_FILES)) {
         if(value) {
-            std::string tkn;
-            vlg::str_tok tknz(value);
-            while(tknz.next_token(tkn, CR_DF_DLMT)) {
+            std::string tkn, v(value);
+            vlg::str_tok tknz(v);
+            while(tknz.next_token(tkn, DF_DLM)) {
                 comp_cfg.file_list.push_back(tkn);
             }
         } else {

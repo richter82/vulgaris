@@ -274,7 +274,7 @@ RetCode VLG_COMP_CheckKeySymbol(unsigned long &lnum,
 {
     std::string hint;
     hint.assign(FND_CGT);
-    hint.append(CR_TK_SP);
+    hint.append(SP);
     hint.append(EXP_CTG);
     //we expect symb name, so we return with error if newline found.
     if(is_new_line(tkn)) {
@@ -306,10 +306,10 @@ RetCode VLG_COMP_ReadOpeningCurlyBrace(unsigned long &lnum,
                                        vlg::str_tok &tknz)
 {
     std::string tkn;
-    while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_CBL, true)) {
-        CR_SKIP_SP_TABS(tkn)
-        CR_SKIP_NEWLINE(tkn)
-        if(tkn != CR_TK_CBL) {
+    while(tknz.next_token(tkn, DF_DLM CBL, true)) {
+        SKIP_SP_TAB(tkn)
+        SKIP_NL(tkn)
+        if(tkn != CBL) {
             VLG_COMP_PARSE_UNEXP(lnum, tkn.c_str());
             return vlg::RetCode_KO;
         }
@@ -326,10 +326,10 @@ RetCode VLG_COMP_ReadInteger(unsigned long &lnum,
                              long &along)
 {
     std::string tkn;
-    while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_COMA, true)) {
-        CR_SKIP_SP_TABS(tkn)
+    while(tknz.next_token(tkn, DF_DLM CM, true)) {
+        SKIP_SP_TAB(tkn)
         //we expect an int, so we return with error if newline found.
-        CR_DO_CMD_ON_NEWLINE(tkn, VLG_COMP_PARSE_EXP(lnum, VLG_COMP_SYMB_NAME); return vlg::RetCode_KO)
+        DO_CMD_ON_NL(tkn, VLG_COMP_PARSE_EXP(lnum, VLG_COMP_SYMB_NAME); return vlg::RetCode_KO)
         if(vlg::string_is_number(tkn.c_str())) {
             along = atol(tkn.c_str());
         } else {
@@ -351,16 +351,16 @@ RetCode VLG_COMP_ReadString(unsigned long &lnum,
 {
     std::string tkn;
     if(!begin_quote_read) {
-        while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_QT CR_TK_COMA, true)) {
-            CR_SKIP_SP_TABS(tkn)
+        while(tknz.next_token(tkn, DF_DLM QT CM, true)) {
+            SKIP_SP_TAB(tkn)
             //we expect a string, so we return with error if newline found.
             if(opt) {
-                CR_DO_CMD_ON_NEWLINE(tkn, lnum++; return vlg::RetCode_OK)
+                DO_CMD_ON_NL(tkn, lnum++; return vlg::RetCode_OK)
             } else {
-                CR_DO_CMD_ON_NEWLINE(tkn, VLG_COMP_PARSE_EXP(lnum, VLG_COMP_STRING);
-                                     return vlg::RetCode_KO)
+                DO_CMD_ON_NL(tkn, VLG_COMP_PARSE_EXP(lnum, VLG_COMP_STRING);
+                             return vlg::RetCode_KO)
             }
-            if(tkn == CR_TK_QT) {
+            if(tkn == QT) {
                 //ok we have read the beginning quote of the string
                 break;
             } else {
@@ -369,14 +369,14 @@ RetCode VLG_COMP_ReadString(unsigned long &lnum,
             }
         }
     }
-    while(tknz.next_token(tkn, CR_NL_DLMT CR_TK_QT, true)) {
+    while(tknz.next_token(tkn, NL_DLM QT, true)) {
         //we expect a string, so we return with error if newline found.
-        CR_DO_CMD_ON_NEWLINE(tkn, VLG_COMP_PARSE_EXP(lnum, VLG_COMP_STRING);
-                             return vlg::RetCode_KO)
+        DO_CMD_ON_NL(tkn, VLG_COMP_PARSE_EXP(lnum, VLG_COMP_STRING);
+                     return vlg::RetCode_KO)
         if(!*newstr) {
             *newstr = strdup(tkn.c_str());
         } else {
-            if(tkn == CR_TK_QT) {
+            if(tkn == QT) {
                 //ok we have read the ending quote of the string
                 break;
             } else {
@@ -413,9 +413,9 @@ RetCode VLG_COMP_ParseVal(unsigned long &lnum,
     long enum_val = last_enum_val + 1;
     bool enum_val_read = false;
     char *desc = nullptr;
-    while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_EQUAL CR_TK_QT, true)) {
-        CR_SKIP_SP_TABS(tkn)
-        if(tkn == CR_TK_EQUAL) {
+    while(tknz.next_token(tkn, DF_DLM EQ QT, true)) {
+        SKIP_SP_TAB(tkn)
+        if(tkn == EQ) {
             //ok now we expect an integer value
             if(enum_val_read) {
                 //we have already read it..
@@ -431,7 +431,7 @@ RetCode VLG_COMP_ParseVal(unsigned long &lnum,
             }
             //legal, we have read enum name and we can assign to it last_value + 1
             break;
-        } else if(tkn == CR_TK_QT) {
+        } else if(tkn == QT) {
             //ok we read a description
             RET_ON_KO(VLG_COMP_ReadString(lnum, tknz, &desc, true))
             break;
@@ -487,17 +487,17 @@ RetCode VLG_COMP_ParseNMemb(unsigned long &lnum,
 {
     std::string tkn;
     bool exp_valid = false, plus_allwd = false;
-    while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_PLUS CR_TK_RBR, true)) {
-        CR_SKIP_SP_TABS(tkn)
+    while(tknz.next_token(tkn, DF_DLM PLUS RBR, true)) {
+        SKIP_SP_TAB(tkn)
         auto it = definemap.end();
-        if(tkn == CR_TK_PLUS) {
+        if(tkn == PLUS) {
             if(plus_allwd) {
                 exp_valid = plus_allwd = false;
             } else {
                 VLG_COMP_PARSE_EXP_INVALID(lnum);
                 return vlg::RetCode_KO;
             }
-        } else if(tkn == CR_TK_RBR) {
+        } else if(tkn == RBR) {
             //expression end
             if(exp_valid) {
                 //ok we got the final result of expression
@@ -558,12 +558,12 @@ RetCode VLG_COMP_ParseType(unsigned long &lnum,
     }
 
     std::string tkn;
-    while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_COMA CR_RB_DLMT, true)) {
-        CR_SKIP_SP_TABS(tkn)
+    while(tknz.next_token(tkn, DF_DLM CM RB_DLM, true)) {
+        SKIP_SP_TAB(tkn)
         //we expect to read nmemb or symbol, so we return with error if newline found.
-        CR_DO_CMD_ON_NEWLINE(tkn, VLG_COMP_PARSE_EXP(lnum, VLG_COMP_SYMB_NAME);
-                             return vlg::RetCode_KO)
-        if(tkn == CR_TK_RBL) {
+        DO_CMD_ON_NL(tkn, VLG_COMP_PARSE_EXP(lnum, VLG_COMP_SYMB_NAME);
+                     return vlg::RetCode_KO)
+        if(tkn == RBL) {
             RET_ON_KO(VLG_COMP_ParseNMemb(lnum, tknz, definemap, nmemb))
             break;
         } else {
@@ -768,8 +768,8 @@ RetCode VLG_COMP_ParseFild(unsigned long &lnum,
                                  symb_name))
 
     if(!symb_name.length()) {
-        while(tknz.next_token(tkn, CR_DF_DLMT, true)) {
-            CR_SKIP_SP_TABS(tkn)
+        while(tknz.next_token(tkn, DF_DLM, true)) {
+            SKIP_SP_TAB(tkn)
             // ok we got symb name.
             symb_name.assign(tkn);
             break;
@@ -829,8 +829,8 @@ RetCode VLG_COMP_ParseId(unsigned long &lnum,
                          unsigned int &id)
 {
     std::string tkn;
-    while(tknz.next_token(tkn, CR_DF_DLMT, true)) {
-        CR_SKIP_SP_TABS(tkn)
+    while(tknz.next_token(tkn, DF_DLM, true)) {
+        SKIP_SP_TAB(tkn)
         auto it = definemap.end();
         if(vlg::string_is_number(tkn.c_str())) {
             //this is a number
@@ -871,9 +871,9 @@ RetCode VLG_COMP_ParseFildSet(unsigned long &lnum,
          cbl_read = false,
          fild_reading_allwd = false;
     member_desc_comp *mmbrptr = nullptr;
-    while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_COMA CR_TK_CBL CR_TK_CBR, true)) {
-        CR_SKIP_SP_TABS(tkn)
-        if(tkn == CR_TK_CBL) {
+    while(tknz.next_token(tkn, DF_DLM CM CBL CBR, true)) {
+        SKIP_SP_TAB(tkn)
+        if(tkn == CBL) {
             if(cbl_read) {
                 //unexpected token
                 VLG_COMP_PARSE_UNEXP(lnum, tkn.c_str());
@@ -881,14 +881,14 @@ RetCode VLG_COMP_ParseFildSet(unsigned long &lnum,
             }
             fild_reading_allwd = true;
             cbl_read = true;
-        } else if(tkn == CR_TK_CBR) {
+        } else if(tkn == CBR) {
             if(fildset_valid) {
                 break;
             } else {
                 VLG_COMP_PARSE_KEYSET_INVALID(lnum);
                 return vlg::RetCode_KO;
             }
-        } else if(tkn == CR_TK_COMA) {
+        } else if(tkn == CM) {
             if(fild_reading_allwd) {
                 //unexpected token
                 VLG_COMP_PARSE_UNEXP(lnum, tkn.c_str());
@@ -935,9 +935,9 @@ RetCode VLG_COMP_ParseKey(unsigned long &lnum,
     bool primary = false, mmbrset_read = false, id_read = false;
     std::set<member_desc_comp *> mmbrset;
     //check if primary
-    while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_COMA, true)) {
-        CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, lnum++; break)
+    while(tknz.next_token(tkn, DF_DLM CM, true)) {
+        SKIP_SP_TAB(tkn)
+        DO_CMD_ON_NL(tkn, lnum++; break)
         if(tkn == VLG_RWRD_PRIMARY) {
             primary = true;
             break;
@@ -947,9 +947,9 @@ RetCode VLG_COMP_ParseKey(unsigned long &lnum,
             return vlg::RetCode_KO;
         }
     }
-    while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_COMA, true)) {
-        CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, lnum++; continue)
+    while(tknz.next_token(tkn, DF_DLM CM, true)) {
+        SKIP_SP_TAB(tkn)
+        DO_CMD_ON_NL(tkn, lnum++; continue)
         if(tkn == VLG_RWRD_PFX VLG_RWRD_ID) {
             //parse @id
             //@fixme if id already read...
@@ -999,8 +999,8 @@ RetCode VLG_COMP_ParseEnum(unsigned long &lnum,
                            std::map<std::string, entity_desc_comp *> &entitymap)
 {
     std::string tkn, symb_name;
-    while(tknz.next_token(tkn, CR_DF_DLMT CR_CB_DLMT, true)) {
-        CR_SKIP_SP_TABS(tkn)
+    while(tknz.next_token(tkn, DF_DLM CB_DLM, true)) {
+        SKIP_SP_TAB(tkn)
         RET_ON_KO(VLG_COMP_CheckSymbol(lnum,
                                        tkn,
                                        definemap,
@@ -1018,10 +1018,10 @@ RetCode VLG_COMP_ParseEnum(unsigned long &lnum,
     long last_enum_val = -1; //last value of enum
     std::map<std::string, member_desc_comp *> mmbrmap; //map symb -> mmbrdesc
     unsigned short mmbrid = 0;
-    while(tknz.next_token(tkn, CR_DF_DLMT CR_CB_DLMT, true)) {
-        CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, lnum++; continue)
-        CR_BREAK_ON_TKN(tkn, CR_TK_CBR)
+    while(tknz.next_token(tkn, DF_DLM CB_DLM, true)) {
+        SKIP_SP_TAB(tkn)
+        DO_CMD_ON_NL(tkn, lnum++; continue)
+        BRK_ON_TKN(tkn, CBR)
 
         RET_ON_KO(VLG_COMP_ParseVal(lnum,
                                     mmbrid,
@@ -1088,8 +1088,8 @@ RetCode VLG_COMP_ParseEntity(unsigned long &lnum,
 {
     bool id_decl = false;
     std::string tkn, symb_name;
-    while(tknz.next_token(tkn, CR_DF_DLMT CR_CB_DLMT, true)) {
-        CR_SKIP_SP_TABS(tkn)
+    while(tknz.next_token(tkn, DF_DLM CB_DLM, true)) {
+        SKIP_SP_TAB(tkn)
         RET_ON_KO(VLG_COMP_CheckSymbol(lnum,
                                        tkn,
                                        definemap,
@@ -1110,9 +1110,9 @@ RetCode VLG_COMP_ParseEntity(unsigned long &lnum,
     unsigned int nclass_id = 0;
     unsigned short mmbrid = 0;
     bool persistent = false;
-    while(tknz.next_token(tkn, CR_DF_DLMT CR_CB_DLMT CR_RB_DLMT, true)) {
-        CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, lnum++; continue)
+    while(tknz.next_token(tkn, DF_DLM CB_DLM RB_DLM, true)) {
+        SKIP_SP_TAB(tkn)
+        DO_CMD_ON_NL(tkn, lnum++; continue)
         if(tkn == VLG_RWRD_PFX VLG_RWRD_ID) {
             //parse @id
             if(!id_decl) {
@@ -1144,7 +1144,7 @@ RetCode VLG_COMP_ParseEntity(unsigned long &lnum,
                                         entitymap,
                                         mmbrmap,
                                         keymap))
-        } else if(tkn == CR_TK_CBR) {
+        } else if(tkn == CBR) {
             //parse @class_end
             break;
         } else {
@@ -1228,8 +1228,8 @@ RetCode VLG_COMP_ParseDefine(unsigned long &lnum,
 {
     std::string tkn, define_name, define_val;
     //@fixme add separators and special chars
-    while(tknz.next_token(tkn, CR_DF_DLMT, true)) {
-        CR_SKIP_SP_TABS(tkn)
+    while(tknz.next_token(tkn, DF_DLM, true)) {
+        SKIP_SP_TAB(tkn)
         RET_ON_KO(VLG_COMP_CheckSymbol(lnum,
                                        tkn,
                                        definemap,
@@ -1242,10 +1242,10 @@ RetCode VLG_COMP_ParseDefine(unsigned long &lnum,
         break;
     }
     //@fixme add separators and special chars
-    while(tknz.next_token(tkn, CR_DF_DLMT, true)) {
-        CR_SKIP_SP_TABS(tkn)
+    while(tknz.next_token(tkn, DF_DLM, true)) {
+        SKIP_SP_TAB(tkn)
         //we expect a define name, so we return with error if newline found.
-        CR_DO_CMD_ON_NEWLINE(tkn, VLG_COMP_PARSE_EXP(lnum, VLG_COMP_SYMB_NAME); return vlg::RetCode_KO)
+        DO_CMD_ON_NL(tkn, VLG_COMP_PARSE_EXP(lnum, VLG_COMP_SYMB_NAME); return vlg::RetCode_KO)
         define_val.assign(tkn);
         // ok we got define val.
         break;
@@ -1355,9 +1355,9 @@ RetCode parse_data(const char *fname,
     std::string tkn;
     vlg::str_tok tknz(data);
     unit_nmspace.assign("");
-    while(tknz.next_token(tkn, CR_DF_DLMT VLG_TK_COMMENT, true)) {
-        CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, lnum++; parsing_comment = false; continue)
+    while(tknz.next_token(tkn, DF_DLM VLG_TK_COMMENT, true)) {
+        SKIP_SP_TAB(tkn)
+        DO_CMD_ON_NL(tkn, lnum++; parsing_comment = false; continue)
         if(!parsing_comment) {
             if(tkn == VLG_RWRD_PFX VLG_RWRD_INCLUDE) {
                 //parse @include

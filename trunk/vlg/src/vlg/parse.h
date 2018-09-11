@@ -11,13 +11,12 @@ namespace vlg {
 
 /** @brief string tokenizer class.
 */
-class str_tok {
-    public:
+struct str_tok {
+        explicit str_tok(const std::string &str);
         explicit str_tok(const char *str);
-        explicit str_tok(std::string &str);
+
         ~str_tok();
 
-    public:
         bool next_token(std::string &out,
                         const char *delimiters = nullptr,
                         bool return_delimiters = false);
@@ -34,7 +33,7 @@ class str_tok {
 
     private:
         long current_position_, max_position_, new_position_;
-        std::string str_;
+        const std::string &str_;
         std::string delimiters_;
         bool ret_delims_, delims_changed_;
 };
@@ -43,120 +42,119 @@ class str_tok {
 namespace vlg {
 
 #if defined WIN32 && defined _MSC_VER
-#define CR_FS_SEP       "\\"
-#define CR_FS_SEP_C     '\\'
+#define FS_SEP      "\\"
+#define FS_SEP_CH   '\\'
 #else
-#define CR_FS_SEP       "/"
-#define CR_FS_SEP_C     '/'
+#define FS_SEP      "/"
+#define FS_SEP_CH   '/'
 #endif
 
 /***********************************
 SOME TOKEN AND UTILS
 ***********************************/
 
-#define CR_TK_SP          " "
-#define CR_TK_LF          "\n"            //line feed
-#define CR_TK_RC          "\r"            //carriag. return
-#define CR_TK_FF          "\f"            //form feed
-#define CR_TK_TAB         "\t"            //tab
-#define CR_TK_EQUAL       "="
-#define CR_TK_COMA        ","
-#define CR_TK_DOT         "."
-#define CR_TK_QT          "\""            //double quote
-#define CR_TK_RBR         "]"
-#define CR_TK_RBL         "["
-#define CR_TK_CBR         "}"
-#define CR_TK_CBL         "{"
-#define CR_TK_PLUS        "+"
-#define CR_TK_COLON       ":"
-#define CR_TK_SEMICOLON   ";"
+#define SP  " "
+#define LF  "\n"    //line feed
+#define RC  "\r"    //carriag. return
+#define FF  "\f"    //form feed
+#define TAB "\t"    //tab
+#define EQ  "="
+#define CM  ","
+#define DT  "."
+#define QT  "\""    //double quote
+#define RBR "]"
+#define RBL "["
+#define CBR "}"
+#define CBL "{"
+#define PLUS    "+"
+#define CLN ":"
+#define SCLN    ";"
 
-#define CR_1IND               "    "
-#define CR_2IND               CR_1IND \
-                              CR_1IND
+#define IND_1   "    "
+#define IND_2   IND_1 \
+                IND_1
 
-#define CR_3IND               CR_1IND \
-                              CR_1IND \
-                              CR_1IND
+#define IND_3   IND_1 \
+                IND_1 \
+                IND_1
 
-#define CR_4IND               CR_1IND \
-                              CR_1IND \
-                              CR_1IND \
-                              CR_1IND
+#define IND_4   IND_1 \
+                IND_1 \
+                IND_1 \
+                IND_1
 
-#define CR_5IND               CR_1IND \
-                              CR_1IND \
-                              CR_1IND \
-                              CR_1IND \
-                              CR_1IND
+#define IND_5   IND_1 \
+                IND_1 \
+                IND_1 \
+                IND_1 \
+                IND_1
 
-#define CR_6IND               CR_1IND \
-                              CR_1IND \
-                              CR_1IND \
-                              CR_1IND \
-                              CR_1IND \
-                              CR_1IND
+#define IND_6   IND_1 \
+                IND_1 \
+                IND_1 \
+                IND_1 \
+                IND_1 \
+                IND_1
 
 //default delimits
-#define CR_DF_DLMT          CR_TK_SP \
-                            CR_TK_LF \
-                            CR_TK_RC \
-                            CR_TK_FF \
-                            CR_TK_TAB
+#define DF_DLM  SP \
+                LF \
+                RC \
+                FF \
+                TAB
 
 //new line delimits
-#define CR_NL_DLMT          CR_TK_LF \
-                            CR_TK_RC \
-                            CR_TK_FF
+#define NL_DLM  LF \
+                RC \
+                FF
 
 //space and tab delimits
-#define CR_ST_DLMT          CR_TK_TAB \
-                            CR_TK_SP
+#define ST_DLM  TAB \
+                SP
 
 //rectangular braces
-#define CR_RB_DLMT          CR_TK_RBR \
-                            CR_TK_RBL
+#define RB_DLM  RBR \
+                RBL
 
 //curly braces
-#define CR_CB_DLMT          CR_TK_CBR \
-                            CR_TK_CBL
+#define CB_DLM  CBR \
+                CBL
 
-#define CR_SKIP_SPACES(tkn) \
-if(tkn == CR_TK_SP){ \
+#define SKIP_SP(tkn) \
+if(tkn == SP){ \
     continue; \
 }
 
-#define CR_SKIP_SP_TABS(tkn) \
-if(tkn == CR_TK_SP || tkn == CR_TK_TAB){ \
+#define SKIP_SP_TAB(tkn) \
+if(tkn == SP || tkn == TAB){ \
     continue; \
 }
 
-#define CR_SKIP_NEWLINE(tkn) \
+#define SKIP_NL(tkn) \
 if(is_new_line(tkn)){ \
     continue; \
 }
 
-#define CR_DO_CMD_ON_TKN(tkn, cmd) \
+#define DO_CMD_ON_TKN(tkn, cmd) \
 if(tkn == ){ \
     cmd; \
 }
 
-#define CR_DO_CMD_ON_NEWLINE(tkn, cmd) \
+#define DO_CMD_ON_NL(tkn, cmd) \
 if(is_new_line(tkn)){ \
     cmd; \
 }
 
-#define CR_BREAK_ON_TKN(tkn, val) \
+#define BRK_ON_TKN(tkn, val) \
 if(tkn == val){ \
     break; \
 }
 
-#define CR_SKIP_SP_TABS(tkn) \
-if(tkn == CR_TK_SP || tkn == CR_TK_TAB){ \
-    continue; \
+inline bool is_new_line(const std::string &str)
+{
+    return (str == "\n" || str == "\r" || str == "\f");
 }
 
-bool is_new_line(std::string &str);
 bool is_comment_line(const char *line);
 bool is_blank_line(const char *line);
 bool string_is_number(const char *str);

@@ -638,7 +638,7 @@ RetCode target_type_from_builtin_VLG_TYPE(member_desc_comp &mdsc,
                     return vlg::RetCode_OK;
                 case Type_UINT16:
                     out.assign(VLG_COMP_CPP_TYPE_UNSIGN
-                               CR_TK_SP
+                               SP
                                VLG_COMP_CPP_TYPE_SHORT);
                     return vlg::RetCode_OK;
                 case Type_INT32:
@@ -646,7 +646,7 @@ RetCode target_type_from_builtin_VLG_TYPE(member_desc_comp &mdsc,
                     return vlg::RetCode_OK;
                 case Type_UINT32:
                     out.assign(VLG_COMP_CPP_TYPE_UNSIGN
-                               CR_TK_SP
+                               SP
                                VLG_COMP_CPP_TYPE_INT);
                     return vlg::RetCode_OK;
                 case Type_INT64:
@@ -666,7 +666,7 @@ RetCode target_type_from_builtin_VLG_TYPE(member_desc_comp &mdsc,
                     return vlg::RetCode_OK;
                 case Type_BYTE:
                     out.assign(VLG_COMP_CPP_TYPE_UNSIGN
-                               CR_TK_SP
+                               SP
                                VLG_COMP_CPP_TYPE_CHAR);
                     return vlg::RetCode_OK;
                 default:
@@ -900,8 +900,8 @@ RetCode open_input_file(const char *fname, FILE **fdesc)
     std::string ffname;
     for(auto it = vlg::comp_cfg.path_list.begin(); it != vlg::comp_cfg.path_list.end(); it++) {
         ffname = it->c_str();
-        if(ffname[(ffname.length() - 1)] != CR_FS_SEP_C) {
-            ffname.append(CR_FS_SEP);
+        if(ffname[(ffname.length() - 1)] != FS_SEP_CH) {
+            ffname.append(FS_SEP);
         }
         ffname.append(fname);
         if((*fdesc = fopen(ffname.c_str(), "r"))) {
@@ -922,8 +922,8 @@ RetCode open_output_file(const char *fname, FILE **fdesc)
 {
     std::string ffname;
     ffname.assign(comp_cfg.out_dir);
-    if(ffname[ffname.length()-1] != CR_FS_SEP_C) {
-        ffname.append(CR_FS_SEP);
+    if(ffname[ffname.length()-1] != FS_SEP_CH) {
+        ffname.append(FS_SEP);
     }
     ffname.append(fname);
     if(!(*fdesc = fopen(ffname.c_str(),"w+"))) {
