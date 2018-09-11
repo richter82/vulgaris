@@ -11,10 +11,10 @@ namespace vlg {
 RetCode read_par(str_tok &tknz, param_arg_pair &pap)
 {
     std::string tkn, par;
-    while(tknz.next_token(tkn, CR_DF_DLMT, true)) {
-        CR_SKIP_SP_TABS(tkn)
+    while(tknz.next_token(tkn, DF_DLM, true)) {
+        SKIP_SP_TAB(tkn)
         //we expect a par name, so we return with error if newline found.
-        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_KO)
+        DO_CMD_ON_NL(tkn, return RetCode_KO)
         par.assign(tkn);
         // ok we got par name.
         break;
@@ -27,10 +27,10 @@ RetCode read_arg(str_tok &tknz, param_arg_pair &pap)
 {
     bool null_str_arg = true;
     std::string tkn, arg;
-    while(tknz.next_token(tkn, CR_TK_LF CR_TK_RC CR_TK_FF CR_TK_QT, true)) {
+    while(tknz.next_token(tkn, LF RC FF QT, true)) {
         //we expect an arg on 1 line, so we return with error if newline found.
-        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_KO)
-        if(tkn == CR_TK_QT) {
+        DO_CMD_ON_NL(tkn, return RetCode_KO)
+        if(tkn == QT) {
             // ok we have read final quote.
             break;
         } else {
@@ -54,7 +54,7 @@ RetCode cfg_ldr::r_load_data(const char *filename)
     std::string path;
     path.assign(params_cfg_file_dir_);
     if(path.length() > 0) {
-        path.append(CR_FS_SEP);
+        path.append(FS_SEP);
     }
     path.append(filename);
     FILE *fp = fopen(path.c_str(), "r");
@@ -108,8 +108,8 @@ RetCode cfg_ldr::load_config()
     std::string tkn;
     param_arg_pair pap = { 0 };
     while(tknz.next_token(tkn, " \n\r\t\"-", true)) {
-        CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, continue)
+        SKIP_SP_TAB(tkn)
+        DO_CMD_ON_NL(tkn, continue)
         if(tkn == "-") {
             if(par_read) {
                 lpap_.push_back(pap);

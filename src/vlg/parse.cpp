@@ -10,20 +10,9 @@ namespace vlg {
 
 static const char *def_delims = " \t\n\r\f";
 
-str_tok::str_tok(std::string &str)  :
+str_tok::str_tok(const std::string &str)  :
     current_position_(0),
     max_position_((long)str.length()),
-    new_position_(-1),
-    str_(str),
-    delimiters_(def_delims),
-    ret_delims_(false),
-    delims_changed_(false)
-{
-}
-
-str_tok::str_tok(const char *str) :
-    current_position_(0),
-    max_position_((long)strlen(str)),
     new_position_(-1),
     str_(str),
     delimiters_(def_delims),
@@ -97,11 +86,6 @@ bool str_tok::has_more_tokens(bool return_delimiters)
 }
 
 namespace vlg {
-
-bool is_new_line(std::string &str)
-{
-    return (str == "\n" || str == "\r" || str == "\f");
-}
 
 bool is_blank_line(const char *line)
 {

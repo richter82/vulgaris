@@ -604,7 +604,7 @@ inline RetCode pers_conn_sqlite::sqlite_connect(const char *filename, int flags)
     std::string db_path;
     if(sqlite_db_data_dir[0]) {
         db_path = sqlite_db_data_dir;
-        db_path.append(CR_FS_SEP);
+        db_path.append(FS_SEP);
     }
     db_path.append(filename);
     int last_rc = sqlite3_open_v2(db_path.c_str(), &db_, flags, 0);

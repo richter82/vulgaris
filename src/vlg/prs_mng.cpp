@@ -27,9 +27,9 @@ RetCode VLG_PERS_MNG_ReadUInt(unsigned long &lnum,
                               unsigned int &uint)
 {
     std::string tkn;
-    while(tknz.next_token(tkn, CR_DF_DLMT, true)) {
-        CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
+    while(tknz.next_token(tkn, DF_DLM, true)) {
+        SKIP_SP_TAB(tkn)
+        DO_CMD_ON_NL(tkn, return RetCode_BADCFG)
         if(string_is_number(tkn.c_str())) {
             uint = atoi(tkn.c_str());
         } else {
@@ -48,10 +48,10 @@ RetCode VLG_PERS_MNG_ReadString(unsigned long &lnum,
                                 std::string &out)
 {
     std::string tkn;
-    while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_QT, true)) {
-        CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
-        if(tkn == CR_TK_QT) {
+    while(tknz.next_token(tkn, DF_DLM QT, true)) {
+        SKIP_SP_TAB(tkn)
+        DO_CMD_ON_NL(tkn, return RetCode_BADCFG)
+        if(tkn == QT) {
             //ok we have read the beginning quote of the string
             break;
         } else {
@@ -59,18 +59,18 @@ RetCode VLG_PERS_MNG_ReadString(unsigned long &lnum,
             return RetCode_KO;
         }
     }
-    while(tknz.next_token(tkn, CR_NL_DLMT CR_TK_QT, true)) {
+    while(tknz.next_token(tkn, NL_DLM QT, true)) {
         //we expect a string, so we return with error if newline found.
-        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
+        DO_CMD_ON_NL(tkn, return RetCode_BADCFG)
         if(!out.length()) {
-            if(tkn == CR_TK_QT) {
+            if(tkn == QT) {
                 //empty string
                 break;
             } else {
                 out.assign(tkn);
             }
         } else {
-            if(tkn == CR_TK_QT) {
+            if(tkn == QT) {
                 //ok we have read the ending quote of the string
                 break;
             } else {
@@ -87,10 +87,10 @@ RetCode VLG_PERS_MNG_ReadColon(unsigned long &lnum,
 {
     std::string tkn;
     //read mandatory colon
-    while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_COLON, true)) {
-        CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
-        if(tkn == CR_TK_COLON) {
+    while(tknz.next_token(tkn, DF_DLM CLN, true)) {
+        SKIP_SP_TAB(tkn)
+        DO_CMD_ON_NL(tkn, return RetCode_BADCFG)
+        if(tkn == CLN) {
             break;
         } else {
             return RetCode_BADCFG;
@@ -103,10 +103,10 @@ RetCode VLG_PERS_MNG_ReadRBL(unsigned long &lnum,
                              str_tok &tknz)
 {
     std::string tkn;
-    while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_RBL, true)) {
-        CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
-        if(tkn == CR_TK_RBL) {
+    while(tknz.next_token(tkn, DF_DLM RBL, true)) {
+        SKIP_SP_TAB(tkn)
+        DO_CMD_ON_NL(tkn, return RetCode_BADCFG)
+        if(tkn == RBL) {
             break;
         } else {
             return RetCode_BADCFG;
@@ -119,10 +119,10 @@ RetCode VLG_PERS_MNG_ReadRBR(unsigned long &lnum,
                              str_tok &tknz)
 {
     std::string tkn;
-    while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_RBR, true)) {
-        CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
-        if(tkn == CR_TK_RBR) {
+    while(tknz.next_token(tkn, DF_DLM RBR, true)) {
+        SKIP_SP_TAB(tkn)
+        DO_CMD_ON_NL(tkn, return RetCode_BADCFG)
+        if(tkn == RBR) {
             break;
         } else {
             return RetCode_BADCFG;
@@ -270,9 +270,9 @@ RetCode persistence_manager_impl::parse_URI(unsigned long &lnum,
     //read mandatory [
     RET_ON_KO(VLG_PERS_MNG_ReadRBL(lnum, tknz))
     //read url keyword
-    while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_COLON, true)) {
-        CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
+    while(tknz.next_token(tkn, DF_DLM CLN, true)) {
+        SKIP_SP_TAB(tkn)
+        DO_CMD_ON_NL(tkn, return RetCode_BADCFG)
         if(tkn == VLG_RWRD_URL) {
             break;
         } else {
@@ -285,9 +285,9 @@ RetCode persistence_manager_impl::parse_URI(unsigned long &lnum,
     //read url
     RET_ON_KO(VLG_PERS_MNG_ReadString(lnum, tknz, url))
     //read usr keyword
-    while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_COLON, true)) {
-        CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
+    while(tknz.next_token(tkn, DF_DLM CLN, true)) {
+        SKIP_SP_TAB(tkn)
+        DO_CMD_ON_NL(tkn, return RetCode_BADCFG)
         if(tkn == VLG_RWRD_USR) {
             break;
         } else {
@@ -300,9 +300,9 @@ RetCode persistence_manager_impl::parse_URI(unsigned long &lnum,
     //read usr
     RET_ON_KO(VLG_PERS_MNG_ReadString(lnum, tknz, usr))
     //read psswd keyword
-    while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_COLON, true)) {
-        CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
+    while(tknz.next_token(tkn, DF_DLM CLN, true)) {
+        SKIP_SP_TAB(tkn)
+        DO_CMD_ON_NL(tkn, return RetCode_BADCFG)
         if(tkn == VLG_RWRD_PSSWD) {
             break;
         } else {
@@ -329,9 +329,9 @@ RetCode persistence_manager_impl::parse_single_conn_pool_cfg(unsigned long &lnum
     std::string tkn, url, usr, psswd;
     unsigned int pool_size = 0, th_size = 0;
     //read driver type
-    while(tknz.next_token(tkn, CR_DF_DLMT, true)) {
-        CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
+    while(tknz.next_token(tkn, DF_DLM, true)) {
+        SKIP_SP_TAB(tkn)
+        DO_CMD_ON_NL(tkn, return RetCode_BADCFG)
         auto it = drivname_driv_hm_.find(tkn);
         if(it == drivname_driv_hm_.end()) {
             IFLOG(log_, cri(TH_ID, LS_PRS "[line:%d, driver not loaded:%s]", __func__, lnum, tkn.c_str()))
@@ -342,9 +342,9 @@ RetCode persistence_manager_impl::parse_single_conn_pool_cfg(unsigned long &lnum
         break;
     }
     //read uri rword
-    while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_COLON, true)) {
-        CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
+    while(tknz.next_token(tkn, DF_DLM CLN, true)) {
+        SKIP_SP_TAB(tkn)
+        DO_CMD_ON_NL(tkn, return RetCode_BADCFG)
         if(tkn == VLG_RWRD_URI) {
             RET_ON_KO(parse_URI(lnum, tknz, url, usr, psswd))
             break;
@@ -355,9 +355,9 @@ RetCode persistence_manager_impl::parse_single_conn_pool_cfg(unsigned long &lnum
         break;
     }
     //read pool_size keyword
-    while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_COLON, true)) {
-        CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
+    while(tknz.next_token(tkn, DF_DLM CLN, true)) {
+        SKIP_SP_TAB(tkn)
+        DO_CMD_ON_NL(tkn, return RetCode_BADCFG)
         if(tkn == VLG_RWRD_POOL_SIZE) {
             RET_ON_KO(parse_impl_after_colon(lnum, tknz, pool_size))
             break;
@@ -367,9 +367,9 @@ RetCode persistence_manager_impl::parse_single_conn_pool_cfg(unsigned long &lnum
         }
     }
     //read th_size keyword
-    while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_COLON, true)) {
-        CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
+    while(tknz.next_token(tkn, DF_DLM CLN, true)) {
+        SKIP_SP_TAB(tkn)
+        DO_CMD_ON_NL(tkn, return RetCode_BADCFG)
         if(tkn == VLG_RWRD_POOL_TH_SIZE) {
             RET_ON_KO(parse_impl_after_colon(lnum, tknz, th_size))
             break;
@@ -393,9 +393,9 @@ RetCode persistence_manager_impl::parse_conn_pool_cfg(unsigned long &lnum,
                                                       std::unordered_map<std::string, persistence_driver *> &conn_pool_name_to_driv)
 {
     std::string tkn, conn_pool_name;
-    while(tknz.next_token(tkn, CR_DF_DLMT, true)) {
-        CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, lnum++; continue)
+    while(tknz.next_token(tkn, DF_DLM, true)) {
+        SKIP_SP_TAB(tkn)
+        DO_CMD_ON_NL(tkn, lnum++; continue)
         if(tkn == VLG_RWRD_CONN_CFG_END) {
             break;
         } else {
@@ -417,9 +417,9 @@ RetCode persistence_manager_impl::parse_single_nclass_map_cfg(unsigned long &lnu
     std::string tkn;
     persistence_driver *driv = nullptr;
     //read driver type
-    while(tknz.next_token(tkn, CR_DF_DLMT, true)) {
-        CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
+    while(tknz.next_token(tkn, DF_DLM, true)) {
+        SKIP_SP_TAB(tkn)
+        DO_CMD_ON_NL(tkn, return RetCode_BADCFG)
         auto it = conn_pool_name_to_driv.find(tkn);
         if(it == conn_pool_name_to_driv.end()) {
             IFLOG(log_, cri(TH_ID, LS_PRS "[line:%d, connection pool not defined:%s]", __func__, lnum, tkn.c_str()))
@@ -439,9 +439,9 @@ RetCode persistence_manager_impl::parse_nclass_mapping_cfg(unsigned long &lnum,
                                                            std::unordered_map<std::string, persistence_driver *> &conn_pool_name_to_driv)
 {
     std::string tkn, nclass_id;
-    while(tknz.next_token(tkn, CR_DF_DLMT, true)) {
-        CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, lnum++; continue)
+    while(tknz.next_token(tkn, DF_DLM, true)) {
+        SKIP_SP_TAB(tkn)
+        DO_CMD_ON_NL(tkn, lnum++; continue)
         if(tkn == VLG_RWRD_MAP_CFG_END) {
             break;
         } else {
@@ -469,10 +469,10 @@ RetCode persistence_manager_impl::parse_data(std::string &data)
     str_tok tknz(data);
     std::unordered_map<std::string, persistence_driver *> conn_pool_name_driv_hm;
 
-    while(tknz.next_token(tkn, CR_DF_DLMT VLG_TK_COMMENT, true)) {
-        CR_SKIP_SP_TABS(tkn)
-        CR_DO_CMD_ON_NEWLINE(tkn, parsing_comment = false; lnum++;
-                             continue)
+    while(tknz.next_token(tkn, DF_DLM VLG_TK_COMMENT, true)) {
+        SKIP_SP_TAB(tkn)
+        DO_CMD_ON_NL(tkn, parsing_comment = false; lnum++;
+                     continue)
         if(!parsing_comment) {
             if(tkn == VLG_RWRD_CONN_CFG_BG) {
                 if(conn_cfg_done) {
@@ -508,7 +508,7 @@ RetCode persistence_manager_impl::load_cfg(const char *filename)
     std::string path;
     path.assign(pers_cfg_file_dir);
     if(path.length() > 0) {
-        path.append(CR_FS_SEP);
+        path.append(FS_SEP);
     }
     path.append(filename);
     FILE *fdesc = fopen(path.c_str(), "r");

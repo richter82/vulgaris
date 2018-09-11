@@ -16,7 +16,8 @@ extern RetCode VLG_COMP_Gen__CPP_(compile_unit &cunit);
 RetCode VLG_COMP_CPP_Calc_NMspc(entity_desc_comp &edesc,
                                 std::string &out)
 {
-    vlg::str_tok nmtknz(edesc.get_nentity_namespace());
+    std::string nmsp(edesc.get_nentity_namespace());
+    vlg::str_tok nmtknz(nmsp);
     std::string nmtkn, ent_nmspace;
     ent_nmspace.assign("");
     bool first = true;
@@ -50,8 +51,9 @@ GEN- VLG_COMP_Gen_ModelVersion_decl__H_
 RetCode VLG_COMP_Gen_ModelVersion_decl__H_(compile_unit &cunit,
                                            FILE *file)
 {
-    std::string name;
-    vlg::str_tok tknz(cunit.get_file_name());
+
+    std::string name, fname(cunit.get_file_name());
+    vlg::str_tok tknz(fname);
     tknz.next_token(name, VLG_COMP_DOT);
     fprintf(file, OPN_CMMNT_LN "model version\n" CLS_CMMNT_LN);
     fprintf(file, "extern \"C\"{\n");
@@ -66,8 +68,8 @@ GEN- VLG_COMP_Gen_EntryPoint_decl__H_
 RetCode VLG_COMP_Gen_EntryPoint_decl__H_(compile_unit &cunit,
                                          FILE *file)
 {
-    std::string name;
-    vlg::str_tok tknz(cunit.get_file_name());
+    std::string name, fname(cunit.get_file_name());
+    vlg::str_tok tknz(fname);
     tknz.next_token(name, VLG_COMP_DOT);
     fprintf(file, OPN_CMMNT_LN "NEM entry point\n" CLS_CMMNT_LN);
     fprintf(file, "extern \"C\"{\n");
@@ -82,8 +84,8 @@ GEN- VLG_COMP_Gen_EntryPoint_C_decl__H_
 RetCode VLG_COMP_Gen_EntryPoint_C_decl__H_(compile_unit &cunit,
                                            FILE *file)
 {
-    std::string name;
-    vlg::str_tok tknz(cunit.get_file_name());
+    std::string name, fname(cunit.get_file_name());
+    vlg::str_tok tknz(fname);
     tknz.next_token(name, VLG_COMP_DOT);
     fprintf(file, "#else\n");
     fprintf(file, OPN_CMMNT_LN "NEM entry point C\n" CLS_CMMNT_LN);
@@ -326,9 +328,9 @@ RetCode VLG_COMP_Gen_Enum__H_(compile_unit &cunit, FILE *file)
             long expected_val = 0;
             for(auto mdesc = mmbrmap.begin(); mdesc != mmbrmap.end(); mdesc++) {
                 if(expected_val == mdesc->second->get_enum_value()) {
-                    fprintf(file, CR_1IND"%s,", mdesc->second->get_member_name());
+                    fprintf(file, IND_1"%s,", mdesc->second->get_member_name());
                 } else {
-                    fprintf(file, CR_1IND"%s=%ld,",
+                    fprintf(file, IND_1"%s=%ld,",
                             mdesc->second->get_member_name(),
                             mdesc->second->get_enum_value());
                     expected_val = mdesc->second->get_enum_value();
@@ -386,8 +388,8 @@ GEN- VLG_COMP_Gen__H_
 ***********************************/
 RetCode VLG_COMP_Gen__H_(compile_unit &cunit)
 {
-    std::string fname;
-    vlg::str_tok tknz(cunit.get_file_name());
+    std::string fname, tfname(cunit.get_file_name());
+    vlg::str_tok tknz(tfname);
     tknz.next_token(fname, VLG_COMP_DOT);
     fname.append(VLG_COMP_DOT);
     fname.append("h");

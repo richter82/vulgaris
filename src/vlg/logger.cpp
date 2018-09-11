@@ -531,7 +531,7 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
         std::string path;
         path.assign(log_cfg_file_dir);
         if(path.length() > 0) {
-            path.append(CR_FS_SEP);
+            path.append(FS_SEP);
         }
         path.append(fname_);
         log_cfg_ = fopen(path.c_str(), "r");
@@ -576,12 +576,12 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
     RetCode parse_lines_max(str_tok &toknz, int &lnmax) {
         std::string tkn;
         while(toknz.next_token(tkn)) {
-            CR_SKIP_SP_TABS(tkn)
+            SKIP_SP_TAB(tkn)
             if(is_new_line(tkn)) {
                 LPrsERR_FND_EXP(TKLGR, S_NL, S_LF);
                 return RetCode_BADCFG;
-            } else if(tkn == CR_TK_COMA) {
-                LPrsERR_UNEXP(TKAPND, CR_TK_COMA);
+            } else if(tkn == CM) {
+                LPrsERR_UNEXP(TKAPND, CM);
                 return RetCode_BADCFG;
             } else {
                 lnmax = atoi(tkn.c_str());
@@ -594,8 +594,8 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
 
     RetCode read_dot(unsigned long &lnum, str_tok &tknz) {
         std::string tkn;
-        while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_DOT, true)) {
-            if(tkn == CR_TK_DOT) {
+        while(tknz.next_token(tkn, DF_DLM DT, true)) {
+            if(tkn == DT) {
                 break;
             } else {
                 return RetCode_BADCFG;
@@ -606,10 +606,10 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
 
     RetCode skip_sp_tab_and_read_eq(unsigned long &lnum, str_tok &tknz) {
         std::string tkn;
-        while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_EQUAL, true)) {
-            CR_SKIP_SP_TABS(tkn)
-            CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
-            if(tkn == CR_TK_EQUAL) {
+        while(tknz.next_token(tkn, DF_DLM EQ, true)) {
+            SKIP_SP_TAB(tkn)
+            DO_CMD_ON_NL(tkn, return RetCode_BADCFG)
+            if(tkn == EQ) {
                 break;
             } else {
                 return RetCode_BADCFG;
@@ -621,8 +621,8 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
     RetCode read_tkn(unsigned long &lnum, str_tok &tknz,
                      std::string &tkn_out) {
         std::string tkn;
-        if(tknz.next_token(tkn, CR_DF_DLMT CR_TK_DOT CR_TK_EQUAL, true)) {
-            CR_DO_CMD_ON_NEWLINE(tkn, return RetCode_BADCFG)
+        if(tknz.next_token(tkn, DF_DLM DT EQ, true)) {
+            DO_CMD_ON_NL(tkn, return RetCode_BADCFG)
             tkn_out.assign(tkn);
             return RetCode_OK;
         }
@@ -637,15 +637,15 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
         appender *apnd = nullptr;
         bool apnd_parsed = false, skip = false;
         while(!apnd_parsed && toknz.next_token(tkn, ",\n\r\f\t ", true)) {
-            CR_SKIP_SP_TABS(tkn)
+            SKIP_SP_TAB(tkn)
             if(tkn == "stdout") {
                 while(toknz.next_token(tkn, nullptr, true)) {
-                    CR_SKIP_SP_TABS(tkn)
+                    SKIP_SP_TAB(tkn)
                     if(is_new_line(tkn)) {
                         apnd = new appender(stdout);
                         apnd_parsed = skip = true;
                         break;
-                    } else if(tkn == CR_TK_COMA) {
+                    } else if(tkn == CM) {
                         if((res = parse_lines_max(toknz, lnmax))) {
                             return res;
                         }
@@ -659,8 +659,8 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
                 }
             } else if(tkn == "file") {
                 while(toknz.next_token(tkn, nullptr, true)) {
-                    CR_SKIP_SP_TABS(tkn)
-                    CR_BREAK_ON_TKN(tkn, CR_TK_COMA)
+                    SKIP_SP_TAB(tkn)
+                    BRK_ON_TKN(tkn, CM)
                     if(is_new_line(tkn)) {
                         LPrsERR_EXP(TKAPND, S_NL);
                         return RetCode_BADCFG;
@@ -669,9 +669,9 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
                     }
                 }
                 while(toknz.next_token(tkn, nullptr, true)) {
-                    CR_SKIP_SP_TABS(tkn)
-                    if(tkn == CR_TK_COMA) {
-                        LPrsERR_UNEXP(TKAPND, CR_TK_COMA);
+                    SKIP_SP_TAB(tkn)
+                    if(tkn == CM) {
+                        LPrsERR_UNEXP(TKAPND, CM);
                         return RetCode_BADCFG;
                     }
                     if(is_new_line(tkn)) {
@@ -682,8 +682,8 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
                 }
                 app_file_name.assign(tkn);
                 while(toknz.next_token(tkn, nullptr, true)) {
-                    CR_SKIP_SP_TABS(tkn)
-                    CR_BREAK_ON_TKN(tkn, CR_TK_COMA)
+                    SKIP_SP_TAB(tkn)
+                    BRK_ON_TKN(tkn, CM)
                     if(is_new_line(tkn)) {
                         apnd = new appender(app_file_name.c_str());
                         apnd_parsed = skip = true;
@@ -701,8 +701,8 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
             } else if(is_new_line(tkn)) {
                 LPrsERR_UNEXP(TKAPND, S_NL);
                 return RetCode_BADCFG;
-            } else if(tkn == CR_TK_COMA) {
-                LPrsERR_UNEXP(TKAPND, CR_TK_COMA);
+            } else if(tkn == CM) {
+                LPrsERR_UNEXP(TKAPND, CM);
                 return RetCode_BADCFG;
             } else {
                 LPrsERR_UNEXP(TKAPND, tkn.c_str());
@@ -710,7 +710,7 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
             }
         }
         while(!skip && toknz.next_token(tkn, "\n\r\f\t ", true)) {
-            CR_SKIP_SP_TABS(tkn)
+            SKIP_SP_TAB(tkn)
             if(is_new_line(tkn)) {
                 break;
             }
@@ -728,23 +728,23 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
         logger *lggr = nullptr;
         bool lggr_parsed = false;
         while(!lggr_parsed && toknz.next_token(tkn, ",\n\r\f\t ", true)) {
-            CR_SKIP_SP_TABS(tkn)
+            SKIP_SP_TAB(tkn)
             TraceLVL lvl = TL_DBG;
             if((lvl = get_trace_level_enum(tkn.c_str())) >= 0) {
                 uint16_t apnds_n = 0;
                 appender *apnds_l[LG_MAX_APNDS];
                 memset(apnds_l, 0, sizeof(apnds_l));
                 while(toknz.next_token(tkn, nullptr, true)) {
-                    CR_SKIP_SP_TABS(tkn)
-                    if(tkn == CR_TK_COMA) {
+                    SKIP_SP_TAB(tkn)
+                    if(tkn == CM) {
                         while(toknz.next_token(tkn, nullptr, true)) {
-                            CR_SKIP_SP_TABS(tkn)
+                            SKIP_SP_TAB(tkn)
                             if(is_new_line(tkn)) {
                                 LPrsERR_UNEXP(TKLGR, S_NL);
                                 return RetCode_BADCFG;
                             }
-                            if(tkn == CR_TK_COMA) {
-                                LPrsERR_UNEXP(TKLGR, CR_TK_COMA);
+                            if(tkn == CM) {
+                                LPrsERR_UNEXP(TKLGR, CM);
                                 return RetCode_BADCFG;
                             }
                             break;
@@ -773,7 +773,7 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
                 LPrsERR_UNEXP(TKLGR, S_NL);
                 return RetCode_BADCFG;
             } else if(tkn == ",") {
-                LPrsERR_UNEXP(TKLGR, CR_TK_COMA);
+                LPrsERR_UNEXP(TKLGR, CM);
                 return RetCode_BADCFG;
             } else {
                 LPrsERR_UNEXP(TKLGR, tkn.c_str());
@@ -789,9 +789,9 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
         unsigned long lnum = 1;
         std::string tkn, apname, lggrname, lgsign;
         str_tok tknz(data);
-        while(tknz.next_token(tkn, CR_DF_DLMT CR_TK_DOT CR_TK_EQUAL, true)) {
-            CR_SKIP_SP_TABS(tkn)
-            CR_DO_CMD_ON_NEWLINE(tkn, lnum++; continue)
+        while(tknz.next_token(tkn, DF_DLM DT EQ, true)) {
+            SKIP_SP_TAB(tkn)
+            DO_CMD_ON_NL(tkn, lnum++; continue)
             if(tkn == TKAPND) {
                 //APPENDER
                 RET_ON_KO(read_dot(lnum, tknz))
