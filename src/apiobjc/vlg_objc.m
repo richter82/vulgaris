@@ -145,6 +145,13 @@ RetCode inco_connection_on_incoming_subscription_c(incoming_connection *conn,
     return ((__bridge inco_connection_on_incoming_subscription_swf)ud)(conn, isbs, ud2);
 }
 
+void inco_connection_on_destroy_c(incoming_connection *conn,
+                                  void *ud,
+                                  void *ud2)
+{
+    return ((__bridge inco_connection_on_destroy_swf)ud)(conn, ud2);
+}
+
 void inco_connection_set_status_change_swf(incoming_connection *ic,
                                            inco_connection_status_change_swf hndl,
                                            void *ud)
@@ -179,6 +186,17 @@ void inco_connection_set_on_incoming_subscription_swf(incoming_connection *ic,
                                                  (__bridge_retained void *)hndl,
                                                  ud);
 }
+
+void inco_connection_set_on_destroy_swf(incoming_connection *ic,
+                                        inco_connection_on_destroy_swf hndl,
+                                        void *ud)
+{
+    inco_connection_set_on_destroy(ic,
+                                                 inco_connection_on_destroy_c,
+                                                 (__bridge_retained void *)hndl,
+                                                 ud);
+}
+
 
 /************************************************************************
  OUTGOING CONNECTION
@@ -250,6 +268,13 @@ void inco_transaction_closure_c(incoming_transaction *tx, void *ud, void *ud2)
     ((__bridge inco_transaction_closure_swf)ud)(tx, ud2);
 }
 
+void inco_transaction_on_destroy_c(incoming_transaction *tx,
+                                   void *ud,
+                                   void *ud2)
+{
+    ((__bridge inco_transaction_on_destroy_swf)ud)(tx, ud2);
+}
+
 void inco_transaction_set_transaction_status_change_swf(incoming_transaction *tx,
                                                         inco_transaction_status_change_swf hndl,
                                                         void *ud)
@@ -264,15 +289,33 @@ void inco_transaction_set_transaction_closure_swf(incoming_transaction *tx,
                                                   inco_transaction_closure_swf hndl,
                                                   void *ud)
 {
-    inco_transaction_set_transaction_closure(tx, inco_transaction_closure_c, (__bridge_retained void *)hndl, ud);
+    inco_transaction_set_transaction_closure(tx,
+                                             inco_transaction_closure_c,
+                                             (__bridge_retained void *)hndl,
+                                             ud);
 }
 
 void inco_transaction_set_inco_transaction_request_swf(incoming_transaction *tx,
                                                        inco_transaction_request_swf hndl,
                                                        void *ud)
 {
-    inco_transaction_set_inco_transaction_request(tx, inco_transaction_request_c, (__bridge_retained void *)hndl, ud);
+    inco_transaction_set_inco_transaction_request(tx,
+                                                  inco_transaction_request_c,
+                                                  (__bridge_retained void *)hndl,
+                                                  ud);
 }
+
+void inco_transaction_set_on_destroy_swf(incoming_transaction *tx,
+                                         inco_transaction_on_destroy_swf hndl,
+                                         void *ud)
+{
+    inco_transaction_set_on_destroy(tx,
+                                    inco_transaction_on_destroy_c,
+                                    (__bridge_retained void *)hndl,
+                                    ud);
+
+}
+
 
 /************************************************************************
  OUTGOING TRANSACTION
@@ -329,6 +372,11 @@ void inco_subscription_on_stop_c(incoming_subscription *isbs, void *ud, void *ud
     ((__bridge inco_subscription_on_stop_swf)ud)(isbs, ud2);
 }
 
+void inco_subscription_on_destroy_c(incoming_subscription *isbs, void *ud, void *ud2)
+{
+    ((__bridge inco_subscription_on_destroy_swf)ud)(isbs, ud2);
+}
+
 void inco_subscription_set_status_change_swf(incoming_subscription *sbs,
                                              inco_subscription_status_change_swf hndl,
                                              void *ud)
@@ -353,7 +401,20 @@ void inco_subscription_set_on_stop_swf(incoming_subscription *sbs,
                                        inco_subscription_on_stop_swf hndl,
                                        void *ud)
 {
-    inco_subscription_set_on_stop(sbs, inco_subscription_on_stop_c, (__bridge_retained void *)hndl, ud);
+    inco_subscription_set_on_stop(sbs,
+                                  inco_subscription_on_stop_c,
+                                  (__bridge_retained void *)hndl,
+                                  ud);
+}
+
+void inco_subscription_set_on_destroy_swf(incoming_subscription *sbs,
+                                       inco_subscription_on_destroy_swf hndl,
+                                       void *ud)
+{
+    inco_subscription_set_on_destroy(sbs,
+                                     inco_subscription_on_destroy_c,
+                                     (__bridge_retained void *)hndl,
+                                     ud);
 }
 
 /************************************************************************

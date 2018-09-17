@@ -82,7 +82,7 @@ class Peer
         peer_set_name_swf(peer_, { _,_ in return UnsafePointer(self.peer_name_.buffer) }, bridge(obj:self))
         peer_set_version_swf(peer_, { _,_ in return UnsafePointer(self.peer_ver_) }, bridge(obj:self))
         peer_set_status_change_swf(peer_, peer_status_change, bridge(obj:self))
-        peer_set_peer_on_incoming_connection_swf(peer_, peer_on_incoming_connection, bridge(obj:self))
+        peer_set_peer_on_incoming_connection_swf(peer_, on_incoming_connection, bridge(obj:self))
     }
     
     deinit {
@@ -112,9 +112,9 @@ class Peer
         peer_stop(peer_, 0)
     }
     
-    fileprivate func peer_on_incoming_connection(c_peer: OpaquePointer!, sh_ic: OpaquePointer!, ud: UnsafeMutableRawPointer!) -> RetCode
+    fileprivate func on_incoming_connection(c_peer: OpaquePointer!, sh_ic: OpaquePointer!, ud: UnsafeMutableRawPointer!) -> RetCode
     {
-        inco_connection_release(sh_ic)
+        ic_repo_[inco_connection_get_connection_id(inco_connection_get_ptr(sh_ic))] = IncomingConnection(bridge(ptr: ud!), sh_ic)
         return RetCode_OK;
     }
     
@@ -202,11 +202,15 @@ class Peer
     }
     
     let fileManager_ = FileManager.default
-    var peer_own_: OpaquePointer?
-    var peer_: OpaquePointer?
+    var peer_own_: OpaquePointer
+    var peer_: OpaquePointer
     let peer_name_: CString
     let peer_ver_: [CUnsignedInt]
-    var vc_: ViewController?
+    
+    var vc_: ViewController? //bad
+    
+    var ic_repo_ = [UInt32:IncomingConnection]()
+    
     
     var ViewController: ViewController?{
         get{
@@ -244,12 +248,59 @@ class OutgoingConnection
     var outg_conn_: OpaquePointer
 }
 
+extension tx_id: Equatable, Hashable {
+    public static func == (lhs: tx_id, rhs: tx_id) -> Bool {
+        return  lhs.txcnid == rhs.txcnid &&
+                lhs.txplid == rhs.txplid &&
+                lhs.txprid == rhs.txprid &&
+                lhs.txsvid == rhs.txsvid
+    }
+    public var hashValue: Int {
+        return txcnid.hashValue ^ txplid.hashValue ^ txprid.hashValue ^ txsvid.hashValue
+    }
+    init(oth: tx_id){
+        self.init()
+        self.txcnid = oth.txcnid
+        self.txplid = oth.txplid
+        self.txprid = oth.txprid
+        self.txsvid = oth.txsvid
+    }
+}
+
 /**
- * IngoingConnection
+ * IncomingConnection
  */
 
-class IngoingConnection
+class IncomingConnection
 {
+    init(_ peer: Peer, _ sh_inco_conn: OpaquePointer){
+        self.peer = peer
+        sh_inco_conn_ = sh_inco_conn
+        inco_connection_set_on_incoming_transaction_swf(inco_conn_, on_incoming_transaction, nil)
+    }
+    
+    deinit {
+        inco_connection_release(sh_inco_conn_)
+    }
+    
+    fileprivate func on_incoming_transaction(ic: OpaquePointer!, itx: OpaquePointer!, ud: UnsafeMutableRawPointer!) -> RetCode
+    {
+        let IncoTx = IncomingTransaction(self, itx)
+        itx_repo_[IncoTx.tx_id_] = IncoTx
+        return RetCode_OK
+    }
+    
+    let peer : Peer
+    let sh_inco_conn_ : OpaquePointer
+    
+    var inco_conn_ : OpaquePointer{
+        get{
+            return inco_connection_get_ptr(sh_inco_conn_)
+        }
+    }
+    
+    var itx_repo_ = [tx_id:IncomingTransaction]()
+    var isbs_repo_ = [UInt32:IncomingSubscription]()
 }
 
 /**
@@ -261,11 +312,71 @@ class OutgoingTransaction
 }
 
 /**
- * IngoingTransaction
+ * IncomingTransaction
  */
 
-class IngoingTransaction
+class IncomingTransaction
 {
+    init(_ IncoConn: IncomingConnection, _ sh_inco_tx: OpaquePointer){
+        self.IncoConn = IncoConn
+        sh_inco_tx_ = sh_inco_tx
+        inco_transaction_set_inco_transaction_request_swf(inco_transaction_get_ptr(sh_inco_tx_), on_request, nil)
+    }
+    
+    deinit {
+        inco_transaction_release(sh_inco_tx_)
+    }
+    
+    fileprivate func on_request(itx: OpaquePointer!, ud: UnsafeMutableRawPointer!)
+    {
+        ResultObj = RequestObj
+        Result = TransactionResult_COMMITTED
+        ResultCode = ProtocolCode_SUCCESS
+        peer_nclass_persistent_update_or_save_and_distribute(IncoConn.peer.peer_, 1, ResultObj)
+    }
+    
+    var Result : TransactionResult{
+        get{
+            return inco_transaction_get_transaction_result(inco_tx_)
+        }
+        set{
+            inco_transaction_set_transaction_result(inco_tx_, newValue)
+        }
+    }
+    
+    var ResultCode : ProtocolCode{
+        get{
+            return inco_transaction_get_transaction_result_code(inco_tx_)
+        }
+        set{
+            inco_transaction_set_transaction_result_code(inco_tx_, newValue)
+        }
+    }
+    
+    let IncoConn :IncomingConnection
+    let sh_inco_tx_ :OpaquePointer
+    
+    var inco_tx_ : OpaquePointer{
+        get{
+            return inco_transaction_get_ptr(sh_inco_tx_)
+        }
+    }
+    
+    var tx_id_ : tx_id{
+        get{
+            return tx_id(oth:inco_transaction_get_transaction_id(inco_tx_).move())
+        }
+    }
+    
+    var RequestObj : OpaquePointer{
+        get{return inco_transaction_get_request_obj(inco_tx_)}
+    }
+    
+    var ResultObj : OpaquePointer{
+        get{return inco_transaction_get_result_obj(inco_tx_)}
+        set{inco_transaction_set_result_obj(inco_tx_, newValue)}
+    }
+    
 }
 
 /**
@@ -277,9 +388,19 @@ class OutgoingSubscription
 }
 
 /**
- * IngoingSubscription
+ * IncomingSubscription
  */
 
-class IngoingSubscription
+class IncomingSubscription
 {
+    init(_ sh_inco_sbs: OpaquePointer){
+        sh_inco_sbs_ = sh_inco_sbs
+        //inco_connection_set_on_incoming_transaction_swf(inco_connection_get_ptr(sh_inco_conn_), on_incoming_transaction, nil)
+    }
+    
+    deinit {
+        inco_subscription_release(sh_inco_sbs_)
+    }
+    
+    let sh_inco_sbs_ : OpaquePointer
 }

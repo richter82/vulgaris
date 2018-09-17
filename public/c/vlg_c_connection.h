@@ -16,12 +16,14 @@ typedef void(*inco_connection_status_change)(incoming_connection *conn, Connecti
 typedef void(*inco_connection_on_disconnect)(incoming_connection *conn, ConnectivityEventResult con_evt_res, ConnectivityEventType c_evt_type, void *ud, void *ud2);
 typedef RetCode(*inco_connection_on_incoming_transaction)(incoming_connection *conn, shr_incoming_transaction *itx, void *ud, void *ud2);
 typedef RetCode(*inco_connection_on_incoming_subscription)(incoming_connection *conn, shr_incoming_subscription *isbs, void *ud, void *ud2);
+typedef void(*inco_connection_on_destroy)(incoming_connection *conn, void *ud, void *ud2);
 
 /************************************************************************
 INCOMING CONNECTION
 ************************************************************************/
 
 void inco_connection_release(shr_incoming_connection *ic);
+incoming_connection *inco_connection_get_ptr(shr_incoming_connection *ic);
 peer *inco_connection_get_peer(incoming_connection *ic);
 unsigned int inco_connection_get_connection_id(incoming_connection *ic);
 unsigned short inco_connection_get_client_heartbeat(incoming_connection *ic);
@@ -35,6 +37,7 @@ RetCode inco_connection_await_for_disconnection_result(incoming_connection *ic, 
 void inco_connection_set_on_disconnect(incoming_connection *ic, inco_connection_on_disconnect hndl, void *ud, void *ud2);
 void inco_connection_set_on_incoming_transaction(incoming_connection *ic, inco_connection_on_incoming_transaction hndl, void *ud, void *ud2);
 void inco_connection_set_on_incoming_subscription(incoming_connection *ic, inco_connection_on_incoming_subscription hndl, void *ud, void *ud2);
+void inco_connection_set_on_destroy(incoming_connection *ic, inco_connection_on_destroy hndl, void *ud, void *ud2);
 SOCKET inco_connection_get_socket(incoming_connection *ic);
 const char *inco_connection_get_host_ip(incoming_connection *ic);
 unsigned short inco_connection_get_host_port(incoming_connection *ic);

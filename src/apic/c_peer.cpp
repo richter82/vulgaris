@@ -75,6 +75,11 @@ extern "C" {
                                                                shr_incoming_subscription *isbs,
                                                                void *ud,
                                                                void *ud2);
+    
+    typedef void(*inco_connection_on_destroy)(incoming_connection *conn,
+                                              void *ud,
+                                              void *ud2);
+
 
     //incoming tx
 
@@ -90,6 +95,11 @@ extern "C" {
     typedef void(*inco_transaction_closure)(incoming_transaction *tx,
                                             void *ud,
                                             void *ud2);
+    
+    typedef void(*inco_transaction_on_destroy)(incoming_transaction *tx,
+                                                void *ud,
+                                            void *ud2);
+
 
     //incoming sbs
 
@@ -106,22 +116,35 @@ extern "C" {
     typedef void(*inco_subscription_on_stop)(incoming_subscription *isbs,
                                              void *ud,
                                              void *ud2);
+    
+    typedef void(*inco_subscription_on_destroy)(incoming_subscription *isbs,
+                                                void *ud,
+                                                void *ud2);
+
 }
 
 //c_inco_tx
 
 struct c_inco_tx : public incoming_transaction {
     c_inco_tx(std::shared_ptr<incoming_connection> &c);
+    ~c_inco_tx(){
+        if(tod_){
+            tod_(this, tod_ud_, tod_ud2_);
+        }
+    }
 
     inco_transaction_request tr_;
     inco_transaction_closure tc_;
     inco_transaction_status_change tsc_;
+    inco_transaction_on_destroy tod_;
     void *tr_ud_;
     void *tc_ud_;
     void *tsc_ud_;
+    void *tod_ud_;
     void *tr_ud2_;
     void *tc_ud2_;
     void *tsc_ud2_;
+    void *tod_ud2_;
 };
 
 struct c_inco_tx_listener : public incoming_transaction_listener {
@@ -149,12 +172,15 @@ c_inco_tx::c_inco_tx(std::shared_ptr<incoming_connection> &c) :
     tr_(nullptr),
     tc_(nullptr),
     tsc_(nullptr),
+    tod_(nullptr),
     tr_ud_(nullptr),
     tc_ud_(nullptr),
     tsc_ud_(nullptr),
+    tod_ud_(nullptr),
     tr_ud2_(nullptr),
     tc_ud2_(nullptr),
-    tsc_ud2_(nullptr) {}
+    tsc_ud2_(nullptr),
+    tod_ud2_(nullptr){}
 
 //c_inco_tx_factory
 
@@ -204,6 +230,16 @@ extern "C" {
         static_cast<c_inco_tx *>(tx)->tr_ud_ = ud;
         static_cast<c_inco_tx *>(tx)->tr_ud2_ = ud2;
     }
+    
+    void inco_transaction_set_on_destroy(incoming_transaction *tx,
+                                         inco_transaction_on_destroy hndl,
+                                         void *ud,
+                                         void *ud2)
+    {
+        static_cast<c_inco_tx *>(tx)->tod_ = hndl;
+        static_cast<c_inco_tx *>(tx)->tod_ud_ = ud;
+        static_cast<c_inco_tx *>(tx)->tod_ud2_ = ud2;
+    }
 }
 
 static c_inco_tx_factory citf;
@@ -212,16 +248,24 @@ static c_inco_tx_factory citf;
 
 struct c_inco_sbs : public incoming_subscription {
     c_inco_sbs(std::shared_ptr<incoming_connection> &c);
-
+    ~c_inco_sbs(){
+        if(isod_){
+            isod_(this, isod_ud_, isod_ud2_);
+        }
+    }
+    
     inco_subscription_accept_distribution isad_;
     inco_subscription_status_change issc_;
     inco_subscription_on_stop isos_;
+    inco_subscription_on_destroy isod_;
     void *issc_ud_;
     void *isad_ud_;
     void *isos_ud_;
+    void *isod_ud_;
     void *issc_ud2_;
     void *isad_ud2_;
     void *isos_ud2_;
+    void *isod_ud2_;
 };
 
 struct c_inco_sbs_listener : public incoming_subscription_listener {
@@ -250,12 +294,15 @@ c_inco_sbs::c_inco_sbs(std::shared_ptr<incoming_connection> &c) :
     isad_(nullptr),
     issc_(nullptr),
     isos_(nullptr),
+    isod_(nullptr),
     issc_ud_(nullptr),
     isad_ud_(nullptr),
     isos_ud_(nullptr),
+    isod_ud_(nullptr),
     issc_ud2_(nullptr),
     isad_ud2_(nullptr),
-    isos_ud2_(nullptr) {}
+    isos_ud2_(nullptr),
+    isod_ud2_(nullptr){}
 
 //c_inco_sbs_factory
 
@@ -307,26 +354,45 @@ extern "C" {
         static_cast<c_inco_sbs *>(sbs)->isos_ud_ = ud;
         static_cast<c_inco_sbs *>(sbs)->isos_ud2_ = ud2;
     }
+    
+    void inco_subscription_set_on_destroy(incoming_subscription *sbs,
+                                          inco_subscription_on_destroy hndl,
+                                          void *ud,
+                                          void *ud2)
+    {
+        static_cast<c_inco_sbs *>(sbs)->isod_ = hndl;
+        static_cast<c_inco_sbs *>(sbs)->isod_ud_ = ud;
+        static_cast<c_inco_sbs *>(sbs)->isod_ud2_ = ud2;
+    }
+
 }
 
 //c_inco_conn
 
 struct c_inco_conn : public incoming_connection {
     c_inco_conn(peer &p);
+    ~c_inco_conn(){
+        if(icod_){
+            icod_(this, icod_ud_, icod_ud2_);
+        }
+    }
 
     inco_connection_status_change icsc_;
     inco_connection_on_disconnect icodh_;
     inco_connection_on_incoming_transaction icoith_;
     inco_connection_on_incoming_subscription icoish_;
+    inco_connection_on_destroy icod_;
 
     void *icsc_ud_;
     void *icodh_ud_;
     void *icoith_ud_;
     void *icoish_ud_;
+    void *icod_ud_;
     void *icsc_ud2_;
     void *icodh_ud2_;
     void *icoith_ud2_;
     void *icoish_ud2_;
+    void *icod_ud2_;
 };
 
 struct c_inco_conn_listener : public incoming_connection_listener {
@@ -375,14 +441,17 @@ c_inco_conn::c_inco_conn(peer &p) : incoming_connection(p, cicl),
     icodh_(nullptr),
     icoith_(nullptr),
     icoish_(nullptr),
+    icod_(nullptr),
     icsc_ud_(nullptr),
     icodh_ud_(nullptr),
     icoith_ud_(nullptr),
     icoish_ud_(nullptr),
+    icod_ud_(nullptr),
     icsc_ud2_(nullptr),
     icodh_ud2_(nullptr),
     icoith_ud2_(nullptr),
-    icoish_ud2_(nullptr)
+    icoish_ud2_(nullptr),
+    icod_ud2_(nullptr)
 {
     set_incoming_transaction_factory(citf);
     set_incoming_subscription_factory(cisf);
@@ -402,6 +471,11 @@ extern "C" {
     void inco_connection_release(shr_incoming_connection *ic)
     {
         delete(std::shared_ptr<incoming_connection> *)ic;
+    }
+    
+    incoming_connection *inco_connection_get_ptr(shr_incoming_connection *ic)
+    {
+        return ((std::shared_ptr<incoming_connection> *)ic)->get();
     }
 
     void inco_connection_set_status_change(incoming_connection *ic,
@@ -443,6 +517,17 @@ extern "C" {
         static_cast<c_inco_conn *>(ic)->icoish_ud_ = ud;
         static_cast<c_inco_conn *>(ic)->icoish_ud2_ = ud2;
     }
+    
+    void inco_connection_set_on_destroy(incoming_connection *ic,
+                                        inco_connection_on_destroy hndl,
+                                        void *ud,
+                                        void *ud2)
+    {
+        static_cast<c_inco_conn *>(ic)->icod_ = hndl;
+        static_cast<c_inco_conn *>(ic)->icod_ud_ = ud;
+        static_cast<c_inco_conn *>(ic)->icod_ud2_ = ud2;
+    }
+
 }
 
 //c_peer
