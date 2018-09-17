@@ -192,9 +192,9 @@ void inco_connection_set_on_destroy_swf(incoming_connection *ic,
                                         void *ud)
 {
     inco_connection_set_on_destroy(ic,
-                                                 inco_connection_on_destroy_c,
-                                                 (__bridge_retained void *)hndl,
-                                                 ud);
+                                   inco_connection_on_destroy_c,
+                                   (__bridge_retained void *)hndl,
+                                   ud);
 }
 
 
@@ -408,8 +408,8 @@ void inco_subscription_set_on_stop_swf(incoming_subscription *sbs,
 }
 
 void inco_subscription_set_on_destroy_swf(incoming_subscription *sbs,
-                                       inco_subscription_on_destroy_swf hndl,
-                                       void *ud)
+                                          inco_subscription_on_destroy_swf hndl,
+                                          void *ud)
 {
     inco_subscription_set_on_destroy(sbs,
                                      inco_subscription_on_destroy_c,
