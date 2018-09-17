@@ -27,6 +27,7 @@ INCOMING SUBSCRIPTION HANDLERS
 typedef void(*inco_subscription_status_change)(incoming_subscription *isbs, SubscriptionStatus status, void *ud, void *ud2);
 typedef RetCode(*inco_subscription_accept_distribution)(incoming_subscription *isbs, const subscription_event *sbs_evt, void *ud, void *ud2);
 typedef void(*inco_subscription_on_stop)(incoming_subscription *isbs, void *ud, void *ud2);
+typedef void(*inco_subscription_on_destroy)(incoming_subscription *isbs, void *ud, void *ud2);
 
 /************************************************************************
 INCOMING SUBSCRIPTION
@@ -57,6 +58,7 @@ RetCode inco_subscription_await_for_status_reached(incoming_subscription *sbs, S
 void inco_subscription_set_status_change(incoming_subscription *sbs, inco_subscription_status_change hndl, void *ud, void *ud2);
 void inco_subscription_set_accept_distribution(incoming_subscription *sbs, inco_subscription_accept_distribution hndl, void *ud, void *ud2);
 void inco_subscription_set_on_stop(incoming_subscription *sbs, inco_subscription_on_stop hndl, void *ud, void *ud2);
+void inco_subscription_set_on_destroy(incoming_subscription *sbs, inco_subscription_on_destroy hndl, void *ud, void *ud2);
 RetCode inco_subscription_stop(incoming_subscription *sbs);
 RetCode inco_subscription_await_for_stop_result(incoming_subscription *sbs, SubscriptionResponse *stop_result, ProtocolCode *stop_protocode, time_t sec, long nsec);
 

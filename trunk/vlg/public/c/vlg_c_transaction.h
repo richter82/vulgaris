@@ -15,6 +15,7 @@ INCOMING TRANSACTION HANDLERS
 typedef void(*inco_transaction_status_change)(incoming_transaction *tx, TransactionStatus status, void *ud, void *ud2);
 typedef void(*inco_transaction_request)(incoming_transaction *tx, void *ud, void *ud2);
 typedef void(*inco_transaction_closure)(incoming_transaction *tx, void *ud, void *ud2);
+typedef void(*inco_transaction_on_destroy)(incoming_transaction *tx, void *ud, void *ud2);
 
 /************************************************************************
 INCOMING TRANSACTION
@@ -48,6 +49,7 @@ RetCode inco_transaction_await_for_closure(incoming_transaction *tx, time_t sec,
 void inco_transaction_set_transaction_status_change(incoming_transaction *tx, inco_transaction_status_change hndl, void *ud, void *ud2);
 void inco_transaction_set_transaction_closure(incoming_transaction *tx, inco_transaction_closure hndl, void *ud, void *ud2);
 void inco_transaction_set_inco_transaction_request(incoming_transaction *tx, inco_transaction_request hndl, void *ud, void *ud2);
+void inco_transaction_set_on_destroy(incoming_transaction *tx, inco_transaction_on_destroy hndl, void *ud, void *ud2);
 tx_id *inco_transaction_get_transaction_id(incoming_transaction *tx);
 void inco_transaction_set_transaction_id(incoming_transaction *tx, tx_id *txid);
 
