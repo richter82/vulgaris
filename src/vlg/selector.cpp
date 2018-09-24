@@ -717,7 +717,9 @@ RetCode selector::stop_and_clean()
         for(auto it = inco_conn_map_.begin(); it != inco_conn_map_.end(); ++it)
             if(it->second->get_status() != ConnectionStatus_DISCONNECTED) {
                 it->second->impl_->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
+                it->second->impl_->ilistener_->on_releaseable(*it->second);
             }
+        wp_inco_conn_map_.clear();
         inco_conn_map_.clear();
         server_socket_shutdown();
         inco_exec_srv_.shutdown();
