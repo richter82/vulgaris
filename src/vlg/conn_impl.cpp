@@ -1081,6 +1081,8 @@ RetCode incoming_connection_impl::recv_tx_request(const vlg_hdr_rec *pkt_hdr,
     } else {
         timpl->set_closed();
     }
+
+    timpl->ilistener_->on_releaseable(*timpl->ipubl_);
     return rcode;
 }
 
@@ -1113,6 +1115,7 @@ RetCode incoming_connection_impl::release_subscription(incoming_subscription_imp
     subscription->release_initial_query();
     peer_->remove_subscriber(subscription);
     subscription->set_released();
+    subscription->ilistener_->on_releaseable(*subscription->ipubl_);
     return rcode;
 }
 
