@@ -25,6 +25,7 @@ struct incoming_transaction_listener {
     virtual void on_status_change(incoming_transaction &, TransactionStatus) = 0;
     virtual void on_request(incoming_transaction &) = 0;
     virtual void on_close(incoming_transaction &) = 0;
+    virtual void on_releaseable(incoming_transaction &) = 0;
 
     static incoming_transaction_listener &default_listener();
 };

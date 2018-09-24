@@ -42,6 +42,7 @@ struct incoming_subscription_listener {
     virtual void on_status_change(incoming_subscription &, SubscriptionStatus) = 0;
     virtual void on_stop(incoming_subscription &) = 0;
     virtual RetCode on_accept_event(incoming_subscription &, const subscription_event &) = 0;
+    virtual void on_releaseable(incoming_subscription &) = 0;
 
     static incoming_subscription_listener &default_listener();
 };

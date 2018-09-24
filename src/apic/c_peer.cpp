@@ -157,6 +157,11 @@ struct c_inco_tx_listener : public incoming_transaction_listener {
             ((c_inco_tx &)it).tc_(&it, ((c_inco_tx &)it).tc_ud_, ((c_inco_tx &)it).tc_ud2_);
         }
     };
+    virtual void on_releaseable(incoming_transaction &it) override {
+        if(((c_inco_tx &)it).tod_) {
+            ((c_inco_tx &)it).tc_(&it, ((c_inco_tx &)it).tod_ud_, ((c_inco_tx &)it).tod_ud2_);
+        }
+    }
 };
 
 static c_inco_tx_listener citl;
@@ -279,6 +284,11 @@ struct c_inco_sbs_listener : public incoming_subscription_listener {
             return ((c_inco_sbs &)is).isad_(&is, &se, ((c_inco_sbs &)is).isad_ud_, ((c_inco_sbs &)is).isad_ud2_);
         }
         return RetCode_OK;
+    }
+    virtual void on_releaseable(incoming_subscription &is) override {
+        if(((c_inco_sbs &)is).isod_) {
+            ((c_inco_sbs &)is).isod_(&is, ((c_inco_sbs &)is).isod_ud_, ((c_inco_sbs &)is).isod_ud2_);
+        }
     }
 };
 

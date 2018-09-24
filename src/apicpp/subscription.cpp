@@ -59,6 +59,7 @@ struct default_incoming_subscription_listener : public incoming_subscription_lis
     virtual RetCode on_accept_event(incoming_subscription &, const subscription_event &) override {
         return RetCode_OK;
     }
+    virtual void on_releaseable(incoming_subscription &is) override {}
 };
 
 static default_incoming_subscription_listener disl;
