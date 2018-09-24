@@ -29,6 +29,8 @@ struct incoming_connection_listener {
                                ConnectivityEventResult con_evt_res,
                                ConnectivityEventType c_evt_type) = 0;
 
+    virtual void on_releaseable(incoming_connection &) = 0;
+
     /**
     @return default implementation always returns RetCode_OK,
             so all incoming transactions will be accepted.

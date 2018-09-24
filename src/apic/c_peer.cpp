@@ -23,42 +23,40 @@ extern "C" {
         return logger::set_logger_cfg_file_path_name(file_path);
     }
 
-    RetCode load_logger_config()
+    RetCode load_logger_cfg()
     {
         return logger::load_logger_config();
-    }
-
-    RetCode load_logger_config_file_path_name(const char *file_path)
-    {
-        return logger::set_logger_cfg_file_path_name(file_path);
     }
 }
 
 extern "C" {
     typedef struct own_peer own_peer;
     typedef struct shr_incoming_connection shr_incoming_connection;
+    typedef struct own_incoming_connection own_incoming_connection;
     typedef struct shr_incoming_transaction shr_incoming_transaction;
+    typedef struct own_incoming_transaction own_incoming_transaction;
     typedef struct shr_incoming_subscription shr_incoming_subscription;
+    typedef struct own_incoming_subscription own_incoming_subscription;
 
     //peer
 
-    typedef void (*peer_status_change)(peer *p, PeerStatus status, void *ud, void *ud2);
+    typedef void (*peer_on_status_change)(peer *p, PeerStatus status, void *ud, void *ud2);
     typedef const char *(*peer_name)(peer *p, void *ud, void *ud2);
     typedef const unsigned int *(*peer_version)(peer *p, void *ud, void *ud2);
-    typedef RetCode(*peer_load_config)(peer *p, int pnum, const char *param, const char *value, void *ud, void *ud2);
-    typedef RetCode(*peer_init)(peer *p, void *ud, void *ud2);
-    typedef RetCode(*peer_starting)(peer *p, void *ud, void *ud2);
-    typedef RetCode(*peer_stopping)(peer *p, void *ud, void *ud2);
+    typedef RetCode(*peer_on_load_config)(peer *p, int pnum, const char *param, const char *value, void *ud, void *ud2);
+    typedef RetCode(*peer_on_init)(peer *p, void *ud, void *ud2);
+    typedef RetCode(*peer_on_starting)(peer *p, void *ud, void *ud2);
+    typedef RetCode(*peer_on_stopping)(peer *p, void *ud, void *ud2);
     typedef RetCode(*peer_on_move_running)(peer *p, void *ud, void *ud2);
-    typedef void(*peer_dying_breath)(peer *p, void *ud, void *ud2);
+    typedef void(*peer_on_dying_breath)(peer *p, void *ud, void *ud2);
     typedef RetCode(*peer_on_incoming_connection)(peer *p, shr_incoming_connection *ic, void *ud, void *ud2);
 
     //incoming connection
 
-    typedef void(*inco_connection_status_change)(incoming_connection *conn,
-                                                 ConnectionStatus status,
-                                                 void *ud,
-                                                 void *ud2);
+    typedef void(*inco_connection_on_status_change)(incoming_connection *conn,
+                                                    ConnectionStatus status,
+                                                    void *ud,
+                                                    void *ud2);
 
     typedef void(*inco_connection_on_disconnect)(incoming_connection *conn,
                                                  ConnectivityEventResult con_evt_res,
@@ -76,50 +74,50 @@ extern "C" {
                                                                void *ud,
                                                                void *ud2);
 
-    typedef void(*inco_connection_on_destroy)(incoming_connection *conn,
-                                              void *ud,
-                                              void *ud2);
+    typedef void(*inco_connection_on_releaseable)(incoming_connection *conn,
+                                                  void *ud,
+                                                  void *ud2);
 
 
     //incoming tx
 
-    typedef void(*inco_transaction_status_change)(incoming_transaction *tx,
-                                                  TransactionStatus status,
-                                                  void *ud,
-                                                  void *ud2);
+    typedef void(*inco_transaction_on_status_change)(incoming_transaction *tx,
+                                                     TransactionStatus status,
+                                                     void *ud,
+                                                     void *ud2);
 
-    typedef void(*inco_transaction_request)(incoming_transaction *tx,
-                                            void *ud,
-                                            void *ud2);
-
-    typedef void(*inco_transaction_closure)(incoming_transaction *tx,
-                                            void *ud,
-                                            void *ud2);
-
-    typedef void(*inco_transaction_on_destroy)(incoming_transaction *tx,
+    typedef void(*inco_transaction_on_request)(incoming_transaction *tx,
                                                void *ud,
                                                void *ud2);
+
+    typedef void(*inco_transaction_on_closure)(incoming_transaction *tx,
+                                               void *ud,
+                                               void *ud2);
+
+    typedef void(*inco_transaction_on_releaseable)(incoming_transaction *tx,
+                                                   void *ud,
+                                                   void *ud2);
 
 
     //incoming sbs
 
-    typedef void(*inco_subscription_status_change)(incoming_subscription *isbs,
-                                                   SubscriptionStatus status,
-                                                   void *ud,
-                                                   void *ud2);
+    typedef void(*inco_subscription_on_status_change)(incoming_subscription *isbs,
+                                                      SubscriptionStatus status,
+                                                      void *ud,
+                                                      void *ud2);
 
-    typedef RetCode(*inco_subscription_accept_distribution)(incoming_subscription *isbs,
-                                                            const subscription_event *sbs_evt,
-                                                            void *ud,
-                                                            void *ud2);
+    typedef RetCode(*inco_subscription_on_accept_distribution)(incoming_subscription *isbs,
+                                                               const subscription_event *sbs_evt,
+                                                               void *ud,
+                                                               void *ud2);
 
     typedef void(*inco_subscription_on_stop)(incoming_subscription *isbs,
                                              void *ud,
                                              void *ud2);
 
-    typedef void(*inco_subscription_on_destroy)(incoming_subscription *isbs,
-                                                void *ud,
-                                                void *ud2);
+    typedef void(*inco_subscription_on_releaseable)(incoming_subscription *isbs,
+                                                    void *ud,
+                                                    void *ud2);
 
 }
 
@@ -127,16 +125,12 @@ extern "C" {
 
 struct c_inco_tx : public incoming_transaction {
     c_inco_tx(std::shared_ptr<incoming_connection> &c);
-    ~c_inco_tx() {
-        if(tod_) {
-            tod_(this, tod_ud_, tod_ud2_);
-        }
-    }
 
-    inco_transaction_request tr_;
-    inco_transaction_closure tc_;
-    inco_transaction_status_change tsc_;
-    inco_transaction_on_destroy tod_;
+    inco_transaction_on_request tr_;
+    inco_transaction_on_closure tc_;
+    inco_transaction_on_status_change tsc_;
+    inco_transaction_on_releaseable tod_;
+
     void *tr_ud_;
     void *tc_ud_;
     void *tsc_ud_;
@@ -191,50 +185,55 @@ struct c_inco_tx_factory : public incoming_transaction_factory {
 };
 
 extern "C" {
-    void inco_transaction_release(shr_incoming_transaction *tx)
+    void inco_transaction_release(own_incoming_transaction *tx)
     {
         delete(std::shared_ptr<incoming_connection> *)tx;
     }
 
-    incoming_transaction *inco_transaction_get_ptr(shr_incoming_transaction *tx)
+    own_incoming_transaction *inco_transaction_get_own_ptr(shr_incoming_transaction *tx)
+    {
+        return (own_incoming_transaction *)new std::shared_ptr<incoming_transaction>(*(std::shared_ptr<incoming_transaction> *)tx);
+    }
+
+    incoming_transaction *inco_transaction_get_ptr(own_incoming_transaction *tx)
     {
         return ((std::shared_ptr<incoming_transaction> *)tx)->get();
     }
 
-    void inco_transaction_set_transaction_status_change(incoming_transaction *tx,
-                                                        inco_transaction_status_change hndl,
-                                                        void *ud,
-                                                        void *ud2)
+    void inco_transaction_set_on_status_change(incoming_transaction *tx,
+                                               inco_transaction_on_status_change hndl,
+                                               void *ud,
+                                               void *ud2)
     {
         static_cast<c_inco_tx *>(tx)->tsc_ = hndl;
         static_cast<c_inco_tx *>(tx)->tsc_ud_ = ud;
         static_cast<c_inco_tx *>(tx)->tsc_ud2_ = ud2;
     }
 
-    void inco_transaction_set_transaction_closure(incoming_transaction *tx,
-                                                  inco_transaction_closure hndl,
-                                                  void *ud,
-                                                  void *ud2)
+    void inco_transaction_set_on_closure(incoming_transaction *tx,
+                                         inco_transaction_on_closure hndl,
+                                         void *ud,
+                                         void *ud2)
     {
         static_cast<c_inco_tx *>(tx)->tc_ = hndl;
         static_cast<c_inco_tx *>(tx)->tc_ud_ = ud;
         static_cast<c_inco_tx *>(tx)->tc_ud2_ = ud2;
     }
 
-    void inco_transaction_set_inco_transaction_request(incoming_transaction *tx,
-                                                       inco_transaction_request hndl,
-                                                       void *ud,
-                                                       void *ud2)
+    void inco_transaction_set_on_request(incoming_transaction *tx,
+                                         inco_transaction_on_request hndl,
+                                         void *ud,
+                                         void *ud2)
     {
         static_cast<c_inco_tx *>(tx)->tr_ = hndl;
         static_cast<c_inco_tx *>(tx)->tr_ud_ = ud;
         static_cast<c_inco_tx *>(tx)->tr_ud2_ = ud2;
     }
 
-    void inco_transaction_set_on_destroy(incoming_transaction *tx,
-                                         inco_transaction_on_destroy hndl,
-                                         void *ud,
-                                         void *ud2)
+    void inco_transaction_set_on_releaseable(incoming_transaction *tx,
+                                             inco_transaction_on_releaseable hndl,
+                                             void *ud,
+                                             void *ud2)
     {
         static_cast<c_inco_tx *>(tx)->tod_ = hndl;
         static_cast<c_inco_tx *>(tx)->tod_ud_ = ud;
@@ -248,16 +247,12 @@ static c_inco_tx_factory citf;
 
 struct c_inco_sbs : public incoming_subscription {
     c_inco_sbs(std::shared_ptr<incoming_connection> &c);
-    ~c_inco_sbs() {
-        if(isod_) {
-            isod_(this, isod_ud_, isod_ud2_);
-        }
-    }
 
-    inco_subscription_accept_distribution isad_;
-    inco_subscription_status_change issc_;
+    inco_subscription_on_accept_distribution isad_;
+    inco_subscription_on_status_change issc_;
     inco_subscription_on_stop isos_;
-    inco_subscription_on_destroy isod_;
+    inco_subscription_on_releaseable isod_;
+
     void *issc_ud_;
     void *isad_ud_;
     void *isos_ud_;
@@ -315,30 +310,35 @@ struct c_inco_sbs_factory : public incoming_subscription_factory {
 static c_inco_sbs_factory cisf;
 
 extern "C" {
-    void inco_subscription_release(shr_incoming_subscription *sbs)
+    void inco_subscription_release(own_incoming_subscription *sbs)
     {
         delete(std::shared_ptr<shr_incoming_subscription> *)sbs;
     }
 
-    incoming_subscription *inco_subscription_get_ptr(shr_incoming_subscription *sbs)
+    own_incoming_subscription *inco_subscription_get_own_ptr(shr_incoming_subscription *sbs)
+    {
+        return (own_incoming_subscription *)new std::shared_ptr<incoming_subscription>(*(std::shared_ptr<incoming_subscription> *)sbs);
+    }
+
+    incoming_subscription *inco_subscription_get_ptr(own_incoming_subscription *sbs)
     {
         return ((std::shared_ptr<incoming_subscription> *)sbs)->get();
     }
 
-    void inco_subscription_set_status_change(incoming_subscription *subscription,
-                                             inco_subscription_status_change hndl,
-                                             void *ud,
-                                             void *ud2)
+    void inco_subscription_set_on_status_change(incoming_subscription *subscription,
+                                                inco_subscription_on_status_change hndl,
+                                                void *ud,
+                                                void *ud2)
     {
         static_cast<c_inco_sbs *>(subscription)->issc_ = hndl;
         static_cast<c_inco_sbs *>(subscription)->issc_ud_ = ud;
         static_cast<c_inco_sbs *>(subscription)->issc_ud2_ = ud2;
     }
 
-    void inco_subscription_set_accept_distribution(incoming_subscription *subscription,
-                                                   inco_subscription_accept_distribution hndl,
-                                                   void *ud,
-                                                   void *ud2)
+    void inco_subscription_set_on_accept_distribution(incoming_subscription *subscription,
+                                                      inco_subscription_on_accept_distribution hndl,
+                                                      void *ud,
+                                                      void *ud2)
     {
         static_cast<c_inco_sbs *>(subscription)->isad_ = hndl;
         static_cast<c_inco_sbs *>(subscription)->isad_ud_ = ud;
@@ -355,10 +355,10 @@ extern "C" {
         static_cast<c_inco_sbs *>(sbs)->isos_ud2_ = ud2;
     }
 
-    void inco_subscription_set_on_destroy(incoming_subscription *sbs,
-                                          inco_subscription_on_destroy hndl,
-                                          void *ud,
-                                          void *ud2)
+    void inco_subscription_set_on_releaseable(incoming_subscription *sbs,
+                                              inco_subscription_on_releaseable hndl,
+                                              void *ud,
+                                              void *ud2)
     {
         static_cast<c_inco_sbs *>(sbs)->isod_ = hndl;
         static_cast<c_inco_sbs *>(sbs)->isod_ud_ = ud;
@@ -371,17 +371,12 @@ extern "C" {
 
 struct c_inco_conn : public incoming_connection {
     c_inco_conn(peer &p);
-    ~c_inco_conn() {
-        if(icod_) {
-            icod_(this, icod_ud_, icod_ud2_);
-        }
-    }
 
-    inco_connection_status_change icsc_;
+    inco_connection_on_status_change icsc_;
     inco_connection_on_disconnect icodh_;
     inco_connection_on_incoming_transaction icoith_;
     inco_connection_on_incoming_subscription icoish_;
-    inco_connection_on_destroy icod_;
+    inco_connection_on_releaseable icod_;
 
     void *icsc_ud_;
     void *icodh_ud_;
@@ -411,11 +406,17 @@ struct c_inco_conn_listener : public incoming_connection_listener {
         }
     }
 
+    virtual void on_releaseable(vlg::incoming_connection &ic) override {
+        if(((c_inco_conn &)ic).icod_) {
+            ((c_inco_conn &)ic).icod_(&ic, ((c_inco_conn &)ic).icod_ud_, ((c_inco_conn &)ic).icod_ud2_);
+        }
+    }
+
     virtual RetCode on_incoming_transaction(incoming_connection &ic,
                                             std::shared_ptr<incoming_transaction> &it) override {
         if(((c_inco_conn &)ic).icoith_) {
             return ((c_inco_conn &)ic).icoith_(&ic,
-                                               (shr_incoming_transaction *)new std::shared_ptr<incoming_transaction>(it),
+                                               (shr_incoming_transaction *)&it,
                                                ((c_inco_conn &)ic).icoith_ud_,
                                                ((c_inco_conn &)ic).icoith_ud2_);
         }
@@ -426,7 +427,7 @@ struct c_inco_conn_listener : public incoming_connection_listener {
                                              std::shared_ptr<incoming_subscription> &is) override {
         if(((c_inco_conn &)ic).icoish_) {
             return ((c_inco_conn &)ic).icoish_(&ic,
-                                               (shr_incoming_subscription *)new std::shared_ptr<incoming_subscription>(is),
+                                               (shr_incoming_subscription *)&is,
                                                ((c_inco_conn &)ic).icoish_ud_,
                                                ((c_inco_conn &)ic).icoish_ud2_);
         }
@@ -468,20 +469,25 @@ struct c_inco_conn_factory : public incoming_connection_factory {
 static c_inco_conn_factory cicf;
 
 extern "C" {
-    void inco_connection_release(shr_incoming_connection *ic)
+    void inco_connection_release(own_incoming_connection *ic)
     {
         delete(std::shared_ptr<incoming_connection> *)ic;
     }
 
-    incoming_connection *inco_connection_get_ptr(shr_incoming_connection *ic)
+    own_incoming_connection *inco_connection_get_own_ptr(shr_incoming_connection *ic)
+    {
+        return (own_incoming_connection *)new std::shared_ptr<incoming_connection>(*(std::shared_ptr<incoming_connection> *)ic);
+    }
+
+    incoming_connection *inco_connection_get_ptr(own_incoming_connection *ic)
     {
         return ((std::shared_ptr<incoming_connection> *)ic)->get();
     }
 
-    void inco_connection_set_status_change(incoming_connection *ic,
-                                           inco_connection_status_change hndl,
-                                           void *ud,
-                                           void *ud2)
+    void inco_connection_set_on_status_change(incoming_connection *ic,
+                                              inco_connection_on_status_change hndl,
+                                              void *ud,
+                                              void *ud2)
     {
         static_cast<c_inco_conn *>(ic)->icsc_ = hndl;
         static_cast<c_inco_conn *>(ic)->icsc_ud_ = ud;
@@ -519,7 +525,7 @@ extern "C" {
     }
 
     void inco_connection_set_on_destroy(incoming_connection *ic,
-                                        inco_connection_on_destroy hndl,
+                                        inco_connection_on_releaseable hndl,
                                         void *ud,
                                         void *ud2)
     {
@@ -551,13 +557,13 @@ struct c_peer : public peer {
 
     peer_name pnh_;
     peer_version pvh_;
-    peer_load_config plch_;
-    peer_init pih_;
-    peer_starting pstarth_;
-    peer_stopping pstoph_;
+    peer_on_load_config plch_;
+    peer_on_init pih_;
+    peer_on_starting pstarth_;
+    peer_on_stopping pstoph_;
     peer_on_move_running ptoah_;
-    peer_dying_breath pdbh_;
-    peer_status_change psc_;
+    peer_on_dying_breath pdbh_;
+    peer_on_status_change psc_;
     peer_on_incoming_connection sic_;
 
     void *psc_ud_;
@@ -641,7 +647,7 @@ struct c_peer_listener : public peer_listener {
     virtual RetCode on_incoming_connection(peer &p, std::shared_ptr<incoming_connection> &ic) override {
         if(((c_peer &)p).sic_) {
             return ((c_peer &)p).sic_(&p,
-                                      (shr_incoming_connection *) new std::shared_ptr<incoming_connection>(ic),
+                                      (shr_incoming_connection *) &ic,
                                       ((c_peer &)p).sic_ud_,
                                       ((c_peer &)p).sic_ud2_);
         }
@@ -877,28 +883,28 @@ extern "C" {
         static_cast<c_peer *>(p)->pvh_ud2_ = ud2;
     }
 
-    void peer_set_load_config(peer *p, peer_load_config hndl, void *ud, void *ud2)
+    void peer_set_on_load_config(peer *p, peer_on_load_config hndl, void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->plch_ = hndl;
         static_cast<c_peer *>(p)->plch_ud_ = ud;
         static_cast<c_peer *>(p)->plch_ud2_ = ud2;
     }
 
-    void peer_set_init(peer *p, peer_init hndl, void *ud, void *ud2)
+    void peer_set_on_init(peer *p, peer_on_init hndl, void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->pih_ = hndl;
         static_cast<c_peer *>(p)->pih_ud_ = ud;
         static_cast<c_peer *>(p)->pih_ud2_ = ud2;
     }
 
-    void peer_set_starting(peer *p, peer_starting hndl, void *ud, void *ud2)
+    void peer_set_on_starting(peer *p, peer_on_starting hndl, void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->pstarth_ = hndl;
         static_cast<c_peer *>(p)->pstarth_ud_ = ud;
         static_cast<c_peer *>(p)->pstarth_ud2_ = ud2;
     }
 
-    void peer_set_stopping(peer *p, peer_stopping hndl, void *ud, void *ud2)
+    void peer_set_on_stopping(peer *p, peer_on_stopping hndl, void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->pstoph_ = hndl;
         static_cast<c_peer *>(p)->pstoph_ud_ = ud;
@@ -912,7 +918,7 @@ extern "C" {
         static_cast<c_peer *>(p)->ptoah_ud2_ = ud2;
     }
 
-    void peer_set_dying_breath(peer *p, peer_dying_breath hndl, void *ud, void *ud2)
+    void peer_set_on_dying_breath(peer *p, peer_on_dying_breath hndl, void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->pdbh_ = hndl;
         static_cast<c_peer *>(p)->pdbh_ud_ = ud;
@@ -929,7 +935,7 @@ extern "C" {
         return p->get_status();
     }
 
-    void peer_set_status_change(peer *p, peer_status_change hndl, void *ud, void *ud2)
+    void peer_set_on_status_change(peer *p, peer_on_status_change hndl, void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->psc_ = hndl;
         static_cast<c_peer *>(p)->psc_ud_ = ud;

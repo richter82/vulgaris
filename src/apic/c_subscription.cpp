@@ -11,15 +11,15 @@ extern "C" {
     typedef struct own_outgoing_subscription own_outgoing_subscription;
     typedef struct own_nclass own_nclass;
 
-    typedef void(*outg_subscription_status_change)(outgoing_subscription *osbs,
-                                                   SubscriptionStatus status,
-                                                   void *ud,
-                                                   void *ud2);
+    typedef void(*outg_subscription_on_status_change)(outgoing_subscription *osbs,
+                                                      SubscriptionStatus status,
+                                                      void *ud,
+                                                      void *ud2);
 
-    typedef void(*outg_subscription_notify_event)(outgoing_subscription *osbs,
-                                                  const subscription_event *sbs_evt,
-                                                  void *ud,
-                                                  void *ud2);
+    typedef void(*outg_subscription_on_notify_event)(outgoing_subscription *osbs,
+                                                     const subscription_event *sbs_evt,
+                                                     void *ud,
+                                                     void *ud2);
 
     typedef void(*outg_subscription_on_start)(outgoing_subscription *osbs,
                                               void *ud,
@@ -206,8 +206,8 @@ extern "C" {
 struct c_outg_sbs : public outgoing_subscription {
     c_outg_sbs();
 
-    outg_subscription_notify_event osad_;
-    outg_subscription_status_change ossc_;
+    outg_subscription_on_notify_event osad_;
+    outg_subscription_on_status_change ossc_;
     outg_subscription_on_start ososrt_;
     outg_subscription_on_stop osostp_;
     void *ossc_ud_;
@@ -388,20 +388,20 @@ extern "C" {
                                                       nsec);
     }
 
-    void outg_subscription_set_status_change(outgoing_subscription *subscription,
-                                             outg_subscription_status_change hndl,
-                                             void *ud,
-                                             void *ud2)
+    void outg_subscription_set_on_status_change(outgoing_subscription *subscription,
+                                                outg_subscription_on_status_change hndl,
+                                                void *ud,
+                                                void *ud2)
     {
         static_cast<c_outg_sbs *>(subscription)->ossc_ = hndl;
         static_cast<c_outg_sbs *>(subscription)->ossc_ud_ = ud;
         static_cast<c_outg_sbs *>(subscription)->ossc_ud2_ = ud2;
     }
 
-    void outg_subscription_set_event_notify(outgoing_subscription *subscription,
-                                            outg_subscription_notify_event hndl,
-                                            void *ud,
-                                            void *ud2)
+    void outg_subscription_set_on_event_notify(outgoing_subscription *subscription,
+                                               outg_subscription_on_notify_event hndl,
+                                               void *ud,
+                                               void *ud2)
     {
         static_cast<c_outg_sbs *>(subscription)->osad_ = hndl;
         static_cast<c_outg_sbs *>(subscription)->osad_ud_ = ud;
