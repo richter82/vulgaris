@@ -11,10 +11,10 @@ extern "C" {
 
     typedef struct own_outgoing_connection own_outgoing_connection;
 
-    typedef void(*inco_connection_status_change)(incoming_connection *ic,
-                                                 ConnectionStatus status,
-                                                 void *ud,
-                                                 void *ud2);
+    typedef void(*inco_connection_on_status_change)(incoming_connection *ic,
+                                                    ConnectionStatus status,
+                                                    void *ud,
+                                                    void *ud2);
 
     typedef void(*inco_connection_on_disconnect)(incoming_connection *ic,
                                                  ConnectivityEventResult con_evt_res,
@@ -22,10 +22,10 @@ extern "C" {
                                                  void *ud,
                                                  void *ud2);
 
-    typedef void(*outg_connection_status_change)(outgoing_connection *oc,
-                                                 ConnectionStatus status,
-                                                 void *ud,
-                                                 void *ud2);
+    typedef void(*outg_connection_on_status_change)(outgoing_connection *oc,
+                                                    ConnectionStatus status,
+                                                    void *ud,
+                                                    void *ud2);
 
     typedef void(*outg_connection_on_connect)(outgoing_connection *oc,
                                               ConnectivityEventResult con_evt_res,
@@ -124,7 +124,7 @@ extern "C" {
 struct c_outg_conn : public outgoing_connection {
     c_outg_conn();
 
-    outg_connection_status_change ocsc_;
+    outg_connection_on_status_change ocsc_;
     outg_connection_on_connect ococh_;
     outg_connection_on_disconnect ocodh_;
 
@@ -255,10 +255,10 @@ extern "C" {
         return oc->await_for_status_change(*status, sec, nsec);
     }
 
-    void outg_connection_set_status_change(outgoing_connection *oc,
-                                           outg_connection_status_change hndl,
-                                           void *ud,
-                                           void *ud2)
+    void outg_connection_set_on_status_change(outgoing_connection *oc,
+                                              outg_connection_on_status_change hndl,
+                                              void *ud,
+                                              void *ud2)
     {
         static_cast<c_outg_conn *>(oc)->ocsc_ = hndl;
         static_cast<c_outg_conn *>(oc)->ocsc_ud_ = ud;

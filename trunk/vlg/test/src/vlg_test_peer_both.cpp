@@ -106,6 +106,10 @@ struct inco_conn_listener : public vlg::incoming_connection_listener {
         IFLOG(ic.get_peer().get_logger(), inf(TH_ID, LS_TST"[%d, %d]", __func__, con_evt_res, c_evt_type))
     }
 
+    virtual void on_releaseable(vlg::incoming_connection &ic) override {
+        IFLOG(ic.get_peer().get_logger(), dbg(TH_ID, LS_TST, __func__))
+    }
+
     virtual vlg::RetCode on_incoming_transaction(vlg::incoming_connection &ic,
                                                  std::shared_ptr<vlg::incoming_transaction> &) override {
         IFLOG(ic.get_peer().get_logger(), dbg(TH_ID, LS_TST, __func__))

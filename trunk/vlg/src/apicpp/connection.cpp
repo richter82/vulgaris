@@ -21,6 +21,8 @@ struct default_incoming_connection_listener : public incoming_connection_listene
                                ConnectivityEventResult con_evt_res,
                                ConnectivityEventType c_evt_type) override {}
 
+    virtual void on_releaseable(vlg::incoming_connection &) override {}
+
     virtual RetCode on_incoming_transaction(incoming_connection &,
                                             std::shared_ptr<incoming_transaction> &) override {
         return RetCode_OK;

@@ -151,14 +151,14 @@ extern "C" {
 extern "C" {
     typedef struct own_outgoing_transaction own_outgoing_transaction;
 
-    typedef void(*outg_transaction_status_change)(outgoing_transaction *tx,
-                                                  TransactionStatus status,
-                                                  void *ud,
-                                                  void *ud2);
+    typedef void(*outg_transaction_on_status_change)(outgoing_transaction *tx,
+                                                     TransactionStatus status,
+                                                     void *ud,
+                                                     void *ud2);
 
-    typedef void(*outg_transaction_closure)(outgoing_transaction *tx,
-                                            void *ud,
-                                            void *ud2);
+    typedef void(*outg_transaction_on_closure)(outgoing_transaction *tx,
+                                               void *ud,
+                                               void *ud2);
 }
 
 //c_outg_tx
@@ -166,8 +166,8 @@ extern "C" {
 struct c_outg_tx : public outgoing_transaction {
     c_outg_tx();
 
-    outg_transaction_closure tc_;
-    outg_transaction_status_change tsc_;
+    outg_transaction_on_closure tc_;
+    outg_transaction_on_status_change tsc_;
     void *tc_ud_;
     void *tsc_ud_;
     void *tc_ud2_;
@@ -362,20 +362,20 @@ extern "C" {
         return tx->await_for_close(sec, nsec);
     }
 
-    void outg_transaction_set_transaction_status_change(outgoing_transaction *tx,
-                                                        outg_transaction_status_change hndl,
-                                                        void *ud,
-                                                        void *ud2)
+    void outg_transaction_set_on_status_change(outgoing_transaction *tx,
+                                               outg_transaction_on_status_change hndl,
+                                               void *ud,
+                                               void *ud2)
     {
         static_cast<c_outg_tx *>(tx)->tsc_ = hndl;
         static_cast<c_outg_tx *>(tx)->tsc_ud_ = ud;
         static_cast<c_outg_tx *>(tx)->tsc_ud2_ = ud2;
     }
 
-    void outg_transaction_set_transaction_closure(outgoing_transaction *tx,
-                                                  outg_transaction_closure hndl,
-                                                  void *ud,
-                                                  void *ud2)
+    void outg_transaction_set_on_closure(outgoing_transaction *tx,
+                                         outg_transaction_on_closure hndl,
+                                         void *ud,
+                                         void *ud2)
     {
         static_cast<c_outg_tx *>(tx)->tc_ = hndl;
         static_cast<c_outg_tx *>(tx)->tc_ud_ = ud;

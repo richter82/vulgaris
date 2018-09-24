@@ -12,17 +12,18 @@
 INCOMING TRANSACTION HANDLERS
 ************************************************************************/
 
-typedef void(*inco_transaction_status_change)(incoming_transaction *tx, TransactionStatus status, void *ud, void *ud2);
-typedef void(*inco_transaction_request)(incoming_transaction *tx, void *ud, void *ud2);
-typedef void(*inco_transaction_closure)(incoming_transaction *tx, void *ud, void *ud2);
-typedef void(*inco_transaction_on_destroy)(incoming_transaction *tx, void *ud, void *ud2);
+typedef void(*inco_transaction_on_status_change)(incoming_transaction *tx, TransactionStatus status, void *ud, void *ud2);
+typedef void(*inco_transaction_on_request)(incoming_transaction *tx, void *ud, void *ud2);
+typedef void(*inco_transaction_on_closure)(incoming_transaction *tx, void *ud, void *ud2);
+typedef void(*inco_transaction_on_releaseable)(incoming_transaction *tx, void *ud, void *ud2);
 
 /************************************************************************
 INCOMING TRANSACTION
 ************************************************************************/
 
-void inco_transaction_release(shr_incoming_transaction *tx);
-incoming_transaction *inco_transaction_get_ptr(shr_incoming_transaction *tx);
+void inco_transaction_release(own_incoming_transaction *tx);
+own_incoming_transaction *inco_transaction_get_own_ptr(shr_incoming_transaction *tx);
+incoming_transaction *inco_transaction_get_ptr(own_incoming_transaction *tx);
 incoming_connection *inco_transaction_get_connection(incoming_transaction *tx);
 TransactionResult inco_transaction_get_transaction_result(incoming_transaction *tx);
 ProtocolCode inco_transaction_get_transaction_result_code(incoming_transaction *tx);
@@ -46,10 +47,10 @@ void inco_transaction_set_result_obj(incoming_transaction *tx, nclass *obj);
 TransactionStatus inco_transaction_get_status(incoming_transaction *tx);
 RetCode inco_transaction_await_for_status_reached(incoming_transaction *tx, TransactionStatus test, TransactionStatus *current, time_t sec, long nsec);
 RetCode inco_transaction_await_for_closure(incoming_transaction *tx, time_t sec, long nsec);
-void inco_transaction_set_transaction_status_change(incoming_transaction *tx, inco_transaction_status_change hndl, void *ud, void *ud2);
-void inco_transaction_set_transaction_closure(incoming_transaction *tx, inco_transaction_closure hndl, void *ud, void *ud2);
-void inco_transaction_set_inco_transaction_request(incoming_transaction *tx, inco_transaction_request hndl, void *ud, void *ud2);
-void inco_transaction_set_on_destroy(incoming_transaction *tx, inco_transaction_on_destroy hndl, void *ud, void *ud2);
+void inco_transaction_set_on_status_change(incoming_transaction *tx, inco_transaction_on_status_change hndl, void *ud, void *ud2);
+void inco_transaction_set_on_closure(incoming_transaction *tx, inco_transaction_on_closure hndl, void *ud, void *ud2);
+void inco_transaction_set_on_request(incoming_transaction *tx, inco_transaction_on_request hndl, void *ud, void *ud2);
+void inco_transaction_set_on_releaseable(incoming_transaction *tx, inco_transaction_on_releaseable hndl, void *ud, void *ud2);
 tx_id *inco_transaction_get_transaction_id(incoming_transaction *tx);
 void inco_transaction_set_transaction_id(incoming_transaction *tx, tx_id *txid);
 
@@ -57,8 +58,8 @@ void inco_transaction_set_transaction_id(incoming_transaction *tx, tx_id *txid);
 OUTGOING TRANSACTION HANDLERS
 ************************************************************************/
 
-typedef void(*outg_transaction_status_change)(outgoing_transaction *tx, TransactionStatus status, void *ud, void *ud2);
-typedef void(*outg_transaction_closure)(outgoing_transaction *tx, void *ud, void *ud2);
+typedef void(*outg_transaction_on_status_change)(outgoing_transaction *tx, TransactionStatus status, void *ud, void *ud2);
+typedef void(*outg_transaction_on_closure)(outgoing_transaction *tx, void *ud, void *ud2);
 
 /************************************************************************
 OUTGOING TRANSACTION
@@ -94,8 +95,8 @@ void outg_transaction_set_current_obj(outgoing_transaction *tx, nclass *obj);
 TransactionStatus outg_transaction_get_status(outgoing_transaction *tx);
 RetCode outg_transaction_await_for_status_reached(outgoing_transaction *tx, TransactionStatus test, TransactionStatus *current, time_t sec, long nsec);
 RetCode outg_transaction_await_for_closure(outgoing_transaction *tx, time_t sec, long nsec);
-void outg_transaction_set_transaction_status_change(outgoing_transaction *tx, outg_transaction_status_change hndl, void *ud, void *ud2);
-void outg_transaction_set_transaction_closure(outgoing_transaction *tx, outg_transaction_closure hndl, void *ud, void *ud2);
+void outg_transaction_set_on_status_change(outgoing_transaction *tx, outg_transaction_on_status_change hndl, void *ud, void *ud2);
+void outg_transaction_set_on_closure(outgoing_transaction *tx, outg_transaction_on_closure hndl, void *ud, void *ud2);
 tx_id *outg_transaction_get_transaction_id(outgoing_transaction *tx);
 void outg_transaction_set_transaction_id(outgoing_transaction *tx, tx_id *txid);
 RetCode outg_transaction_renew(outgoing_transaction *tx);

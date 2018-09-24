@@ -473,8 +473,10 @@ inline void selector::FDSET_incoming_sockets()
             if(it->second->get_status() != ConnectionStatus_DISCONNECTED) {
                 it->second->impl_->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_NETWORK);
             }
+            it->second->impl_->ilistener_->on_releaseable(*it->second);
             wp_inco_conn_map_.erase(inco_sock);
             it = inco_conn_map_.erase(it);
+
         }
     }
     //always set server socket in read fds.
