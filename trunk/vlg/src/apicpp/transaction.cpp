@@ -13,9 +13,10 @@
 namespace vlg {
 
 struct default_incoming_transaction_listener : public incoming_transaction_listener {
-    virtual void on_status_change(incoming_transaction &, TransactionStatus) override {};
-    virtual void on_request(incoming_transaction &) override {};
-    virtual void on_close(incoming_transaction &) override {};
+    virtual void on_status_change(incoming_transaction &, TransactionStatus) override {}
+    virtual void on_request(incoming_transaction &) override {}
+    virtual void on_close(incoming_transaction &) override {}
+    virtual void on_releaseable(vlg::incoming_transaction &) override {}
 };
 
 static default_incoming_transaction_listener ditl;

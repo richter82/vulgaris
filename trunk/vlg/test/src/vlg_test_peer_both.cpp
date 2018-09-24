@@ -168,6 +168,10 @@ struct inco_tx_listener : public vlg::incoming_transaction_listener {
     virtual void on_close(vlg::incoming_transaction &it) override {
         IFLOG(it.get_connection().get_peer().get_logger(), dbg(TH_ID, LS_TST, __func__))
     }
+
+    virtual void on_releaseable(vlg::incoming_transaction &it) override {
+        IFLOG(it.get_connection().get_peer().get_logger(), dbg(TH_ID, LS_TST, __func__))
+    }
 };
 
 static inco_tx_listener itl;
@@ -276,6 +280,9 @@ struct inco_sbs_listener : public vlg::incoming_subscription_listener {
     virtual vlg::RetCode on_accept_event(vlg::incoming_subscription &is, const vlg::subscription_event &) override {
         IFLOG(is.get_connection().get_peer().get_logger(), dbg(TH_ID, LS_TST, __func__))
         return vlg::RetCode_OK;
+    }
+    virtual void on_releaseable(vlg::incoming_subscription &is) override {
+        IFLOG(is.get_connection().get_peer().get_logger(), inf(TH_ID, LS_TST, __func__))
     }
 };
 
