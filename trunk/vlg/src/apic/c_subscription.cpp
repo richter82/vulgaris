@@ -210,35 +210,29 @@ struct c_outg_sbs : public outgoing_subscription {
     outg_subscription_on_status_change ossc_;
     outg_subscription_on_start ososrt_;
     outg_subscription_on_stop osostp_;
-    void *ossc_ud_;
-    void *osad_ud_;
-    void *ososrt_ud_;
-    void *osostp_ud_;
-    void *ossc_ud2_;
-    void *osad_ud2_;
-    void *ososrt_ud2_;
-    void *osostp_ud2_;
+    void *ud_;
+    void *ud2_;
 };
 
 struct c_outg_sbs_listener : public outgoing_subscription_listener {
     virtual void on_status_change(outgoing_subscription &os, SubscriptionStatus status) override {
         if(((c_outg_sbs &)os).ossc_) {
-            ((c_outg_sbs &)os).ossc_(&os, status, ((c_outg_sbs &)os).ossc_ud_, ((c_outg_sbs &)os).ossc_ud2_);
+            ((c_outg_sbs &)os).ossc_(&os, status, ((c_outg_sbs &)os).ud_, ((c_outg_sbs &)os).ud2_);
         }
     }
     virtual void on_start(outgoing_subscription &os) override {
         if(((c_outg_sbs &)os).ososrt_) {
-            ((c_outg_sbs &)os).ososrt_(&os, ((c_outg_sbs &)os).ososrt_ud_, ((c_outg_sbs &)os).ososrt_ud2_);
+            ((c_outg_sbs &)os).ososrt_(&os, ((c_outg_sbs &)os).ud_, ((c_outg_sbs &)os).ud2_);
         }
     }
     virtual void on_stop(outgoing_subscription &os) override {
         if(((c_outg_sbs &)os).osostp_) {
-            ((c_outg_sbs &)os).osostp_(&os, ((c_outg_sbs &)os).osostp_ud_, ((c_outg_sbs &)os).osostp_ud2_);
+            ((c_outg_sbs &)os).osostp_(&os, ((c_outg_sbs &)os).ud_, ((c_outg_sbs &)os).ud2_);
         }
     }
     virtual void on_incoming_event(outgoing_subscription &os, std::unique_ptr<subscription_event> &sev) override {
         if(((c_outg_sbs &)os).osad_) {
-            ((c_outg_sbs &)os).osad_(&os, sev.get(), ((c_outg_sbs &)os).osad_ud_, ((c_outg_sbs &)os).osad_ud2_);
+            ((c_outg_sbs &)os).osad_(&os, sev.get(), ((c_outg_sbs &)os).ud_, ((c_outg_sbs &)os).ud2_);
         }
     }
 };
@@ -251,14 +245,8 @@ c_outg_sbs::c_outg_sbs() :
     ossc_(nullptr),
     ososrt_(nullptr),
     osostp_(nullptr),
-    ossc_ud_(nullptr),
-    osad_ud_(nullptr),
-    ososrt_ud_(nullptr),
-    osostp_ud_(nullptr),
-    ossc_ud2_(nullptr),
-    osad_ud2_(nullptr),
-    ososrt_ud2_(nullptr),
-    osostp_ud2_(nullptr) {}
+    ud_(nullptr),
+    ud2_(nullptr) {}
 
 extern "C" {
     own_outgoing_subscription *outg_subscription_create()
@@ -389,43 +377,33 @@ extern "C" {
     }
 
     void outg_subscription_set_on_status_change(outgoing_subscription *subscription,
-                                                outg_subscription_on_status_change hndl,
-                                                void *ud,
-                                                void *ud2)
+                                                outg_subscription_on_status_change hndl)
     {
         static_cast<c_outg_sbs *>(subscription)->ossc_ = hndl;
-        static_cast<c_outg_sbs *>(subscription)->ossc_ud_ = ud;
-        static_cast<c_outg_sbs *>(subscription)->ossc_ud2_ = ud2;
     }
 
     void outg_subscription_set_on_event_notify(outgoing_subscription *subscription,
-                                               outg_subscription_on_notify_event hndl,
-                                               void *ud,
-                                               void *ud2)
+                                               outg_subscription_on_notify_event hndl)
     {
         static_cast<c_outg_sbs *>(subscription)->osad_ = hndl;
-        static_cast<c_outg_sbs *>(subscription)->osad_ud_ = ud;
-        static_cast<c_outg_sbs *>(subscription)->osad_ud2_ = ud2;
     }
 
     void outg_subscription_set_on_start(outgoing_subscription *sbs,
-                                        outg_subscription_on_start hndl,
-                                        void *ud,
-                                        void *ud2)
+                                        outg_subscription_on_start hndl)
     {
         static_cast<c_outg_sbs *>(sbs)->ososrt_ = hndl;
-        static_cast<c_outg_sbs *>(sbs)->ososrt_ud_ = ud;
-        static_cast<c_outg_sbs *>(sbs)->ososrt_ud2_ = ud2;
     }
 
     void outg_subscription_set_on_stop(outgoing_subscription *sbs,
-                                       outg_subscription_on_stop hndl,
-                                       void *ud,
-                                       void *ud2)
+                                       outg_subscription_on_stop hndl)
     {
         static_cast<c_outg_sbs *>(sbs)->osostp_ = hndl;
-        static_cast<c_outg_sbs *>(sbs)->osostp_ud_ = ud;
-        static_cast<c_outg_sbs *>(sbs)->osostp_ud2_ = ud2;
+    }
+
+    void outg_subscription_set_user_data(outgoing_subscription *sbs, void *ud, void *ud2)
+    {
+        static_cast<c_outg_sbs *>(sbs)->ud_ = ud;
+        static_cast<c_outg_sbs *>(sbs)->ud2_ = ud2;
     }
 
     RetCode outg_subscription_start(outgoing_subscription *subscription)
