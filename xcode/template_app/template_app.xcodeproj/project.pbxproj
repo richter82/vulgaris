@@ -16,7 +16,6 @@
 		E33697EE21179D24002F61CD /* vlg_swift.swift in Sources */ = {isa = PBXBuildFile; fileRef = E33697ED21179D24002F61CD /* vlg_swift.swift */; };
 		E33697FC21179E48002F61CD /* libvlg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E33697FB21179E48002F61CD /* libvlg.a */; };
 		E33697FE21179EC3002F61CD /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = E33697FD21179EC3002F61CD /* libc++.tbd */; };
-		E3369800211BA3A6002F61CD /* libapiobjc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E33697FF211BA3A6002F61CD /* libapiobjc.a */; };
 		E3369802211BA3BC002F61CD /* libapic.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E3369801211BA3BC002F61CD /* libapic.a */; };
 		E3369806211BA4C9002F61CD /* libdrvsqlite.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E3369805211BA4C9002F61CD /* libdrvsqlite.a */; };
 		E3369808211BA529002F61CD /* libapicpp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E3369807211BA529002F61CD /* libapicpp.a */; };
@@ -25,6 +24,7 @@
 		E361F0FA2120DBEB004F80CF /* logger.cfg in Resources */ = {isa = PBXBuildFile; fileRef = E361F0F42120CE1A004F80CF /* logger.cfg */; };
 		E36D63F02139C28400B430A4 /* libtest_smplmdl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E36D63EF2139C28400B430A4 /* libtest_smplmdl.a */; };
 		E36D641B213C902800B430A4 /* unused.txt in Resources */ = {isa = PBXBuildFile; fileRef = E36D641A213C902800B430A4 /* unused.txt */; };
+		E3E79BA0215FED5E0070DA0D /* libapiobjc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E33697FF211BA3A6002F61CD /* libapiobjc.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -74,8 +74,7 @@
 				E3369806211BA4C9002F61CD /* libdrvsqlite.a in Frameworks */,
 				E3369808211BA529002F61CD /* libapicpp.a in Frameworks */,
 				E33697FC21179E48002F61CD /* libvlg.a in Frameworks */,
-				E3369800211BA3A6002F61CD /* libapiobjc.a in Frameworks */,
-				E3369800211BA3A6002F61CD /* libapiobjc.a in Frameworks */,
+				E3E79BA0215FED5E0070DA0D /* libapiobjc.a in Frameworks */,
 				E36D63F02139C28400B430A4 /* libtest_smplmdl.a in Frameworks */,
 				E33697FE21179EC3002F61CD /* libc++.tbd in Frameworks */,
 			);
@@ -207,7 +206,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0940;
-				LastUpgradeCheck = 0940;
+				LastUpgradeCheck = 1000;
 				ORGANIZATIONNAME = "Giuseppe Baccini";
 				TargetAttributes = {
 					E33697C721179C27002F61CD = {
@@ -362,7 +361,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -423,7 +422,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
