@@ -834,15 +834,19 @@ extern "C" {
         static_cast<c_peer *>(p)->psc_ = hndl;
     }
 
-    void peer_set_peer_on_incoming_connection(peer *p,
+    void peer_set_on_incoming_connection(peer *p,
                                               peer_on_incoming_connection hndl)
     {
         static_cast<c_peer *>(p)->sic_ = hndl;
     }
 
-    void peer_set_user_data(peer *p, void *ud, void *ud2)
+    void peer_set_user_data(peer *p, void *ud)
     {
         static_cast<c_peer *>(p)->ud_ = ud;
+    }
+    
+    void peer_set_user_data_2(peer *p, void *ud2)
+    {
         static_cast<c_peer *>(p)->ud2_ = ud2;
     }
 

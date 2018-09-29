@@ -96,7 +96,7 @@ class Peer
         argv[0] = arg0.buffer;
         argv[1] = arg1.buffer;
         do {
-            let documentDirectory = try fileManager_.url(for: .documentDirectory, in: .userDomainMask, appropriateFor:nil, create:false)
+            let documentDirectory = try fileMng.url(for: .documentDirectory, in: .userDomainMask, appropriateFor:nil, create:false)
             let dd_fpath = CString(documentDirectory.path)
             set_db_data_dir_sqlite(dd_fpath.buffer)
         }catch{
@@ -114,7 +114,8 @@ class Peer
     
     fileprivate func on_incoming_connection(c_peer: OpaquePointer!, sh_ic: OpaquePointer!, ud: UnsafeMutableRawPointer!) -> RetCode
     {
-        ic_repo_[inco_connection_get_connection_id(inco_connection_get_ptr(sh_ic))] = IncomingConnection(bridge(ptr: ud!), sh_ic)
+        let ic = IncomingConnection(bridge(ptr: ud!), sh_ic)
+        icRepo[ic.connectionId] = ic
         return RetCode_OK;
     }
     
@@ -201,7 +202,7 @@ class Peer
         }
     }
     
-    let fileManager_ = FileManager.default
+    let fileMng = FileManager.default
     var peer_own_: OpaquePointer
     var peer_: OpaquePointer
     let peer_name_: CString
@@ -209,7 +210,7 @@ class Peer
     
     var vc_: ViewController? //bad
     
-    var ic_repo_ = [UInt32:IncomingConnection]()
+    var icRepo = [UInt32:IncomingConnection]()
     
     
     var ViewController: ViewController?{
@@ -276,6 +277,8 @@ class IncomingConnection
     init(_ peer: Peer, _ sh_inco_conn: OpaquePointer){
         self.peer = peer
         sh_inco_conn_ = sh_inco_conn
+        
+        inco_connection_set_on_destroy_swf(inco_conn_, on_destroy, nil)
         inco_connection_set_on_incoming_transaction_swf(inco_conn_, on_incoming_transaction, nil)
     }
     
@@ -283,10 +286,15 @@ class IncomingConnection
         inco_connection_release(sh_inco_conn_)
     }
     
+    fileprivate func on_destroy(ic: OpaquePointer!, ud: UnsafeMutableRawPointer!)
+    {
+        peer.icRepo.removeValue(forKey: connectionId)
+    }
+    
     fileprivate func on_incoming_transaction(ic: OpaquePointer!, itx: OpaquePointer!, ud: UnsafeMutableRawPointer!) -> RetCode
     {
         let IncoTx = IncomingTransaction(self, itx)
-        itx_repo_[IncoTx.tx_id_] = IncoTx
+        itxRepo[IncoTx.txId] = IncoTx
         return RetCode_OK
     }
     
@@ -299,8 +307,12 @@ class IncomingConnection
         }
     }
     
-    var itx_repo_ = [tx_id:IncomingTransaction]()
-    var isbs_repo_ = [UInt32:IncomingSubscription]()
+    var connectionId: UInt32{
+        get{return inco_connection_get_connection_id(inco_conn_)}
+    }
+    
+    var itxRepo = [tx_id:IncomingTransaction]()
+    var isbsRepo = [UInt32:IncomingSubscription]()
 }
 
 /**
@@ -317,8 +329,8 @@ class OutgoingTransaction
 
 class IncomingTransaction
 {
-    init(_ IncoConn: IncomingConnection, _ sh_inco_tx: OpaquePointer){
-        self.IncoConn = IncoConn
+    init(_ incoConn: IncomingConnection, _ sh_inco_tx: OpaquePointer){
+        self.incoConn = incoConn
         sh_inco_tx_ = sh_inco_tx
         inco_transaction_set_inco_transaction_request_swf(inco_transaction_get_ptr(sh_inco_tx_), on_request, nil)
     }
@@ -332,7 +344,7 @@ class IncomingTransaction
         ResultObj = RequestObj
         Result = TransactionResult_COMMITTED
         ResultCode = ProtocolCode_SUCCESS
-        peer_nclass_persistent_update_or_save_and_distribute(IncoConn.peer.peer_, 1, ResultObj)
+        peer_nclass_persistent_update_or_save_and_distribute(incoConn.peer.peer_, 1, ResultObj)
     }
     
     var Result : TransactionResult{
@@ -353,7 +365,7 @@ class IncomingTransaction
         }
     }
     
-    let IncoConn :IncomingConnection
+    let incoConn :IncomingConnection
     let sh_inco_tx_ :OpaquePointer
     
     var inco_tx_ : OpaquePointer{
@@ -361,8 +373,8 @@ class IncomingTransaction
             return inco_transaction_get_ptr(sh_inco_tx_)
         }
     }
-    
-    var tx_id_ : tx_id{
+
+    var txId : tx_id{
         get{
             return tx_id(oth:inco_transaction_get_transaction_id(inco_tx_).move())
         }
