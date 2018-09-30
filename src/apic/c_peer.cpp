@@ -123,6 +123,11 @@ extern "C" {
 
 //c_inco_tx
 
+#define IT_REQ_UD_IDX 0
+#define IT_CLO_UD_IDX 1
+#define IT_STC_UD_IDX 2
+#define IT_REL_UD_IDX 3
+
 struct c_inco_tx : public incoming_transaction {
     c_inco_tx(std::shared_ptr<incoming_connection> &c);
 
@@ -131,29 +136,37 @@ struct c_inco_tx : public incoming_transaction {
     inco_transaction_on_status_change tsc_;
     inco_transaction_on_releaseable tod_;
 
-    void *ud_;
-    void *ud2_;
+    void *ud_[4];
+    void *ud2_[4];
 };
 
 struct c_inco_tx_listener : public incoming_transaction_listener {
     virtual void on_status_change(incoming_transaction &it, TransactionStatus status) override {
         if(((c_inco_tx &)it).tsc_) {
-            ((c_inco_tx &)it).tsc_(&it, status, ((c_inco_tx &)it).ud_, ((c_inco_tx &)it).ud2_);
+            ((c_inco_tx &)it).tsc_(&it, status,
+                                   ((c_inco_tx &)it).ud_[IT_STC_UD_IDX],
+                                   ((c_inco_tx &)it).ud2_[IT_STC_UD_IDX]);
         }
     };
     virtual void on_request(incoming_transaction &it) override {
         if(((c_inco_tx &)it).tr_) {
-            ((c_inco_tx &)it).tr_(&it, ((c_inco_tx &)it).ud_, ((c_inco_tx &)it).ud2_);
+            ((c_inco_tx &)it).tr_(&it,
+                                  ((c_inco_tx &)it).ud_[IT_REQ_UD_IDX],
+                                  ((c_inco_tx &)it).ud2_[IT_REQ_UD_IDX]);
         }
     };
     virtual void on_close(incoming_transaction &it) override {
         if(((c_inco_tx &)it).tc_) {
-            ((c_inco_tx &)it).tc_(&it, ((c_inco_tx &)it).ud_, ((c_inco_tx &)it).ud2_);
+            ((c_inco_tx &)it).tc_(&it,
+                                  ((c_inco_tx &)it).ud_[IT_CLO_UD_IDX],
+                                  ((c_inco_tx &)it).ud2_[IT_CLO_UD_IDX]);
         }
     };
     virtual void on_releaseable(incoming_transaction &it) override {
         if(((c_inco_tx &)it).tod_) {
-            ((c_inco_tx &)it).tc_(&it, ((c_inco_tx &)it).ud_, ((c_inco_tx &)it).ud2_);
+            ((c_inco_tx &)it).tc_(&it,
+                                  ((c_inco_tx &)it).ud_[IT_REL_UD_IDX],
+                                  ((c_inco_tx &)it).ud2_[IT_REL_UD_IDX]);
         }
     }
 };
@@ -165,9 +178,11 @@ c_inco_tx::c_inco_tx(std::shared_ptr<incoming_connection> &c) :
     tr_(nullptr),
     tc_(nullptr),
     tsc_(nullptr),
-    tod_(nullptr),
-    ud_(nullptr),
-    ud2_(nullptr) {}
+    tod_(nullptr)
+{
+    memset(ud_, 0, sizeof(ud_));
+    memset(ud2_, 0, sizeof(ud2_));
+}
 
 //c_inco_tx_factory
 
@@ -194,39 +209,50 @@ extern "C" {
     }
 
     void inco_transaction_set_on_status_change(incoming_transaction *tx,
-                                               inco_transaction_on_status_change hndl)
+                                               inco_transaction_on_status_change hndl,
+                                               void *ud, void *ud2)
     {
         static_cast<c_inco_tx *>(tx)->tsc_ = hndl;
+        static_cast<c_inco_tx *>(tx)->ud_[IT_STC_UD_IDX] = ud;
+        static_cast<c_inco_tx *>(tx)->ud2_[IT_STC_UD_IDX] = ud2;
     }
 
     void inco_transaction_set_on_closure(incoming_transaction *tx,
-                                         inco_transaction_on_closure hndl)
+                                         inco_transaction_on_closure hndl,
+                                         void *ud, void *ud2)
     {
         static_cast<c_inco_tx *>(tx)->tc_ = hndl;
+        static_cast<c_inco_tx *>(tx)->ud_[IT_CLO_UD_IDX] = ud;
+        static_cast<c_inco_tx *>(tx)->ud2_[IT_CLO_UD_IDX] = ud2;
     }
 
     void inco_transaction_set_on_request(incoming_transaction *tx,
-                                         inco_transaction_on_request hndl)
+                                         inco_transaction_on_request hndl,
+                                         void *ud, void *ud2)
     {
         static_cast<c_inco_tx *>(tx)->tr_ = hndl;
+        static_cast<c_inco_tx *>(tx)->ud_[IT_REQ_UD_IDX] = ud;
+        static_cast<c_inco_tx *>(tx)->ud2_[IT_REQ_UD_IDX] = ud2;
     }
 
     void inco_transaction_set_on_releaseable(incoming_transaction *tx,
-                                             inco_transaction_on_releaseable hndl)
+                                             inco_transaction_on_releaseable hndl,
+                                             void *ud, void *ud2)
     {
         static_cast<c_inco_tx *>(tx)->tod_ = hndl;
-    }
-
-    void inco_transaction_set_user_data(incoming_transaction *tx, void *ud, void *ud2)
-    {
-        static_cast<c_inco_tx *>(tx)->ud_ = ud;
-        static_cast<c_inco_tx *>(tx)->ud2_ = ud2;
+        static_cast<c_inco_tx *>(tx)->ud_[IT_REL_UD_IDX] = ud;
+        static_cast<c_inco_tx *>(tx)->ud2_[IT_REL_UD_IDX] = ud2;
     }
 }
 
 static c_inco_tx_factory citf;
 
 //c_inco_sbs
+
+#define IS_DIS_UD_IDX 0
+#define IS_STC_UD_IDX 1
+#define IS_STO_UD_IDX 2
+#define IS_REL_UD_IDX 3
 
 struct c_inco_sbs : public incoming_subscription {
     c_inco_sbs(std::shared_ptr<incoming_connection> &c);
@@ -236,30 +262,38 @@ struct c_inco_sbs : public incoming_subscription {
     inco_subscription_on_stop isos_;
     inco_subscription_on_releaseable isod_;
 
-    void *ud_;
-    void *ud2_;
+    void *ud_[4];
+    void *ud2_[4];
 };
 
 struct c_inco_sbs_listener : public incoming_subscription_listener {
     virtual void on_status_change(incoming_subscription &is, SubscriptionStatus status) override {
         if(((c_inco_sbs &)is).issc_) {
-            ((c_inco_sbs &)is).issc_(&is, status, ((c_inco_sbs &)is).ud_, ((c_inco_sbs &)is).ud2_);
+            ((c_inco_sbs &)is).issc_(&is, status,
+                                     ((c_inco_sbs &)is).ud_[IS_STC_UD_IDX],
+                                     ((c_inco_sbs &)is).ud2_[IS_STC_UD_IDX]);
         }
     }
     virtual void on_stop(incoming_subscription &is) override {
         if(((c_inco_sbs &)is).isos_) {
-            ((c_inco_sbs &)is).isos_(&is, ((c_inco_sbs &)is).ud_, ((c_inco_sbs &)is).ud2_);
+            ((c_inco_sbs &)is).isos_(&is,
+                                     ((c_inco_sbs &)is).ud_[IS_STO_UD_IDX],
+                                     ((c_inco_sbs &)is).ud2_[IS_STO_UD_IDX]);
         }
     }
     virtual RetCode on_accept_event(incoming_subscription &is, const subscription_event &se) override {
         if(((c_inco_sbs &)is).isad_) {
-            return ((c_inco_sbs &)is).isad_(&is, &se, ((c_inco_sbs &)is).ud_, ((c_inco_sbs &)is).ud2_);
+            return ((c_inco_sbs &)is).isad_(&is, &se,
+                                            ((c_inco_sbs &)is).ud_[IS_DIS_UD_IDX],
+                                            ((c_inco_sbs &)is).ud2_[IS_DIS_UD_IDX]);
         }
         return RetCode_OK;
     }
     virtual void on_releaseable(incoming_subscription &is) override {
         if(((c_inco_sbs &)is).isod_) {
-            ((c_inco_sbs &)is).isod_(&is, ((c_inco_sbs &)is).ud_, ((c_inco_sbs &)is).ud2_);
+            ((c_inco_sbs &)is).isod_(&is,
+                                     ((c_inco_sbs &)is).ud_[IS_REL_UD_IDX],
+                                     ((c_inco_sbs &)is).ud2_[IS_REL_UD_IDX]);
         }
     }
 };
@@ -271,9 +305,11 @@ c_inco_sbs::c_inco_sbs(std::shared_ptr<incoming_connection> &c) :
     isad_(nullptr),
     issc_(nullptr),
     isos_(nullptr),
-    isod_(nullptr),
-    ud_(nullptr),
-    ud2_(nullptr) {}
+    isod_(nullptr)
+{
+    memset(ud_, 0, sizeof(ud_));
+    memset(ud2_, 0, sizeof(ud2_));
+}
 
 //c_inco_sbs_factory
 
@@ -301,39 +337,50 @@ extern "C" {
         return ((std::shared_ptr<incoming_subscription> *)sbs)->get();
     }
 
-    void inco_subscription_set_on_status_change(incoming_subscription *subscription,
-                                                inco_subscription_on_status_change hndl)
+    void inco_subscription_set_on_status_change(incoming_subscription *sbs,
+                                                inco_subscription_on_status_change hndl,
+                                                void *ud, void *ud2)
     {
-        static_cast<c_inco_sbs *>(subscription)->issc_ = hndl;
+        static_cast<c_inco_sbs *>(sbs)->issc_ = hndl;
+        static_cast<c_inco_sbs *>(sbs)->ud_[IS_STC_UD_IDX] = ud;
+        static_cast<c_inco_sbs *>(sbs)->ud2_[IS_STC_UD_IDX] = ud2;
     }
 
-    void inco_subscription_set_on_accept_distribution(incoming_subscription *subscription,
-                                                      inco_subscription_on_accept_distribution hndl)
+    void inco_subscription_set_on_accept_distribution(incoming_subscription *sbs,
+                                                      inco_subscription_on_accept_distribution hndl,
+                                                      void *ud, void *ud2)
     {
-        static_cast<c_inco_sbs *>(subscription)->isad_ = hndl;
+        static_cast<c_inco_sbs *>(sbs)->isad_ = hndl;
+        static_cast<c_inco_sbs *>(sbs)->ud_[IS_DIS_UD_IDX] = ud;
+        static_cast<c_inco_sbs *>(sbs)->ud2_[IS_DIS_UD_IDX] = ud2;
     }
 
     void inco_subscription_set_on_stop(incoming_subscription *sbs,
-                                       inco_subscription_on_stop hndl)
+                                       inco_subscription_on_stop hndl,
+                                       void *ud, void *ud2)
     {
         static_cast<c_inco_sbs *>(sbs)->isos_ = hndl;
+        static_cast<c_inco_sbs *>(sbs)->ud_[IS_STO_UD_IDX] = ud;
+        static_cast<c_inco_sbs *>(sbs)->ud2_[IS_STO_UD_IDX] = ud2;
     }
 
     void inco_subscription_set_on_releaseable(incoming_subscription *sbs,
-                                              inco_subscription_on_releaseable hndl)
+                                              inco_subscription_on_releaseable hndl,
+                                              void *ud, void *ud2)
     {
         static_cast<c_inco_sbs *>(sbs)->isod_ = hndl;
+        static_cast<c_inco_sbs *>(sbs)->ud_[IS_REL_UD_IDX] = ud;
+        static_cast<c_inco_sbs *>(sbs)->ud2_[IS_REL_UD_IDX] = ud2;
     }
-
-    void inco_subscription_set_user_data(incoming_subscription *sbs, void *ud, void *ud2)
-    {
-        static_cast<c_inco_sbs *>(sbs)->ud_ = ud;
-        static_cast<c_inco_sbs *>(sbs)->ud2_ = ud2;
-    }
-
 }
 
 //c_inco_conn
+
+#define IC_STC_UD_IDX 0
+#define IC_DSC_UD_IDX 1
+#define IC_ITX_UD_IDX 2
+#define IC_ISB_UD_IDX 3
+#define IC_REL_UD_IDX 4
 
 struct c_inco_conn : public incoming_connection {
     c_inco_conn(peer &p);
@@ -344,15 +391,17 @@ struct c_inco_conn : public incoming_connection {
     inco_connection_on_incoming_subscription icoish_;
     inco_connection_on_releaseable icod_;
 
-    void *ud_;
-    void *ud2_;
+    void *ud_[5];
+    void *ud2_[5];
 };
 
 struct c_inco_conn_listener : public incoming_connection_listener {
     virtual void on_status_change(incoming_connection &ic,
                                   ConnectionStatus current) override {
         if(((c_inco_conn &)ic).icsc_) {
-            ((c_inco_conn &)ic).icsc_(&ic, current, ((c_inco_conn &)ic).ud_, ((c_inco_conn &)ic).ud2_);
+            ((c_inco_conn &)ic).icsc_(&ic, current,
+                                      ((c_inco_conn &)ic).ud_[IC_STC_UD_IDX],
+                                      ((c_inco_conn &)ic).ud2_[IC_STC_UD_IDX]);
         }
     }
 
@@ -360,13 +409,17 @@ struct c_inco_conn_listener : public incoming_connection_listener {
                                ConnectivityEventResult con_evt_res,
                                ConnectivityEventType c_evt_type) override {
         if(((c_inco_conn &)ic).icodh_) {
-            ((c_inco_conn &)ic).icodh_(&ic, con_evt_res, c_evt_type, ((c_inco_conn &)ic).ud_, ((c_inco_conn &)ic).ud2_);
+            ((c_inco_conn &)ic).icodh_(&ic, con_evt_res, c_evt_type,
+                                       ((c_inco_conn &)ic).ud_[IC_DSC_UD_IDX],
+                                       ((c_inco_conn &)ic).ud2_[IC_DSC_UD_IDX]);
         }
     }
 
     virtual void on_releaseable(vlg::incoming_connection &ic) override {
         if(((c_inco_conn &)ic).icod_) {
-            ((c_inco_conn &)ic).icod_(&ic, ((c_inco_conn &)ic).ud_, ((c_inco_conn &)ic).ud2_);
+            ((c_inco_conn &)ic).icod_(&ic,
+                                      ((c_inco_conn &)ic).ud_[IC_REL_UD_IDX],
+                                      ((c_inco_conn &)ic).ud2_[IC_REL_UD_IDX]);
         }
     }
 
@@ -375,8 +428,8 @@ struct c_inco_conn_listener : public incoming_connection_listener {
         if(((c_inco_conn &)ic).icoith_) {
             return ((c_inco_conn &)ic).icoith_(&ic,
                                                (shr_incoming_transaction *)&it,
-                                               ((c_inco_conn &)ic).ud_,
-                                               ((c_inco_conn &)ic).ud2_);
+                                               ((c_inco_conn &)ic).ud_[IC_ITX_UD_IDX],
+                                               ((c_inco_conn &)ic).ud2_[IC_ITX_UD_IDX]);
         }
         return RetCode_OK;
     }
@@ -386,8 +439,8 @@ struct c_inco_conn_listener : public incoming_connection_listener {
         if(((c_inco_conn &)ic).icoish_) {
             return ((c_inco_conn &)ic).icoish_(&ic,
                                                (shr_incoming_subscription *)&is,
-                                               ((c_inco_conn &)ic).ud_,
-                                               ((c_inco_conn &)ic).ud2_);
+                                               ((c_inco_conn &)ic).ud_[IC_ISB_UD_IDX],
+                                               ((c_inco_conn &)ic).ud2_[IC_ISB_UD_IDX]);
         }
         return RetCode_OK;
     }
@@ -400,12 +453,12 @@ c_inco_conn::c_inco_conn(peer &p) : incoming_connection(p, cicl),
     icodh_(nullptr),
     icoith_(nullptr),
     icoish_(nullptr),
-    icod_(nullptr),
-    ud_(nullptr),
-    ud2_(nullptr)
+    icod_(nullptr)
 {
     set_incoming_transaction_factory(citf);
     set_incoming_subscription_factory(cisf);
+    memset(ud_, 0, sizeof(ud_));
+    memset(ud2_, 0, sizeof(ud2_));
 }
 
 //c_inco_conn_factory
@@ -440,6 +493,8 @@ extern "C" {
                                               void *ud2)
     {
         static_cast<c_inco_conn *>(ic)->icsc_ = hndl;
+        static_cast<c_inco_conn *>(ic)->ud_[IC_STC_UD_IDX] = ud;
+        static_cast<c_inco_conn *>(ic)->ud2_[IC_STC_UD_IDX] = ud2;
     }
 
     void inco_connection_set_on_disconnect(incoming_connection *ic,
@@ -448,6 +503,8 @@ extern "C" {
                                            void *ud2)
     {
         static_cast<c_inco_conn *>(ic)->icodh_ = hndl;
+        static_cast<c_inco_conn *>(ic)->ud_[IC_DSC_UD_IDX] = ud;
+        static_cast<c_inco_conn *>(ic)->ud2_[IC_DSC_UD_IDX] = ud2;
     }
 
     void inco_connection_set_on_incoming_transaction(incoming_connection *ic,
@@ -456,6 +513,8 @@ extern "C" {
                                                      void *ud2)
     {
         static_cast<c_inco_conn *>(ic)->icoith_ = hndl;
+        static_cast<c_inco_conn *>(ic)->ud_[IC_ITX_UD_IDX] = ud;
+        static_cast<c_inco_conn *>(ic)->ud2_[IC_ITX_UD_IDX] = ud2;
     }
 
     void inco_connection_set_on_incoming_subscription(incoming_connection *ic,
@@ -464,25 +523,34 @@ extern "C" {
                                                       void *ud2)
     {
         static_cast<c_inco_conn *>(ic)->icoish_ = hndl;
+        static_cast<c_inco_conn *>(ic)->ud_[IC_ISB_UD_IDX] = ud;
+        static_cast<c_inco_conn *>(ic)->ud2_[IC_ISB_UD_IDX] = ud2;
     }
 
-    void inco_connection_set_on_destroy(incoming_connection *ic,
-                                        inco_connection_on_releaseable hndl,
-                                        void *ud,
-                                        void *ud2)
+    void inco_connection_set_on_releaseable(incoming_connection *ic,
+                                            inco_connection_on_releaseable hndl,
+                                            void *ud,
+                                            void *ud2)
     {
         static_cast<c_inco_conn *>(ic)->icod_ = hndl;
-    }
-
-    void inco_connection_set_user_data(incoming_connection *ic, void *ud, void *ud2)
-    {
-        static_cast<c_inco_conn *>(ic)->ud_ = ud;
-        static_cast<c_inco_conn *>(ic)->ud2_ = ud2;
+        static_cast<c_inco_conn *>(ic)->ud_[IC_REL_UD_IDX] = ud;
+        static_cast<c_inco_conn *>(ic)->ud2_[IC_REL_UD_IDX] = ud2;
     }
 
 }
 
 //c_peer
+
+#define PR_NME_UD_IDX 0
+#define PR_VER_UD_IDX 1
+#define PR_LDC_UD_IDX 2
+#define PR_INI_UD_IDX 3
+#define PR_STA_UD_IDX 4
+#define PR_STO_UD_IDX 5
+#define PR_RUN_UD_IDX 6
+#define PR_DYN_UD_IDX 7
+#define PR_STC_UD_IDX 8
+#define PR_ICO_UD_IDX 9
 
 struct c_peer : public peer {
     c_peer();
@@ -512,8 +580,8 @@ struct c_peer : public peer {
     peer_on_status_change psc_;
     peer_on_incoming_connection sic_;
 
-    void *ud_;
-    void *ud2_;
+    void *ud_[10];
+    void *ud2_[10];
 };
 
 struct c_peer_listener : public peer_listener {
@@ -522,7 +590,9 @@ struct c_peer_listener : public peer_listener {
                                    const char *param,
                                    const char *value) override {
         if(((c_peer &)p).plch_) {
-            return ((c_peer &)p).plch_(&p, pnum, param, value, ((c_peer &)p).ud_, ((c_peer &)p).ud2_);
+            return ((c_peer &)p).plch_(&p, pnum, param, value,
+                                       ((c_peer &)p).ud_[PR_LDC_UD_IDX],
+                                       ((c_peer &)p).ud2_[PR_LDC_UD_IDX]);
         } else {
             return RetCode_OK;
         }
@@ -530,7 +600,9 @@ struct c_peer_listener : public peer_listener {
 
     virtual RetCode on_init(peer &p) override {
         if(((c_peer &)p).pih_) {
-            return ((c_peer &)p).pih_(&p, ((c_peer &)p).ud_, ((c_peer &)p).ud2_);
+            return ((c_peer &)p).pih_(&p,
+                                      ((c_peer &)p).ud_[PR_INI_UD_IDX],
+                                      ((c_peer &)p).ud2_[PR_INI_UD_IDX]);
         } else {
             return RetCode_OK;
         }
@@ -538,7 +610,9 @@ struct c_peer_listener : public peer_listener {
 
     virtual RetCode on_starting(peer &p) override {
         if(((c_peer &)p).pstarth_) {
-            return ((c_peer &)p).pstarth_(&p, ((c_peer &)p).ud_, ((c_peer &)p).ud2_);
+            return ((c_peer &)p).pstarth_(&p,
+                                          ((c_peer &)p).ud_[PR_STA_UD_IDX],
+                                          ((c_peer &)p).ud2_[PR_STA_UD_IDX]);
         } else {
             return RetCode_OK;
         }
@@ -546,7 +620,9 @@ struct c_peer_listener : public peer_listener {
 
     virtual RetCode on_stopping(peer &p) override {
         if(((c_peer &)p).pstoph_) {
-            return ((c_peer &)p).pstoph_(&p, ((c_peer &)p).ud_, ((c_peer &)p).ud2_);
+            return ((c_peer &)p).pstoph_(&p,
+                                         ((c_peer &)p).ud_[PR_STO_UD_IDX],
+                                         ((c_peer &)p).ud2_[PR_STO_UD_IDX]);
         } else {
             return RetCode_OK;
         }
@@ -554,7 +630,9 @@ struct c_peer_listener : public peer_listener {
 
     virtual RetCode on_move_running(peer &p) override {
         if(((c_peer &)p).ptoah_) {
-            return ((c_peer &)p).ptoah_(&p, ((c_peer &)p).ud_, ((c_peer &)p).ud2_);
+            return ((c_peer &)p).ptoah_(&p,
+                                        ((c_peer &)p).ud_[PR_RUN_UD_IDX],
+                                        ((c_peer &)p).ud2_[PR_RUN_UD_IDX]);
         } else {
             return RetCode_OK;
         }
@@ -562,22 +640,25 @@ struct c_peer_listener : public peer_listener {
 
     virtual void on_dying_breath(peer &p) override {
         if(((c_peer &)p).pdbh_) {
-            ((c_peer &)p).pdbh_(&p, ((c_peer &)p).ud_, ((c_peer &)p).ud2_);
+            ((c_peer &)p).pdbh_(&p,
+                                ((c_peer &)p).ud_[PR_DYN_UD_IDX],
+                                ((c_peer &)p).ud2_[PR_DYN_UD_IDX]);
         }
     }
 
     virtual void on_status_change(peer &p, PeerStatus status) override {
         if(((c_peer &)p).psc_) {
-            ((c_peer &)p).psc_(&p, status, ((c_peer &)p).ud_, ((c_peer &)p).ud2_);
+            ((c_peer &)p).psc_(&p, status,
+                               ((c_peer &)p).ud_[PR_STC_UD_IDX],
+                               ((c_peer &)p).ud2_[PR_STC_UD_IDX]);
         }
     }
 
     virtual RetCode on_incoming_connection(peer &p, std::shared_ptr<incoming_connection> &ic) override {
         if(((c_peer &)p).sic_) {
-            return ((c_peer &)p).sic_(&p,
-                                      (shr_incoming_connection *) &ic,
-                                      ((c_peer &)p).ud_,
-                                      ((c_peer &)p).ud2_);
+            return ((c_peer &)p).sic_(&p, (shr_incoming_connection *) &ic,
+                                      ((c_peer &)p).ud_[PR_ICO_UD_IDX],
+                                      ((c_peer &)p).ud2_[PR_ICO_UD_IDX]);
         }
         return RetCode_OK;
     }
@@ -596,11 +677,11 @@ c_peer::c_peer() :
     ptoah_(nullptr),
     pdbh_(nullptr),
     psc_(nullptr),
-    sic_(nullptr),
-    ud_(nullptr),
-    ud2_(nullptr)
+    sic_(nullptr)
 {
     set_incoming_connection_factory(cicf);
+    memset(ud_, 0, sizeof(ud_));
+    memset(ud2_, 0, sizeof(ud2_));
 }
 
 extern "C" {
@@ -779,44 +860,60 @@ extern "C" {
         return p->extend_model(model_name);
     }
 
-    void peer_set_name(peer *p, peer_name hndl)
+    void peer_set_name(peer *p, peer_name hndl, void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->pnh_ = hndl;
+        static_cast<c_peer *>(p)->ud_[PR_NME_UD_IDX] = ud;
+        static_cast<c_peer *>(p)->ud2_[PR_NME_UD_IDX] = ud2;
     }
 
-    void peer_set_version(peer *p, peer_version hndl)
+    void peer_set_version(peer *p, peer_version hndl, void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->pvh_ = hndl;
+        static_cast<c_peer *>(p)->ud_[PR_VER_UD_IDX] = ud;
+        static_cast<c_peer *>(p)->ud2_[PR_VER_UD_IDX] = ud2;
     }
 
-    void peer_set_on_load_config(peer *p, peer_on_load_config hndl)
+    void peer_set_on_load_config(peer *p, peer_on_load_config hndl, void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->plch_ = hndl;
+        static_cast<c_peer *>(p)->ud_[PR_LDC_UD_IDX] = ud;
+        static_cast<c_peer *>(p)->ud2_[PR_LDC_UD_IDX] = ud2;
     }
 
-    void peer_set_on_init(peer *p, peer_on_init hndl)
+    void peer_set_on_init(peer *p, peer_on_init hndl, void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->pih_ = hndl;
+        static_cast<c_peer *>(p)->ud_[PR_INI_UD_IDX] = ud;
+        static_cast<c_peer *>(p)->ud2_[PR_INI_UD_IDX] = ud2;
     }
 
-    void peer_set_on_starting(peer *p, peer_on_starting hndl)
+    void peer_set_on_starting(peer *p, peer_on_starting hndl, void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->pstarth_ = hndl;
+        static_cast<c_peer *>(p)->ud_[PR_STA_UD_IDX] = ud;
+        static_cast<c_peer *>(p)->ud2_[PR_STA_UD_IDX] = ud2;
     }
 
-    void peer_set_on_stopping(peer *p, peer_on_stopping hndl)
+    void peer_set_on_stopping(peer *p, peer_on_stopping hndl, void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->pstoph_ = hndl;
+        static_cast<c_peer *>(p)->ud_[PR_STO_UD_IDX] = ud;
+        static_cast<c_peer *>(p)->ud2_[PR_STO_UD_IDX] = ud2;
     }
 
-    void peer_set_on_move_running(peer *p, peer_on_move_running hndl)
+    void peer_set_on_move_running(peer *p, peer_on_move_running hndl, void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->ptoah_ = hndl;
+        static_cast<c_peer *>(p)->ud_[PR_RUN_UD_IDX] = ud;
+        static_cast<c_peer *>(p)->ud2_[PR_RUN_UD_IDX] = ud2;
     }
 
-    void peer_set_on_dying_breath(peer *p, peer_on_dying_breath hndl)
+    void peer_set_on_dying_breath(peer *p, peer_on_dying_breath hndl, void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->pdbh_ = hndl;
+        static_cast<c_peer *>(p)->ud_[PR_DYN_UD_IDX] = ud;
+        static_cast<c_peer *>(p)->ud2_[PR_DYN_UD_IDX] = ud2;
     }
 
     void peer_set_configured(peer *p, int configured)
@@ -829,25 +926,20 @@ extern "C" {
         return p->get_status();
     }
 
-    void peer_set_on_status_change(peer *p, peer_on_status_change hndl)
+    void peer_set_on_status_change(peer *p, peer_on_status_change hndl, void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->psc_ = hndl;
+        static_cast<c_peer *>(p)->ud_[PR_STC_UD_IDX] = ud;
+        static_cast<c_peer *>(p)->ud2_[PR_STC_UD_IDX] = ud2;
     }
 
     void peer_set_on_incoming_connection(peer *p,
-                                              peer_on_incoming_connection hndl)
+                                         peer_on_incoming_connection hndl,
+                                         void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->sic_ = hndl;
-    }
-
-    void peer_set_user_data(peer *p, void *ud)
-    {
-        static_cast<c_peer *>(p)->ud_ = ud;
-    }
-    
-    void peer_set_user_data_2(peer *p, void *ud2)
-    {
-        static_cast<c_peer *>(p)->ud2_ = ud2;
+        static_cast<c_peer *>(p)->ud_[PR_ICO_UD_IDX] = ud;
+        static_cast<c_peer *>(p)->ud2_[PR_ICO_UD_IDX] = ud2;
     }
 
     RetCode peer_await_for_status_reached(peer *p,

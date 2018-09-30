@@ -163,24 +163,32 @@ extern "C" {
 
 //c_outg_tx
 
+#define OT_STC_UD_IDX 0
+#define OT_CLO_UD_IDX 1
+
 struct c_outg_tx : public outgoing_transaction {
     c_outg_tx();
 
     outg_transaction_on_closure tc_;
     outg_transaction_on_status_change tsc_;
-    void *ud_;
-    void *ud2_;
+
+    void *ud_[2];
+    void *ud2_[2];
 };
 
 struct c_outg_tx_listener : public outgoing_transaction_listener {
     virtual void on_status_change(outgoing_transaction &ot, TransactionStatus status) override {
         if(((c_outg_tx &)ot).tsc_) {
-            ((c_outg_tx &)ot).tsc_(&ot, status, ((c_outg_tx &)ot).ud_, ((c_outg_tx &)ot).ud2_);
+            ((c_outg_tx &)ot).tsc_(&ot, status,
+                                   ((c_outg_tx &)ot).ud_[OT_STC_UD_IDX],
+                                   ((c_outg_tx &)ot).ud2_[OT_STC_UD_IDX]);
         }
     }
     virtual void on_close(outgoing_transaction &ot) override {
         if(((c_outg_tx &)ot).tc_) {
-            ((c_outg_tx &)ot).tc_(&ot, ((c_outg_tx &)ot).ud_, ((c_outg_tx &)ot).ud2_);
+            ((c_outg_tx &)ot).tc_(&ot,
+                                  ((c_outg_tx &)ot).ud_[OT_CLO_UD_IDX],
+                                  ((c_outg_tx &)ot).ud2_[OT_CLO_UD_IDX]);
         }
     }
 };
@@ -190,9 +198,11 @@ static c_outg_tx_listener cotl;
 c_outg_tx::c_outg_tx() :
     outgoing_transaction(cotl),
     tc_(nullptr),
-    tsc_(nullptr),
-    ud_(nullptr),
-    ud2_(nullptr) {}
+    tsc_(nullptr)
+{
+    memset(ud_, 0, sizeof(ud_));
+    memset(ud2_, 0, sizeof(ud2_));
+}
 
 extern "C" {
     own_outgoing_transaction *outg_transaction_create()
@@ -359,21 +369,21 @@ extern "C" {
     }
 
     void outg_transaction_set_on_status_change(outgoing_transaction *tx,
-                                               outg_transaction_on_status_change hndl)
+                                               outg_transaction_on_status_change hndl,
+                                               void *ud, void *ud2)
     {
         static_cast<c_outg_tx *>(tx)->tsc_ = hndl;
+        static_cast<c_outg_tx *>(tx)->ud_[OT_STC_UD_IDX] = ud;
+        static_cast<c_outg_tx *>(tx)->ud2_[OT_STC_UD_IDX] = ud2;
     }
 
     void outg_transaction_set_on_closure(outgoing_transaction *tx,
-                                         outg_transaction_on_closure hndl)
+                                         outg_transaction_on_closure hndl,
+                                         void *ud, void *ud2)
     {
         static_cast<c_outg_tx *>(tx)->tc_ = hndl;
-    }
-
-    void outg_transaction_set_user_data(outgoing_transaction *tx, void *ud, void *ud2)
-    {
-        static_cast<c_outg_tx *>(tx)->ud_ = ud;
-        static_cast<c_outg_tx *>(tx)->ud2_ = ud2;
+        static_cast<c_outg_tx *>(tx)->ud_[OT_CLO_UD_IDX] = ud;
+        static_cast<c_outg_tx *>(tx)->ud2_[OT_CLO_UD_IDX] = ud2;
     }
 
     tx_id *outg_transaction_get_transaction_id(outgoing_transaction *tx)
