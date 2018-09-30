@@ -11,17 +11,6 @@ extern "C" {
 
     typedef struct own_outgoing_connection own_outgoing_connection;
 
-    typedef void(*inco_connection_on_status_change)(incoming_connection *ic,
-                                                    ConnectionStatus status,
-                                                    void *ud,
-                                                    void *ud2);
-
-    typedef void(*inco_connection_on_disconnect)(incoming_connection *ic,
-                                                 ConnectivityEventResult con_evt_res,
-                                                 ConnectivityEventType c_evt_type,
-                                                 void *ud,
-                                                 void *ud2);
-
     typedef void(*outg_connection_on_status_change)(outgoing_connection *oc,
                                                     ConnectionStatus status,
                                                     void *ud,
@@ -121,6 +110,10 @@ extern "C" {
 
 //c_outg_conn
 
+#define OC_STC_UD_IDX 0
+#define OC_CON_UD_IDX 1
+#define OC_DSC_UD_IDX 2
+
 struct c_outg_conn : public outgoing_connection {
     c_outg_conn();
 
@@ -128,15 +121,17 @@ struct c_outg_conn : public outgoing_connection {
     outg_connection_on_connect ococh_;
     outg_connection_on_disconnect ocodh_;
 
-    void *ud_;
-    void *ud2_;
+    void *ud_[3];
+    void *ud2_[3];
 };
 
 struct c_outg_conn_listener : public outgoing_connection_listener {
     virtual void on_status_change(outgoing_connection &oc,
                                   ConnectionStatus current) override {
         if(((c_outg_conn &)oc).ocsc_) {
-            ((c_outg_conn &)oc).ocsc_(&oc, current, ((c_outg_conn &)oc).ud_, ((c_outg_conn &)oc).ud2_);
+            ((c_outg_conn &)oc).ocsc_(&oc, current,
+                                      ((c_outg_conn &)oc).ud_[OC_STC_UD_IDX],
+                                      ((c_outg_conn &)oc).ud2_[OC_STC_UD_IDX]);
         }
     }
 
@@ -144,7 +139,9 @@ struct c_outg_conn_listener : public outgoing_connection_listener {
                             ConnectivityEventResult con_evt_res,
                             ConnectivityEventType c_evt_type) override {
         if(((c_outg_conn &)oc).ococh_) {
-            ((c_outg_conn &)oc).ococh_(&oc, con_evt_res, c_evt_type, ((c_outg_conn &)oc).ud_, ((c_outg_conn &)oc).ud2_);
+            ((c_outg_conn &)oc).ococh_(&oc, con_evt_res, c_evt_type,
+                                       ((c_outg_conn &)oc).ud_[OC_CON_UD_IDX],
+                                       ((c_outg_conn &)oc).ud2_[OC_CON_UD_IDX]);
         }
     }
 
@@ -152,7 +149,9 @@ struct c_outg_conn_listener : public outgoing_connection_listener {
                                ConnectivityEventResult con_evt_res,
                                ConnectivityEventType c_evt_type) override {
         if(((c_outg_conn &)oc).ocodh_) {
-            ((c_outg_conn &)oc).ocodh_(&oc, con_evt_res, c_evt_type, ((c_outg_conn &)oc).ud_, ((c_outg_conn &)oc).ud2_);
+            ((c_outg_conn &)oc).ocodh_(&oc, con_evt_res, c_evt_type,
+                                       ((c_outg_conn &)oc).ud_[OC_DSC_UD_IDX],
+                                       ((c_outg_conn &)oc).ud2_[OC_DSC_UD_IDX]);
         }
     }
 };
@@ -162,9 +161,11 @@ static c_outg_conn_listener cocl;
 c_outg_conn::c_outg_conn() : outgoing_connection(cocl),
     ocsc_(nullptr),
     ococh_(nullptr),
-    ocodh_(nullptr),
-    ud_(nullptr),
-    ud2_(nullptr) {}
+    ocodh_(nullptr)
+{
+    memset(ud_, 0, sizeof(ud_));
+    memset(ud2_, 0, sizeof(ud2_));
+}
 
 //outg_connection
 
@@ -248,9 +249,12 @@ extern "C" {
     }
 
     void outg_connection_set_on_status_change(outgoing_connection *oc,
-                                              outg_connection_on_status_change hndl)
+                                              outg_connection_on_status_change hndl,
+                                              void *ud, void *ud2)
     {
         static_cast<c_outg_conn *>(oc)->ocsc_ = hndl;
+        static_cast<c_outg_conn *>(oc)->ud_[OC_STC_UD_IDX] = ud;
+        static_cast<c_outg_conn *>(oc)->ud2_[OC_STC_UD_IDX] = ud2;
     }
 
     RetCode outg_connection_connect(outgoing_connection *oc, sockaddr_in *connection_params)
@@ -283,21 +287,21 @@ extern "C" {
     }
 
     void outg_connection_set_on_connect(outgoing_connection *oc,
-                                        outg_connection_on_connect hndl)
+                                        outg_connection_on_connect hndl,
+                                        void *ud, void *ud2)
     {
         static_cast<c_outg_conn *>(oc)->ococh_ = hndl;
+        static_cast<c_outg_conn *>(oc)->ud_[OC_CON_UD_IDX] = ud;
+        static_cast<c_outg_conn *>(oc)->ud2_[OC_CON_UD_IDX] = ud2;
     }
 
     void outg_connection_set_on_disconnect(outgoing_connection *oc,
-                                           outg_connection_on_disconnect hndl)
+                                           outg_connection_on_disconnect hndl,
+                                           void *ud, void *ud2)
     {
         static_cast<c_outg_conn *>(oc)->ocodh_ = hndl;
-    }
-
-    void outg_connection_set_user_data(outgoing_connection *oc, void *ud, void *ud2)
-    {
-        static_cast<c_outg_conn *>(oc)->ud_ = ud;
-        static_cast<c_outg_conn *>(oc)->ud2_ = ud2;
+        static_cast<c_outg_conn *>(oc)->ud_[OC_DSC_UD_IDX] = ud;
+        static_cast<c_outg_conn *>(oc)->ud2_[OC_DSC_UD_IDX] = ud2;
     }
 
     SOCKET outg_connection_get_socket(outgoing_connection *oc)
