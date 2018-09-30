@@ -79,10 +79,10 @@ class Peer
             fatalError("params not found")
         }
                 
-        peer_set_name_swf(peer_, { _,_ in return UnsafePointer(self.peer_name_.buffer) }, bridge(obj:self))
-        peer_set_version_swf(peer_, { _,_ in return UnsafePointer(self.peer_ver_) }, bridge(obj:self))
-        peer_set_status_change_swf(peer_, peer_status_change, bridge(obj:self))
-        peer_set_peer_on_incoming_connection_swf(peer_, on_incoming_connection, bridge(obj:self))
+        peer_set_name_oc(peer_, { _,_ in return UnsafePointer(self.peer_name_.buffer) }, bridge(obj:self))
+        peer_set_version_oc(peer_, { _,_ in return UnsafePointer(self.peer_ver_) }, bridge(obj:self))
+        peer_set_on_status_change_oc(peer_, peer_status_change, bridge(obj:self))
+        peer_set_on_incoming_connection_oc(peer_, on_incoming_connection, bridge(obj:self))
     }
     
     deinit {
@@ -278,8 +278,8 @@ class IncomingConnection
         self.peer = peer
         sh_inco_conn_ = sh_inco_conn
         
-        inco_connection_set_on_destroy_swf(inco_conn_, on_destroy, nil)
-        inco_connection_set_on_incoming_transaction_swf(inco_conn_, on_incoming_transaction, nil)
+        inco_connection_set_on_releaseable_oc(inco_conn_, on_destroy, nil)
+        inco_connection_set_on_incoming_transaction_oc(inco_conn_, on_incoming_transaction, nil)
     }
     
     deinit {
@@ -332,7 +332,7 @@ class IncomingTransaction
     init(_ incoConn: IncomingConnection, _ sh_inco_tx: OpaquePointer){
         self.incoConn = incoConn
         sh_inco_tx_ = sh_inco_tx
-        inco_transaction_set_inco_transaction_request_swf(inco_transaction_get_ptr(sh_inco_tx_), on_request, nil)
+        inco_transaction_set_on_request_oc(inco_transaction_get_ptr(sh_inco_tx_), on_request, nil)
     }
     
     deinit {

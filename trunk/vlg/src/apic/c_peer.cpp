@@ -557,14 +557,14 @@ struct c_peer : public peer {
 
     virtual const char *get_name() override {
         if(pnh_) {
-            return pnh_(this, ud_, ud2_);
+            return pnh_(this, ud_[PR_NME_UD_IDX], ud2_[PR_NME_UD_IDX]);
         }
         return nullptr;
     }
 
     virtual const unsigned int *get_version() override {
         if(pvh_) {
-            return pvh_(this, ud_, ud2_);
+            return pvh_(this, ud_[PR_VER_UD_IDX], ud2_[PR_VER_UD_IDX]);
         }
         return nullptr;
     }
