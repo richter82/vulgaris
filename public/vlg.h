@@ -558,10 +558,10 @@ typedef struct persistence_query persistence_query;
 extern "C" {
 namespace vlg {
 #endif
-typedef const char *(*model_version_get)();
+typedef const char *(*model_version_get)(void);
 typedef nentity_manager *(*nentity_manager_load)(logger *);
 typedef nclass *(*nclass_alloc)(void);
-typedef const char *(*persistence_driver_version_get)();
+typedef const char *(*persistence_driver_version_get)(void);
 typedef persistence_driver *(*persistence_driver_load)(logger *);
 #if defined(__cplusplus)
 }

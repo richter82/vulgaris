@@ -97,10 +97,16 @@ static int bind_stmt_fld(const member_desc &mmbrd,
             return sqlite3_bind_text(stmt,
                                      colmn_idx,
                                      obj_f_ptr,
-                                     mmbrd.get_field_nmemb() == 1 ? 1 : (int)std::min(strlen(obj_f_ptr), mmbrd.get_field_nmemb()),
+                                     mmbrd.get_field_nmemb() == 1 ? 1 :
+                                     (int)std::min(strlen(obj_f_ptr),
+                                     mmbrd.get_field_nmemb()),
                                      SQLITE_STATIC);
         case Type_BYTE:
-            return sqlite3_bind_blob(stmt, colmn_idx, obj_f_ptr, (int)mmbrd.get_field_nmemb(), SQLITE_STATIC);
+            return sqlite3_bind_blob(stmt,
+                                     colmn_idx,
+                                     obj_f_ptr,
+                                     (int)mmbrd.get_field_nmemb(),
+                                     SQLITE_STATIC);
         default:
             return -1;
     }
@@ -333,7 +339,9 @@ struct pers_conn_sqlite : public persistence_connection_impl {
 
         // persistence_task_sqlite
         struct persistence_task_sqlite : public persistence_task {
-                persistence_task_sqlite(pers_conn_sqlite &sql_conn, VLG_PERS_TASK_OP op_code, logger *log) :
+                persistence_task_sqlite(pers_conn_sqlite &sql_conn,
+                                        VLG_PERS_TASK_OP op_code,
+                                        logger *log) :
                     persistence_task(op_code, log),
                     sql_conn_(sql_conn),
                     sel_stmt_(nullptr) {
@@ -345,7 +353,9 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                                     sql_conn_.conn_pool_.url_.c_str(),
                                     sql_conn_.conn_pool_.usr_.c_str(),
                                     sql_conn_.conn_pool_.psswd_.c_str()))
-                    RetCode rcode = sql_conn_.sqlite_connect(sql_conn_.conn_pool_.url_.c_str(), SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
+                    RetCode rcode = sql_conn_.sqlite_connect(sql_conn_.conn_pool_.url_.c_str(),
+                                                             SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
+                    
                     IFLOG(log_, trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
                     return rcode;
                 }
