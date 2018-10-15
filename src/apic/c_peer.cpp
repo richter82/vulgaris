@@ -164,7 +164,7 @@ struct c_inco_tx_listener : public incoming_transaction_listener {
     };
     virtual void on_releaseable(incoming_transaction &it) override {
         if(((c_inco_tx &)it).tod_) {
-            ((c_inco_tx &)it).tc_(&it,
+            ((c_inco_tx &)it).tod_(&it,
                                   ((c_inco_tx &)it).ud_[IT_REL_UD_IDX],
                                   ((c_inco_tx &)it).ud2_[IT_REL_UD_IDX]);
         }
