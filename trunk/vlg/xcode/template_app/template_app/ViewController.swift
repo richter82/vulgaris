@@ -8,16 +8,17 @@
 
 import UIKit
 
-let PEER_VER: [CUnsignedInt] = [0,0,0,0]
-let PEER_NAME = CString("peer")
+let peerVer:[UInt32] = [0,0,0,0]
+let peerName = "peer"
+let templateAppPeerListener = TemplateAppPeerListener()
 
 class ViewController: UIViewController {
     
     required init?(coder aDecoder: NSCoder) {
-        peer_ = Peer(peer_name: PEER_NAME, peer_ver: PEER_VER)
+        peer_ = Peer(peerName: peerName, peerVersion: peerVer, peerListener: templateAppPeerListener)
         oc_ = OutgoingConnection(peer: peer_)
         super.init(coder: aDecoder)
-        peer_.ViewController = self
+        templateAppPeerListener.viewController = self
     }
     
     override func viewDidLoad() {

@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import UIKit
 
 /**
  * low level c-ptr bridging utils
@@ -49,15 +48,35 @@ class CString {
 }
 
 /**
+ * PeerListener
+ */
+
+protocol PeerListener
+{
+    func onLoadConfig(peer: Peer, pnum: Int32, param: String, value: String?) -> RetCode
+    func onInit(peer: Peer) -> RetCode
+    func onStarting(peer: Peer) -> RetCode
+    func onStopping(peer: Peer) -> RetCode
+    func onMoveRunning(peer: Peer) -> RetCode
+    func onDyingBreath(peer: Peer)
+    func onStatusChange(peer: Peer, peerStatus: PeerStatus)
+    func onIncomingConnection(peer: Peer, incomingConnection: IncomingConnection) -> RetCode;
+}
+
+/**
  * Peer
  */
 
 class Peer
 {
-    init(peer_name: CString, peer_ver: [CUnsignedInt]) {
-        peer_name_ = peer_name
-        peer_ver_ = peer_ver
-        vc_ = nil
+    convenience init(peerName: String, peerVersion: [UInt32], peerListener: PeerListener){
+        self.init(peerName: CString(peerName), peerVersion: peerVersion, peerListener: peerListener)
+    }
+    
+    fileprivate init(peerName: CString, peerVersion: [CUnsignedInt], peerListener: PeerListener) {
+        self.peer_name_ = peerName
+        self.peer_ver_ = peerVersion
+        self.peerListener = peerListener
         
         if let filePath = Bundle.main.path(forResource: "logger", ofType:"cfg") {
             set_logger_cfg_file_path_name(filePath)
@@ -89,6 +108,82 @@ class Peer
         peer_destroy(peer_own_)
     }
     
+    func setParamsFileDir(fileDir: String) -> RetCode{
+        return peer_set_params_file_dir(peer_, CString(fileDir).buffer)
+    }
+    
+    func setParamsFilePathName(pathName: String) -> RetCode{
+        return peer_set_params_file_path_name(peer_, CString(pathName).buffer)
+    }
+    
+    func getVersionMajor() -> UInt32{
+        return peer_get_version_major(peer_)
+    }
+    
+    func getVersionMinor() -> UInt32{
+        return peer_get_version_minor(peer_)
+    }
+    
+    func getVersionManteinance() -> UInt32{
+        return peer_get_version_maintenance(peer_)
+    }
+    
+    func getVersionArchitecture() -> UInt32{
+        return peer_get_version_architecture(peer_)
+    }
+    
+    func isConfigured() -> Bool{
+        return peer_is_configured(peer_) > 0 ? true : false;
+    }
+    
+    func isPersistent() -> Bool{
+        return peer_is_persistent(peer_) > 0 ? true : false;
+    }
+    
+    func isCreatePersistentSchema() -> Bool{
+        return peer_is_persistent_schema_creating(peer_) > 0 ? true : false;
+    }
+    
+    func isDropExistingPersistentSchema() -> Bool{
+        return peer_is_dropping_existing_schema(peer_) > 0 ? true : false;
+    }
+    
+    func getPersonality() -> PeerPersonality{
+        return peer_get_personality(peer_)
+    }
+    
+    func getServerSockAddr() -> sockaddr_in{
+        return peer_get_server_sockaddr(peer_)
+    }
+    
+    func setPersonality(peerPersonality: PeerPersonality){
+        peer_set_personality(peer_, peerPersonality)
+    }
+    
+    func setServerAddress(address: String){
+        peer_set_srv_sin_addr(peer_, CString(address).buffer)
+    }
+    
+    func setServerPort(port: Int32){
+        peer_set_sin_port(peer_, port)
+    }
+    
+    func setPersistent(persistent: Bool){
+        peer_set_persistent(peer_, persistent ? 1 : 0)
+    }
+    
+    func setCreatePersistentSchema(createPersistentSchema: Bool){
+        peer_set_persistent_schema_creating(peer_, createPersistentSchema ? 1 : 0)
+    }
+    
+    func setDropExistingPersistentSchema(dropExistingPersistentSchema: Bool){
+        peer_set_dropping_existing_schema(peer_, dropExistingPersistentSchema ? 1 : 0)
+    }
+    
+    func setConfigured(configured: Bool){
+        peer_set_configured(peer_, configured ? 1 : 0)
+    }
+
     func startPeer(){
         let argv = UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>.allocate(capacity: 2);
         let arg0 = CString("");
@@ -121,85 +216,7 @@ class Peer
     
     fileprivate func peer_status_change(c_peer: OpaquePointer!, status: PeerStatus, ud: UnsafeMutableRawPointer!)
     {
-        if let vc = vc_ {
-            switch (status){
-            case PeerStatus_ZERO:
-                DispatchQueue.main.async {
-                    vc.peerStatus_.text = "ZERO"
-                }
-                break
-            case PeerStatus_EARLY:
-                DispatchQueue.main.async {
-                    vc.peerStatus_.text = "EARLY"
-                }
-                break
-            case PeerStatus_WELCOMED:
-                DispatchQueue.main.async {
-                    vc.peerStatus_.text = "WELCOMED"
-                }
-                break
-            case PeerStatus_INITIALIZING:
-                DispatchQueue.main.async {
-                    vc.peerStatus_.text = "INITIALIZING"
-                }
-                break
-            case PeerStatus_INITIALIZED:
-                DispatchQueue.main.async {
-                    vc.peerStatus_.text = "INITIALIZED"
-                }
-                break
-            case PeerStatus_RESTART_REQUESTED:
-                DispatchQueue.main.async {
-                    vc.peerStatus_.text = "RESTART_REQUESTED"
-                }
-                break
-            case PeerStatus_STARTING:
-                DispatchQueue.main.async {
-                    vc.peerStatus_.text = "STARTING"
-                }
-                break
-            case PeerStatus_STARTED:
-                DispatchQueue.main.async {
-                    vc.peerStatus_.text = "STARTED"
-                }
-                break
-            case PeerStatus_RUNNING:
-                DispatchQueue.main.async {
-                    vc.startB_.isEnabled = false
-                    vc.stopB_.isEnabled = true
-                    vc.peerStatus_.text = "RUNNING"
-                    vc.peerStatus_.textColor = UIColor.green
-                }
-                break
-            case PeerStatus_STOP_REQUESTED:
-                DispatchQueue.main.async {
-                    vc.peerStatus_.text = "STOP_REQUESTED"
-                }
-                break
-            case PeerStatus_STOPPING:
-                DispatchQueue.main.async {
-                    vc.peerStatus_.text = "STOPPING"
-                }
-                break
-            case PeerStatus_STOPPED:
-                DispatchQueue.main.async {
-                    vc.stopB_.isEnabled = false
-                    vc.startB_.isEnabled = true
-                    vc.peerStatus_.text = "STOPPED"
-                    vc.peerStatus_.textColor = UIColor.brown
-                }
-                break
-            case PeerStatus_DIED:
-                DispatchQueue.main.async {
-                    vc.peerStatus_.text = "DIED"
-                }
-                break
-            default:
-                print("unmanaged status:\(status)")
-            }
-        } else {
-            fatalError("peer.vc_ == nil")
-        }
+        peerListener.onStatusChange(peer: self, peerStatus: status)
     }
     
     let fileMng = FileManager.default
@@ -207,20 +224,20 @@ class Peer
     var peer_: OpaquePointer
     let peer_name_: CString
     let peer_ver_: [CUnsignedInt]
-    
-    var vc_: ViewController? //bad
+    let peerListener: PeerListener
     
     var icRepo = [UInt32:IncomingConnection]()
-    
-    
-    var ViewController: ViewController?{
-        get{
-            return vc_
-        }
-        set{
-            vc_ = newValue
-        }
-    }
+}
+
+/**
+ * OutgoingConnectionListener
+ */
+
+protocol OutgoingConnectionListener
+{
+    func onStatusChange(outgoingConnection: OutgoingConnection, current: ConnectionStatus)
+    func onConnect(outgoingConnection: OutgoingConnection, conEvtRes: ConnectivityEventResult, connEvtType: ConnectivityEventType)
+    func onDisconnect(outgoingConnection: OutgoingConnection, conEvtRes: ConnectivityEventResult, connEvtType: ConnectivityEventType)
 }
 
 /**
@@ -269,6 +286,18 @@ extension tx_id: Equatable, Hashable {
 }
 
 /**
+ * IncomingConnectionListener
+ */
+
+protocol IncomingConnectionListener
+{
+    func onStatusChange(incomingConnection: IncomingConnection, current: ConnectionStatus)
+    func onDisconnect(incomingConnection: IncomingConnection, conEvtRes: ConnectivityEventResult, connEvtType: ConnectivityEventType)
+    func onIncomingTransaction(incomingConnection: IncomingConnection, incomingTransaction: IncomingTransaction) -> RetCode
+    func onIncomingSubscription(incomingConnection: IncomingConnection, incomingSubscription: IncomingSubscription) -> RetCode
+}
+
+/**
  * IncomingConnection
  */
 
@@ -276,19 +305,16 @@ class IncomingConnection
 {
     init(_ peer: Peer, _ sh_inco_conn: OpaquePointer){
         self.peer = peer
-        sh_inco_conn_ = sh_inco_conn
-        
-        inco_connection_set_on_releaseable_oc(inco_conn_, on_destroy, nil)
+        own_inco_conn_ = inco_connection_get_own_ptr(sh_inco_conn)
+        inco_connection_set_on_releaseable_oc(inco_conn_, on_release, nil)
         inco_connection_set_on_incoming_transaction_oc(inco_conn_, on_incoming_transaction, nil)
+        inco_connection_set_on_incoming_subscription_oc(inco_conn_, on_incoming_subscription, nil)
     }
     
-    deinit {
-        inco_connection_release(sh_inco_conn_)
-    }
-    
-    fileprivate func on_destroy(ic: OpaquePointer!, ud: UnsafeMutableRawPointer!)
+    fileprivate func on_release(ic: OpaquePointer!, ud: UnsafeMutableRawPointer!)
     {
         peer.icRepo.removeValue(forKey: connectionId)
+        inco_connection_release(own_inco_conn_)
     }
     
     fileprivate func on_incoming_transaction(ic: OpaquePointer!, itx: OpaquePointer!, ud: UnsafeMutableRawPointer!) -> RetCode
@@ -298,12 +324,19 @@ class IncomingConnection
         return RetCode_OK
     }
     
+    fileprivate func on_incoming_subscription(ic: OpaquePointer!, isbs: OpaquePointer!, ud: UnsafeMutableRawPointer!) -> RetCode
+    {
+        let IncoSbs = IncomingSubscription(self, isbs)
+        isbsRepo[IncoSbs.id] = IncoSbs
+        return RetCode_OK
+    }
+    
     let peer : Peer
-    let sh_inco_conn_ : OpaquePointer
+    let own_inco_conn_ : OpaquePointer
     
     var inco_conn_ : OpaquePointer{
         get{
-            return inco_connection_get_ptr(sh_inco_conn_)
+            return inco_connection_get_ptr(own_inco_conn_)
         }
     }
     
@@ -316,11 +349,32 @@ class IncomingConnection
 }
 
 /**
+ * OutgoingTransactionListener
+ */
+
+protocol OutgoingTransactionListener
+{
+    func onStatusChange(outgoingTransaction: OutgoingTransaction, current: TransactionStatus)
+    func onClose(outgoingTransaction: OutgoingTransaction)
+}
+
+/**
  * OutgoingTransaction
  */
 
 class OutgoingTransaction
 {
+}
+
+/**
+ * IncomingTransactionListener
+ */
+
+protocol IncomingTransactionListener
+{
+    func onStatusChange(incomingTransaction: IncomingTransaction, current: TransactionStatus)
+    func onRequest(incomingTransaction: IncomingTransaction)
+    func onClose(incomingTransaction: IncomingTransaction)
 }
 
 /**
@@ -331,12 +385,14 @@ class IncomingTransaction
 {
     init(_ incoConn: IncomingConnection, _ sh_inco_tx: OpaquePointer){
         self.incoConn = incoConn
-        sh_inco_tx_ = sh_inco_tx
-        inco_transaction_set_on_request_oc(inco_transaction_get_ptr(sh_inco_tx_), on_request, nil)
+        own_inco_tx_ = inco_transaction_get_own_ptr(sh_inco_tx)
+        inco_transaction_set_on_releaseable_oc(inco_tx_, on_release, nil)
+        inco_transaction_set_on_request_oc(inco_tx_, on_request, nil)
     }
     
-    deinit {
-        inco_transaction_release(sh_inco_tx_)
+    fileprivate func on_release(itx: OpaquePointer!, ud: UnsafeMutableRawPointer!){
+        incoConn.itxRepo.removeValue(forKey: txId)
+        inco_transaction_release(own_inco_tx_)
     }
     
     fileprivate func on_request(itx: OpaquePointer!, ud: UnsafeMutableRawPointer!)
@@ -366,11 +422,11 @@ class IncomingTransaction
     }
     
     let incoConn :IncomingConnection
-    let sh_inco_tx_ :OpaquePointer
+    let own_inco_tx_ : OpaquePointer
     
     var inco_tx_ : OpaquePointer{
         get{
-            return inco_transaction_get_ptr(sh_inco_tx_)
+            return inco_transaction_get_ptr(own_inco_tx_)
         }
     }
 
@@ -392,6 +448,27 @@ class IncomingTransaction
 }
 
 /**
+ * SubscriptionEvent
+ */
+
+class SubscriptionEvent
+{
+    
+}
+
+/**
+ * OutgoingSubscriptionListener
+ */
+
+protocol OutgoingSubscriptionListener
+{
+    func onStatusChange(outgoingSubscription: OutgoingSubscription, subscriptionStatus: SubscriptionStatus)
+    func onStart(outgoingSubscription: OutgoingSubscription)
+    func onStop(outgoingSubscription: OutgoingSubscription)
+    func onIncomingEvent(outgoingSubscription: OutgoingSubscription, subscriptionEvent: SubscriptionEvent) -> RetCode
+}
+
+/**
  * OutgoingSubscription
  */
 
@@ -400,19 +477,50 @@ class OutgoingSubscription
 }
 
 /**
+ * IncomingSubscriptionListener
+ */
+
+protocol IncomingSubscriptionListener
+{
+    func onStatusChange(incomingSubscription: IncomingSubscription, subscriptionStatus: SubscriptionStatus)
+    func onStop(incomingSubscription: IncomingSubscription)
+    func onAcceptEvent(incomingSubscription: IncomingSubscription, subscriptionEvent: SubscriptionEvent) -> RetCode
+}
+
+/**
  * IncomingSubscription
  */
 
 class IncomingSubscription
 {
-    init(_ sh_inco_sbs: OpaquePointer){
-        sh_inco_sbs_ = sh_inco_sbs
-        //inco_connection_set_on_incoming_transaction_swf(inco_connection_get_ptr(sh_inco_conn_), on_incoming_transaction, nil)
+    init(_ incoConn: IncomingConnection, _ sh_inco_sbs: OpaquePointer){
+        self.incoConn = incoConn
+        own_inco_sbs_ = inco_subscription_get_own_ptr(sh_inco_sbs)
+        inco_subscription_set_on_releaseable_oc(inco_sbs_, on_release, nil)
+        inco_subscription_set_on_accept_distribution_oc(inco_sbs_, on_accept_distribution, nil)
     }
     
-    deinit {
-        inco_subscription_release(sh_inco_sbs_)
+    fileprivate func on_release(sbs: OpaquePointer!, ud: UnsafeMutableRawPointer!){
+        incoConn.isbsRepo.removeValue(forKey: id)
+        inco_subscription_release(own_inco_sbs_)
     }
     
-    let sh_inco_sbs_ : OpaquePointer
+    fileprivate func on_accept_distribution(sbs: OpaquePointer!, evt: OpaquePointer!, ud: UnsafeMutableRawPointer!) -> RetCode{
+        return RetCode_OK;
+    }
+    
+    var id : UInt32 {
+        get {
+            return inco_subscription_get_id(inco_sbs_)
+        }
+    }
+    
+    let incoConn : IncomingConnection
+    let own_inco_sbs_ : OpaquePointer
+    
+    var inco_sbs_ : OpaquePointer{
+        get{
+            return inco_subscription_get_ptr(own_inco_sbs_)
+        }
+    }
 }
