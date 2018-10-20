@@ -67,9 +67,11 @@ win32 {
             -lshell32
     CONFIG(debug, debug|release) {
         LIBS += -L$$PWD/../bin/MSVC/x64/Debug/StaticLibrary
+        LIBS += -L$$PWD/../bin/MSVC/x64/Debug/DynamicLibrary
     }
     CONFIG(release, debug|release) {
         LIBS += -L$$PWD/../bin/MSVC/x64/Release/StaticLibrary
+        LIBS += -L$$PWD/../bin/MSVC/x64/Release/DynamicLibrary
     }
     LIBS += -lpthreadVC2
 
@@ -80,9 +82,11 @@ win32 {
 macx {
     CONFIG(debug, debug|release) {
         LIBS += -L$$PWD/../bin/OSX_64/DBG/lib
+        LIBS += -L$$PWD/../bin/OSX_64/DBG/libso
     }
     CONFIG(release, debug|release) {
         LIBS += -L$$PWD/../bin/OSX_64/REL/lib
+        LIBS += -L$$PWD/../bin/OSX_64/REL/libso
     }
 
     LIBS += -lvlg\
