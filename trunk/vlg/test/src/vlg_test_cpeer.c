@@ -12,7 +12,7 @@
 #include "vlg_c_connection.h"
 #include "vlg_c_transaction.h"
 #include "vlg_c_subscription.h"
-#include "vlg_drv_sqlite.h"
+#include "vlg_sqlite.h"
 #include "vlg_model_sample.h"
 
 const char *cpeer_name(peer *p, void *ud, void *ud2){

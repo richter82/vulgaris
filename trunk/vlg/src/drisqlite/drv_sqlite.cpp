@@ -4,7 +4,7 @@
  *
  */
 
-#include "vlg_drv_sqlite.h"
+#include "vlg_sqlite.h"
 #include "vlg/prs_impl.h"
 #include "sqlite3.h"
 
