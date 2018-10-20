@@ -9,7 +9,7 @@
 
 #include "vlg_persistence.h"
 //needed only if statically linked
-#include "vlg_drv_sqlite.h"
+#include "vlg_sqlite.h"
 
 #define LS_TST "TT|%s"
 #define TEST_TMOUT 4
