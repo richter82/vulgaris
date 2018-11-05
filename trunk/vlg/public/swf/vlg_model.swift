@@ -80,7 +80,7 @@ class KeyDesc{
     }
     
     func isPrimary() -> Bool{
-        return key_desc_is_primary(key_desc_op) == 1 ? true : false;
+        return key_desc_is_primary(key_desc_op) == 1 ? true : false
     }
     
     var key_desc_op: OpaquePointer
@@ -127,7 +127,7 @@ class NEntityDesc{
     }
     
     func isPersistent() -> Bool{
-        return nentity_desc_is_persistent(nentity_desc_op) == 1 ? true : false;
+        return nentity_desc_is_persistent(nentity_desc_op) == 1 ? true : false
     }
     
     func getMemberDescById(memberId: UInt32) -> MemberDesc?{
@@ -182,9 +182,58 @@ class NClass{
     func copyTo(to: NClass){
         nclass_copy_to(nclass_op, to.nclass_op)
     }
-    
-    //func clone()
-    
+	
+	func clone() -> NClass{
+		return NClass(own_nclass: nclass_clone(nclass_op))
+	}
+	
+	func isZero() -> Bool{
+		return nclass_is_zero(nclass_op) == 1 ? true : false
+	}
+	
+	func setZero(){
+		nclass_set_zero(nclass_op)
+	}
+	
+	func setFrom(other: NClass){
+		nclass_set_zero(nclass_op, other.nclass_op)
+	}
+	
+	func getFieldSizeById(fieldId: UInt32) -> size_t{
+		return nclass_get_field_size_by_id(nclass_op, fieldId)
+	}
+	
+	func getFieldSizeByName(fieldName: String) -> size_t{
+		return nclass_get_field_size_by_name(nclass_op, fieldName)
+	}
+	
+	func getFieldById(fieldId: UInt32) -> OpaquePointer?{
+		return nil
+	}
+	
+	func getFieldByName(fieldName: String) -> OpaquePointer?{
+		return nil
+	}
+	
+	func getFieldByIdIndex(fieldId: UInt32, index: UInt32) -> OpaquePointer?{
+		return nil
+	}
+	
+	func getFieldByNameIndex(fieldName: String, index: UInt32) -> OpaquePointer?{
+		return nil
+	}
+	
+	func setFieldById(fieldId: UInt32, ptr: OpaquePointer, maxlen: size_t) -> RetCode{
+		return nclass_set_field_by_id(nclass_op, fieldId, ptr, maxlen)
+	}
+	
+	func setFieldByName(fieldName: String, ptr: OpaquePointer, maxlen: size_t) -> RetCode{
+		return nclass_set_field_by_name(nclass_op, fieldName, ptr, maxlen)
+	}
+	
+	
+	
+		
     var own_nclass_op: OpaquePointer?
     var nclass_op: OpaquePointer
 }
