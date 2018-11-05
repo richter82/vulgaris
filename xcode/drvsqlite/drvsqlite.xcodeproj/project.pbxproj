@@ -235,7 +235,7 @@
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
-				USER_HEADER_SEARCH_PATHS = "../../src ../../src/vlg ../../public/cpp ../../public ../../contrib/sqlite";
+				USER_HEADER_SEARCH_PATHS = "../../src ../../src/vlg ../../public/cpp ../../public ../../contrib/sqlite ../../public/storage";
 			};
 			name = Debug;
 		};
@@ -281,7 +281,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
-				USER_HEADER_SEARCH_PATHS = "../../src ../../src/vlg ../../public/cpp ../../public ../../contrib/sqlite";
+				USER_HEADER_SEARCH_PATHS = "../../src ../../src/vlg ../../public/cpp ../../public ../../contrib/sqlite ../../public/storage";
 			};
 			name = Release;
 		};
