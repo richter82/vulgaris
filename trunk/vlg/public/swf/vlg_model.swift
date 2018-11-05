@@ -231,9 +231,71 @@ class NClass{
 		return nclass_set_field_by_name(nclass_op, fieldName, ptr, maxlen)
 	}
 	
+	func setFieldByIdIndex(fieldId: UInt32, ptr: OpaquePointer, index: UInt32, maxlen: size_t) -> RetCode{
+		return nclass_set_field_by_id(nclass_op, fieldId, ptr, index, maxlen)
+	}
 	
+	func setFieldByNameIndex(fieldName: String, ptr: OpaquePointer, index: UInt32, maxlen: size_t) -> RetCode{
+		return nclass_set_field_by_name(nclass_op, fieldName, ptr, index, maxlen)
+	}
 	
-		
+	func isFieldZeroById(fieldId: UInt32) -> (result: RetCode, val: Bool){
+		return (RetCode_OK, false)
+	}
+	
+	func isFieldZeroByName(fieldName: String) -> (result: RetCode, val: Bool){
+		return (RetCode_OK, false)
+	}
+	
+	func isFieldZeroByIdIndex(fieldId: UInt32, index: UInt32) -> (result: RetCode, val: Bool){
+		return (RetCode_OK, false)
+	}
+	
+	func isFieldZeroByNameIndex(fieldName: String, index: UInt32) -> (result: RetCode, val: Bool){
+		return (RetCode_OK, false)
+	}
+	
+	func setFieldZeroById(fieldId: UInt32) -> RetCode{
+		return nclass_set_field_zero_by_id(nclass_op, fieldId)
+	}
+	
+	func setFieldZeroByName(fieldName: String) -> RetCode{
+		return nclass_set_field_zero_by_name(nclass_op, fieldName)
+	}
+	
+	func setFieldZeroByIdIndex(fieldId: UInt32, index: UInt32) -> RetCode{
+		return nclass_set_field_zero_by_id_index(nclass_op, fieldId, index)
+	}
+	
+	func setFieldZeroByNameIndex(fieldName: String, index: UInt32) -> RetCode{
+		return nclass_set_field_zero_by_name_index(nclass_op, fieldName, index)
+	}
+	
+	//func getFieldByColumnNumber(colNum: UInt32, )
+	
+	func getNEntityDescriptor() -> NEntityDesc{
+		return NEntityDesc(nclass_get_nentity_descriptor(nclass_op))
+	}
+	
+	//func getPrimaryKeyValueAsString()
+	
     var own_nclass_op: OpaquePointer?
     var nclass_op: OpaquePointer
 }
+
+/**
+ * NEntityManager
+ */
+class NEntityManager{
+
+	init(nentity_manager: OpaquePointer){
+		self.nentity_manager_op = nentity_manager
+	}
+
+	//func getNEntityDescriptorByNClassId(nclassId: UInt32) -> NEntityDesc{
+	//	return NEntityDesc(nentity_manager_get_nentity_descriptor_by_nclassid)
+	//}
+    
+	var nentity_manager_op: OpaquePointer
+}
+
