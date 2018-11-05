@@ -12,6 +12,7 @@
 #include <stdarg.h>
 #endif
 #if defined (__GNUG__) || defined(__MACH__) || defined(__APPLE__)
+#include <stdio.h>
 #define SOCKET int
 #define INVALID_SOCKET (~0)
 #define SOCKET_ERROR   (-1)

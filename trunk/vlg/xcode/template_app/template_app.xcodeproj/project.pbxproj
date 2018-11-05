@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E327D4972186221600ACAA33 /* vlg_logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = E327D48F2186221600ACAA33 /* vlg_logger.swift */; };
+		E327D4982186221600ACAA33 /* vlg_transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = E327D4902186221600ACAA33 /* vlg_transaction.swift */; };
+		E327D4992186221600ACAA33 /* vlg_persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = E327D4912186221600ACAA33 /* vlg_persistence.swift */; };
+		E327D49A2186221600ACAA33 /* vlg_swift.swift in Sources */ = {isa = PBXBuildFile; fileRef = E327D4922186221600ACAA33 /* vlg_swift.swift */; };
+		E327D49B2186221600ACAA33 /* vlg_subscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = E327D4932186221600ACAA33 /* vlg_subscription.swift */; };
+		E327D49C2186221600ACAA33 /* vlg_model.swift in Sources */ = {isa = PBXBuildFile; fileRef = E327D4942186221600ACAA33 /* vlg_model.swift */; };
+		E327D49D2186221600ACAA33 /* vlg_connection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E327D4952186221600ACAA33 /* vlg_connection.swift */; };
+		E327D49E2186221600ACAA33 /* vlg_peer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E327D4962186221600ACAA33 /* vlg_peer.swift */; };
 		E33697CC21179C27002F61CD /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E33697CB21179C27002F61CD /* AppDelegate.swift */; };
 		E33697CE21179C27002F61CD /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E33697CD21179C27002F61CD /* ViewController.swift */; };
 		E33697D121179C27002F61CD /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E33697CF21179C27002F61CD /* Main.storyboard */; };
@@ -39,6 +47,14 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		E327D48F2186221600ACAA33 /* vlg_logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = vlg_logger.swift; path = ../../../public/swf/vlg_logger.swift; sourceTree = "<group>"; };
+		E327D4902186221600ACAA33 /* vlg_transaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = vlg_transaction.swift; path = ../../../public/swf/vlg_transaction.swift; sourceTree = "<group>"; };
+		E327D4912186221600ACAA33 /* vlg_persistence.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = vlg_persistence.swift; path = ../../../public/swf/vlg_persistence.swift; sourceTree = "<group>"; };
+		E327D4922186221600ACAA33 /* vlg_swift.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = vlg_swift.swift; path = ../../../public/swf/vlg_swift.swift; sourceTree = "<group>"; };
+		E327D4932186221600ACAA33 /* vlg_subscription.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = vlg_subscription.swift; path = ../../../public/swf/vlg_subscription.swift; sourceTree = "<group>"; };
+		E327D4942186221600ACAA33 /* vlg_model.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = vlg_model.swift; path = ../../../public/swf/vlg_model.swift; sourceTree = "<group>"; };
+		E327D4952186221600ACAA33 /* vlg_connection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = vlg_connection.swift; path = ../../../public/swf/vlg_connection.swift; sourceTree = "<group>"; };
+		E327D4962186221600ACAA33 /* vlg_peer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = vlg_peer.swift; path = ../../../public/swf/vlg_peer.swift; sourceTree = "<group>"; };
 		E33697C821179C27002F61CD /* template_app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = template_app.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E33697CB21179C27002F61CD /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E33697CD21179C27002F61CD /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -115,6 +131,14 @@
 		E33697CA21179C27002F61CD /* template_app */ = {
 			isa = PBXGroup;
 			children = (
+				E327D4952186221600ACAA33 /* vlg_connection.swift */,
+				E327D48F2186221600ACAA33 /* vlg_logger.swift */,
+				E327D4942186221600ACAA33 /* vlg_model.swift */,
+				E327D4962186221600ACAA33 /* vlg_peer.swift */,
+				E327D4912186221600ACAA33 /* vlg_persistence.swift */,
+				E327D4932186221600ACAA33 /* vlg_subscription.swift */,
+				E327D4922186221600ACAA33 /* vlg_swift.swift */,
+				E327D4902186221600ACAA33 /* vlg_transaction.swift */,
 				E36D63F22139C59300B430A4 /* app_bridge.h */,
 				E36D63F12139C54600B430A4 /* vlg_swift.h */,
 				E33697ED21179D24002F61CD /* vlg_swift.swift */,
@@ -271,10 +295,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E327D4992186221600ACAA33 /* vlg_persistence.swift in Sources */,
+				E327D49E2186221600ACAA33 /* vlg_peer.swift in Sources */,
+				E327D49B2186221600ACAA33 /* vlg_subscription.swift in Sources */,
 				E33697CE21179C27002F61CD /* ViewController.swift in Sources */,
 				E3F503082173DC4900784F4E /* TemplateApp.swift in Sources */,
+				E327D4982186221600ACAA33 /* vlg_transaction.swift in Sources */,
 				E33697CC21179C27002F61CD /* AppDelegate.swift in Sources */,
+				E327D49D2186221600ACAA33 /* vlg_connection.swift in Sources */,
+				E327D4972186221600ACAA33 /* vlg_logger.swift in Sources */,
+				E327D49C2186221600ACAA33 /* vlg_model.swift in Sources */,
 				E33697EE21179D24002F61CD /* vlg_swift.swift in Sources */,
+				E327D49A2186221600ACAA33 /* vlg_swift.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -379,6 +411,7 @@
 					../../public/objc,
 					../../public/c,
 					../../test/sample_vlg_model,
+					../../public/storage,
 				);
 			};
 			name = Debug;
@@ -439,6 +472,7 @@
 					../../public/objc,
 					../../public/c,
 					../../test/sample_vlg_model,
+					../../public/storage,
 				);
 				VALIDATE_PRODUCT = YES;
 			};
