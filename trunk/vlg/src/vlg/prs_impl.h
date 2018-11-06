@@ -248,7 +248,7 @@ struct persistence_driver {
 
     persistence_driver(unsigned int id,
                        logger *log);
-    
+
     virtual ~persistence_driver() = default;
 
     virtual const char *get_driver_name() = 0;

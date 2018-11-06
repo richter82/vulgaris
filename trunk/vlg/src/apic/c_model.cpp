@@ -358,10 +358,10 @@ extern "C" {
                                                  nmenb);
     }
 
-    char *nclass_get_field_address_by_column_number(nclass *obj,
-                                                    unsigned int plain_idx,
-                                                    const nentity_manager *nem,
-                                                    const member_desc **member_descriptor)
+    char *nclass_get_field_by_column_number(nclass *obj,
+                                            unsigned int plain_idx,
+                                            const nentity_manager *nem,
+                                            const member_desc **member_descriptor)
     {
         return obj->get_field_address_by_column_number(plain_idx,
                                                        *nem,
