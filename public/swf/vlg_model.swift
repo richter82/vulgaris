@@ -292,10 +292,42 @@ class NEntityManager{
 		self.nentity_manager_op = nentity_manager
 	}
 
-	//func getNEntityDescriptorByNClassId(nclassId: UInt32) -> NEntityDesc{
-	//	return NEntityDesc(nentity_manager_get_nentity_descriptor_by_nclassid)
-	//}
-    
+	func getNEntityDescriptorByNClassId(nclassId: UInt32) -> NEntityDesc?{
+		if let nentDesc = nentity_manager_get_nentity_descriptor_by_nclassid(nentity_manager_op, nclassId){
+			return NEntityDesc(nentDesc)
+		}else{
+			return nil
+		}
+	}
+	
+	func getNEntityDescriptorByNClassName(nclassName: String) -> NEntityDesc?{
+		if let nentDesc = nentity_manager_get_nentity_descriptor_by_name(nentity_manager_op, nclassName){
+			return NEntityDesc(nentDesc)
+		}else{
+			return nil
+		}
+	}
+	
+	func getNEntityCount() -> UInt32{
+		return nentity_manager_nentity_count(nentity_manager_op)
+	}
+	
+	func getNEnumCount() -> UInt32{
+		return nentity_manager_nenum_count(nentity_manager_op)
+	}
+	
+	func getNClassCount() -> UInt32{
+		return nentity_manager_nclass_count(nentity_manager_op)
+	}
+	
+	func extendWithNEntityDesc(nEntityDesc: NEntityDesc) -> RetCode{
+		return nentity_manager_extend_with_nentity_desc(nentity_manager_op, nEntityDesc)
+	}
+	
+	func extendWithNEntityManager(nEntityMng: NEntityManager) -> RetCode{
+		return nentity_manager_extend_with_nentity_manager(nentity_manager_op, nEntityMng)
+	}
+	
 	var nentity_manager_op: OpaquePointer
 }
 
