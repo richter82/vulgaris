@@ -99,7 +99,7 @@ static int bind_stmt_fld(const member_desc &mmbrd,
                                      obj_f_ptr,
                                      mmbrd.get_field_nmemb() == 1 ? 1 :
                                      (int)std::min(strlen(obj_f_ptr),
-                                     mmbrd.get_field_nmemb()),
+                                                   mmbrd.get_field_nmemb()),
                                      SQLITE_STATIC);
         case Type_BYTE:
             return sqlite3_bind_blob(stmt,
@@ -355,7 +355,7 @@ struct pers_conn_sqlite : public persistence_connection_impl {
                                     sql_conn_.conn_pool_.psswd_.c_str()))
                     RetCode rcode = sql_conn_.sqlite_connect(sql_conn_.conn_pool_.url_.c_str(),
                                                              SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
-                    
+
                     IFLOG(log_, trc(TH_ID, LS_CLO "[res:%d]", __func__, rcode))
                     return rcode;
                 }
