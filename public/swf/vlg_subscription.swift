@@ -47,16 +47,17 @@ protocol IncomingSubscriptionListener
  */
 class IncomingSubscription
 {
-    init(_ incoConn: IncomingConnection, _ sh_inco_sbs: OpaquePointer){
+    required init(_ incoConn: IncomingConnection, _ sh_inco_sbs: OpaquePointer){
         self.incoConn = incoConn
-        own_inco_sbs_ = inco_subscription_get_own_ptr(sh_inco_sbs)
-        inco_subscription_set_on_releaseable_oc(inco_sbs_, on_release, nil)
-        inco_subscription_set_on_accept_distribution_oc(inco_sbs_, on_accept_distribution, nil)
+        self.own_inco_sbs_op = inco_subscription_get_own_ptr(sh_inco_sbs)
+        self.inco_sbs_op = inco_subscription_get_ptr(own_inco_sbs_op)
+        inco_subscription_set_on_releaseable_oc(inco_sbs_op, on_release, nil)
+        inco_subscription_set_on_accept_distribution_oc(inco_sbs_op, on_accept_distribution, nil)
     }
     
     fileprivate func on_release(sbs: OpaquePointer!, ud: UnsafeMutableRawPointer!){
         incoConn.isbsRepo.removeValue(forKey: id)
-        inco_subscription_release(own_inco_sbs_)
+        inco_subscription_release(own_inco_sbs_op)
     }
     
     fileprivate func on_accept_distribution(sbs: OpaquePointer!, evt: OpaquePointer!, ud: UnsafeMutableRawPointer!) -> RetCode{
@@ -65,16 +66,11 @@ class IncomingSubscription
     
     var id : UInt32 {
         get {
-            return inco_subscription_get_id(inco_sbs_)
+            return inco_subscription_get_id(inco_sbs_op)
         }
     }
     
     let incoConn : IncomingConnection
-    let own_inco_sbs_ : OpaquePointer
-    
-    var inco_sbs_ : OpaquePointer{
-        get{
-            return inco_subscription_get_ptr(own_inco_sbs_)
-        }
-    }
+    let own_inco_sbs_op : OpaquePointer
+    var inco_sbs_op : OpaquePointer
 }
