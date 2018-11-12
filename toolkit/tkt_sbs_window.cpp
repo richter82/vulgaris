@@ -79,7 +79,7 @@ vlg_toolkit_sbs_window::vlg_toolkit_sbs_window(vlg::outgoing_connection &conn,
     ui->connid_label_disp->setText(QString("%1").arg(conn.get_id()));
     SbsStoppedActions();
 
-    connect(this, SIGNAL(SignalSbsStatusChange(vlg::SubscriptionStatus)),this,
+    connect(this, SIGNAL(SignalSbsStatusChange(vlg::SubscriptionStatus)), this,
             SLOT(OnSbsStatusChange(vlg::SubscriptionStatus)));
 
     connect(this, SIGNAL(SignalSbsEvent(std::shared_ptr<vlg::subscription_event>)), this,

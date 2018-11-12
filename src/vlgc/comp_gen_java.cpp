@@ -1103,7 +1103,7 @@ RetCode VLG_COMP_JAVA_getter_setter(compile_unit &cunit,
                 fprintf(file, IND_1"for(%s e : %s){\n"
                         IND_2"if(e != %s) return false;\n"
                         IND_1"}\n"
-                        IND_1"return true;\n",ttype.c_str(), mdesc->second->get_member_name(),
+                        IND_1"return true;\n", ttype.c_str(), mdesc->second->get_member_name(),
                         zero_val.c_str());
             }
         }

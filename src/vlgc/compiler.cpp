@@ -11,7 +11,7 @@ namespace vlg {
 // #VER#
 
 #define VLG_COMP_STRT_STR "vlg.compiler.ver.%d.%d.%d.%d.date:" __DATE__
-int comp_ver[4]  = {0,0,0,0};
+int comp_ver[4]  = {0, 0, 0, 0};
 
 vlg::cfg_ldr conf_ldr;
 compiler_config comp_cfg;

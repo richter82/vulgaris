@@ -10,7 +10,7 @@
 
 namespace vlg_tlkt {
 
-unsigned int VLG_TOOLKIT_PEER_VER[] = {0,0,0,0};
+unsigned int VLG_TOOLKIT_PEER_VER[] = {0, 0, 0, 0};
 
 //------------------------------------------------------------------------------
 // ****VLG_TOOLKIT_PEER****

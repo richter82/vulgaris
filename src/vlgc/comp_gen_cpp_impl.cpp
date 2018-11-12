@@ -417,7 +417,7 @@ RetCode VLG_COMP_Gen_EntityNotZeroMode_Buff__CPP_(std::map<std::string, entity_d
                         mdesc->second->get_member_name());
             } else {
                 RET_ON_KO(printf_percent_from_VLG_TYPE(*mdesc->second, tmp))
-                RET_ON_KO(VLG_COMP_Gen_ScalarMember_Buff_CPP_(mdesc->second,tmp, file))
+                RET_ON_KO(VLG_COMP_Gen_ScalarMember_Buff_CPP_(mdesc->second, tmp, file))
             }
         } else {
             //entity
@@ -466,7 +466,7 @@ RetCode VLG_COMP_Gen_EntityNotZeroMode_FILE__CPP_(std::map<std::string, entity_d
                         mdesc->second->get_member_name());
             } else {
                 RET_ON_KO(printf_percent_from_VLG_TYPE(*mdesc->second, tmp))
-                RET_ON_KO(VLG_COMP_Gen_ScalarMember_FILE__CPP_(mdesc->second,tmp, file))
+                RET_ON_KO(VLG_COMP_Gen_ScalarMember_FILE__CPP_(mdesc->second, tmp, file))
             }
         } else {
             //entity

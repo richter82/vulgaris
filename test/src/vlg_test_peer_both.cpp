@@ -19,7 +19,7 @@ int save_nclass_position(const char *filename,
                          unsigned int ts_1)
 {
     FILE *f;
-    if((f = fopen(filename,"w+"))) {
+    if((f = fopen(filename, "w+"))) {
         fprintf(f, "%u\n%u\n", ts_0, ts_1);
         fclose(f);
         return 0;
@@ -33,7 +33,7 @@ int load_nclass_position(const char *filename,
                          unsigned int &ts_1)
 {
     FILE *f;
-    if((f = fopen(filename,"r"))) {
+    if((f = fopen(filename, "r"))) {
         fscanf(f, "%u%u", &ts_0, &ts_1);
         fclose(f);
     } else {

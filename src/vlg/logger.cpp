@@ -1088,7 +1088,7 @@ size_t logger::trc(uint32_t id, const char *msg, ...)
     return blen;
 }
 
-size_t logger::dbg(uint32_t id, const char *msg,...)
+size_t logger::dbg(uint32_t id, const char *msg, ...)
 {
     size_t blen = 0;
     va_list args;
@@ -1098,7 +1098,7 @@ size_t logger::dbg(uint32_t id, const char *msg,...)
     return blen;
 }
 
-size_t logger::inf(uint32_t id, const char *msg,...)
+size_t logger::inf(uint32_t id, const char *msg, ...)
 {
     size_t blen = 0;
     va_list args;
@@ -1108,7 +1108,7 @@ size_t logger::inf(uint32_t id, const char *msg,...)
     return blen;
 }
 
-size_t logger::wrn(uint32_t id, const char *msg,...)
+size_t logger::wrn(uint32_t id, const char *msg, ...)
 {
     size_t blen = 0;
     va_list args;
@@ -1118,7 +1118,7 @@ size_t logger::wrn(uint32_t id, const char *msg,...)
     return blen;
 }
 
-size_t logger::err(uint32_t id, const char *msg,...)
+size_t logger::err(uint32_t id, const char *msg, ...)
 {
     size_t blen = 0;
     va_list args;
@@ -1128,7 +1128,7 @@ size_t logger::err(uint32_t id, const char *msg,...)
     return blen;
 }
 
-size_t logger::cri(uint32_t id, const char *msg,...)
+size_t logger::cri(uint32_t id, const char *msg, ...)
 {
     size_t blen = 0;
     va_list args;
@@ -1138,7 +1138,7 @@ size_t logger::cri(uint32_t id, const char *msg,...)
     return blen;
 }
 
-size_t logger::fat(uint32_t id, const char *msg,...)
+size_t logger::fat(uint32_t id, const char *msg, ...)
 {
     size_t blen = 0;
     va_list args;
@@ -1160,37 +1160,37 @@ size_t logger::lowm(uint32_t id, const char *msg)
 
 size_t logger::trcm(uint32_t id, const char *msg)
 {
-    return impl_->spread(TL_TRC,id, msg);
+    return impl_->spread(TL_TRC, id, msg);
 }
 
 size_t logger::dbgm(uint32_t id, const char *msg)
 {
-    return impl_->spread(TL_DBG,id, msg);
+    return impl_->spread(TL_DBG, id, msg);
 }
 
 size_t logger::infm(uint32_t id, const char *msg)
 {
-    return impl_->spread(TL_INF,id, msg);
+    return impl_->spread(TL_INF, id, msg);
 }
 
 size_t logger::wrnm(uint32_t id, const char *msg)
 {
-    return impl_->spread(TL_WRN,id, msg);
+    return impl_->spread(TL_WRN, id, msg);
 }
 
 size_t logger::errm(uint32_t id, const char *msg)
 {
-    return impl_->spread(TL_ERR,id, msg);
+    return impl_->spread(TL_ERR, id, msg);
 }
 
 size_t logger::crim(uint32_t id, const char *msg)
 {
-    return impl_->spread(TL_CRI,id, msg);
+    return impl_->spread(TL_CRI, id, msg);
 }
 
 size_t logger::fatm(uint32_t id, const char *msg)
 {
-    return impl_->spread(TL_FAT,id, msg);
+    return impl_->spread(TL_FAT, id, msg);
 }
 
 size_t logger::trc_nclass(uint32_t id,

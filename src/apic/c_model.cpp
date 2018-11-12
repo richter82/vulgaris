@@ -210,30 +210,40 @@ extern "C" {
         return obj->get_field_size_by_name(field_name);
     }
 
-    void *nclass_get_field_by_id(nclass *obj,
-                                 unsigned int field_id)
+    char *nclass_get_field_addr_by_id(nclass *obj,
+                                      unsigned int field_id)
     {
         return obj->get_field_address_by_id(field_id);
     }
 
-    void *nclass_get_field_by_name(nclass *obj,
-                                   const char *field_name)
+    char *nclass_get_field_addr_by_name(nclass *obj,
+                                        const char *field_name)
     {
         return obj->get_field_address_by_name(field_name);
     }
 
-    void *nclass_get_field_by_id_index(nclass *obj,
-                                       unsigned int field_id,
-                                       unsigned int index)
+    char *nclass_get_field_addr_by_id_index(nclass *obj,
+                                            unsigned int field_id,
+                                            unsigned int index)
     {
         return obj->get_field_address_by_id_and_index(field_id, index);
     }
 
-    void *nclass_get_field_by_name_index(nclass *obj,
-                                         const char *field_name,
-                                         unsigned int index)
+    char *nclass_get_field_addr_by_name_index(nclass *obj,
+                                              const char *field_name,
+                                              unsigned int index)
     {
         return obj->get_field_address_by_name_and_index(field_name, index);
+    }
+
+    char *nclass_get_field_addr_by_column_number(nclass *obj,
+                                                 unsigned int plain_idx,
+                                                 const nentity_manager *nem,
+                                                 const member_desc **member_descriptor)
+    {
+        return obj->get_field_address_by_column_number(plain_idx,
+                                                       *nem,
+                                                       member_descriptor);
     }
 
     RetCode nclass_set_field_by_id(nclass *obj,
@@ -356,16 +366,6 @@ extern "C" {
         return obj->set_field_zero_by_name_index(field_name,
                                                  index,
                                                  nmenb);
-    }
-
-    char *nclass_get_field_by_column_number(nclass *obj,
-                                            unsigned int plain_idx,
-                                            const nentity_manager *nem,
-                                            const member_desc **member_descriptor)
-    {
-        return obj->get_field_address_by_column_number(plain_idx,
-                                                       *nem,
-                                                       member_descriptor);
     }
 
     const nentity_desc *nclass_get_nentity_descriptor(nclass *obj)
