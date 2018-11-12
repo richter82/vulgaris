@@ -926,7 +926,7 @@ RetCode open_output_file(const char *fname, FILE **fdesc)
         ffname.append(FS_SEP);
     }
     ffname.append(fname);
-    if(!(*fdesc = fopen(ffname.c_str(),"w+"))) {
+    if(!(*fdesc = fopen(ffname.c_str(), "w+"))) {
         fprintf(stderr, "ERROR opening output file %s\n", ffname.c_str());
         EXIT_ACTION_STDOUT("")
     }

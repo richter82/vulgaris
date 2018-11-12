@@ -33,17 +33,17 @@ bool peer_enum_nem_nclasses_create_schema(const nentity_desc &nentity_desc,
                                                       pud->peer->nem_,
                                                       nentity_desc);
             } else {
-                IFLOG(pud->peer->log_, wrn(TH_ID,LS_TRL "[no available persistence connection for nclass_id:%d]", __func__,
+                IFLOG(pud->peer->log_, wrn(TH_ID, LS_TRL "[no available persistence connection for nclass_id:%d]", __func__,
                                            nentity_desc.get_nclass_id()))
                 pud->res = RetCode_KO;
             }
         } else {
-            IFLOG(pud->peer->log_, wrn(TH_ID,LS_TRL "[no available persistence driver for nclass_id:%d]", __func__,
+            IFLOG(pud->peer->log_, wrn(TH_ID, LS_TRL "[no available persistence driver for nclass_id:%d]", __func__,
                                        nentity_desc.get_nclass_id()))
             pud->res = RetCode_KO;
         }
         if(pud->res) {
-            IFLOG(pud->peer->log_, wrn(TH_ID,LS_TRL "[failed to create persistence schema for nclass_id:%d][res:%d]",
+            IFLOG(pud->peer->log_, wrn(TH_ID, LS_TRL "[failed to create persistence schema for nclass_id:%d][res:%d]",
                                        __func__,
                                        nentity_desc.get_nclass_id(),
                                        pud->res))

@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 		if (!res) {
 			nclass *usr = own_nclass_get_ptr(own_usr);
 			nclass_set_field_by_name(usr, "name", "test", 4);
-			printf("name: %s", (const char*)nclass_get_field_by_name(usr, "name"));
+			printf("name: %s", (const char*)nclass_get_field_addr_by_name(usr, "name"));
 		}
 		own_nclass_release(own_usr);
 	}

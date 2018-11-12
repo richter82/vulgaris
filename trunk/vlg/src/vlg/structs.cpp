@@ -83,10 +83,10 @@ void MurmurHash3_x86_32(const void *key, int len, uint32_t seed, void *out)
     for(int i = -nblocks; i; i++) {
         uint32_t k1 = getblock(blocks, i);
         k1 *= c1;
-        k1 = ROTL32(k1,15);
+        k1 = ROTL32(k1, 15);
         k1 *= c2;
         h1 ^= k1;
-        h1 = ROTL32(h1,13);
+        h1 = ROTL32(h1, 13);
         h1 = h1 * 5 + 0xe6546b64;
     }
     //----------
@@ -101,7 +101,7 @@ void MurmurHash3_x86_32(const void *key, int len, uint32_t seed, void *out)
         case 1:
             k1 ^= tail[0];
             k1 *= c1;
-            k1 = ROTL32(k1,16);
+            k1 = ROTL32(k1, 16);
             k1 *= c2;
             h1 ^= k1;
     };

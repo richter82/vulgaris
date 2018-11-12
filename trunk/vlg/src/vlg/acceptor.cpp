@@ -22,7 +22,7 @@ RetCode WSA_init(logger *log)
     }
     WSAData wsaData;
     int nCode;
-    if((nCode = WSAStartup(MAKEWORD(2,2), &wsaData)) != 0) {
+    if((nCode = WSAStartup(MAKEWORD(2, 2), &wsaData)) != 0) {
         IFLOG(log, cri(TH_ID, LS_SYS"[WSADATA error code:%d]", nCode))
         return RetCode_KO;
     }
