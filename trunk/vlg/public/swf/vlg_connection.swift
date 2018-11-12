@@ -22,24 +22,24 @@ protocol OutgoingConnectionListener
  */
 class OutgoingConnection
 {
-    init(peer: Peer) {
-        outg_conn_ = outg_connection_create()
-        outg_connection_bind(outg_conn_, peer.peer_)
+    required init(peer: Peer) {
+        outg_conn_op = outg_connection_create()
+        outg_connection_bind(outg_conn_op, peer.peer_op)
     }
     
     deinit {
-        outg_connection_destroy(outg_conn_)
+        outg_connection_destroy(outg_conn_op)
     }
     
-    func connect(_ addr: String, _ port: UInt16){
+    func connect(_ address: String, _ port: UInt16){
         var oc_params: sockaddr_in = sockaddr_in()
         oc_params.sin_family = UInt8(AF_INET)
-        oc_params.sin_addr.s_addr = inet_addr(addr)
+        oc_params.sin_addr.s_addr = inet_addr(address)
         oc_params.sin_port = port.bigEndian
-        outg_connection_connect(outg_conn_, UnsafeMutablePointer<sockaddr_in>(&oc_params))
+        outg_connection_connect(outg_conn_op, UnsafeMutablePointer<sockaddr_in>(&oc_params))
     }
     
-    var outg_conn_: OpaquePointer
+    var outg_conn_op: OpaquePointer
 }
 
 /**
@@ -58,18 +58,19 @@ protocol IncomingConnectionListener
  */
 class IncomingConnection
 {
-    init(_ peer: Peer, _ sh_inco_conn: OpaquePointer){
+    required init(_ peer: Peer, _ sh_inco_conn: OpaquePointer){
         self.peer = peer
-        own_inco_conn_ = inco_connection_get_own_ptr(sh_inco_conn)
-        inco_connection_set_on_releaseable_oc(inco_conn_, on_release, nil)
-        inco_connection_set_on_incoming_transaction_oc(inco_conn_, on_incoming_transaction, nil)
-        inco_connection_set_on_incoming_subscription_oc(inco_conn_, on_incoming_subscription, nil)
+        self.own_inco_conn_op = inco_connection_get_own_ptr(sh_inco_conn)
+        self.inco_conn_op = inco_connection_get_ptr(own_inco_conn_op)
+        inco_connection_set_on_releaseable_oc(inco_conn_op, on_release, nil)
+        inco_connection_set_on_incoming_transaction_oc(inco_conn_op, on_incoming_transaction, nil)
+        inco_connection_set_on_incoming_subscription_oc(inco_conn_op, on_incoming_subscription, nil)
     }
     
     fileprivate func on_release(ic: OpaquePointer!, ud: UnsafeMutableRawPointer!)
     {
         peer.icRepo.removeValue(forKey: connectionId)
-        inco_connection_release(own_inco_conn_)
+        inco_connection_release(own_inco_conn_op)
     }
     
     fileprivate func on_incoming_transaction(ic: OpaquePointer!, itx: OpaquePointer!, ud: UnsafeMutableRawPointer!) -> RetCode
@@ -87,16 +88,11 @@ class IncomingConnection
     }
     
     let peer : Peer
-    let own_inco_conn_ : OpaquePointer
-    
-    var inco_conn_ : OpaquePointer{
-        get{
-            return inco_connection_get_ptr(own_inco_conn_)
-        }
-    }
+    let own_inco_conn_op : OpaquePointer
+    var inco_conn_op : OpaquePointer
     
     var connectionId: UInt32{
-        get{return inco_connection_get_connection_id(inco_conn_)}
+        get{return inco_connection_get_connection_id(inco_conn_op)}
     }
     
     var itxRepo = [tx_id:IncomingTransaction]()

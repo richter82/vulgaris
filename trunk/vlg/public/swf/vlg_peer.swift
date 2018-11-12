@@ -30,15 +30,15 @@ class Peer
         self.init(peerName: CString(peerName), peerVersion: peerVersion, peerListener: peerListener)
     }
     
-    fileprivate init(peerName: CString, peerVersion: [CUnsignedInt], peerListener: PeerListener) {
-        self.peer_name_ = peerName
-        self.peer_ver_ = peerVersion
+    required init(peerName: CString, peerVersion: [CUnsignedInt], peerListener: PeerListener) {
+        self.peer_name = peerName
+        self.peer_ver = peerVersion
         self.peerListener = peerListener
         
         if let filePath = Bundle.main.path(forResource: "logger", ofType:"cfg") {
             set_logger_cfg_file_path_name(filePath)
-            peer_own_ = peer_create()
-            peer_ = own_peer_get_ptr(peer_own_)
+            peer_own_op = peer_create()
+            peer_op = own_peer_get_ptr(peer_own_op)
         } else {
             fatalError("logger.cfg not found")
         }
@@ -50,95 +50,95 @@ class Peer
         }
         
         if let filePath = Bundle.main.path(forResource: "params", ofType:"") {
-            peer_set_params_file_path_name(peer_, filePath)
+            peer_set_params_file_path_name(peer_op, filePath)
         } else {
             fatalError("params not found")
         }
                 
-        peer_set_name_oc(peer_, { _,_ in return UnsafePointer(self.peer_name_.buffer) }, bridge(obj:self))
-        peer_set_version_oc(peer_, { _,_ in return UnsafePointer(self.peer_ver_) }, bridge(obj:self))
-        peer_set_on_status_change_oc(peer_, peer_status_change, bridge(obj:self))
-        peer_set_on_incoming_connection_oc(peer_, on_incoming_connection, bridge(obj:self))
+        peer_set_name_oc(peer_op, { _,_ in return UnsafePointer(self.peer_name.buffer) }, bridge(obj:self))
+        peer_set_version_oc(peer_op, { _,_ in return UnsafePointer(self.peer_ver) }, bridge(obj:self))
+        peer_set_on_status_change_oc(peer_op, peer_status_change, bridge(obj:self))
+        peer_set_on_incoming_connection_oc(peer_op, on_incoming_connection, bridge(obj:self))
     }
     
     deinit {
-        peer_destroy(peer_own_)
+        peer_destroy(peer_own_op)
     }
     
     func setParamsFileDir(fileDir: String) -> RetCode{
-        return peer_set_params_file_dir(peer_, CString(fileDir).buffer)
+        return peer_set_params_file_dir(peer_op, fileDir)
     }
     
     func setParamsFilePathName(pathName: String) -> RetCode{
-        return peer_set_params_file_path_name(peer_, CString(pathName).buffer)
+        return peer_set_params_file_path_name(peer_op, pathName)
     }
     
     func getVersionMajor() -> UInt32{
-        return peer_get_version_major(peer_)
+        return peer_get_version_major(peer_op)
     }
     
     func getVersionMinor() -> UInt32{
-        return peer_get_version_minor(peer_)
+        return peer_get_version_minor(peer_op)
     }
     
     func getVersionManteinance() -> UInt32{
-        return peer_get_version_maintenance(peer_)
+        return peer_get_version_maintenance(peer_op)
     }
     
     func getVersionArchitecture() -> UInt32{
-        return peer_get_version_architecture(peer_)
+        return peer_get_version_architecture(peer_op)
     }
     
     func isConfigured() -> Bool{
-        return peer_is_configured(peer_) > 0 ? true : false;
+        return peer_is_configured(peer_op) > 0 ? true : false;
     }
     
     func isPersistent() -> Bool{
-        return peer_is_persistent(peer_) > 0 ? true : false;
+        return peer_is_persistent(peer_op) > 0 ? true : false;
     }
     
     func isCreatePersistentSchema() -> Bool{
-        return peer_is_persistent_schema_creating(peer_) > 0 ? true : false;
+        return peer_is_persistent_schema_creating(peer_op) > 0 ? true : false;
     }
     
     func isDropExistingPersistentSchema() -> Bool{
-        return peer_is_dropping_existing_schema(peer_) > 0 ? true : false;
+        return peer_is_dropping_existing_schema(peer_op) > 0 ? true : false;
     }
     
     func getPersonality() -> PeerPersonality{
-        return peer_get_personality(peer_)
+        return peer_get_personality(peer_op)
     }
     
     func getServerSockAddr() -> sockaddr_in{
-        return peer_get_server_sockaddr(peer_)
+        return peer_get_server_sockaddr(peer_op)
     }
     
     func setPersonality(peerPersonality: PeerPersonality){
-        peer_set_personality(peer_, peerPersonality)
+        peer_set_personality(peer_op, peerPersonality)
     }
     
     func setServerAddress(address: String){
-        peer_set_srv_sin_addr(peer_, CString(address).buffer)
+        peer_set_srv_sin_addr(peer_op, address)
     }
     
     func setServerPort(port: Int32){
-        peer_set_sin_port(peer_, port)
+        peer_set_sin_port(peer_op, port)
     }
     
     func setPersistent(persistent: Bool){
-        peer_set_persistent(peer_, persistent ? 1 : 0)
+        peer_set_persistent(peer_op, persistent ? 1 : 0)
     }
     
     func setCreatePersistentSchema(createPersistentSchema: Bool){
-        peer_set_persistent_schema_creating(peer_, createPersistentSchema ? 1 : 0)
+        peer_set_persistent_schema_creating(peer_op, createPersistentSchema ? 1 : 0)
     }
     
     func setDropExistingPersistentSchema(dropExistingPersistentSchema: Bool){
-        peer_set_dropping_existing_schema(peer_, dropExistingPersistentSchema ? 1 : 0)
+        peer_set_dropping_existing_schema(peer_op, dropExistingPersistentSchema ? 1 : 0)
     }
     
     func setConfigured(configured: Bool){
-        peer_set_configured(peer_, configured ? 1 : 0)
+        peer_set_configured(peer_op, configured ? 1 : 0)
     }
 
     func startPeer(){
@@ -154,14 +154,14 @@ class Peer
         }catch{
             fatalError("failed get documentDirectory")
         }
-        persistence_manager_load_persistence_driver(get_pers_driv_sqlite(peer_get_logger(peer_)))
-        peer_extend_model_with_nem(peer_, get_c_nem_smplmdl(peer_get_logger(peer_)))
-        peer_start(peer_, 2, argv, 1);
+        persistence_manager_load_persistence_driver(get_pers_driv_sqlite(peer_get_logger(peer_op)))
+        peer_extend_model_with_nem(peer_op, get_c_nem_smplmdl(peer_get_logger(peer_op)))
+        peer_start(peer_op, 2, argv, 1);
         argv.deallocate()
     }
     
     func stopPeer(){
-        peer_stop(peer_, 0)
+        peer_stop(peer_op, 0)
     }
     
     fileprivate func on_incoming_connection(c_peer: OpaquePointer!, sh_ic: OpaquePointer!, ud: UnsafeMutableRawPointer!) -> RetCode
@@ -177,10 +177,10 @@ class Peer
     }
     
     let fileMng = FileManager.default
-    var peer_own_: OpaquePointer
-    var peer_: OpaquePointer
-    let peer_name_: CString
-    let peer_ver_: [CUnsignedInt]
+    var peer_own_op: OpaquePointer
+    var peer_op: OpaquePointer
+    let peer_name: CString
+    let peer_ver: [CUnsignedInt]
     let peerListener: PeerListener
     
     var icRepo = [UInt32:IncomingConnection]()

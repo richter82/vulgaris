@@ -117,7 +117,7 @@ class NEntityDesc{
     
     func getNEntityAllocationFunc() -> (() -> NClass)? {
         if let nentity_alloc_f = nentity_desc_get_nentity_allocation_function(nentity_desc_op){
-            return {return NClass(nentity_alloc_f()!)}
+            return {return NClass(own_nclass: nentity_alloc_f()!)}
         }
         return nil
     }
@@ -196,7 +196,7 @@ class NClass{
 	}
 	
 	func setFrom(other: NClass){
-		nclass_set_zero(nclass_op, other.nclass_op)
+		nclass_set_from(nclass_op, other.nclass_op)
 	}
 	
 	func getFieldSizeById(fieldId: UInt32) -> size_t{
@@ -207,52 +207,73 @@ class NClass{
 		return nclass_get_field_size_by_name(nclass_op, fieldName)
 	}
 	
-	func getFieldById(fieldId: UInt32) -> OpaquePointer?{
-		return nil
+	func getFieldById(fieldId: UInt32) -> UnsafeMutableRawPointer?{
+		return nclass_get_field_by_id(nclass_op, fieldId)
 	}
 	
-	func getFieldByName(fieldName: String) -> OpaquePointer?{
-		return nil
+	func getFieldByName(fieldName: String) -> UnsafeMutableRawPointer?{
+		return nclass_get_field_by_name(nclass_op, fieldName)
 	}
 	
-	func getFieldByIdIndex(fieldId: UInt32, index: UInt32) -> OpaquePointer?{
-		return nil
+	func getFieldByIdIndex(fieldId: UInt32, index: UInt32) -> UnsafeMutableRawPointer?{
+		return nclass_get_field_by_id_index(nclass_op, fieldId, index)
 	}
 	
-	func getFieldByNameIndex(fieldName: String, index: UInt32) -> OpaquePointer?{
-		return nil
+	func getFieldByNameIndex(fieldName: String, index: UInt32) -> UnsafeMutableRawPointer?{
+		return nclass_get_field_by_name_index(nclass_op, fieldName, index)
+	}
+    
+    func getFieldByColumnNumber(colNum: UInt32, nEntityManager: NEntityManager) -> (field: UnsafeMutableRawPointer?, memberDesc: MemberDesc?){
+        //let
+        return (nil, nil)
+    }
+	
+	func setFieldById(fieldId: UInt32, ptr: UnsafeRawPointer?, maxlen: size_t) -> RetCode{
+        return nclass_set_field_by_id(nclass_op, fieldId, ptr, maxlen)
 	}
 	
-	func setFieldById(fieldId: UInt32, ptr: OpaquePointer, maxlen: size_t) -> RetCode{
-		return nclass_set_field_by_id(nclass_op, fieldId, ptr, maxlen)
-	}
-	
-	func setFieldByName(fieldName: String, ptr: OpaquePointer, maxlen: size_t) -> RetCode{
+	func setFieldByName(fieldName: String, ptr: UnsafeRawPointer?, maxlen: size_t) -> RetCode{
 		return nclass_set_field_by_name(nclass_op, fieldName, ptr, maxlen)
 	}
 	
-	func setFieldByIdIndex(fieldId: UInt32, ptr: OpaquePointer, index: UInt32, maxlen: size_t) -> RetCode{
-		return nclass_set_field_by_id(nclass_op, fieldId, ptr, index, maxlen)
+	func setFieldByIdIndex(fieldId: UInt32, ptr: UnsafeRawPointer?, index: UInt32, maxlen: size_t) -> RetCode{
+		return nclass_set_field_by_id_index(nclass_op, fieldId, ptr, index, maxlen)
 	}
 	
-	func setFieldByNameIndex(fieldName: String, ptr: OpaquePointer, index: UInt32, maxlen: size_t) -> RetCode{
-		return nclass_set_field_by_name(nclass_op, fieldName, ptr, index, maxlen)
+	func setFieldByNameIndex(fieldName: String, ptr: UnsafeRawPointer?, index: UInt32, maxlen: size_t) -> RetCode{
+		return nclass_set_field_by_name_index(nclass_op, fieldName, ptr, index, maxlen)
 	}
 	
 	func isFieldZeroById(fieldId: UInt32) -> (result: RetCode, val: Bool){
-		return (RetCode_OK, false)
+        let res = UnsafeMutablePointer<Int32>.allocate(capacity: 1)
+        let resF = nclass_is_field_zero_by_id(nclass_op, fieldId, res)
+        let resB = res.pointee == 1 ? true : false
+        res.deallocate()
+		return (resF, resB)
 	}
 	
 	func isFieldZeroByName(fieldName: String) -> (result: RetCode, val: Bool){
-		return (RetCode_OK, false)
-	}
+        let res = UnsafeMutablePointer<Int32>.allocate(capacity: 1)
+        let resF = nclass_is_field_zero_by_name(nclass_op, fieldName, res)
+        let resB = res.pointee == 1 ? true : false
+        res.deallocate()
+        return (resF, resB)	}
 	
 	func isFieldZeroByIdIndex(fieldId: UInt32, index: UInt32) -> (result: RetCode, val: Bool){
-		return (RetCode_OK, false)
+        let res = UnsafeMutablePointer<Int32>.allocate(capacity: 1)
+        let resF = nclass_is_field_zero_by_id_index(nclass_op, fieldId, index, 1, res)
+        let resB = res.pointee == 1 ? true : false
+        res.deallocate()
+        return (resF, resB)
 	}
 	
 	func isFieldZeroByNameIndex(fieldName: String, index: UInt32) -> (result: RetCode, val: Bool){
-		return (RetCode_OK, false)
+        let res = UnsafeMutablePointer<Int32>.allocate(capacity: 1)
+        let resF = nclass_is_field_zero_by_name_index(nclass_op, fieldName, index, 1, res)
+        let resB = res.pointee == 1 ? true : false
+        res.deallocate()
+        return (resF, resB)
+
 	}
 	
 	func setFieldZeroById(fieldId: UInt32) -> RetCode{
@@ -264,20 +285,28 @@ class NClass{
 	}
 	
 	func setFieldZeroByIdIndex(fieldId: UInt32, index: UInt32) -> RetCode{
-		return nclass_set_field_zero_by_id_index(nclass_op, fieldId, index)
+		return nclass_set_field_zero_by_id_index(nclass_op, fieldId, index, 1)
 	}
 	
 	func setFieldZeroByNameIndex(fieldName: String, index: UInt32) -> RetCode{
-		return nclass_set_field_zero_by_name_index(nclass_op, fieldName, index)
+		return nclass_set_field_zero_by_name_index(nclass_op, fieldName, index, 1)
 	}
-	
-	//func getFieldByColumnNumber(colNum: UInt32, )
 	
 	func getNEntityDescriptor() -> NEntityDesc{
 		return NEntityDesc(nclass_get_nentity_descriptor(nclass_op))
 	}
 	
-	//func getPrimaryKeyValueAsString()
+    func getPrimaryKeyValueAsString() -> (result: RetCode, primKeyVal: String?){
+        let nallockey_ptr = UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>.allocate(capacity: 1)
+        let resF = nclass_get_primary_key_value_as_string(nclass_op, nallockey_ptr)
+        var retS: String?
+        if let nallockey = nallockey_ptr.pointee{
+            retS = String(cString: nallockey)
+            free(nallockey)
+        }
+        nallockey_ptr.deallocate()
+        return (resF, retS)
+    }
 	
     var own_nclass_op: OpaquePointer?
     var nclass_op: OpaquePointer
@@ -321,11 +350,11 @@ class NEntityManager{
 	}
 	
 	func extendWithNEntityDesc(nEntityDesc: NEntityDesc) -> RetCode{
-		return nentity_manager_extend_with_nentity_desc(nentity_manager_op, nEntityDesc)
+        return nentity_manager_extend_with_nentity_desc(nentity_manager_op, nEntityDesc.nentity_desc_op)
 	}
 	
 	func extendWithNEntityManager(nEntityMng: NEntityManager) -> RetCode{
-		return nentity_manager_extend_with_nentity_manager(nentity_manager_op, nEntityMng)
+		return nentity_manager_extend_with_nentity_manager(nentity_manager_op, nEntityMng.nentity_manager_op)
 	}
 	
 	var nentity_manager_op: OpaquePointer

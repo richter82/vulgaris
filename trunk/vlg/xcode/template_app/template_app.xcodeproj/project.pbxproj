@@ -10,7 +10,6 @@
 		E327D4972186221600ACAA33 /* vlg_logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = E327D48F2186221600ACAA33 /* vlg_logger.swift */; };
 		E327D4982186221600ACAA33 /* vlg_transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = E327D4902186221600ACAA33 /* vlg_transaction.swift */; };
 		E327D4992186221600ACAA33 /* vlg_persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = E327D4912186221600ACAA33 /* vlg_persistence.swift */; };
-		E327D49A2186221600ACAA33 /* vlg_swift.swift in Sources */ = {isa = PBXBuildFile; fileRef = E327D4922186221600ACAA33 /* vlg_swift.swift */; };
 		E327D49B2186221600ACAA33 /* vlg_subscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = E327D4932186221600ACAA33 /* vlg_subscription.swift */; };
 		E327D49C2186221600ACAA33 /* vlg_model.swift in Sources */ = {isa = PBXBuildFile; fileRef = E327D4942186221600ACAA33 /* vlg_model.swift */; };
 		E327D49D2186221600ACAA33 /* vlg_connection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E327D4952186221600ACAA33 /* vlg_connection.swift */; };
@@ -233,7 +232,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0940;
-				LastUpgradeCheck = 1000;
+				LastUpgradeCheck = 1010;
 				ORGANIZATIONNAME = "Giuseppe Baccini";
 				TargetAttributes = {
 					E33697C721179C27002F61CD = {
@@ -306,7 +305,6 @@
 				E327D4972186221600ACAA33 /* vlg_logger.swift in Sources */,
 				E327D49C2186221600ACAA33 /* vlg_model.swift in Sources */,
 				E33697EE21179D24002F61CD /* vlg_swift.swift in Sources */,
-				E327D49A2186221600ACAA33 /* vlg_swift.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
