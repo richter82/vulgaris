@@ -277,10 +277,13 @@ RetCode p_exec_srv::submit(std::shared_ptr<p_tsk> &task)
             case RetCode_QFULL:
             case RetCode_TIMEOUT:
                 IFLOG(log_, wrn(TH_ID, LS_TRL "[id:%d][queue full]", __func__, id_))
+                break;
             case RetCode_PTHERR:
                 IFLOG(log_, cri(TH_ID, LS_TRL "[id:%d][pthread error]", __func__, id_))
+                break;
             default:
                 IFLOG(log_, err(TH_ID, LS_TRL "[id:%d][res:%d]", __func__, id_, rcode))
+                break;
         }
     } else {
         task->set_status(PTskStatus_SUBMITTED);

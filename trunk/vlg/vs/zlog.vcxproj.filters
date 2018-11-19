@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="h">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\contrib\zlog\src\zlog-chk-conf.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\contrib\zlog\src\buf.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\contrib\zlog\src\category.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\contrib\zlog\src\category_table.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\contrib\zlog\src\conf.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\contrib\zlog\src\event.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\contrib\zlog\src\format.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\contrib\zlog\src\level.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\contrib\zlog\src\level_list.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\contrib\zlog\src\mdc.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\contrib\zlog\src\record.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\contrib\zlog\src\record_table.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\contrib\zlog\src\rotater.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\contrib\zlog\src\rule.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\contrib\zlog\src\spec.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\contrib\zlog\src\thread.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\contrib\zlog\src\zc_arraylist.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\contrib\zlog\src\zc_hashtable.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\contrib\zlog\src\zc_profile.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\contrib\zlog\src\zc_util.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\contrib\zlog\src\zlog.c">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
