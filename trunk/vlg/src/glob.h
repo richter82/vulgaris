@@ -24,7 +24,6 @@
 #include "vlg/proto.h"
 
 #include "vlg_model.h"
-#include "vlg_logger.h"
 #include "vlg_peer.h"
 #include "vlg_connection.h"
 #include "vlg_transaction.h"
@@ -131,6 +130,14 @@ const extern std_shared_ptr_obj_mng<incoming_connection> conn_std_shp_omng;
 const extern std_shared_ptr_obj_mng<incoming_transaction> tx_std_shp_omng;
 const extern std_shared_ptr_obj_mng<incoming_subscription> sbs_std_shp_omng;
 const extern std_shared_ptr_obj_mng<subscription_event> sbse_std_shp_omng;
+
+struct syslog_cfg {
+    static RetCode set_logger_cfg_file_dir(const char *dir);
+    static RetCode set_logger_cfg_file_path_name(const char *file_path);
+    static RetCode load_logger_config();
+    static RetCode load_logger_config(const char *fname);
+
+};
 
 #undef DISABLE_LOG
 #ifdef DISABLE_LOG

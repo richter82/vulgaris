@@ -29,9 +29,6 @@
     <ClInclude Include="..\public\cpp\vlg_connection.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\cpp\vlg_logger.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="..\public\vlg.h">
       <Filter>h</Filter>
     </ClInclude>

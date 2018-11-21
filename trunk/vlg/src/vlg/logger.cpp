@@ -94,44 +94,33 @@ struct logger_cfg_loader {
     virtual RetCode load_cfg() = 0;
 };
 
-static bool deflt_log_loaded = false;
-static std::unique_ptr<std::unordered_map<std::string, std::unique_ptr<logger>>> lgname_lg;
-static std::unordered_map<std::string, std::unique_ptr<logger>> &get_logger_map()
-{
-    if(!lgname_lg) {
-        lgname_lg.reset(new std::unordered_map<std::string, std::unique_ptr<logger>>());
-    }
-    return *lgname_lg;
-}
-
-RetCode logger::add_appender_to_all_loggers(appender *apnd)
-{
-    for(auto it = get_logger_map().begin(); it != get_logger_map().end(); ++it) {
-        it->second->add_appender(apnd);
-    }
-    return RetCode_OK;
-}
-
-void logger::set_level_for_all_loggers(TraceLVL lvl)
-{
-    for(auto it = get_logger_map().begin(); it != get_logger_map().end(); ++it) {
-        it->second->set_level(lvl);
-    }
-}
-
-RetCode logger::remove_last_appender_from_all_loggers()
-{
-    for(auto it = get_logger_map().begin(); it != get_logger_map().end(); ++it) {
-        it->second->remove_last_appender();
-    }
-    return RetCode_OK;
-}
+//RetCode logger::add_appender_to_all_loggers(appender *apnd)
+//{
+//    for(auto it = get_logger_map().begin(); it != get_logger_map().end(); ++it) {
+//        it->second->add_appender(apnd);
+//    }
+//    return RetCode_OK;
+//}
+//
+//void logger::set_level_for_all_loggers(TraceLVL lvl)
+//{
+//    for(auto it = get_logger_map().begin(); it != get_logger_map().end(); ++it) {
+//        it->second->set_level(lvl);
+//    }
+//}
+//
+//RetCode logger::remove_last_appender_from_all_loggers()
+//{
+//    for(auto it = get_logger_map().begin(); it != get_logger_map().end(); ++it) {
+//        it->second->remove_last_appender();
+//    }
+//    return RetCode_OK;
+//}
 
 void LPrsERR_FND_EXP(const char *sct, const char *fnd, const char *exp)
 {
     FILE *ferr = fopen("log.err", "wa+");
-    fprintf(ferr ? ferr : stderr,
-            LG_INIT_ERR_TK" parsing: %s, found: %s, expected: %s\n", sct, fnd, exp);
+    fprintf(ferr ? ferr : stderr, LG_INIT_ERR_TK" parsing: %s, found: %s, expected: %s\n", sct, fnd, exp);
     if(ferr) {
         fclose(ferr);
     }
@@ -160,8 +149,7 @@ void LPrsERR_UNEXP(const char *sct, const char *unexp)
 void LPrsERR_APNF(const char *lgr, const char *apn)
 {
     FILE *ferr = fopen("log.err", "wa+");
-    fprintf(ferr ? ferr : stderr,
-            LG_INIT_ERR_TK" parsing logger: %s, appender not found: %s\n", lgr, apn);
+    fprintf(ferr ? ferr : stderr, LG_INIT_ERR_TK" parsing logger: %s, appender not found: %s\n", lgr, apn);
     if(ferr) {
         fclose(ferr);
     }
@@ -170,8 +158,7 @@ void LPrsERR_APNF(const char *lgr, const char *apn)
 void LPrsERR_NOAP(const char *lgr)
 {
     FILE *ferr = fopen("log.err", "wa+");
-    fprintf(ferr ? ferr : stderr,
-            LG_INIT_ERR_TK" parsing logger: %s, no apnds spec.\n", lgr);
+    fprintf(ferr ? ferr : stderr, LG_INIT_ERR_TK" parsing logger: %s, no apnds spec.\n", lgr);
     if(ferr) {
         fclose(ferr);
     }
@@ -188,336 +175,337 @@ void LPrsERR_UNEXP(const char *unexp)
 
 // appender_impl
 
-static std::unique_ptr<std::unordered_map<std::string, std::unique_ptr<appender>>> apnds;
-std::unordered_map<std::string, std::unique_ptr<appender>> &get_appender_map()
+static std::unique_ptr<std::unordered_map<std::string, std::shared_ptr<spdlog::sinks::sink>>> apnds;
+
+std::unordered_map<std::string, std::shared_ptr<spdlog::sinks::sink>> &get_appender_map()
 {
     if(!apnds) {
-        apnds.reset(new std::unordered_map<std::string, std::unique_ptr<appender>>());
+        apnds.reset(new std::unordered_map<std::string, std::shared_ptr<spdlog::sinks::sink>>());
     }
     return *apnds;
 }
 
-struct appender_impl {
-        appender_impl() :
-            valid_(true),
-            fd_(nullptr),
-            msg_b_ln_(0) {
-        }
-
-        appender_impl(const char *fname) :
-            valid_(false),
-            fd_(nullptr),
-            msg_b_ln_(0) {
-            fd_ = fopen(fname, "a+");
-            valid_ = true;
-        }
-
-        appender_impl(FILE *fd) :
-            valid_(true),
-            fd_(fd),
-            msg_b_ln_(0) {
-        }
-
-        ~appender_impl() {
-            flush();
-            if(fd_) {
-                fclose(fd_);
-            }
-        }
-
-        void flush() {
-            if(fd_) {
-                if(msg_b_ln_) {
-                    fflush(fd_);
-                }
-            }
-        }
-
-        size_t put_msg(TraceLVL lvl,
-                       const char *sign,
-                       uint16_t sign_len,
-                       uint32_t id,
-                       const char *msg) {
-            const char *lvl_str = get_trace_level_string(lvl);
-            char msg_b[LG_BUF_LEN_16K];
-            uint16_t msg_b_idx = 0;
-            memset(msg_b, 0, LG_BUF_LEN_16K);
-            render_msg(lvl_str, sign, sign_len, id, msg, msg_b, &msg_b_idx);
-            msg_b_idx += (uint16_t)fwrite(msg_b, sizeof(char), msg_b_idx, fd_);
-            fflush(fd_);
-            return msg_b_idx;
-        }
-
-        size_t put_msg_plain(const char *msg) {
-            char msg_b[LG_BUF_LEN_16K];
-            uint16_t msg_b_idx = 0;
-            memset(msg_b, 0, LG_BUF_LEN_16K);
-            rended_msg_pln(msg, msg_b, &msg_b_idx);
-            msg_b_idx += (uint16_t)fwrite(msg_b, sizeof(char), msg_b_idx, fd_);
-            fflush(fd_);
-            return msg_b_idx;
-        }
-
-        size_t put_msg_va(TraceLVL lvl,
-                          const char *sign,
-                          uint16_t sign_len,
-                          uint32_t id,
-                          const char *msg,
-                          va_list args) {
-            const char *lvl_str = get_trace_level_string(lvl);
-            char msg_b[LG_BUF_LEN_16K];
-            uint16_t msg_b_idx = 0;
-            render_msg_va(lvl_str, sign, sign_len, id, msg, msg_b, &msg_b_idx, args);
-            msg_b_idx += (uint16_t)fwrite(msg_b, sizeof(char), msg_b_idx, fd_);
-            fflush(fd_);
-            return msg_b_idx;
-        }
-
-        size_t put_msg_va_plain(const char *msg,
-                                va_list args) {
-            char msg_b[LG_BUF_LEN_16K];
-            uint16_t msg_b_idx = 0;
-            render_msg_va_pln(msg, msg_b, &msg_b_idx, args);
-            msg_b_idx += (uint16_t)fwrite(msg_b, sizeof(char), msg_b_idx, fd_);
-            fflush(fd_);
-            return msg_b_idx;
-        }
-
-        size_t rended_msg_pln(const char *msg,
-                              char *buff,
-                              uint16_t *buff_len) {
-            uint16_t msg_b_idx = 0;
-            //usr message
-            if(msg && msg[0]) {
-                msg_b_idx += sprintf(&buff[msg_b_idx], "%s", msg);
-            }
-            buff[msg_b_idx++] = '\n';
-            *buff_len = msg_b_idx;
-            return msg_b_idx;
-        }
-
-        size_t render_msg(const char *lvl_str,
-                          const char *sign,
-                          uint16_t sign_len,
-                          uint32_t id,
-                          const char *msg,
-                          char *buff,
-                          uint16_t *buff_len) {
-            //timestamp
-            uint16_t msg_b_idx = 0;
-            struct timeval tv;
-            gettimeofday(&tv, nullptr);
-            time_t secs = (time_t)tv.tv_sec;
-            struct tm *gmt = localtime(&secs);
-            sprintf(buff, "%02d:%02d:%02d.%03ld",
-                    gmt->tm_hour,
-                    gmt->tm_min,
-                    gmt->tm_sec,
-                    (tv.tv_usec / 1000L));
-            msg_b_idx += LG_TIME_BUF_LEN;
-            buff[msg_b_idx++] = '|';
-            //trace level string
-            memcpy(&buff[msg_b_idx], lvl_str, TL_LVL_STR_LEN);
-            msg_b_idx += TL_LVL_STR_LEN;
-            buff[msg_b_idx++] = '|';
-            //signature
-            if(sign_len) {
-                memcpy(&buff[msg_b_idx], sign, sign_len);
-                msg_b_idx += sign_len;
-                buff[msg_b_idx++] = '|';
-            }
-            //id
-            if(id) {
-                sprintf(&buff[msg_b_idx], "%08u", id);
-                msg_b_idx += LG_ID_LEN;
-                buff[msg_b_idx++] = '|';
-            }
-            //usr message
-            if(msg && msg[0]) {
-                msg_b_idx += sprintf(&buff[msg_b_idx], "%s", msg);
-            }
-            buff[msg_b_idx++] = '\n';
-            *buff_len = msg_b_idx;
-            return msg_b_idx;
-        }
-
-        size_t render_msg_va_pln(const char *msg,
-                                 char *buff,
-                                 uint16_t *buff_len,
-                                 va_list args) {
-            char *msg_b = buff;
-            uint16_t msg_b_idx = 0;
-            //usr message
-            if(msg && msg[0]) {
-                msg_b_idx += vsprintf(&msg_b[msg_b_idx], msg, args);
-            }
-            msg_b[msg_b_idx++] = '\n';
-            *buff_len = msg_b_idx;
-            return msg_b_idx;
-        }
-
-        size_t render_msg_va(const char *lvl_str,
-                             const char *sign,
-                             uint16_t sign_len,
-                             uint32_t id,
-                             const char *msg,
-                             char *buff,
-                             uint16_t *buff_len,
-                             va_list args) {
-            //timestamp
-            uint16_t msg_b_idx = 0;
-            struct timeval tv;
-            gettimeofday(&tv, nullptr);
-            time_t secs = (time_t)tv.tv_sec;
-            struct tm *gmt = localtime(&secs);
-            sprintf(buff, "%02d:%02d:%02d.%03ld",
-                    gmt->tm_hour,
-                    gmt->tm_min,
-                    gmt->tm_sec,
-                    (tv.tv_usec / 1000L));
-            msg_b_idx += LG_TIME_BUF_LEN;
-            buff[msg_b_idx++] = '|';
-            //trace level string
-            memcpy(&buff[msg_b_idx], lvl_str, TL_LVL_STR_LEN);
-            msg_b_idx += TL_LVL_STR_LEN;
-            buff[msg_b_idx++] = '|';
-            //signature
-            if(sign_len) {
-                memcpy(&buff[msg_b_idx], sign, sign_len);
-                msg_b_idx += sign_len;
-                buff[msg_b_idx++] = '|';
-            }
-            //id
-            if(id) {
-                sprintf(&buff[msg_b_idx], "%08u", id);
-                msg_b_idx += LG_ID_LEN;
-                buff[msg_b_idx++] = '|';
-            }
-            //usr message
-            if(msg && msg[0]) {
-                msg_b_idx += vsprintf(&buff[msg_b_idx], msg, args);
-            }
-            buff[msg_b_idx++] = '\n';
-            *buff_len = msg_b_idx;
-            return msg_b_idx;
-        }
-
-    private:
-        bool valid_;
-        FILE *fd_;
-        uint16_t msg_b_ln_;
-};
+//struct appender_impl {
+//        appender_impl() :
+//            valid_(true),
+//            fd_(nullptr),
+//            msg_b_ln_(0) {
+//        }
+//
+//        appender_impl(const char *fname) :
+//            valid_(false),
+//            fd_(nullptr),
+//            msg_b_ln_(0) {
+//            fd_ = fopen(fname, "a+");
+//            valid_ = true;
+//        }
+//
+//        appender_impl(FILE *fd) :
+//            valid_(true),
+//            fd_(fd),
+//            msg_b_ln_(0) {
+//        }
+//
+//        ~appender_impl() {
+//            flush();
+//            if(fd_) {
+//                fclose(fd_);
+//            }
+//        }
+//
+//        void flush() {
+//            if(fd_) {
+//                if(msg_b_ln_) {
+//                    fflush(fd_);
+//                }
+//            }
+//        }
+//
+//        size_t put_msg(TraceLVL lvl,
+//                       const char *sign,
+//                       uint16_t sign_len,
+//                       uint32_t id,
+//                       const char *msg) {
+//            const char *lvl_str = get_trace_level_string(lvl);
+//            char msg_b[LG_BUF_LEN_16K];
+//            uint16_t msg_b_idx = 0;
+//            memset(msg_b, 0, LG_BUF_LEN_16K);
+//            render_msg(lvl_str, sign, sign_len, id, msg, msg_b, &msg_b_idx);
+//            msg_b_idx += (uint16_t)fwrite(msg_b, sizeof(char), msg_b_idx, fd_);
+//            fflush(fd_);
+//            return msg_b_idx;
+//        }
+//
+//        size_t put_msg_plain(const char *msg) {
+//            char msg_b[LG_BUF_LEN_16K];
+//            uint16_t msg_b_idx = 0;
+//            memset(msg_b, 0, LG_BUF_LEN_16K);
+//            rended_msg_pln(msg, msg_b, &msg_b_idx);
+//            msg_b_idx += (uint16_t)fwrite(msg_b, sizeof(char), msg_b_idx, fd_);
+//            fflush(fd_);
+//            return msg_b_idx;
+//        }
+//
+//        size_t put_msg_va(TraceLVL lvl,
+//                          const char *sign,
+//                          uint16_t sign_len,
+//                          uint32_t id,
+//                          const char *msg,
+//                          va_list args) {
+//            const char *lvl_str = get_trace_level_string(lvl);
+//            char msg_b[LG_BUF_LEN_16K];
+//            uint16_t msg_b_idx = 0;
+//            render_msg_va(lvl_str, sign, sign_len, id, msg, msg_b, &msg_b_idx, args);
+//            msg_b_idx += (uint16_t)fwrite(msg_b, sizeof(char), msg_b_idx, fd_);
+//            fflush(fd_);
+//            return msg_b_idx;
+//        }
+//
+//        size_t put_msg_va_plain(const char *msg,
+//                                va_list args) {
+//            char msg_b[LG_BUF_LEN_16K];
+//            uint16_t msg_b_idx = 0;
+//            render_msg_va_pln(msg, msg_b, &msg_b_idx, args);
+//            msg_b_idx += (uint16_t)fwrite(msg_b, sizeof(char), msg_b_idx, fd_);
+//            fflush(fd_);
+//            return msg_b_idx;
+//        }
+//
+//        size_t rended_msg_pln(const char *msg,
+//                              char *buff,
+//                              uint16_t *buff_len) {
+//            uint16_t msg_b_idx = 0;
+//            //usr message
+//            if(msg && msg[0]) {
+//                msg_b_idx += sprintf(&buff[msg_b_idx], "%s", msg);
+//            }
+//            buff[msg_b_idx++] = '\n';
+//            *buff_len = msg_b_idx;
+//            return msg_b_idx;
+//        }
+//
+//        size_t render_msg(const char *lvl_str,
+//                          const char *sign,
+//                          uint16_t sign_len,
+//                          uint32_t id,
+//                          const char *msg,
+//                          char *buff,
+//                          uint16_t *buff_len) {
+//            //timestamp
+//            uint16_t msg_b_idx = 0;
+//            struct timeval tv;
+//            gettimeofday(&tv, nullptr);
+//            time_t secs = (time_t)tv.tv_sec;
+//            struct tm *gmt = localtime(&secs);
+//            sprintf(buff, "%02d:%02d:%02d.%03ld",
+//                    gmt->tm_hour,
+//                    gmt->tm_min,
+//                    gmt->tm_sec,
+//                    (tv.tv_usec / 1000L));
+//            msg_b_idx += LG_TIME_BUF_LEN;
+//            buff[msg_b_idx++] = '|';
+//            //trace level string
+//            memcpy(&buff[msg_b_idx], lvl_str, TL_LVL_STR_LEN);
+//            msg_b_idx += TL_LVL_STR_LEN;
+//            buff[msg_b_idx++] = '|';
+//            //signature
+//            if(sign_len) {
+//                memcpy(&buff[msg_b_idx], sign, sign_len);
+//                msg_b_idx += sign_len;
+//                buff[msg_b_idx++] = '|';
+//            }
+//            //id
+//            if(id) {
+//                sprintf(&buff[msg_b_idx], "%08u", id);
+//                msg_b_idx += LG_ID_LEN;
+//                buff[msg_b_idx++] = '|';
+//            }
+//            //usr message
+//            if(msg && msg[0]) {
+//                msg_b_idx += sprintf(&buff[msg_b_idx], "%s", msg);
+//            }
+//            buff[msg_b_idx++] = '\n';
+//            *buff_len = msg_b_idx;
+//            return msg_b_idx;
+//        }
+//
+//        size_t render_msg_va_pln(const char *msg,
+//                                 char *buff,
+//                                 uint16_t *buff_len,
+//                                 va_list args) {
+//            char *msg_b = buff;
+//            uint16_t msg_b_idx = 0;
+//            //usr message
+//            if(msg && msg[0]) {
+//                msg_b_idx += vsprintf(&msg_b[msg_b_idx], msg, args);
+//            }
+//            msg_b[msg_b_idx++] = '\n';
+//            *buff_len = msg_b_idx;
+//            return msg_b_idx;
+//        }
+//
+//        size_t render_msg_va(const char *lvl_str,
+//                             const char *sign,
+//                             uint16_t sign_len,
+//                             uint32_t id,
+//                             const char *msg,
+//                             char *buff,
+//                             uint16_t *buff_len,
+//                             va_list args) {
+//            //timestamp
+//            uint16_t msg_b_idx = 0;
+//            struct timeval tv;
+//            gettimeofday(&tv, nullptr);
+//            time_t secs = (time_t)tv.tv_sec;
+//            struct tm *gmt = localtime(&secs);
+//            sprintf(buff, "%02d:%02d:%02d.%03ld",
+//                    gmt->tm_hour,
+//                    gmt->tm_min,
+//                    gmt->tm_sec,
+//                    (tv.tv_usec / 1000L));
+//            msg_b_idx += LG_TIME_BUF_LEN;
+//            buff[msg_b_idx++] = '|';
+//            //trace level string
+//            memcpy(&buff[msg_b_idx], lvl_str, TL_LVL_STR_LEN);
+//            msg_b_idx += TL_LVL_STR_LEN;
+//            buff[msg_b_idx++] = '|';
+//            //signature
+//            if(sign_len) {
+//                memcpy(&buff[msg_b_idx], sign, sign_len);
+//                msg_b_idx += sign_len;
+//                buff[msg_b_idx++] = '|';
+//            }
+//            //id
+//            if(id) {
+//                sprintf(&buff[msg_b_idx], "%08u", id);
+//                msg_b_idx += LG_ID_LEN;
+//                buff[msg_b_idx++] = '|';
+//            }
+//            //usr message
+//            if(msg && msg[0]) {
+//                msg_b_idx += vsprintf(&buff[msg_b_idx], msg, args);
+//            }
+//            buff[msg_b_idx++] = '\n';
+//            *buff_len = msg_b_idx;
+//            return msg_b_idx;
+//        }
+//
+//    private:
+//        bool valid_;
+//        FILE *fd_;
+//        uint16_t msg_b_ln_;
+//};
 
 // appender
 
-appender::appender() : impl_(new appender_impl())
-{}
-
-appender::appender(const char *fname) : impl_(new appender_impl(fname))
-{}
-
-appender::appender(FILE *fd) : impl_(new appender_impl(fd))
-{}
-
-appender::~appender()
-{}
-
-void appender::flush()
-{
-    impl_->flush();
-}
-
-size_t appender::put_msg(TraceLVL lvl,
-                         const char *sign,
-                         uint16_t sign_len,
-                         uint32_t id,
-                         const char *msg)
-{
-    return impl_->put_msg(lvl,
-                          sign,
-                          sign_len,
-                          id,
-                          msg);
-}
-
-size_t appender::put_msg_plain(const char *msg)
-{
-    return impl_->put_msg_plain(msg);
-}
-
-size_t appender::put_msg_va(TraceLVL lvl,
-                            const char *sign,
-                            uint16_t sign_len,
-                            uint32_t id,
-                            const char *msg,
-                            va_list args)
-{
-    return impl_->put_msg_va(lvl,
-                             sign,
-                             sign_len,
-                             id,
-                             msg,
-                             args);
-}
-
-size_t appender::put_msg_va_plain(const char *msg, va_list args)
-{
-    return impl_->put_msg_va_plain(msg, args);
-}
-
-size_t appender::render_msg_pln(const char *msg,
-                                char *buff,
-                                uint16_t *buff_len)
-{
-    return impl_->rended_msg_pln(msg, buff, buff_len);
-}
-
-size_t appender::render_msg(const char *lvl_str,
-                            const char *sign,
-                            uint16_t sign_len,
-                            uint32_t id,
-                            const char *msg,
-                            char *buff,
-                            uint16_t *buff_len)
-{
-    return impl_->render_msg(lvl_str,
-                             sign,
-                             sign_len,
-                             id,
-                             msg,
-                             buff,
-                             buff_len);
-}
-
-size_t appender::render_msg_va_pln(const char *msg,
-                                   char *buff,
-                                   uint16_t *buff_len,
-                                   va_list args)
-{
-    return impl_->render_msg_va_pln(msg,
-                                    buff,
-                                    buff_len,
-                                    args);
-}
-
-size_t appender::render_msg_va(const char *lvl_str,
-                               const char *sign,
-                               uint16_t sign_len,
-                               uint32_t id,
-                               const char *msg,
-                               char *buff,
-                               uint16_t *buff_len,
-                               va_list args)
-{
-    return impl_->render_msg_va(lvl_str,
-                                sign,
-                                sign_len,
-                                id,
-                                msg,
-                                buff,
-                                buff_len,
-                                args);
-}
+//appender::appender() : impl_(new appender_impl())
+//{}
+//
+//appender::appender(const char *fname) : impl_(new appender_impl(fname))
+//{}
+//
+//appender::appender(FILE *fd) : impl_(new appender_impl(fd))
+//{}
+//
+//appender::~appender()
+//{}
+//
+//void appender::flush()
+//{
+//    impl_->flush();
+//}
+//
+//size_t appender::put_msg(TraceLVL lvl,
+//                         const char *sign,
+//                         uint16_t sign_len,
+//                         uint32_t id,
+//                         const char *msg)
+//{
+//    return impl_->put_msg(lvl,
+//                          sign,
+//                          sign_len,
+//                          id,
+//                          msg);
+//}
+//
+//size_t appender::put_msg_plain(const char *msg)
+//{
+//    return impl_->put_msg_plain(msg);
+//}
+//
+//size_t appender::put_msg_va(TraceLVL lvl,
+//                            const char *sign,
+//                            uint16_t sign_len,
+//                            uint32_t id,
+//                            const char *msg,
+//                            va_list args)
+//{
+//    return impl_->put_msg_va(lvl,
+//                             sign,
+//                             sign_len,
+//                             id,
+//                             msg,
+//                             args);
+//}
+//
+//size_t appender::put_msg_va_plain(const char *msg, va_list args)
+//{
+//    return impl_->put_msg_va_plain(msg, args);
+//}
+//
+//size_t appender::render_msg_pln(const char *msg,
+//                                char *buff,
+//                                uint16_t *buff_len)
+//{
+//    return impl_->rended_msg_pln(msg, buff, buff_len);
+//}
+//
+//size_t appender::render_msg(const char *lvl_str,
+//                            const char *sign,
+//                            uint16_t sign_len,
+//                            uint32_t id,
+//                            const char *msg,
+//                            char *buff,
+//                            uint16_t *buff_len)
+//{
+//    return impl_->render_msg(lvl_str,
+//                             sign,
+//                             sign_len,
+//                             id,
+//                             msg,
+//                             buff,
+//                             buff_len);
+//}
+//
+//size_t appender::render_msg_va_pln(const char *msg,
+//                                   char *buff,
+//                                   uint16_t *buff_len,
+//                                   va_list args)
+//{
+//    return impl_->render_msg_va_pln(msg,
+//                                    buff,
+//                                    buff_len,
+//                                    args);
+//}
+//
+//size_t appender::render_msg_va(const char *lvl_str,
+//                               const char *sign,
+//                               uint16_t sign_len,
+//                               uint32_t id,
+//                               const char *msg,
+//                               char *buff,
+//                               uint16_t *buff_len,
+//                               va_list args)
+//{
+//    return impl_->render_msg_va(lvl_str,
+//                                sign,
+//                                sign_len,
+//                                id,
+//                                msg,
+//                                buff,
+//                                buff_len,
+//                                args);
+//}
 
 // std_logger_cfg_loader
 
@@ -568,7 +556,7 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
                 fclose(ferr);
             }
             get_appender_map().clear();
-            get_logger_map().clear();
+            spdlog::shutdown();
         }
         return res;
     }
@@ -634,7 +622,8 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
         int lnmax;
         std::string tkn;
         std::string app_file_name;
-        appender *apnd = nullptr;
+        std::shared_ptr<spdlog::sinks::sink> apnd;
+
         bool apnd_parsed = false, skip = false;
         while(!apnd_parsed && toknz.next_token(tkn, ",\n\r\f\t ", true)) {
             SKIP_SP_TAB(tkn)
@@ -642,14 +631,14 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
                 while(toknz.next_token(tkn, nullptr, true)) {
                     SKIP_SP_TAB(tkn)
                     if(is_new_line(tkn)) {
-                        apnd = new appender(stdout);
+                        apnd = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
                         apnd_parsed = skip = true;
                         break;
                     } else if(tkn == CM) {
                         if((res = parse_lines_max(toknz, lnmax))) {
                             return res;
                         }
-                        apnd = new appender(stdout);
+                        apnd = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
                         apnd_parsed = true;
                         break;
                     } else {
@@ -685,7 +674,7 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
                     SKIP_SP_TAB(tkn)
                     BRK_ON_TKN(tkn, CM)
                     if(is_new_line(tkn)) {
-                        apnd = new appender(app_file_name.c_str());
+                        apnd = std::make_shared<spdlog::sinks::basic_file_sink_mt>(app_file_name.c_str(), true);
                         apnd_parsed = skip = true;
                         break;
                     }
@@ -696,7 +685,7 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
                 if((res = parse_lines_max(toknz, lnmax))) {
                     return res;
                 }
-                apnd = new appender(app_file_name.c_str());
+                apnd = std::make_shared<spdlog::sinks::basic_file_sink_mt>(app_file_name.c_str(), true);
                 break;
             } else if(is_new_line(tkn)) {
                 LPrsERR_UNEXP(TKAPND, S_NL);
@@ -717,7 +706,7 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
             LPrsERR_UNEXP(TKAPND, tkn.c_str());
             return RetCode_BADCFG;
         }
-        get_appender_map()[apname] = std::unique_ptr<appender>(apnd);
+        get_appender_map()[apname] = apnd;
         return RetCode_OK;
     }
 
@@ -725,15 +714,15 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
                        std::string &lgsign,
                        str_tok &toknz) {
         std::string tkn;
-        logger *lggr = nullptr;
+        std::shared_ptr<spdlog::logger> lggr;
+
         bool lggr_parsed = false;
         while(!lggr_parsed && toknz.next_token(tkn, ",\n\r\f\t ", true)) {
             SKIP_SP_TAB(tkn)
             TraceLVL lvl = TL_DBG;
             if((lvl = get_trace_level_enum(tkn.c_str())) >= 0) {
-                uint16_t apnds_n = 0;
-                appender *apnds_l[LG_MAX_APNDS];
-                memset(apnds_l, 0, sizeof(apnds_l));
+                std::list<std::shared_ptr<spdlog::sinks::sink>> apnds_l;
+
                 while(toknz.next_token(tkn, nullptr, true)) {
                     SKIP_SP_TAB(tkn)
                     if(tkn == CM) {
@@ -751,7 +740,7 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
                         }
                         auto it = get_appender_map().find(tkn);
                         if(it != get_appender_map().end()) {
-                            apnds_l[apnds_n++] = it->second.get();
+                            apnds_l.push_back(it->second);
                             continue;
                         } else {
                             LPrsERR_APNF(lggrname.c_str(), tkn.c_str());
@@ -759,7 +748,7 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
                         }
                     }
                     if(is_new_line(tkn)) {
-                        if(apnds_n) {
+                        if(!apnds_l.empty()) {
                             lggr_parsed = true;
                             break;
                         } else {
@@ -768,7 +757,7 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
                         }
                     }
                 }
-                lggr = new logger(lvl, lgsign.c_str(), apnds_l, apnds_n);
+                lggr.reset(new spdlog::logger(lggrname.c_str(), apnds_l.begin(), apnds_l.end()));
             } else if(is_new_line(tkn)) {
                 LPrsERR_UNEXP(TKLGR, S_NL);
                 return RetCode_BADCFG;
@@ -780,7 +769,7 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
                 return RetCode_BADCFG;
             }
         }
-        get_logger_map()[lggrname] = std::unique_ptr<logger>(lggr);
+        spdlog::register_logger(lggr);
         return RetCode_OK;
     }
 
@@ -823,68 +812,68 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
 };
 
 // logger_impl
-
-struct logger_impl {
-    logger_impl(TraceLVL level,
-                const char *sign,
-                appender *apnds[],
-                uint16_t apnds_n) :
-        lvl_(level),
-        sign_len_((uint16_t)std::min(strlen(sign), (size_t)LG_MAX_SIGN_LEN)),
-        apnds_n_(apnds_n) {
-        memset(sign_, 0, sizeof(sign_));
-        strncpy(sign_, sign, sign_len_);
-        for(uint16_t i = 0; i < apnds_n; i++) {
-            apnds_[i] = apnds[i];
-        }
-    }
-
-    inline size_t spread_va_pln(const char *msg, va_list args) {
-        for(uint16_t i = 0; i < apnds_n_-1; i++) {
-            apnds_[i]->put_msg_va_plain(msg, args);
-        }
-        return apnds_[apnds_n_-1]->put_msg_va_plain(msg, args);
-    }
-
-    inline size_t spread_pln(const char *msg) {
-        for(uint16_t i = 0; i < apnds_n_-1; i++) {
-            apnds_[i]->put_msg_plain(msg);
-        }
-        return apnds_[apnds_n_-1]->put_msg_plain(msg);
-    }
-
-    inline size_t spread_va(TraceLVL level,
-                            uint32_t id,
-                            const char *msg,
-                            va_list args) {
-        for(uint16_t i = 0; i < apnds_n_-1; i++) {
-            apnds_[i]->put_msg_va(level, sign_, sign_len_, id, msg, args);
-        }
-        return apnds_[apnds_n_-1]->put_msg_va(level,
-                                              sign_,
-                                              sign_len_,
-                                              id,
-                                              msg,
-                                              args);
-    }
-
-    inline size_t spread(TraceLVL level, uint32_t id, const char *msg) {
-        for(uint16_t i = 0; i < apnds_n_-1; i++) {
-            apnds_[i]->put_msg(level, sign_, sign_len_, id, msg);
-        }
-        return apnds_[apnds_n_-1]->put_msg(level, sign_, sign_len_, id, msg);
-    }
-
-    inline void set_level(TraceLVL level) {
-        lvl_ = level;
-    }
-
-    TraceLVL lvl_;
-    uint16_t sign_len_;
-    char sign_[LG_MAX_SIGN_LEN+1];
-    uint16_t apnds_n_;
-    appender *apnds_[LG_MAX_APNDS];
-};
+//
+//struct logger_impl {
+//    logger_impl(TraceLVL level,
+//                const char *sign,
+//                appender *apnds[],
+//                uint16_t apnds_n) :
+//        lvl_(level),
+//        sign_len_((uint16_t)std::min(strlen(sign), (size_t)LG_MAX_SIGN_LEN)),
+//        apnds_n_(apnds_n) {
+//        memset(sign_, 0, sizeof(sign_));
+//        strncpy(sign_, sign, sign_len_);
+//        for(uint16_t i = 0; i < apnds_n; i++) {
+//            apnds_[i] = apnds[i];
+//        }
+//    }
+//
+//    inline size_t spread_va_pln(const char *msg, va_list args) {
+//        for(uint16_t i = 0; i < apnds_n_-1; i++) {
+//            apnds_[i]->put_msg_va_plain(msg, args);
+//        }
+//        return apnds_[apnds_n_-1]->put_msg_va_plain(msg, args);
+//    }
+//
+//    inline size_t spread_pln(const char *msg) {
+//        for(uint16_t i = 0; i < apnds_n_-1; i++) {
+//            apnds_[i]->put_msg_plain(msg);
+//        }
+//        return apnds_[apnds_n_-1]->put_msg_plain(msg);
+//    }
+//
+//    inline size_t spread_va(TraceLVL level,
+//                            uint32_t id,
+//                            const char *msg,
+//                            va_list args) {
+//        for(uint16_t i = 0; i < apnds_n_-1; i++) {
+//            apnds_[i]->put_msg_va(level, sign_, sign_len_, id, msg, args);
+//        }
+//        return apnds_[apnds_n_-1]->put_msg_va(level,
+//                                              sign_,
+//                                              sign_len_,
+//                                              id,
+//                                              msg,
+//                                              args);
+//    }
+//
+//    inline size_t spread(TraceLVL level, uint32_t id, const char *msg) {
+//        for(uint16_t i = 0; i < apnds_n_-1; i++) {
+//            apnds_[i]->put_msg(level, sign_, sign_len_, id, msg);
+//        }
+//        return apnds_[apnds_n_-1]->put_msg(level, sign_, sign_len_, id, msg);
+//    }
+//
+//    inline void set_level(TraceLVL level) {
+//        lvl_ = level;
+//    }
+//
+//    TraceLVL lvl_;
+//    uint16_t sign_len_;
+//    char sign_[LG_MAX_SIGN_LEN+1];
+//    uint16_t apnds_n_;
+//    appender *apnds_[LG_MAX_APNDS];
+//};
 
 #define LGGRREP_SPREADVA_PLN(msg, args)\
 for(uint16_t i = 0; i < impl_->apnds_n_; i++){\
@@ -907,26 +896,26 @@ for(uint16_t i = 0; i < impl_->apnds_n_; i++){\
 
 // logger
 
-RetCode logger::set_logger_cfg_file_dir(const char *dir)
+RetCode syslog_cfg::set_logger_cfg_file_dir(const char *dir)
 {
     log_cfg_file_dir = dir;
     return RetCode_OK;
 }
 
-RetCode logger::set_logger_cfg_file_path_name(const char *file_path)
+RetCode syslog_cfg::set_logger_cfg_file_path_name(const char *file_path)
 {
     log_cfg_file_name_path = file_path;
     return RetCode_OK;
 }
 
-RetCode logger::load_logger_config()
+RetCode syslog_cfg::load_logger_config()
 {
     return log_cfg_file_name_path.size() ?
            load_logger_config(log_cfg_file_name_path.c_str()) :
            load_logger_config("logger.cfg");
 }
 
-RetCode logger::load_logger_config(const char *fname)
+RetCode syslog_cfg::load_logger_config(const char *fname)
 {
     std_logger_cfg_loader scl(fname);
     RET_ON_KO(scl.init())
@@ -935,397 +924,397 @@ RetCode logger::load_logger_config(const char *fname)
     return RetCode_OK;
 }
 
-logger *logger::get_logger(const char *logger_name)
-{
-    if(!deflt_log_loaded) {
-        CMD_ON_KO(load_logger_config(), NO_ACTION)
-        deflt_log_loaded = true;
-    }
-    logger *log = nullptr;
-    CMD_ON_KO(get_logger(logger_name, &log), NO_ACTION)
-    if(!log) {
-        CMD_ON_KO(get_logger("root", &log), NO_ACTION)
-    }
-    return log;
-}
+//logger *logger::get_logger(const char *logger_name)
+//{
+//    if(!deflt_log_loaded) {
+//        CMD_ON_KO(load_logger_config(), NO_ACTION)
+//        deflt_log_loaded = true;
+//    }
+//    logger *log = nullptr;
+//    CMD_ON_KO(get_logger(logger_name, &log), NO_ACTION)
+//    if(!log) {
+//        CMD_ON_KO(get_logger("root", &log), NO_ACTION)
+//    }
+//    return log;
+//}
+//
+//RetCode logger::get_logger(const char *logger_name, logger **lggr)
+//{
+//    if(!logger_name || !logger_name[0]) {
+//        return RetCode_BADARG;
+//    }
+//    auto it = get_logger_map().find(logger_name);
+//    if(it != get_logger_map().end()) {
+//        *lggr = it->second.get();
+//        return RetCode_OK;
+//    } else {
+//        return RetCode_KO;
+//    }
+//}
 
-RetCode logger::get_logger(const char *logger_name, logger **lggr)
-{
-    if(!logger_name || !logger_name[0]) {
-        return RetCode_BADARG;
-    }
-    auto it = get_logger_map().find(logger_name);
-    if(it != get_logger_map().end()) {
-        *lggr = it->second.get();
-        return RetCode_OK;
-    } else {
-        return RetCode_KO;
-    }
-}
+//logger::logger(TraceLVL level, const char *sign, appender *apnds[], uint16_t apnds_n) :
+//    impl_(new logger_impl(level, sign, apnds, apnds_n))
+//{}
+//
+//logger::~logger()
+//{}
+//
+//TraceLVL logger::level()
+//{
+//    return impl_->lvl_;
+//}
+//
+//appender **logger::get_appenders()
+//{
+//    return &impl_->apnds_[0];
+//}
+//
+//uint16_t logger::get_appender_count()
+//{
+//    return impl_->apnds_n_;
+//}
+//
+//void logger::set_level(TraceLVL level)
+//{
+//    impl_->set_level(level);
+//}
+//
+//RetCode logger::add_appender(appender *apnd)
+//{
+//    if(!apnd) {
+//        return RetCode_BADARG;
+//    }
+//    if(impl_->apnds_n_ < LG_MAX_APNDS) {
+//        impl_->apnds_[impl_->apnds_n_++] = apnd;
+//    } else {
+//        return RetCode_OVRSZ;
+//    }
+//    return RetCode_OK;
+//}
 
-logger::logger(TraceLVL level, const char *sign, appender *apnds[], uint16_t apnds_n) :
-    impl_(new logger_impl(level, sign, apnds, apnds_n))
-{}
-
-logger::~logger()
-{}
-
-TraceLVL logger::level()
-{
-    return impl_->lvl_;
-}
-
-appender **logger::get_appenders()
-{
-    return &impl_->apnds_[0];
-}
-
-uint16_t logger::get_appender_count()
-{
-    return impl_->apnds_n_;
-}
-
-void logger::set_level(TraceLVL level)
-{
-    impl_->set_level(level);
-}
-
-RetCode logger::add_appender(appender *apnd)
-{
-    if(!apnd) {
-        return RetCode_BADARG;
-    }
-    if(impl_->apnds_n_ < LG_MAX_APNDS) {
-        impl_->apnds_[impl_->apnds_n_++] = apnd;
-    } else {
-        return RetCode_OVRSZ;
-    }
-    return RetCode_OK;
-}
-
-RetCode logger::remove_last_appender()
-{
-    if(impl_->apnds_n_) {
-        impl_->apnds_n_--;
-    }
-    return RetCode_OK;
-}
-
-size_t logger::log(TraceLVL level, uint32_t id, const char *msg, ...)
-{
-    size_t blen = 0;
-    va_list args;
-    switch(level) {
-        case TL_PLN:
-            LGGRREP_SPREADVA_PLN(msg, args);
-            break;
-        case TL_TRC:
-            if(impl_->lvl_ <= TL_TRC) {
-                LGGRREP_SPREADVA(TL_TRC, id, msg, args)
-            }
-            break;
-        case TL_DBG:
-            if(impl_->lvl_ <= TL_DBG) {
-                LGGRREP_SPREADVA(TL_DBG, id, msg, args)
-            }
-            break;
-        case TL_INF:
-            if(impl_->lvl_ <= TL_INF) {
-                LGGRREP_SPREADVA(TL_INF, id, msg, args)
-            }
-            break;
-        case TL_WRN:
-            if(impl_->lvl_ <= TL_WRN) {
-                LGGRREP_SPREADVA(TL_WRN, id, msg, args)
-            }
-            break;
-        case TL_ERR:
-            if(impl_->lvl_ <= TL_ERR) {
-                LGGRREP_SPREADVA(TL_ERR, id, msg, args)
-            }
-            break;
-        case TL_CRI:
-            if(impl_->lvl_ <= TL_CRI) {
-                LGGRREP_SPREADVA(TL_CRI, id, msg, args)
-            }
-            break;
-        case TL_FAT:
-            if(impl_->lvl_ <= TL_FAT) {
-                LGGRREP_SPREADVA(TL_FAT, id, msg, args)
-            }
-            break;
-        default:
-            break;
-    }
-    return blen;
-}
-
-size_t logger::pln(const char *msg, ...)
-{
-    size_t blen = 0;
-    va_list args;
-    LGGRREP_SPREADVA_PLN(msg, args)
-    return blen;
-}
-
-size_t logger::low(uint32_t id, const char *msg, ...)
-{
-    size_t blen = 0;
-    va_list args;
-    if(impl_->lvl_ <= TL_LOW) {
-        LGGRREP_SPREADVA(TL_LOW, id, msg, args)
-    }
-    return blen;
-}
-
-size_t logger::trc(uint32_t id, const char *msg, ...)
-{
-    size_t blen = 0;
-    va_list args;
-    if(impl_->lvl_ <= TL_TRC) {
-        LGGRREP_SPREADVA(TL_TRC, id, msg, args)
-    }
-    return blen;
-}
-
-size_t logger::dbg(uint32_t id, const char *msg, ...)
-{
-    size_t blen = 0;
-    va_list args;
-    if(impl_->lvl_ <= TL_DBG) {
-        LGGRREP_SPREADVA(TL_DBG, id, msg, args)
-    }
-    return blen;
-}
-
-size_t logger::inf(uint32_t id, const char *msg, ...)
-{
-    size_t blen = 0;
-    va_list args;
-    if(impl_->lvl_ <= TL_INF) {
-        LGGRREP_SPREADVA(TL_INF, id, msg, args)
-    }
-    return blen;
-}
-
-size_t logger::wrn(uint32_t id, const char *msg, ...)
-{
-    size_t blen = 0;
-    va_list args;
-    if(impl_->lvl_ <= TL_WRN) {
-        LGGRREP_SPREADVA(TL_WRN, id, msg, args)
-    }
-    return blen;
-}
-
-size_t logger::err(uint32_t id, const char *msg, ...)
-{
-    size_t blen = 0;
-    va_list args;
-    if(impl_->lvl_ <= TL_ERR) {
-        LGGRREP_SPREADVA(TL_ERR, id, msg, args)
-    }
-    return blen;
-}
-
-size_t logger::cri(uint32_t id, const char *msg, ...)
-{
-    size_t blen = 0;
-    va_list args;
-    if(impl_->lvl_ <= TL_CRI) {
-        LGGRREP_SPREADVA(TL_CRI, id, msg, args)
-    }
-    return blen;
-}
-
-size_t logger::fat(uint32_t id, const char *msg, ...)
-{
-    size_t blen = 0;
-    va_list args;
-    if(impl_->lvl_ <= TL_FAT) {
-        LGGRREP_SPREADVA(TL_FAT, id, msg, args)
-    }
-    return blen;
-}
-
-size_t logger::plnm(const char *msg)
-{
-    return impl_->spread_pln(msg);
-}
-
-size_t logger::lowm(uint32_t id, const char *msg)
-{
-    return impl_->spread(TL_LOW, id, msg);
-}
-
-size_t logger::trcm(uint32_t id, const char *msg)
-{
-    return impl_->spread(TL_TRC, id, msg);
-}
-
-size_t logger::dbgm(uint32_t id, const char *msg)
-{
-    return impl_->spread(TL_DBG, id, msg);
-}
-
-size_t logger::infm(uint32_t id, const char *msg)
-{
-    return impl_->spread(TL_INF, id, msg);
-}
-
-size_t logger::wrnm(uint32_t id, const char *msg)
-{
-    return impl_->spread(TL_WRN, id, msg);
-}
-
-size_t logger::errm(uint32_t id, const char *msg)
-{
-    return impl_->spread(TL_ERR, id, msg);
-}
-
-size_t logger::crim(uint32_t id, const char *msg)
-{
-    return impl_->spread(TL_CRI, id, msg);
-}
-
-size_t logger::fatm(uint32_t id, const char *msg)
-{
-    return impl_->spread(TL_FAT, id, msg);
-}
-
-size_t logger::trc_nclass(uint32_t id,
-                          const nclass *obj,
-                          bool print_nclass_name,
-                          const char *msg,
-                          ...)
-{
-    size_t blen = 0;
-    char msg_b[LG_BUF_LEN_16K];
-    if(level() <= TL_TRC) {
-        va_list args;
-        va_start(args, msg);
-        blen = vsprintf(msg_b, msg, args);
-        va_end(args);
-        obj->pretty_dump_to_buffer(&msg_b[blen], print_nclass_name);
-        blen = dbgm(id, msg_b);
-    }
-    return blen;
-}
-
-
-size_t logger::dbg_nclass(uint32_t id,
-                          const nclass *obj,
-                          bool print_nclass_name,
-                          const char *msg,
-                          ...)
-{
-    size_t blen = 0;
-    char msg_b[LG_BUF_LEN_16K];
-    if(level() <= TL_DBG) {
-        va_list args;
-        va_start(args, msg);
-        blen = vsprintf(msg_b, msg, args);
-        va_end(args);
-        obj->pretty_dump_to_buffer(&msg_b[blen], print_nclass_name);
-        blen = dbgm(id, msg_b);
-    }
-    return blen;
-}
-
-size_t logger::inf_nclass(uint32_t id,
-                          const nclass *obj,
-                          bool print_nclass_name,
-                          const char *msg,
-                          ...)
-{
-    size_t blen = 0;
-    char msg_b[LG_BUF_LEN_16K];
-    if(level() <= TL_INF) {
-        va_list args;
-        va_start(args, msg);
-        blen = vsprintf(msg_b, msg, args);
-        va_end(args);
-        obj->pretty_dump_to_buffer(&msg_b[blen], print_nclass_name);
-        blen = infm(id, msg_b);
-    }
-    return blen;
-}
-
-size_t logger::wrn_nclass(uint32_t id,
-                          const nclass *obj,
-                          bool print_nclass_name,
-                          const char *msg,
-                          ...)
-{
-    size_t blen = 0;
-    char msg_b[LG_BUF_LEN_16K];
-    if(level() <= TL_WRN) {
-        va_list args;
-        va_start(args, msg);
-        blen = vsprintf(msg_b, msg, args);
-        va_end(args);
-        obj->pretty_dump_to_buffer(&msg_b[blen], print_nclass_name);
-        blen = wrnm(id, msg_b);
-    }
-    return blen;
-}
-
-size_t logger::err_nclass(uint32_t id,
-                          const nclass *obj,
-                          bool print_nclass_name,
-                          const char *msg,
-                          ...)
-{
-    size_t blen = 0;
-    char msg_b[LG_BUF_LEN_16K];
-    if(level() <= TL_ERR) {
-        va_list args;
-        va_start(args, msg);
-        blen = vsprintf(msg_b, msg, args);
-        va_end(args);
-        obj->pretty_dump_to_buffer(&msg_b[blen], print_nclass_name);
-        blen = errm(id, msg_b);
-    }
-    return blen;
-}
-
-size_t logger::cri_nclass(uint32_t id,
-                          const nclass *obj,
-                          bool print_nclass_name,
-                          const char *msg,
-                          ...)
-{
-    size_t blen = 0;
-    char msg_b[LG_BUF_LEN_16K];
-    if(level() <= TL_CRI) {
-        va_list args;
-        va_start(args, msg);
-        blen = vsprintf(msg_b, msg, args);
-        va_end(args);
-        obj->pretty_dump_to_buffer(&msg_b[blen], print_nclass_name);
-        blen = crim(id, msg_b);
-    }
-    return blen;
-}
-
-size_t logger::fat_nclass(uint32_t id,
-                          const nclass *obj,
-                          bool print_nclass_name,
-                          const char *msg,
-                          ...)
-{
-    size_t blen = 0;
-    char msg_b[LG_BUF_LEN_16K];
-    if(level() <= TL_FAT) {
-        va_list args;
-        va_start(args, msg);
-        blen = vsprintf(msg_b, msg, args);
-        va_end(args);
-        obj->pretty_dump_to_buffer(&msg_b[blen], print_nclass_name);
-        blen = fatm(id, msg_b);
-    }
-    return blen;
-}
+//RetCode logger::remove_last_appender()
+//{
+//    if(impl_->apnds_n_) {
+//        impl_->apnds_n_--;
+//    }
+//    return RetCode_OK;
+//}
+//
+//size_t logger::log(TraceLVL level, uint32_t id, const char *msg, ...)
+//{
+//    size_t blen = 0;
+//    va_list args;
+//    switch(level) {
+//        case TL_PLN:
+//            LGGRREP_SPREADVA_PLN(msg, args);
+//            break;
+//        case TL_TRC:
+//            if(impl_->lvl_ <= TL_TRC) {
+//                LGGRREP_SPREADVA(TL_TRC, id, msg, args)
+//            }
+//            break;
+//        case TL_DBG:
+//            if(impl_->lvl_ <= TL_DBG) {
+//                LGGRREP_SPREADVA(TL_DBG, id, msg, args)
+//            }
+//            break;
+//        case TL_INF:
+//            if(impl_->lvl_ <= TL_INF) {
+//                LGGRREP_SPREADVA(TL_INF, id, msg, args)
+//            }
+//            break;
+//        case TL_WRN:
+//            if(impl_->lvl_ <= TL_WRN) {
+//                LGGRREP_SPREADVA(TL_WRN, id, msg, args)
+//            }
+//            break;
+//        case TL_ERR:
+//            if(impl_->lvl_ <= TL_ERR) {
+//                LGGRREP_SPREADVA(TL_ERR, id, msg, args)
+//            }
+//            break;
+//        case TL_CRI:
+//            if(impl_->lvl_ <= TL_CRI) {
+//                LGGRREP_SPREADVA(TL_CRI, id, msg, args)
+//            }
+//            break;
+//        case TL_FAT:
+//            if(impl_->lvl_ <= TL_FAT) {
+//                LGGRREP_SPREADVA(TL_FAT, id, msg, args)
+//            }
+//            break;
+//        default:
+//            break;
+//    }
+//    return blen;
+//}
+//
+//size_t logger::pln(const char *msg, ...)
+//{
+//    size_t blen = 0;
+//    va_list args;
+//    LGGRREP_SPREADVA_PLN(msg, args)
+//    return blen;
+//}
+//
+//size_t logger::low(uint32_t id, const char *msg, ...)
+//{
+//    size_t blen = 0;
+//    va_list args;
+//    if(impl_->lvl_ <= TL_LOW) {
+//        LGGRREP_SPREADVA(TL_LOW, id, msg, args)
+//    }
+//    return blen;
+//}
+//
+//size_t logger::trc(uint32_t id, const char *msg, ...)
+//{
+//    size_t blen = 0;
+//    va_list args;
+//    if(impl_->lvl_ <= TL_TRC) {
+//        LGGRREP_SPREADVA(TL_TRC, id, msg, args)
+//    }
+//    return blen;
+//}
+//
+//size_t logger::dbg(uint32_t id, const char *msg, ...)
+//{
+//    size_t blen = 0;
+//    va_list args;
+//    if(impl_->lvl_ <= TL_DBG) {
+//        LGGRREP_SPREADVA(TL_DBG, id, msg, args)
+//    }
+//    return blen;
+//}
+//
+//size_t logger::inf(uint32_t id, const char *msg, ...)
+//{
+//    size_t blen = 0;
+//    va_list args;
+//    if(impl_->lvl_ <= TL_INF) {
+//        LGGRREP_SPREADVA(TL_INF, id, msg, args)
+//    }
+//    return blen;
+//}
+//
+//size_t logger::wrn(uint32_t id, const char *msg, ...)
+//{
+//    size_t blen = 0;
+//    va_list args;
+//    if(impl_->lvl_ <= TL_WRN) {
+//        LGGRREP_SPREADVA(TL_WRN, id, msg, args)
+//    }
+//    return blen;
+//}
+//
+//size_t logger::err(uint32_t id, const char *msg, ...)
+//{
+//    size_t blen = 0;
+//    va_list args;
+//    if(impl_->lvl_ <= TL_ERR) {
+//        LGGRREP_SPREADVA(TL_ERR, id, msg, args)
+//    }
+//    return blen;
+//}
+//
+//size_t logger::cri(uint32_t id, const char *msg, ...)
+//{
+//    size_t blen = 0;
+//    va_list args;
+//    if(impl_->lvl_ <= TL_CRI) {
+//        LGGRREP_SPREADVA(TL_CRI, id, msg, args)
+//    }
+//    return blen;
+//}
+//
+//size_t logger::fat(uint32_t id, const char *msg, ...)
+//{
+//    size_t blen = 0;
+//    va_list args;
+//    if(impl_->lvl_ <= TL_FAT) {
+//        LGGRREP_SPREADVA(TL_FAT, id, msg, args)
+//    }
+//    return blen;
+//}
+//
+//size_t logger::plnm(const char *msg)
+//{
+//    return impl_->spread_pln(msg);
+//}
+//
+//size_t logger::lowm(uint32_t id, const char *msg)
+//{
+//    return impl_->spread(TL_LOW, id, msg);
+//}
+//
+//size_t logger::trcm(uint32_t id, const char *msg)
+//{
+//    return impl_->spread(TL_TRC, id, msg);
+//}
+//
+//size_t logger::dbgm(uint32_t id, const char *msg)
+//{
+//    return impl_->spread(TL_DBG, id, msg);
+//}
+//
+//size_t logger::infm(uint32_t id, const char *msg)
+//{
+//    return impl_->spread(TL_INF, id, msg);
+//}
+//
+//size_t logger::wrnm(uint32_t id, const char *msg)
+//{
+//    return impl_->spread(TL_WRN, id, msg);
+//}
+//
+//size_t logger::errm(uint32_t id, const char *msg)
+//{
+//    return impl_->spread(TL_ERR, id, msg);
+//}
+//
+//size_t logger::crim(uint32_t id, const char *msg)
+//{
+//    return impl_->spread(TL_CRI, id, msg);
+//}
+//
+//size_t logger::fatm(uint32_t id, const char *msg)
+//{
+//    return impl_->spread(TL_FAT, id, msg);
+//}
+//
+//size_t logger::trc_nclass(uint32_t id,
+//                          const nclass *obj,
+//                          bool print_nclass_name,
+//                          const char *msg,
+//                          ...)
+//{
+//    size_t blen = 0;
+//    char msg_b[LG_BUF_LEN_16K];
+//    if(level() <= TL_TRC) {
+//        va_list args;
+//        va_start(args, msg);
+//        blen = vsprintf(msg_b, msg, args);
+//        va_end(args);
+//        obj->pretty_dump_to_buffer(&msg_b[blen], print_nclass_name);
+//        blen = dbgm(id, msg_b);
+//    }
+//    return blen;
+//}
+//
+//
+//size_t logger::dbg_nclass(uint32_t id,
+//                          const nclass *obj,
+//                          bool print_nclass_name,
+//                          const char *msg,
+//                          ...)
+//{
+//    size_t blen = 0;
+//    char msg_b[LG_BUF_LEN_16K];
+//    if(level() <= TL_DBG) {
+//        va_list args;
+//        va_start(args, msg);
+//        blen = vsprintf(msg_b, msg, args);
+//        va_end(args);
+//        obj->pretty_dump_to_buffer(&msg_b[blen], print_nclass_name);
+//        blen = dbgm(id, msg_b);
+//    }
+//    return blen;
+//}
+//
+//size_t logger::inf_nclass(uint32_t id,
+//                          const nclass *obj,
+//                          bool print_nclass_name,
+//                          const char *msg,
+//                          ...)
+//{
+//    size_t blen = 0;
+//    char msg_b[LG_BUF_LEN_16K];
+//    if(level() <= TL_INF) {
+//        va_list args;
+//        va_start(args, msg);
+//        blen = vsprintf(msg_b, msg, args);
+//        va_end(args);
+//        obj->pretty_dump_to_buffer(&msg_b[blen], print_nclass_name);
+//        blen = infm(id, msg_b);
+//    }
+//    return blen;
+//}
+//
+//size_t logger::wrn_nclass(uint32_t id,
+//                          const nclass *obj,
+//                          bool print_nclass_name,
+//                          const char *msg,
+//                          ...)
+//{
+//    size_t blen = 0;
+//    char msg_b[LG_BUF_LEN_16K];
+//    if(level() <= TL_WRN) {
+//        va_list args;
+//        va_start(args, msg);
+//        blen = vsprintf(msg_b, msg, args);
+//        va_end(args);
+//        obj->pretty_dump_to_buffer(&msg_b[blen], print_nclass_name);
+//        blen = wrnm(id, msg_b);
+//    }
+//    return blen;
+//}
+//
+//size_t logger::err_nclass(uint32_t id,
+//                          const nclass *obj,
+//                          bool print_nclass_name,
+//                          const char *msg,
+//                          ...)
+//{
+//    size_t blen = 0;
+//    char msg_b[LG_BUF_LEN_16K];
+//    if(level() <= TL_ERR) {
+//        va_list args;
+//        va_start(args, msg);
+//        blen = vsprintf(msg_b, msg, args);
+//        va_end(args);
+//        obj->pretty_dump_to_buffer(&msg_b[blen], print_nclass_name);
+//        blen = errm(id, msg_b);
+//    }
+//    return blen;
+//}
+//
+//size_t logger::cri_nclass(uint32_t id,
+//                          const nclass *obj,
+//                          bool print_nclass_name,
+//                          const char *msg,
+//                          ...)
+//{
+//    size_t blen = 0;
+//    char msg_b[LG_BUF_LEN_16K];
+//    if(level() <= TL_CRI) {
+//        va_list args;
+//        va_start(args, msg);
+//        blen = vsprintf(msg_b, msg, args);
+//        va_end(args);
+//        obj->pretty_dump_to_buffer(&msg_b[blen], print_nclass_name);
+//        blen = crim(id, msg_b);
+//    }
+//    return blen;
+//}
+//
+//size_t logger::fat_nclass(uint32_t id,
+//                          const nclass *obj,
+//                          bool print_nclass_name,
+//                          const char *msg,
+//                          ...)
+//{
+//    size_t blen = 0;
+//    char msg_b[LG_BUF_LEN_16K];
+//    if(level() <= TL_FAT) {
+//        va_list args;
+//        va_start(args, msg);
+//        blen = vsprintf(msg_b, msg, args);
+//        va_end(args);
+//        obj->pretty_dump_to_buffer(&msg_b[blen], print_nclass_name);
+//        blen = fatm(id, msg_b);
+//    }
+//    return blen;
+//}
 
 }
 
@@ -1335,22 +1324,22 @@ extern "C" {
 
     vlg::RetCode logger_set_logger_cfg_file_dir(const char *dir)
     {
-        return vlg::logger::set_logger_cfg_file_dir(dir);
+        return vlg::syslog_cfg::set_logger_cfg_file_dir(dir);
     }
 
     vlg::RetCode logger_set_logger_cfg_file_path_name(const char *file_path)
     {
-        return vlg::logger::set_logger_cfg_file_path_name(file_path);
+        return vlg::syslog_cfg::set_logger_cfg_file_path_name(file_path);
     }
 
     vlg::RetCode logger_load_logger_config()
     {
-        return vlg::logger::load_logger_config();
+        return vlg::syslog_cfg::load_logger_config();
     }
 
     vlg::RetCode logger_load_logger_config_by_name(const char *fname)
     {
-        return vlg::logger::load_logger_config(fname);
+        return vlg::syslog_cfg::load_logger_config(fname);
     }
 
 }
