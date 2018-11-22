@@ -6,16 +6,13 @@
 
 #include "glob.h"
 
-#define LG_BUF_LEN_16K 16384
-
-#define TL_LOW_STR "LOW"
 #define TL_TRC_STR "TRC"
 #define TL_DBG_STR "DBG"
 #define TL_INF_STR "INF"
 #define TL_WRN_STR "WRN"
 #define TL_ERR_STR "ERR"
 #define TL_CRI_STR "CRI"
-#define TL_FAT_STR "FAT"
+#define TL_OFF_STR "OFF"
 
 #define LS_MSEP     ":"
 #define LG_INIT_ERR_TK      "LIE"
@@ -40,9 +37,7 @@ static std::string log_cfg_file_name_path;
 
 TraceLVL get_trace_level_enum(const char *str)
 {
-    if(!strcmp(str, TL_LOW_STR)) {
-        return TL_LOW;
-    } else if(!strcmp(str, TL_TRC_STR)) {
+    if(!strcmp(str, TL_TRC_STR)) {
         return TL_TRC;
     } else if(!strcmp(str, TL_DBG_STR)) {
         return TL_DBG;
@@ -54,8 +49,8 @@ TraceLVL get_trace_level_enum(const char *str)
         return TL_ERR;
     } else if(!strcmp(str, TL_CRI_STR)) {
         return TL_CRI;
-    } else if(!strcmp(str, TL_FAT_STR)) {
-        return TL_FAT;
+    } else if(!strcmp(str, TL_OFF_STR)) {
+        return TL_OFF;
     } else {
         return TL_EVL;
     }
@@ -64,10 +59,6 @@ TraceLVL get_trace_level_enum(const char *str)
 const char *get_trace_level_string(TraceLVL lvl)
 {
     switch(lvl) {
-        case TL_PLN:
-            return "";
-        case TL_LOW:
-            return TL_LOW_STR;
         case TL_TRC:
             return TL_TRC_STR;
         case TL_DBG:
@@ -80,10 +71,32 @@ const char *get_trace_level_string(TraceLVL lvl)
             return TL_ERR_STR;
         case TL_CRI:
             return TL_CRI_STR;
-        case TL_FAT:
-            return TL_FAT_STR;
+        case TL_OFF:
+            return TL_OFF_STR;
         default:
-            return TL_DBG_STR;
+            return TL_INF_STR;
+    }
+}
+
+spdlog::level::level_enum get_spdlevel(TraceLVL lvl)
+{
+    switch(lvl) {
+        case TL_TRC:
+            return spdlog::level::level_enum::trace;
+        case TL_DBG:
+            return spdlog::level::level_enum::debug;
+        case TL_INF:
+            return spdlog::level::level_enum::info;
+        case TL_WRN:
+            return spdlog::level::level_enum::warn;
+        case TL_ERR:
+            return spdlog::level::level_enum::err;
+        case TL_CRI:
+            return spdlog::level::level_enum::critical;
+        case TL_OFF:
+            return spdlog::level::level_enum::off;
+        default:
+            return spdlog::level::level_enum::info;
     }
 }
 
@@ -158,8 +171,8 @@ std::unordered_map<std::string, std::shared_ptr<spdlog::sinks::sink>> &get_appen
 // logger_cfg_loader
 
 struct logger_cfg_loader {
-	virtual ~logger_cfg_loader() {};
-	virtual RetCode load_cfg() = 0;
+    virtual ~logger_cfg_loader() {};
+    virtual RetCode load_cfg() = 0;
 };
 
 // std_logger_cfg_loader
@@ -278,70 +291,73 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
         std::string tkn;
         std::string app_file_name;
         std::shared_ptr<spdlog::sinks::sink> apnd;
-
+        TraceLVL lvl = TL_EVL;
         bool apnd_parsed = false, skip = false;
         while(!apnd_parsed && toknz.next_token(tkn, ",\n\r\f\t ", true)) {
             SKIP_SP_TAB(tkn)
-            if(tkn == "stdout") {
-                while(toknz.next_token(tkn, nullptr, true)) {
-                    SKIP_SP_TAB(tkn)
-                    if(is_new_line(tkn)) {
-                        apnd = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-                        apnd_parsed = skip = true;
-                        break;
-                    } else if(tkn == CM) {
-                        if((res = parse_lines_max(toknz, lnmax))) {
-                            return res;
+            lvl = get_trace_level_enum(tkn.c_str());
+            if(lvl >= 0) {
+                if(tkn == "console") {
+                    while(toknz.next_token(tkn, nullptr, true)) {
+                        SKIP_SP_TAB(tkn)
+                        if(is_new_line(tkn)) {
+                            apnd = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+                            apnd_parsed = skip = true;
+                            break;
+                        } else if(tkn == CM) {
+                            if((res = parse_lines_max(toknz, lnmax))) {
+                                return res;
+                            }
+                            apnd = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+                            apnd_parsed = true;
+                            break;
+                        } else {
+                            LPrsERR_UNEXP(TKAPND, tkn.c_str());
+                            return RetCode_BADCFG;
                         }
-                        apnd = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-                        apnd_parsed = true;
-                        break;
-                    } else {
-                        LPrsERR_UNEXP(TKAPND, tkn.c_str());
-                        return RetCode_BADCFG;
                     }
-                }
-            } else if(tkn == "file") {
-                while(toknz.next_token(tkn, nullptr, true)) {
-                    SKIP_SP_TAB(tkn)
-                    BRK_ON_TKN(tkn, CM)
-                    if(is_new_line(tkn)) {
-                        LPrsERR_EXP(TKAPND, S_NL);
-                        return RetCode_BADCFG;
-                    } else {
-                        LPrsERR_UNEXP(TKAPND, tkn.c_str());
+                } else if(tkn == "file") {
+                    while(toknz.next_token(tkn, nullptr, true)) {
+                        SKIP_SP_TAB(tkn)
+                        BRK_ON_TKN(tkn, CM)
+                        if(is_new_line(tkn)) {
+                            LPrsERR_EXP(TKAPND, S_NL);
+                            return RetCode_BADCFG;
+                        } else {
+                            LPrsERR_UNEXP(TKAPND, tkn.c_str());
+                        }
                     }
-                }
-                while(toknz.next_token(tkn, nullptr, true)) {
-                    SKIP_SP_TAB(tkn)
-                    if(tkn == CM) {
-                        LPrsERR_UNEXP(TKAPND, CM);
-                        return RetCode_BADCFG;
-                    }
-                    if(is_new_line(tkn)) {
-                        LPrsERR_UNEXP(TKAPND, S_NL);
-                        return RetCode_BADCFG;
-                    }
-                    break;
-                }
-                app_file_name.assign(tkn);
-                while(toknz.next_token(tkn, nullptr, true)) {
-                    SKIP_SP_TAB(tkn)
-                    BRK_ON_TKN(tkn, CM)
-                    if(is_new_line(tkn)) {
-                        apnd = std::make_shared<spdlog::sinks::basic_file_sink_mt>(app_file_name.c_str(), true);
-                        apnd_parsed = skip = true;
+                    while(toknz.next_token(tkn, nullptr, true)) {
+                        SKIP_SP_TAB(tkn)
+                        if(tkn == CM) {
+                            LPrsERR_UNEXP(TKAPND, CM);
+                            return RetCode_BADCFG;
+                        }
+                        if(is_new_line(tkn)) {
+                            LPrsERR_UNEXP(TKAPND, S_NL);
+                            return RetCode_BADCFG;
+                        }
                         break;
                     }
-                }
-                if(apnd_parsed) {
+                    app_file_name.assign(tkn);
+                    while(toknz.next_token(tkn, nullptr, true)) {
+                        SKIP_SP_TAB(tkn)
+                        BRK_ON_TKN(tkn, CM)
+                        if(is_new_line(tkn)) {
+                            apnd = std::make_shared<spdlog::sinks::basic_file_sink_mt>(app_file_name.c_str(), true);
+                            apnd_parsed = skip = true;
+                            break;
+                        }
+                    }
+                    if(apnd_parsed) {
+                        break;
+                    }
+                    if((res = parse_lines_max(toknz, lnmax))) {
+                        return res;
+                    }
+                    apnd = std::make_shared<spdlog::sinks::basic_file_sink_mt>(app_file_name.c_str(), true);
                     break;
                 }
-                if((res = parse_lines_max(toknz, lnmax))) {
-                    return res;
-                }
-                apnd = std::make_shared<spdlog::sinks::basic_file_sink_mt>(app_file_name.c_str(), true);
-                break;
             } else if(is_new_line(tkn)) {
                 LPrsERR_UNEXP(TKAPND, S_NL);
                 return RetCode_BADCFG;
@@ -361,21 +377,22 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
             LPrsERR_UNEXP(TKAPND, tkn.c_str());
             return RetCode_BADCFG;
         }
+        apnd->set_level(get_spdlevel(lvl));
         get_appender_map()[apname] = apnd;
         return RetCode_OK;
     }
 
     RetCode parse_lggr(std::string &lggrname,
-                       std::string &lgsign,
                        str_tok &toknz) {
         std::string tkn;
         std::shared_ptr<spdlog::logger> lggr;
+        TraceLVL lvl = TL_EVL;
 
         bool lggr_parsed = false;
         while(!lggr_parsed && toknz.next_token(tkn, ",\n\r\f\t ", true)) {
             SKIP_SP_TAB(tkn)
-            TraceLVL lvl = TL_DBG;
-            if((lvl = get_trace_level_enum(tkn.c_str())) >= 0) {
+            lvl = get_trace_level_enum(tkn.c_str());
+            if(lvl >= 0) {
                 std::list<std::shared_ptr<spdlog::sinks::sink>> apnds_l;
 
                 while(toknz.next_token(tkn, nullptr, true)) {
@@ -424,6 +441,7 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
                 return RetCode_BADCFG;
             }
         }
+        lggr->set_level(get_spdlevel(lvl));
         spdlog::register_logger(lggr);
         return RetCode_OK;
     }
@@ -431,7 +449,7 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
     RetCode parse_data(std::string &data) {
         RetCode res = RetCode_OK;
         unsigned long lnum = 1;
-        std::string tkn, apname, lggrname, lgsign;
+        std::string tkn, apname, lggrname;
         str_tok tknz(data);
         while(tknz.next_token(tkn, DF_DLM DT EQ, true)) {
             SKIP_SP_TAB(tkn)
@@ -448,10 +466,8 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
                 //LOGGER
                 RET_ON_KO(read_dot(lnum, tknz))
                 RET_ON_KO(read_tkn(lnum, tknz, lggrname))
-                RET_ON_KO(read_dot(lnum, tknz))
-                RET_ON_KO(read_tkn(lnum, tknz, lgsign))
                 RET_ON_KO(skip_sp_tab_and_read_eq(lnum, tknz))
-                if((res = parse_lggr(lggrname, lgsign, tknz))) {
+                if((res = parse_lggr(lggrname, tknz))) {
                     break;
                 }
             } else {
@@ -511,6 +527,12 @@ extern "C" {
     {
         delete(std::shared_ptr<spdlog::logger> *)(l);
     }
+
+	void syslog_unload()
+	{
+		spdlog::shutdown();
+		get_appender_map().clear();
+	}
 }
 
 }

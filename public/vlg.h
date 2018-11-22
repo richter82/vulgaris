@@ -102,15 +102,13 @@ typedef enum {
 */
 typedef enum {
     TL_EVL = -1,    /**< error value*/
-    TL_PLN,         /**< plain log value*/
-    TL_LOW,         /**< low log value*/
     TL_TRC,         /**< trace log value*/
     TL_DBG,         /**< debug log value*/
     TL_INF,         /**< info log value*/
     TL_WRN,         /**< warning log value*/
     TL_ERR,         /**< error log value*/
     TL_CRI,         /**< critical log value*/
-    TL_FAT          /**< fatal log value*/
+    TL_OFF,         /**< off log value*/
 } TraceLVL;
 
 #if defined(__cplusplus)
