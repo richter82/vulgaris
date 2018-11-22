@@ -564,7 +564,7 @@ struct entry_point {
 
 int main(int argc, char *argv[])
 {
-	own_log = vlg::syslog_get_retained("root");
+    own_log = vlg::syslog_get_retained("root");
     entry_point ep;
     ep.init();
     ep.start_peer(argc, argv, true);
@@ -588,6 +588,6 @@ int main(int argc, char *argv[])
     mon.lock();
     mon.wait();
     mon.unlock();
-	vlg::syslog_release_retained(own_log);
+    vlg::syslog_release_retained(own_log);
     return 0;
 }
