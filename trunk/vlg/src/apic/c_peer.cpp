@@ -9,23 +9,6 @@
 using namespace vlg;
 
 extern "C" {
-    RetCode set_logger_cfg_file_dir(const char *dir)
-    {
-        return syslog_cfg::set_logger_cfg_file_dir(dir);
-    }
-
-    RetCode set_logger_cfg_file_path_name(const char *file_path)
-    {
-        return syslog_cfg::set_logger_cfg_file_path_name(file_path);
-    }
-
-    RetCode load_logger_cfg()
-    {
-        return syslog_cfg::load_logger_config();
-    }
-}
-
-extern "C" {
     typedef struct own_peer own_peer;
     typedef struct shr_incoming_connection shr_incoming_connection;
     typedef struct own_incoming_connection own_incoming_connection;
@@ -114,7 +97,6 @@ extern "C" {
     typedef void(*inco_subscription_on_releaseable)(incoming_subscription *isbs,
                                                     void *ud,
                                                     void *ud2);
-
 }
 
 //c_inco_tx

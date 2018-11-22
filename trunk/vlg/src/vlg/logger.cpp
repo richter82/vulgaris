@@ -468,32 +468,32 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
 
 // logger
 
-std::shared_ptr<spdlog::logger> syslog_cfg::get_logger(const char *logger_name)
+std::shared_ptr<spdlog::logger> get_logger(const char *logger_name)
 {
     return spdlog::get(logger_name) ? spdlog::get(logger_name) : spdlog::default_logger();
 }
 
 extern "C" {
-    RetCode set_logger_cfg_file_dir(const char *dir)
+    RetCode syslog_set_cfg_file_dir(const char *dir)
     {
         log_cfg_file_dir = dir;
         return RetCode_OK;
     }
 
-    RetCode set_logger_cfg_file_path_name(const char *file_path)
+    RetCode syslog_set_cfg_file_path_name(const char *file_path)
     {
         log_cfg_file_name_path = file_path;
         return RetCode_OK;
     }
 
-    RetCode load_logger_config()
+    RetCode syslog_load_config()
     {
         return log_cfg_file_name_path.size() ?
-               load_logger_config(log_cfg_file_name_path.c_str()) :
-               load_logger_config("logger.cfg");
+               syslog_load_config_by_fname(log_cfg_file_name_path.c_str()) :
+               syslog_load_config_by_fname("logger.cfg");
     }
 
-    RetCode load_logger_config(const char *fname)
+    RetCode syslog_load_config_by_fname(const char *fname)
     {
         std_logger_cfg_loader scl(fname);
         RET_ON_KO(scl.init())
@@ -502,21 +502,15 @@ extern "C" {
         return RetCode_OK;
     }
 
-	own_logger *get_own_logger(const char *logger_name)
-	{
-		return (own_logger*) new std::shared_ptr<spdlog::logger>(syslog_cfg::get_logger(logger_name));
-	}
+    logger *syslog_get_retained(const char *logger_name)
+    {
+        return (logger *) new std::shared_ptr<spdlog::logger>(get_logger(logger_name));
+    }
 
-	shr_logger *get_shr_logger(own_logger *ol)
-	{
-
-	}
-
-	void release_own_logger(own_logger *ol)
-	{
-		delete (std::shared_ptr<spdlog::logger>*)(ol);
-	}
+    void syslog_release(logger *l)
+    {
+        delete(std::shared_ptr<spdlog::logger> *)(l);
+    }
 }
 
 }
-

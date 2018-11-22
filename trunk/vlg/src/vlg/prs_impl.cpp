@@ -431,7 +431,7 @@ RetCode persistence_driver::load_driver_dyna(const char *drvname,
         IFLOG(log, err(TH_ID, LS_CLO "[failed to locate entrypoint in so-lib for driver:%s]", __func__, drvname))
         return RetCode_KO;
     }
-    if(!(*driver = dri_f((shr_logger *)&log))) {
+    if(!(*driver = dri_f((logger *)&log))) {
         IFLOG(log, err(TH_ID, LS_CLO "[failed to get driver instance for driver:%s]", __func__, drvname))
         return RetCode_KO;
     } else {

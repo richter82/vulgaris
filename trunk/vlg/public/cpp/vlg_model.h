@@ -224,7 +224,7 @@ typedef bool (*enum_nentity_desc)(const nentity_desc &nentity_descriptor,
 struct nentity_manager_impl;
 struct nentity_manager {
 
-    explicit nentity_manager(std::shared_ptr<spdlog::logger> &log);
+    explicit nentity_manager(vlg::logger *log = nullptr);
     ~nentity_manager();
 
     const nentity_desc *get_nentity_descriptor(unsigned int nclass_id) const;

@@ -53,7 +53,7 @@ peer_automa::peer_automa(peer &publ, peer_listener &listener) :
     force_disconnect_on_stop_(false),
     publ_(publ),
     listener_(listener),
-    log_(syslog_cfg::get_logger(VLGDEFLOG))
+    log_(get_logger(VLGDEFLOG))
 {
     memset(&peer_ver_[0], 0, sizeof(peer_ver_));
 }

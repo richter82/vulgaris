@@ -33,6 +33,7 @@
     <ClCompile Include="..\src\apicpp\persistence.cpp" />
     <ClCompile Include="..\src\apicpp\subscription.cpp" />
     <ClCompile Include="..\src\apicpp\transaction.cpp" />
+    <ClCompile Include="..\src\vlg\model.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{86051208-762D-4D3D-A490-59DF7ECE67EA}</ProjectGuid>

@@ -124,9 +124,6 @@
     <ClCompile Include="..\src\vlg\prs_impl.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\vlg\model.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

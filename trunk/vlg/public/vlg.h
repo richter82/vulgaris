@@ -27,10 +27,6 @@
 #include <string>
 #include <memory>
 
-namespace spdlog {
-class logger;
-}
-
 extern "C" {
 namespace vlg {
 #endif
@@ -488,8 +484,7 @@ typedef struct {
 #endif
 
 #if defined(__cplusplus)
-struct own_logger;
-struct shr_logger;
+struct logger;
 struct nclass;
 struct nentity_desc;
 struct nentity_manager;
@@ -523,8 +518,7 @@ struct persistence_connection_pool;
 struct persistence_worker;
 struct g_bbuf;
 #else
-typedef struct own_logger own_logger;
-typedef struct shr_logger shr_logger;
+typedef struct logger logger;
 typedef struct nclass nclass;
 typedef struct shr_nclass shr_nclass;
 typedef struct own_nclass own_nclass;
@@ -566,18 +560,17 @@ extern "C" {
 namespace vlg {
 #endif
 typedef const char *(*model_version_get)(void);
-typedef nentity_manager *(*nentity_manager_load)(shr_logger *);
+typedef nentity_manager *(*nentity_manager_load)(logger *);
 typedef nclass *(*nclass_alloc)(void);
 typedef const char *(*persistence_driver_version_get)(void);
-typedef persistence_driver *(*persistence_driver_load)(shr_logger *);
+typedef persistence_driver *(*persistence_driver_load)(logger *);
 
-RetCode set_logger_cfg_file_dir(const char *dir);
-RetCode set_logger_cfg_file_path_name(const char *file_path);
-RetCode load_logger_config();
-RetCode load_logger_config(const char *fname);
-own_logger *get_own_logger(const char *logger_name);
-shr_logger *get_shr_logger(own_logger *);
-void release_own_logger(own_logger *);
+RetCode syslog_set_cfg_file_dir(const char *dir);
+RetCode syslog_set_cfg_file_path_name(const char *file_path);
+RetCode syslog_load_config();
+RetCode syslog_load_config_by_fname(const char *fname);
+logger *syslog_get_retained(const char *logger_name);
+void syslog_release(logger *);
 
 #if defined(__cplusplus)
 }

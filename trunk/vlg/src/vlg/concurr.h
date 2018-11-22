@@ -14,6 +14,10 @@
 #define TH_ID ((unsigned int)((unsigned long)pthread_self()))
 #endif
 
+namespace spdlog {
+class logger;
+}
+
 namespace vlg {
 
 /** @brief runnable interface.

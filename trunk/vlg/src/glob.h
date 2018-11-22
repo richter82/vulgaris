@@ -132,9 +132,7 @@ const extern std_shared_ptr_obj_mng<incoming_transaction> tx_std_shp_omng;
 const extern std_shared_ptr_obj_mng<incoming_subscription> sbs_std_shp_omng;
 const extern std_shared_ptr_obj_mng<subscription_event> sbse_std_shp_omng;
 
-struct syslog_cfg {
-    static std::shared_ptr<spdlog::logger> get_logger(const char *logger_name);
-};
+std::shared_ptr<spdlog::logger> get_logger(const char *logger_name);
 
 #undef DISABLE_LOG
 #ifdef DISABLE_LOG
