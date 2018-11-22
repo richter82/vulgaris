@@ -570,7 +570,8 @@ RetCode syslog_set_cfg_file_path_name(const char *file_path);
 RetCode syslog_load_config();
 RetCode syslog_load_config_by_fname(const char *fname);
 logger *syslog_get_retained(const char *logger_name);
-void syslog_release(logger *);
+void syslog_release_retained(logger *);
+void syslog_unload();
 
 #if defined(__cplusplus)
 }

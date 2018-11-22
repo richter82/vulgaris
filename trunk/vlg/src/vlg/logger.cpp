@@ -87,13 +87,6 @@ const char *get_trace_level_string(TraceLVL lvl)
     }
 }
 
-// logger_cfg_loader
-
-struct logger_cfg_loader {
-    virtual ~logger_cfg_loader() {};
-    virtual RetCode load_cfg() = 0;
-};
-
 void LPrsERR_FND_EXP(const char *sct, const char *fnd, const char *exp)
 {
     FILE *ferr = fopen("log.err", "wa+");
@@ -161,6 +154,13 @@ std::unordered_map<std::string, std::shared_ptr<spdlog::sinks::sink>> &get_appen
     }
     return *apnds;
 }
+
+// logger_cfg_loader
+
+struct logger_cfg_loader {
+	virtual ~logger_cfg_loader() {};
+	virtual RetCode load_cfg() = 0;
+};
 
 // std_logger_cfg_loader
 
@@ -507,7 +507,7 @@ extern "C" {
         return (logger *) new std::shared_ptr<spdlog::logger>(get_logger(logger_name));
     }
 
-    void syslog_release(logger *l)
+    void syslog_release_retained(logger *l)
     {
         delete(std::shared_ptr<spdlog::logger> *)(l);
     }

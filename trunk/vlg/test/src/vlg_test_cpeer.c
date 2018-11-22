@@ -54,6 +54,6 @@ int main(int argc, char *argv[])
     int i = 0;
     scanf("%d", &i);
     peer_destroy(op);
-	syslog_release(own_log);
+	syslog_release_retained(own_log);
     return 0;
 }

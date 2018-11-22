@@ -588,6 +588,6 @@ int main(int argc, char *argv[])
     mon.lock();
     mon.wait();
     mon.unlock();
-	vlg::syslog_release(own_log);
+	vlg::syslog_release_retained(own_log);
     return 0;
 }
