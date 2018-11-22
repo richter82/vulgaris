@@ -15,7 +15,7 @@ namespace vlg {
 
 #if defined WIN32 && defined _MSC_VER
 static bool init_WSA = false;
-RetCode WSA_init(logger *log)
+RetCode WSA_init(std::shared_ptr<spdlog::logger> &log)
 {
     if(init_WSA) {
         return RetCode_OK;
@@ -31,7 +31,7 @@ RetCode WSA_init(logger *log)
     return RetCode_OK;
 }
 
-RetCode WSA_destroy(logger *log)
+RetCode WSA_destroy(std::shared_ptr<spdlog::logger> &log)
 {
     if(!init_WSA) {
         return RetCode_OK;

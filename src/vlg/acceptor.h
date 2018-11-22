@@ -10,8 +10,8 @@
 namespace vlg {
 
 #if defined WIN32 && defined _MSC_VER
-RetCode WSA_init(logger *log);
-RetCode WSA_destroy(logger *log);
+RetCode WSA_init(std::shared_ptr<spdlog::logger> &log);
+RetCode WSA_destroy(std::shared_ptr<spdlog::logger> &log);
 #endif
 
 struct acceptor {

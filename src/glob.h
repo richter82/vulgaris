@@ -122,6 +122,7 @@
 }
 
 #define NO_ACTION ;
+#define VLGDEFLOG "vlglog"
 
 namespace vlg {
 
@@ -132,11 +133,7 @@ const extern std_shared_ptr_obj_mng<incoming_subscription> sbs_std_shp_omng;
 const extern std_shared_ptr_obj_mng<subscription_event> sbse_std_shp_omng;
 
 struct syslog_cfg {
-    static RetCode set_logger_cfg_file_dir(const char *dir);
-    static RetCode set_logger_cfg_file_path_name(const char *file_path);
-    static RetCode load_logger_config();
-    static RetCode load_logger_config(const char *fname);
-
+    static std::shared_ptr<spdlog::logger> get_logger(const char *logger_name);
 };
 
 #undef DISABLE_LOG
