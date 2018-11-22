@@ -528,11 +528,11 @@ extern "C" {
         delete(std::shared_ptr<spdlog::logger> *)(l);
     }
 
-	void syslog_unload()
-	{
-		spdlog::shutdown();
-		get_appender_map().clear();
-	}
+    void syslog_unload()
+    {
+        spdlog::shutdown();
+        get_appender_map().clear();
+    }
 }
 
 }

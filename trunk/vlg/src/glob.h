@@ -134,14 +134,8 @@ const extern std_shared_ptr_obj_mng<subscription_event> sbse_std_shp_omng;
 
 std::shared_ptr<spdlog::logger> get_logger(const char *logger_name);
 
-#undef DISABLE_LOG
-#ifdef DISABLE_LOG
 #define IFLOG(log, meth) if(log) log->meth;
-#define DTOR_TRC(log) IFLOG(log, trc(TH_ID, LS_DTR "[%p]", __func__, this))
-#else
-#define IFLOG(log, meth)
-#define DTOR_TRC(log)
-#endif
+#define DTOR_TRC(log) IFLOG(log, trace(LS_DTR, __func__))
 
 inline void *grow_buff_or_die(void *buffer, size_t current_size, size_t amount)
 {
