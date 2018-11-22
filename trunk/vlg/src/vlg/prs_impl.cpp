@@ -185,7 +185,8 @@ void *persistence_worker::run()
 // persistence_connection_impl - CONNECTION
 
 unsigned int c_cnt = 0;
-persistence_connection_impl::persistence_connection_impl(persistence_connection_pool &conn_pool, logger *log) :
+persistence_connection_impl::persistence_connection_impl(persistence_connection_pool &conn_pool
+                                                         , std::shared_ptr<spdlog::logger> &log) :
     id_(++c_cnt),
     status_(PersistenceConnectionStatus_DISCONNECTED),
     conn_pool_(conn_pool),
@@ -371,7 +372,7 @@ RetCode persistence_connection_impl::execute_statement(const char *sql)
 persistence_query_impl::persistence_query_impl(unsigned int id,
                                                persistence_connection_impl &conn,
                                                const nentity_manager &nem,
-                                               logger *log) :
+                                               std::shared_ptr<spdlog::logger> &log) :
     id_(id),
     status_(PersistenceQueryStatus_PREPARED),
     conn_(conn),
@@ -399,7 +400,7 @@ RetCode persistence_query_impl::release()
 
 RetCode persistence_driver::load_driver_dyna(const char *drvname,
                                              persistence_driver **driver,
-                                             logger *log)
+                                             std::shared_ptr<spdlog::logger> &log)
 {
     if(!drvname || !strlen(drvname)) {
         return RetCode_BADARG;
@@ -430,7 +431,7 @@ RetCode persistence_driver::load_driver_dyna(const char *drvname,
         IFLOG(log, err(TH_ID, LS_CLO "[failed to locate entrypoint in so-lib for driver:%s]", __func__, drvname))
         return RetCode_KO;
     }
-    if(!(*driver = dri_f(log))) {
+    if(!(*driver = dri_f((shr_logger *)&log))) {
         IFLOG(log, err(TH_ID, LS_CLO "[failed to get driver instance for driver:%s]", __func__, drvname))
         return RetCode_KO;
     } else {
@@ -442,7 +443,8 @@ RetCode persistence_driver::load_driver_dyna(const char *drvname,
     return RetCode_OK;
 }
 
-persistence_driver::persistence_driver(unsigned int id, logger *log) : id_(id), log_(log) {}
+persistence_driver::persistence_driver(unsigned int id,
+                                       std::shared_ptr<spdlog::logger> &log) : id_(id), log_(log) {}
 
 RetCode persistence_driver::start_all_pools()
 {

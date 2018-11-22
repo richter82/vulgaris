@@ -166,7 +166,7 @@ struct pers_query_sqlite : public persistence_query_impl {
                       persistence_connection_impl &conn,
                       const nentity_manager &nem,
                       sqlite3_stmt *stmt,
-                      logger *log) :
+                      std::shared_ptr<spdlog::logger> &log) :
         persistence_query_impl(id, conn, nem, log),
         stmt_(stmt) {}
     sqlite3_stmt *stmt_;
@@ -250,7 +250,7 @@ bool enum_mmbrs_fill_entity(const member_desc &mmbrd, void *ud)
 
 //pers_conn_sqlite
 struct pers_conn_sqlite : public persistence_connection_impl {
-        pers_conn_sqlite(persistence_connection_pool &conn_pool, logger *log);
+        pers_conn_sqlite(persistence_connection_pool &conn_pool, std::shared_ptr<spdlog::logger> &log);
 
         inline RetCode sqlite_connect(const char *filename,
                                       int flags);
@@ -341,7 +341,7 @@ struct pers_conn_sqlite : public persistence_connection_impl {
         struct persistence_task_sqlite : public persistence_task {
                 persistence_task_sqlite(pers_conn_sqlite &sql_conn,
                                         VLG_PERS_TASK_OP op_code,
-                                        logger *log) :
+                                        std::shared_ptr<spdlog::logger> &log) :
                     persistence_task(op_code, log),
                     sql_conn_(sql_conn),
                     sel_stmt_(nullptr) {
@@ -601,7 +601,7 @@ struct pers_conn_sqlite : public persistence_connection_impl {
         };
 };
 
-pers_conn_sqlite::pers_conn_sqlite(persistence_connection_pool &conn_pool, logger *log) :
+pers_conn_sqlite::pers_conn_sqlite(persistence_connection_pool &conn_pool, std::shared_ptr<spdlog::logger> &log) :
     persistence_connection_impl(conn_pool, log),
     db_(nullptr),
     worker_(nullptr)
@@ -1730,8 +1730,8 @@ RetCode pers_conn_sqlite::do_execute_statement(const char *sql)
 // pers_driv_sqlite
 
 struct pers_driv_sqlite : public persistence_driver {
-    static pers_driv_sqlite &get_instance(logger *log);
-    explicit pers_driv_sqlite(logger *log) : persistence_driver(VLG_PERS_DRIV_SQLITE_ID, log) {}
+    static pers_driv_sqlite &get_instance(std::shared_ptr<spdlog::logger> &log);
+    explicit pers_driv_sqlite(std::shared_ptr<spdlog::logger> &log) : persistence_driver(VLG_PERS_DRIV_SQLITE_ID, log) {}
 
     virtual RetCode new_connection(persistence_connection_pool &conn_pool,
                                    persistence_connection_impl **new_conn) override;
@@ -1742,7 +1742,7 @@ struct pers_driv_sqlite : public persistence_driver {
 
 std::unique_ptr<pers_driv_sqlite> drv_sqlite_instance;
 
-pers_driv_sqlite &pers_driv_sqlite::get_instance(logger *log)
+pers_driv_sqlite &pers_driv_sqlite::get_instance(std::shared_ptr<spdlog::logger> &log)
 {
     if(!drv_sqlite_instance) {
         drv_sqlite_instance.reset(new pers_driv_sqlite(log));
@@ -1790,9 +1790,9 @@ extern "C" {
 VLG_PERS_DRIV_SQLITE ENTRY POINT
 *******************************/
 extern "C" {
-    EXP_SYM persistence_driver *get_pers_driv_sqlite(logger *log)
+    EXP_SYM persistence_driver *get_pers_driv_sqlite(shr_logger *log)
     {
-        return &pers_driv_sqlite::get_instance(log);
+        return &pers_driv_sqlite::get_instance(*reinterpret_cast<std::shared_ptr<spdlog::logger>*>(log));
     }
 }
 

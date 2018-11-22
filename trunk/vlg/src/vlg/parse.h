@@ -13,7 +13,6 @@ namespace vlg {
 */
 struct str_tok {
         explicit str_tok(const std::string &str);
-        explicit str_tok(const char *str);
 
         ~str_tok();
 

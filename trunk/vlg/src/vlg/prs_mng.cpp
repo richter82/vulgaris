@@ -211,7 +211,7 @@ RetCode persistence_manager_impl::persistence_driver_load(persistence_driver *dr
 }
 
 persistence_manager_impl::persistence_manager_impl() :
-    log_(logger::get_logger("persistence"))
+    log_(syslog_cfg::get_logger(VLGDEFLOG))
 {}
 
 RetCode persistence_manager_impl::map_classid_driver(unsigned int nclass_id,

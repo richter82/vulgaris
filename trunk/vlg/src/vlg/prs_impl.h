@@ -36,7 +36,7 @@ typedef enum  {
 } VLG_PERS_TASK_OP;
 
 struct persistence_task : public p_tsk {
-    persistence_task(VLG_PERS_TASK_OP op_code, logger *log) :
+    persistence_task(VLG_PERS_TASK_OP op_code, std::shared_ptr<spdlog::logger> &log) :
         op_code_(op_code),
         op_res_(RetCode_OK),
         in_nem_(nullptr),
@@ -82,7 +82,7 @@ struct persistence_task : public p_tsk {
     persistence_query_impl *in_out_query_;
     bool in_fail_is_error_;
     const char *stmt_bf_;
-    logger *log_;
+    std::shared_ptr<spdlog::logger> log_;
 };
 
 struct persistence_connection_pool {
@@ -138,7 +138,7 @@ struct persistence_worker : public p_th {
 };
 
 struct persistence_connection_impl {
-    persistence_connection_impl(persistence_connection_pool &conn_pool, logger *log);
+    persistence_connection_impl(persistence_connection_pool &conn_pool, std::shared_ptr<spdlog::logger> &log);
 
     RetCode connect();
 
@@ -238,16 +238,16 @@ struct persistence_connection_impl {
     unsigned int id_;
     PersistenceConnectionStatus status_;
     persistence_connection_pool &conn_pool_;
-    logger *log_;
+    std::shared_ptr<spdlog::logger> log_;
 };
 
 struct persistence_driver {
     static RetCode load_driver_dyna(const char *drvname,
                                     persistence_driver **driver,
-                                    logger *log);
+                                    std::shared_ptr<spdlog::logger> &log);
 
     persistence_driver(unsigned int id,
-                       logger *log);
+                       std::shared_ptr<spdlog::logger> &log);
 
     virtual ~persistence_driver() = default;
 
@@ -277,14 +277,14 @@ struct persistence_driver {
     unsigned int id_;
     std::unordered_map<std::string, persistence_connection_pool *> conn_pool_hm_; // [conn_pool_name --> conn_pool]
     std::unordered_map<unsigned int, persistence_connection_pool *> nclassid_conn_pool_hm_; // [nclass_id --> conn_pool]
-    logger *log_;
+    std::shared_ptr<spdlog::logger> log_;
 };
 
 struct persistence_query_impl {
     persistence_query_impl(unsigned int id,
                            persistence_connection_impl &conn,
                            const nentity_manager &nem,
-                           logger *log);
+                           std::shared_ptr<spdlog::logger> &log);
 
     RetCode load_next_entity(unsigned int &ts0_out,
                              unsigned int &ts1_out,
@@ -295,7 +295,7 @@ struct persistence_query_impl {
     PersistenceQueryStatus status_;
     persistence_connection_impl &conn_;
     const nentity_manager &nem_;
-    logger *log_;
+    std::shared_ptr<spdlog::logger> log_;
 };
 
 struct persistence_manager_impl {
@@ -360,7 +360,7 @@ struct persistence_manager_impl {
     private:
         std::unordered_map<std::string, persistence_driver *> drivname_driv_hm_;  // [driver-name --> driver]
         std::unordered_map<unsigned int, persistence_driver *> nclassid_driv_hm_;  // [nclass_id --> driver]
-        logger *log_;
+        std::shared_ptr<spdlog::logger> log_;
 };
 
 

@@ -782,12 +782,13 @@ RetCode conn_impl::send_acc_buff()
         }
     }
     if(peer_->log_ && peer_->log_->level() <= TL_TRC) {
-        peer_->log_->trc(TH_ID, LS_CLO "[socket:%d, sent:%d, remaining:%d][res:%d]",
-                         __func__,
-                         socket_,
-                         tot_bsent,
-                         remaining,
-                         rcode);
+
+        peer_->log_->trace(LS_CLO "[socket:%d, sent:%d, remaining:%d][res:%d]",
+                           __func__,
+                           socket_,
+                           tot_bsent,
+                           remaining,
+                           rcode);
     }
     return rcode;
 }

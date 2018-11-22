@@ -4,28 +4,24 @@
  *
  */
 
-#include "vlg_peer.h"
-#include "vlg_connection.h"
-#include "vlg_transaction.h"
-#include "vlg_subscription.h"
-#include "vlg_logger.h"
+#include "glob.h"
 
 using namespace vlg;
 
 extern "C" {
     RetCode set_logger_cfg_file_dir(const char *dir)
     {
-        return logger::set_logger_cfg_file_dir(dir);
+        return syslog_cfg::set_logger_cfg_file_dir(dir);
     }
 
     RetCode set_logger_cfg_file_path_name(const char *file_path)
     {
-        return logger::set_logger_cfg_file_path_name(file_path);
+        return syslog_cfg::set_logger_cfg_file_path_name(file_path);
     }
 
     RetCode load_logger_cfg()
     {
-        return logger::load_logger_config();
+        return syslog_cfg::load_logger_config();
     }
 }
 
@@ -698,11 +694,6 @@ extern "C" {
     peer *own_peer_get_ptr(own_peer *p)
     {
         return (c_peer *)p;
-    }
-
-    logger *peer_get_logger(peer *p)
-    {
-        return p->get_logger();
     }
 
     RetCode peer_set_params_file_dir(peer *p, const char *dir)

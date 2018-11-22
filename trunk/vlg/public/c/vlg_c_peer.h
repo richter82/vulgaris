@@ -9,14 +9,6 @@
 #include "vlg.h"
 
 /************************************************************************
-LOGGER
-************************************************************************/
-
-RetCode set_logger_cfg_file_dir(const char *dir);
-RetCode set_logger_cfg_file_path_name(const char *file_path);
-RetCode load_logger_cfg(void);
-
-/************************************************************************
 PEER HANDLERS
 ************************************************************************/
 
@@ -49,7 +41,6 @@ PEER
 own_peer *peer_create(void);
 void peer_destroy(own_peer *p);
 peer *own_peer_get_ptr(own_peer *p);
-logger *peer_get_logger(peer *p);
 RetCode peer_set_params_file_dir(peer *p, const char *dir);
 RetCode peer_set_params_file_path_name(peer *p, const char *file_path);
 const char *peer_get_name(peer *p);

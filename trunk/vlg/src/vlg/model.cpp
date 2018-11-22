@@ -443,7 +443,7 @@ void nentity_desc::enum_key_descriptors(enum_key_desc ekd_f, void *ud) const
 // entity_manager_impl
 
 struct nentity_manager_impl {
-    nentity_manager_impl(logger *log) : log_(log) {}
+    nentity_manager_impl(std::shared_ptr<spdlog::logger> &log) : log_(log) {}
 
     RetCode extend(const nentity_desc &nent_desc) {
         if(nent_desc.get_nentity_type() == NEntityType_NCLASS) {
@@ -493,7 +493,7 @@ struct nentity_manager_impl {
             IFLOG(log_, err(TH_ID, LS_CLO "[failed to locate nem entrypoint in so-lib for model:%s]", __func__, model_name))
             return RetCode_KO;
         }
-        extend(*nem_f(log_)->impl_);
+        extend(*nem_f((shr_logger *)&log_)->impl_);
         char mdlv_f_n[VLG_MDL_NAME_LEN] = { 0 };
         sprintf(mdlv_f_n, "get_mdl_ver_%s", model_name);
         model_version_get mdlv_f = (model_version_get)dynamic_lib_load_symbol(dynalib, mdlv_f_n);
@@ -503,12 +503,12 @@ struct nentity_manager_impl {
 
     std::map<std::string, const nentity_desc *> entnm_edesc_;
     std::map<unsigned int, const nentity_desc *> entid_edesc_;
-    logger *log_;
+    std::shared_ptr<spdlog::logger> log_;
 };
 
 // nentity_manager
 
-nentity_manager::nentity_manager(logger *log) : impl_(new nentity_manager_impl(log))
+nentity_manager::nentity_manager(std::shared_ptr<spdlog::logger> &log) : impl_(new nentity_manager_impl(log))
 {}
 
 nentity_manager::~nentity_manager()

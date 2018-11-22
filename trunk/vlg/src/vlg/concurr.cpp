@@ -143,7 +143,7 @@ void *p_exectr::run()
 // p_executor_service
 static int p_exec_srv_id = 0;
 
-p_exec_srv::p_exec_srv(logger *log) :
+p_exec_srv::p_exec_srv(std::shared_ptr<spdlog::logger> &log) :
     id_(++p_exec_srv_id),
     status_(PExecSrvStatus_TOINIT),
     task_queue_(tsk_std_shp_omng),
