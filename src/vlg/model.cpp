@@ -450,10 +450,10 @@ struct nentity_manager_impl {
             entid_edesc_[nent_desc.get_nclass_id()] = &nent_desc;
         }
         entnm_edesc_[nent_desc.get_nentity_name()] = &nent_desc;
-        IFLOG(log_, trc(TH_ID, LS_CLO"[num_nenum:%d, num_nclass:%d, num_nentity:%d]", __func__,
-                        entnm_edesc_.size() - entid_edesc_.size(),
-                        entid_edesc_.size(),
-                        entnm_edesc_.size()))
+        IFLOG(log_, trace(LS_CLO"[num_nenum:%d, num_nclass:%d, num_nentity:%d]", __func__,
+                          entnm_edesc_.size() - entid_edesc_.size(),
+                          entid_edesc_.size(),
+                          entnm_edesc_.size()))
         return RetCode_OK;
     }
 
@@ -463,7 +463,7 @@ struct nentity_manager_impl {
     }
 
     RetCode extend(const char *model_name) {
-        IFLOG(log_, trc(TH_ID, LS_OPN "[model_name:%s]", __func__, model_name))
+        IFLOG(log_, trace(LS_OPN "[model_name:%s]", __func__, model_name))
         if(!model_name || !strlen(model_name)) {
             return RetCode_BADARG;
         }
@@ -483,21 +483,21 @@ struct nentity_manager_impl {
         void *dynalib = dynamic_lib_open(slib_name);
 #endif
         if(!dynalib) {
-            IFLOG(log_, err(TH_ID, LS_CLO "[failed loading so-lib for model:%s]", __func__, model_name))
+            IFLOG(log_, error(LS_CLO "[failed loading so-lib for model:%s]", __func__, model_name))
             return RetCode_KO;
         }
         char nem_ep_f[VLG_MDL_NAME_LEN] = {0};
         sprintf(nem_ep_f, "get_nem_%s", model_name);
         nentity_manager_load nem_f = (nentity_manager_load)dynamic_lib_load_symbol(dynalib, nem_ep_f);
         if(!nem_f) {
-            IFLOG(log_, err(TH_ID, LS_CLO "[failed to locate nem entrypoint in so-lib for model:%s]", __func__, model_name))
+            IFLOG(log_, error(LS_CLO "[failed to locate nem entrypoint in so-lib for model:%s]", __func__, model_name))
             return RetCode_KO;
         }
         extend(*nem_f((logger *)&log_)->impl_);
         char mdlv_f_n[VLG_MDL_NAME_LEN] = { 0 };
         sprintf(mdlv_f_n, "get_mdl_ver_%s", model_name);
         model_version_get mdlv_f = (model_version_get)dynamic_lib_load_symbol(dynalib, mdlv_f_n);
-        IFLOG(log_, inf(TH_ID, LS_MDL"model:%s [loaded]", __func__, mdlv_f()))
+        IFLOG(log_, info(LS_MDL"model:%s [loaded]", __func__, mdlv_f()))
         return RetCode_OK;
     }
 
