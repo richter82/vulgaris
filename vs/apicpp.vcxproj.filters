@@ -49,5 +49,8 @@
     <ClCompile Include="..\src\apicpp\connection.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\vlg\model.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -94,7 +94,7 @@ peer_impl::peer_impl(peer &publ, peer_listener &listener) :
     srv_sbs_exectrs_(0),
     selector_(*this),
     prgr_conn_id_(0),
-    nem_(log_),
+    nem_((vlg::logger *)&log_),
     pers_enabled_(false),
     pers_mng_(persistence_manager_impl::get_instance()),
     pers_schema_create_(false),

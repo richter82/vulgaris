@@ -56,7 +56,7 @@ VLG_PERS_DRIV_SQLITE ENTRY POINT
 #if defined(__cplusplus)
 extern "C" {
 #endif
-EXP_SYM persistence_driver *get_pers_driv_sqlite(shr_logger *log);
+EXP_SYM persistence_driver *get_pers_driv_sqlite(logger *log);
 #if defined(__cplusplus)
 }
 #endif

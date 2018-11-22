@@ -14,6 +14,8 @@
 #define LS_TST "TT|%s"
 #define TEST_TMOUT 4
 
+static vlg::logger *own_log = nullptr;
+
 int save_nclass_position(const char *filename,
                          unsigned int ts_0,
                          unsigned int ts_1)
@@ -407,9 +409,9 @@ struct entry_point {
 
         vlg::RetCode init() {
 #if STA_L
-            vlg::persistence_driver *sqlite_dri = vlg::get_pers_driv_sqlite(tpeer_.get_logger());
+            vlg::persistence_driver *sqlite_dri = vlg::get_pers_driv_sqlite(own_log);
             vlg::persistence_manager::load_driver(&sqlite_dri, 1);
-            tpeer_.extend_model(*get_nem_smplmdl(tpeer_.get_logger()));
+            tpeer_.extend_model(*get_nem_smplmdl(own_log));
 #endif
             return vlg::RetCode_OK;
         }
@@ -562,6 +564,7 @@ struct entry_point {
 
 int main(int argc, char *argv[])
 {
+	own_log = vlg::syslog_get_retained("root");
     entry_point ep;
     ep.init();
     ep.start_peer(argc, argv, true);
@@ -585,5 +588,6 @@ int main(int argc, char *argv[])
     mon.lock();
     mon.wait();
     mon.unlock();
+	vlg::syslog_release(own_log);
     return 0;
 }

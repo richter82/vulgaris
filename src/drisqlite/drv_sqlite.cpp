@@ -1790,7 +1790,7 @@ extern "C" {
 VLG_PERS_DRIV_SQLITE ENTRY POINT
 *******************************/
 extern "C" {
-    EXP_SYM persistence_driver *get_pers_driv_sqlite(shr_logger *log)
+    EXP_SYM persistence_driver *get_pers_driv_sqlite(logger *log)
     {
         return &pers_driv_sqlite::get_instance(*reinterpret_cast<std::shared_ptr<spdlog::logger>*>(log));
     }

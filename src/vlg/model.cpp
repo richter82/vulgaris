@@ -493,7 +493,7 @@ struct nentity_manager_impl {
             IFLOG(log_, err(TH_ID, LS_CLO "[failed to locate nem entrypoint in so-lib for model:%s]", __func__, model_name))
             return RetCode_KO;
         }
-        extend(*nem_f((shr_logger *)&log_)->impl_);
+        extend(*nem_f((logger *)&log_)->impl_);
         char mdlv_f_n[VLG_MDL_NAME_LEN] = { 0 };
         sprintf(mdlv_f_n, "get_mdl_ver_%s", model_name);
         model_version_get mdlv_f = (model_version_get)dynamic_lib_load_symbol(dynalib, mdlv_f_n);
@@ -508,7 +508,8 @@ struct nentity_manager_impl {
 
 // nentity_manager
 
-nentity_manager::nentity_manager(std::shared_ptr<spdlog::logger> &log) : impl_(new nentity_manager_impl(log))
+nentity_manager::nentity_manager(vlg::logger *log) :
+    impl_(new nentity_manager_impl(log ? *(std::shared_ptr<spdlog::logger> *)log : spdlog::default_logger()))
 {}
 
 nentity_manager::~nentity_manager()
