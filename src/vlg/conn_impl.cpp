@@ -132,7 +132,7 @@ RetCode conn_impl::set_connection_established(SOCKET socket)
     sockaddr_in saddr;
     socklen_t len = sizeof(saddr);
     getpeername(socket_, (sockaddr *)&saddr, &len);
-    IFLOG(peer_->log_, debug(LS_CON"[connection established: socket:%d, host:%s, port:%d][connid:%d]",
+    IFLOG(peer_->log_, debug(LS_CON"[connection established: socket:{}, host:{}, port:{}][connid:{}]",
                              socket_,
                              inet_ntoa(saddr.sin_addr),
                              ntohs(saddr.sin_port),
@@ -143,7 +143,7 @@ RetCode conn_impl::set_connection_established(SOCKET socket)
 
 RetCode conn_impl::set_status(ConnectionStatus status)
 {
-    IFLOG(peer_->log_, trace(LS_OPN "[status:%d]", __func__, status))
+    IFLOG(peer_->log_, trace(LS_OPN "[status:{}]", __func__, status))
     scoped_mx smx(mon_);
     status_ = status;
     if(con_type_ == ConnectionType_INGOING) {
@@ -175,7 +175,7 @@ RetCode conn_impl::await_for_status_reached(ConnectionStatus test,
         }
     }
     current = status_;
-    IFLOG(peer_->log_, trace(LS_CLO"test:%d [reached] current:%d", __func__, test, status_))
+    IFLOG(peer_->log_, trace(LS_CLO"test:{} [reached] current:{}", __func__, test, status_))
     return rcode;
 }
 
@@ -197,7 +197,7 @@ RetCode conn_impl::await_for_status_change(ConnectionStatus &status,
             }
         }
     }
-    IFLOG(peer_->log_, trace(LS_CLO "status:%d [changed] current:%d", __func__,
+    IFLOG(peer_->log_, trace(LS_CLO "status:{} [changed] current:{}", __func__,
                              status,
                              status_))
     status = status_;
@@ -221,7 +221,7 @@ RetCode conn_impl::set_disconnecting()
 
 RetCode conn_impl::set_socket_disconnected()
 {
-    IFLOG(peer_->log_, info(LS_CON"[connid:%d][disconnected]", connid_))
+    IFLOG(peer_->log_, info(LS_CON"[connid:{}][disconnected]", connid_))
     set_status(ConnectionStatus_DISCONNECTED);
     return RetCode_OK;
 }
@@ -284,23 +284,23 @@ RetCode conn_impl::set_socket_blocking_mode(bool blocking)
 
 RetCode conn_impl::socket_shutdown()
 {
-    IFLOG(peer_->log_, trace(LS_OPN "[socket:%d]", __func__, socket_))
+    IFLOG(peer_->log_, trace(LS_OPN "[socket:{}]", __func__, socket_))
     int last_socket_err_ = 0;
 #if defined WIN32 && defined _MSC_VER
     if((last_socket_err_ = closesocket(socket_))) {
-        IFLOG(peer_->log_, error(LS_TRL "[closesocket KO][res:%d]", __func__, socket_, last_socket_err_))
+        IFLOG(peer_->log_, error(LS_TRL "[closesocket KO][res:{}]", __func__, socket_, last_socket_err_))
     } else {
         IFLOG(peer_->log_, trace(LS_TRL "[closesocket OK]", __func__, socket_))
     }
 #else
     if((last_socket_err_ = close(socket_))) {
-        IFLOG(peer_->log_, error(LS_TRL "[closesocket KO][res:%d]", __func__, socket_, last_socket_err_))
+        IFLOG(peer_->log_, error(LS_TRL "[closesocket KO][res:{}]", __func__, socket_, last_socket_err_))
     } else {
         IFLOG(peer_->log_, trace(LS_TRL "[closesocket OK]", __func__, socket_))
     }
 #if 0
     if((last_socket_err_ = shutdown(socket_, SHUT_RDWR))) {
-        IFLOG(peer_->log_, error(LS_TRL "[closesocket KO][res:%d]", __func__, socket_, last_socket_err_))
+        IFLOG(peer_->log_, error(LS_TRL "[closesocket KO][res:{}]", __func__, socket_, last_socket_err_))
     } else {
         IFLOG(peer_->log_, trace(LS_TRL "[closesocket OK]", __func__, socket_))
     }
@@ -312,26 +312,26 @@ RetCode conn_impl::socket_shutdown()
 
 RetCode conn_impl::establish_connection(sockaddr_in &params)
 {
-    IFLOG(peer_->log_, debug(LS_OPN "[host:%s - port:%d]",
+    IFLOG(peer_->log_, debug(LS_OPN "[host:{} - port:{}]",
                              __func__,
                              inet_ntoa(params.sin_addr),
                              htons(params.sin_port)))
     RetCode rcode = RetCode_OK;
     int connect_res = 0;
     if((socket_ = socket(AF_INET, SOCK_STREAM, 0)) != INVALID_SOCKET) {
-        IFLOG(peer_->log_, trace(LS_TRL "[socket:%d][OK]", __func__, socket_))
+        IFLOG(peer_->log_, trace(LS_TRL "[socket:{}][OK]", __func__, socket_))
         socklen_t len = sizeof(sockaddr_in);
         if((connect_res = connect(socket_, (struct sockaddr *)&params, len)) != INVALID_SOCKET) {
-            IFLOG(peer_->log_, debug(LS_TRL "[socket:%d][connect OK]", __func__, socket_))
+            IFLOG(peer_->log_, debug(LS_TRL "[socket:{}][connect OK]", __func__, socket_))
         } else {
 #if defined WIN32 && defined _MSC_VER
             last_socket_err_ = WSAGetLastError();
 #else
             last_socket_err_ = errno;
 #endif
-            IFLOG(peer_->log_, error(LS_CON "[connection failed][err:%d]", last_socket_err_))
+            IFLOG(peer_->log_, error(LS_CON "[connection failed][err:{}]", last_socket_err_))
             if((rcode = socket_shutdown())) {
-                IFLOG(peer_->log_, error(LS_CLO "[failed closing socket][err:%d]", __func__, rcode))
+                IFLOG(peer_->log_, error(LS_CLO "[failed closing socket][err:{}]", __func__, rcode))
             }
         }
     } else {
@@ -340,7 +340,7 @@ RetCode conn_impl::establish_connection(sockaddr_in &params)
 #else
         last_socket_err_ = errno;
 #endif
-        IFLOG(peer_->log_, error(LS_CLO "[socket KO][err:%d]", __func__, last_socket_err_))
+        IFLOG(peer_->log_, error(LS_CLO "[socket KO][err:{}]", __func__, last_socket_err_))
     }
     if(!connect_res) {
         rcode = set_connection_established(socket_);
@@ -356,7 +356,7 @@ RetCode conn_impl::disconnect(ProtocolCode disres)
     if(status_ != ConnectionStatus_PROTOCOL_HANDSHAKE && status_ != ConnectionStatus_AUTHENTICATED) {
         return RetCode_BADSTTS;
     }
-    IFLOG(peer_->log_, info(LS_CON"[connid:%d][socket:%d][sending disconnection][disconrescode:%d]", connid_, socket_,
+    IFLOG(peer_->log_, info(LS_CON"[connid:{}][socket:{}][sending disconnection][disconrescode:{}]", connid_, socket_,
                             disres))
     set_disconnecting();
 
@@ -400,7 +400,7 @@ RetCode conn_impl::await_for_disconnection_result(ConnectivityEventResult &con_e
                                                   time_t sec,
                                                   long nsec)
 {
-    IFLOG(peer_->log_, trace(LS_OPN "[connid:%d]", __func__, connid_))
+    IFLOG(peer_->log_, trace(LS_OPN "[connid:{}]", __func__, connid_))
     scoped_mx smx(mon_);
     if(status_ < ConnectionStatus_INITIALIZED) {
         return RetCode_BADSTTS;
@@ -457,14 +457,14 @@ RetCode conn_impl::sckt_hndl_err(long sock_op_res)
 #else
         } else if(last_socket_err_ == ECONNRESET) {
 #endif
-            IFLOG(peer_->log_, error(LS_CON"[connid:%d][socket:%d][connection reset by peer][err:%d]",
+            IFLOG(peer_->log_, error(LS_CON"[connid:{}][socket:{}][connection reset by peer][err:{}]",
                                      connid_,
                                      socket_,
                                      last_socket_err_))
             rcode = RetCode_SCKCLO;
         } else {
             perror(__func__);
-            IFLOG(peer_->log_, error(LS_CON"[connid:%d][socket:%d][connection socket error][errno:%d][err:%d]",
+            IFLOG(peer_->log_, error(LS_CON"[connid:{}][socket:{}][connection socket error][errno:{}][err:{}]",
                                      connid_,
                                      socket_,
                                      errno,
@@ -473,12 +473,12 @@ RetCode conn_impl::sckt_hndl_err(long sock_op_res)
         }
     } else if(!sock_op_res) {
         /*typically we can arrive here on client applicative disconnections*/
-        IFLOG(peer_->log_, debug(LS_CON"[connid:%d][socket:%d][connection socket was closed by peer]",
+        IFLOG(peer_->log_, debug(LS_CON"[connid:{}][socket:{}][connection socket was closed by peer]",
                                  connid_,
                                  socket_))
         rcode = RetCode_SCKCLO;
     } else {
-        IFLOG(peer_->log_, error(LS_CON "[connid:%d][socket:%d][connection unk. error]",
+        IFLOG(peer_->log_, error(LS_CON "[connid:{}][socket:{}][connection unk. error]",
                                  connid_,
                                  socket_))
         rcode = RetCode_UNKERR;
@@ -901,14 +901,14 @@ RetCode incoming_connection_impl::server_send_connect_res(std::shared_ptr<incomi
 RetCode incoming_connection_impl::recv_connection_request(const vlg_hdr_rec *pkt_hdr,
                                                           std::shared_ptr<incoming_connection> &inco_conn)
 {
-    IFLOG(peer_->log_, trace(LS_OPN "[connid:%d]", __func__, connid_))
+    IFLOG(peer_->log_, trace(LS_OPN "[connid:{}]", __func__, connid_))
     RetCode rcode = RetCode_OK;
 
     if(status_ == ConnectionStatus_PROTOCOL_HANDSHAKE || status_ == ConnectionStatus_AUTHENTICATED) {
         set_disconnecting();
         conres_ = ConnectionResult_REFUSED;
         conrescode_ = ProtocolCode_ALREADY_CONNECTED;
-        IFLOG(peer_->log_, warn(LS_CLO "[socket:%d][peer already connected - connid:%d]",
+        IFLOG(peer_->log_, warn(LS_CLO "[socket:{}][peer already connected - connid:{}]",
                                 __func__,
                                 socket_,
                                 connid_))
@@ -920,7 +920,7 @@ RetCode incoming_connection_impl::recv_connection_request(const vlg_hdr_rec *pkt
         set_disconnecting();
         conres_ = ConnectionResult_REFUSED;
         conrescode_ = ProtocolCode_INVALID_CONNECTION_STATUS;
-        IFLOG(peer_->log_, error(LS_CLO "[socket:%d][invalid connection status - connid:%d]",
+        IFLOG(peer_->log_, error(LS_CLO "[socket:{}][invalid connection status - connid:{}]",
                                  __func__,
                                  socket_,
                                  connid_))
@@ -938,13 +938,13 @@ RetCode incoming_connection_impl::recv_connection_request(const vlg_hdr_rec *pkt
     if(!(rcode = peer_->listener_.on_incoming_connection(peer_->publ_, inco_conn))) {
         if((rcode = server_send_connect_res(inco_conn))) {
             set_disconnecting();
-            IFLOG(peer_->log_, error(LS_CON"[error responding to peer: socket:%d, host:%s, port:%d]",
+            IFLOG(peer_->log_, error(LS_CON"[error responding to peer: socket:{}, host:{}, port:{}]",
                                      socket_,
                                      inet_ntoa(saddr.sin_addr),
                                      ntohs(saddr.sin_port)))
         } else {
             set_proto_connected();
-            IFLOG(peer_->log_, info(LS_CON"[peer: socket:%d, host:%s, port:%d is now connected with connid:%d]",
+            IFLOG(peer_->log_, info(LS_CON"[peer: socket:{}, host:{}, port:{} is now connected with connid:{}]",
                                     socket_,
                                     inet_ntoa(saddr.sin_addr),
                                     ntohs(saddr.sin_port),
@@ -955,7 +955,7 @@ RetCode incoming_connection_impl::recv_connection_request(const vlg_hdr_rec *pkt
         conres_ = ConnectionResult_REFUSED;
         conrescode_ = ProtocolCode_APPLICATIVE_REJECT;
         server_send_connect_res(inco_conn);
-        IFLOG(peer_->log_, info(LS_CON"[peer: socket:%d, host:%s, port:%d peer applicatively reject new connection]",
+        IFLOG(peer_->log_, info(LS_CON"[peer: socket:{}, host:{}, port:{} peer applicatively reject new connection]",
                                 socket_,
                                 inet_ntoa(saddr.sin_addr),
                                 ntohs(saddr.sin_port),
@@ -966,9 +966,9 @@ RetCode incoming_connection_impl::recv_connection_request(const vlg_hdr_rec *pkt
 
 RetCode incoming_connection_impl::recv_disconnection(const vlg_hdr_rec *pkt_hdr)
 {
-    IFLOG(peer_->log_, trace(LS_OPN "[connid:%d]", __func__, connid_))
+    IFLOG(peer_->log_, trace(LS_OPN "[connid:{}]", __func__, connid_))
     disconrescode_ = pkt_hdr->row_1.diswrd.disres;
-    IFLOG(peer_->log_, info(LS_CON"[connid:%d][socket:%d][received disconnection - disconrescode:%d]",
+    IFLOG(peer_->log_, info(LS_CON"[connid:{}][socket:{}][received disconnection - disconrescode:{}]",
                             connid_,
                             socket_,
                             disconrescode_))
@@ -1009,7 +1009,7 @@ RetCode incoming_connection_impl::recv_tx_request(const vlg_hdr_rec *pkt_hdr,
     timpl->txid_.txprid = pkt_hdr->row_5.txprid.txprid;
     rt_mark_time(&trans->impl_->start_mark_tim_);
 
-    IFLOG(peer_->log_, info(LS_TRX"[%08x%08x%08x%08x][TXTYPE:%d, TXACT:%d, RSCLREQ:%d]",
+    IFLOG(peer_->log_, info(LS_TRX"[%08x%08x%08x%08x][TXTYPE:{}, TXACT:{}, RSCLREQ:{}]",
                             pkt_hdr->row_2.txplid.txplid,
                             pkt_hdr->row_3.txsvid.txsvid,
                             pkt_hdr->row_4.txcnid.txcnid,
@@ -1029,7 +1029,7 @@ RetCode incoming_connection_impl::recv_tx_request(const vlg_hdr_rec *pkt_hdr,
     }
 
     if((rcode = ilistener_->on_incoming_transaction(*ipubl_, trans))) {
-        IFLOG(peer_->log_, info(LS_CON"[connection:%d applicatively refused new transaction]", connid_))
+        IFLOG(peer_->log_, info(LS_CON"[connection:{} applicatively refused new transaction]", connid_))
         timpl->tx_res_ = TransactionResult_FAILED;
         timpl->result_code_ = ProtocolCode_TRANSACTION_SERVER_ABORT;
         timpl->rescls_ = false;
@@ -1048,7 +1048,7 @@ RetCode incoming_connection_impl::recv_tx_request(const vlg_hdr_rec *pkt_hdr,
                 timpl->result_code_ = ProtocolCode_MALFORMED_REQUEST;
                 timpl->rescls_ = false;
                 skip_appl_mng = true;
-                IFLOG(peer_->log_, error(LS_TRX"[tx request receive failed - new_nclass_instance:%d, nclass_id:%d]",
+                IFLOG(peer_->log_, error(LS_TRX"[tx request receive failed - new_nclass_instance:{}, nclass_id:{}]",
                                          rcode, timpl->req_nclassid_))
             } else {
                 if((rcode = req_obj->restore(&peer_->nem_, timpl->req_clsenc_, pkt_body))) {
@@ -1056,7 +1056,7 @@ RetCode incoming_connection_impl::recv_tx_request(const vlg_hdr_rec *pkt_hdr,
                     timpl->result_code_ = ProtocolCode_MALFORMED_REQUEST;
                     timpl->rescls_ = false;
                     skip_appl_mng = true;
-                    IFLOG(peer_->log_, error(LS_TRX"[tx request receive failed - nclass restore fail:%d, nclass_id:%d]",
+                    IFLOG(peer_->log_, error(LS_TRX"[tx request receive failed - nclass restore fail:{}, nclass_id:{}]",
                                              rcode, timpl->req_nclassid_))
                 }
                 timpl->set_request_obj_on_request(req_obj);
@@ -1068,11 +1068,11 @@ RetCode incoming_connection_impl::recv_tx_request(const vlg_hdr_rec *pkt_hdr,
     }
 
     if((rcode = timpl->send_response())) {
-        IFLOG(peer_->log_, error(LS_TRX"[tx response sending failed res:%d]", rcode))
+        IFLOG(peer_->log_, error(LS_TRX"[tx response sending failed res:{}]", rcode))
     }
 
     if((rcode = inco_flytx_map_.remove(&timpl->txid_, nullptr))) {
-        IFLOG(peer_->log_, critical(LS_TRX"[error removing tx from flying map - res:%d]", rcode))
+        IFLOG(peer_->log_, critical(LS_TRX"[error removing tx from flying map - res:{}]", rcode))
     }
 
     if(aborted) {
@@ -1097,7 +1097,7 @@ RetCode incoming_connection_impl::release_subscription(incoming_subscription_imp
 {
     RetCode rcode = RetCode_OK;
     if(subscription->conn_ != this) {
-        IFLOG(peer_->log_, error(LS_CLO "[connid:%d][subscription:%d is not mine]", __func__,
+        IFLOG(peer_->log_, error(LS_CLO "[connid:{}][subscription:{} is not mine]", __func__,
                                  connid_,
                                  subscription->sbsid_))
         return RetCode_KO;
@@ -1105,7 +1105,7 @@ RetCode incoming_connection_impl::release_subscription(incoming_subscription_imp
     if(subscription->status_ == SubscriptionStatus_REQUEST_SENT ||
             subscription->status_ == SubscriptionStatus_STARTED ||
             subscription->status_ == SubscriptionStatus_RELEASED) {
-        IFLOG(peer_->log_, warn(LS_TRL"[connid:%d][subscription:%d released in status:%d]",
+        IFLOG(peer_->log_, warn(LS_TRL"[connid:{}][subscription:{} released in status:{}]",
                                 __func__,
                                 connid_,
                                 subscription->sbsid_,
@@ -1157,23 +1157,23 @@ RetCode incoming_connection_impl::recv_sbs_start_request(const vlg_hdr_rec *pkt_
     if(!edesc) {
         inc_sbs->sbresl_ = SubscriptionResponse_KO;
         inc_sbs->last_vlgcod_ = ProtocolCode_UNSUPPORTED_REQUEST;
-        IFLOG(peer_->log_, error(LS_SBS"[unsupported nclass_id requested in subscription: %u]", inc_sbs->nclassid_))
+        IFLOG(peer_->log_, error(LS_SBS"[unsupported nclass_id requested in subscription: {}]", inc_sbs->nclassid_))
     } else {
         if(!(rcode = inco_nclassid_sbs_map_.contains_key(&inc_sbs->nclassid_))) {
             inc_sbs->sbresl_ = SubscriptionResponse_KO;
             inc_sbs->last_vlgcod_ = ProtocolCode_SUBSCRIPTION_ALREADY_STARTED;
-            IFLOG(peer_->log_, error(LS_SBS"[subscription on this connection:%d already started for nclass_id:%d]", connid_,
+            IFLOG(peer_->log_, error(LS_SBS"[subscription on this connection:{} already started for nclass_id:{}]", connid_,
                                      inc_sbs->nclassid_))
         } else {
             if((rcode = inco_sbsid_sbs_map_.put(&sbsid, &sbs_sh))) {
                 inc_sbs->sbresl_ = SubscriptionResponse_KO;
                 inc_sbs->last_vlgcod_ = ProtocolCode_SERVER_ERROR;
-                IFLOG(peer_->log_, critical(LS_SBS"[error putting subscription into sbsid map - res:%d]", rcode))
+                IFLOG(peer_->log_, critical(LS_SBS"[error putting subscription into sbsid map - res:{}]", rcode))
             }
             if((rcode = inco_nclassid_sbs_map_.put(&inc_sbs->nclassid_, &sbs_sh))) {
                 inc_sbs->sbresl_ = SubscriptionResponse_KO;
                 inc_sbs->last_vlgcod_ = ProtocolCode_SERVER_ERROR;
-                IFLOG(peer_->log_, critical(LS_SBS"[error putting subscription into nclass_id map - res:%d]", rcode))
+                IFLOG(peer_->log_, critical(LS_SBS"[error putting subscription into nclass_id map - res:{}]", rcode))
             }
             inc_sbs->sbsid_ = sbsid;
             inc_sbs->sbresl_ = SubscriptionResponse_OK;
@@ -1182,18 +1182,18 @@ RetCode incoming_connection_impl::recv_sbs_start_request(const vlg_hdr_rec *pkt_
     }
 
     if((rcode = ilistener_->on_incoming_subscription(*ipubl_, sbs_sh))) {
-        IFLOG(peer_->log_, info(LS_CON"[connection:%d applicatively refused new subscription]", connid_))
+        IFLOG(peer_->log_, info(LS_CON"[connection:{} applicatively refused new subscription]", connid_))
         inc_sbs->sbresl_ = SubscriptionResponse_KO;
         inc_sbs->last_vlgcod_ = ProtocolCode_SERVER_ERROR;
     }
 
     if((rcode = inc_sbs->send_start_response())) {
-        IFLOG(peer_->log_, error(LS_SBS"[subscription response sending failed][res:%d]", rcode))
+        IFLOG(peer_->log_, error(LS_SBS"[subscription response sending failed][res:{}]", rcode))
     }
 
     if(inc_sbs->sbresl_ == SubscriptionResponse_OK || inc_sbs->sbresl_ == SubscriptionResponse_PARTIAL) {
         if((rcode = peer_->add_subscriber(inc_sbs))) {
-            IFLOG(peer_->log_, critical(LS_SBS"[error binding subscription to peer][res:%d]", rcode))
+            IFLOG(peer_->log_, critical(LS_SBS"[error binding subscription to peer][res:{}]", rcode))
             inc_sbs->set_stopped();
         } else {
             inc_sbs->set_started();
@@ -1216,12 +1216,12 @@ RetCode incoming_connection_impl::recv_sbs_stop_request(const vlg_hdr_rec *pkt_h
 {
     RetCode rcode = RetCode_OK;
     unsigned int sbsid = pkt_hdr->row_1.sbsrid.sbsrid;
-    IFLOG(peer_->log_, info(LS_SBS"[CONNID:%u-SBSID:%u][stop request]", connid_, sbsid))
+    IFLOG(peer_->log_, info(LS_SBS"[CONNID:{}-SBSID:{}][stop request]", connid_, sbsid))
     SubscriptionResponse sbresl = SubscriptionResponse_OK;
     ProtocolCode protocode = ProtocolCode_SUCCESS;
     std::shared_ptr<incoming_subscription> sbs_sh;
     if((rcode = inco_sbsid_sbs_map_.get(&sbsid, &sbs_sh))) {
-        IFLOG(peer_->log_, error(LS_SBS"[error on subscription stop getting subscription from sbsid map][res:%d]", rcode))
+        IFLOG(peer_->log_, error(LS_SBS"[error on subscription stop getting subscription from sbsid map][res:{}]", rcode))
         sbresl = SubscriptionResponse_KO;
         protocode = ProtocolCode_SUBSCRIPTION_NOT_FOUND;
     } else {
@@ -1307,11 +1307,11 @@ void outgoing_connection_impl::release_all_children()
 RetCode outgoing_connection_impl::client_connect(sockaddr_in &params)
 {
     if(peer_->peer_status_ != PeerStatus_RUNNING) {
-        IFLOG(peer_->log_, error(LS_CLO "[invalid peer status][%d]", __func__, peer_->peer_status_))
+        IFLOG(peer_->log_, error(LS_CLO "[invalid peer status][{}]", __func__, peer_->peer_status_))
         return RetCode_BADSTTS;
     }
     if(status_ != ConnectionStatus_INITIALIZED && status_ != ConnectionStatus_DISCONNECTED) {
-        IFLOG(peer_->log_, error(LS_CLO "[invalid connection status][%d]", __func__, status_))
+        IFLOG(peer_->log_, error(LS_CLO "[invalid connection status][{}]", __func__, status_))
         return RetCode_BADSTTS;
     }
 
@@ -1380,12 +1380,12 @@ RetCode outgoing_connection_impl::recv_connection_response(const vlg_hdr_rec *pk
     sel_evt *evt = new sel_evt(VLG_SELECTOR_Evt_Undef, this);
     switch(conres_) {
         case ConnectionResult_ACCEPTED:
-            IFLOG(peer_->log_, info(LS_CON"[connection accepted by peer][connid:%d][socket:%d]", connid_, socket_))
+            IFLOG(peer_->log_, info(LS_CON"[connection accepted by peer][connid:{}][socket:{}]", connid_, socket_))
             set_proto_connected();
             evt->evt_ = VLG_SELECTOR_Evt_ConnReqAccepted;
             break;
         case ConnectionResult_CONDITIONALLY_ACCEPTED:
-            IFLOG(peer_->log_, info(LS_CON"[connection accepted by peer - with reserve][connid:%d][socket:%d]", connid_,
+            IFLOG(peer_->log_, info(LS_CON"[connection accepted by peer - with reserve][connid:{}][socket:{}]", connid_,
                                     socket_))
             set_proto_connected();
             evt->evt_ = VLG_SELECTOR_Evt_ConnReqAccepted;
@@ -1413,7 +1413,7 @@ RetCode outgoing_connection_impl::recv_connection_response(const vlg_hdr_rec *pk
 RetCode outgoing_connection_impl::recv_disconnection(const vlg_hdr_rec *pkt_hdr)
 {
     disconrescode_ = pkt_hdr->row_1.diswrd.disres;
-    IFLOG(peer_->log_, info(LS_CON"[connid:%d][socket:%d][received disconnection - disconrescode:%d]",
+    IFLOG(peer_->log_, info(LS_CON"[connid:{}][socket:{}][received disconnection - disconrescode:{}]",
                             connid_,
                             socket_,
                             disconrescode_))
@@ -1446,7 +1446,7 @@ RetCode outgoing_connection_impl::recv_tx_response(const vlg_hdr_rec *pkt_hdr,
     txid.txcnid = pkt_hdr->row_4.txcnid.txcnid;
     txid.txprid = pkt_hdr->row_5.txprid.txprid;
 
-    IFLOG(peer_->log_, debug(LS_INC"[%08x%08x%08x%08x][TXRES:%d, TXRESCODE:%d, RESCLS:%d] ",
+    IFLOG(peer_->log_, debug(LS_INC"[%08x%08x%08x%08x][TXRES:{}, TXRESCODE:{}, RESCLS:{}] ",
                              txid.txplid,
                              txid.txsvid,
                              txid.txcnid,
@@ -1469,13 +1469,13 @@ RetCode outgoing_connection_impl::recv_tx_response(const vlg_hdr_rec *pkt_hdr,
         trans->res_clsenc_ = pkt_hdr->row_7.clsenc.enctyp;
         std::unique_ptr<nclass> res_obj;
         if((rcode = peer_->nem_.new_nclass_instance(trans->res_nclassid_, res_obj))) {
-            IFLOG(peer_->log_, error(LS_TRX"[tx response receive failed - new_nclass_instance:%d, nclass_id:%d]",
+            IFLOG(peer_->log_, error(LS_TRX"[tx response receive failed - new_nclass_instance:{}, nclass_id:{}]",
                                      rcode,
                                      trans->res_nclassid_))
             aborted = true;
         }
         if((rcode = res_obj->restore(&peer_->nem_, trans->res_clsenc_, pkt_body))) {
-            IFLOG(peer_->log_, error(LS_TRX"[tx response receive failed - nclass restore fail:%d, nclass_id:%d]",
+            IFLOG(peer_->log_, error(LS_TRX"[tx response receive failed - nclass restore fail:{}, nclass_id:{}]",
                                      rcode,
                                      trans->res_nclassid_))
             aborted = true;
@@ -1484,7 +1484,7 @@ RetCode outgoing_connection_impl::recv_tx_response(const vlg_hdr_rec *pkt_hdr,
     }
 
     if((rcode = outg_flytx_map_.remove(&trans->txid_, nullptr))) {
-        IFLOG(peer_->log_, critical(LS_TRX"[error removing tx from flying map - res:%d]", rcode))
+        IFLOG(peer_->log_, critical(LS_TRX"[error removing tx from flying map - res:{}]", rcode))
     }
 
     if(aborted) {
@@ -1493,14 +1493,14 @@ RetCode outgoing_connection_impl::recv_tx_response(const vlg_hdr_rec *pkt_hdr,
         trans->set_closed();
     }
 
-    IFLOG(peer_->log_, trace(LS_CLO "[res:%d]", __func__, rcode))
+    IFLOG(peer_->log_, trace(LS_CLO "[res:{}]", __func__, rcode))
     return rcode;
 }
 
 RetCode outgoing_connection_impl::release_subscription(outgoing_subscription_impl *subscription)
 {
     if(subscription->conn_ != this) {
-        IFLOG(peer_->log_, error(LS_CLO "[connid:%d][subscription:%d is not mine]", __func__,
+        IFLOG(peer_->log_, error(LS_CLO "[connid:{}][subscription:{} is not mine]", __func__,
                                  connid_,
                                  subscription->sbsid_))
         return RetCode_KO;
@@ -1508,7 +1508,7 @@ RetCode outgoing_connection_impl::release_subscription(outgoing_subscription_imp
     if(subscription->status_ == SubscriptionStatus_REQUEST_SENT ||
             subscription->status_ == SubscriptionStatus_STARTED ||
             subscription->status_ == SubscriptionStatus_RELEASED) {
-        IFLOG(peer_->log_, warn(LS_TRL"[connid:%d][subscription:%d released in status:%d]",
+        IFLOG(peer_->log_, warn(LS_TRL"[connid:{}][subscription:{} released in status:{}]",
                                 __func__,
                                 connid_,
                                 subscription->sbsid_,
@@ -1525,7 +1525,7 @@ RetCode outgoing_connection_impl::recv_sbs_start_response(const vlg_hdr_rec *pkt
     unsigned int sbsid = ((pkt_hdr->row_1.sbresw.sbresl == SubscriptionResponse_OK) ||
                           (pkt_hdr->row_1.sbresw.sbresl == SubscriptionResponse_PARTIAL)) ?
                          pkt_hdr->row_3.sbsrid.sbsrid : 0;
-    IFLOG(peer_->log_, info(LS_SBI"[CONNID:%u-REQID:%u][SBSRES:%d, VLGCOD:%d, SBSID:%u]",
+    IFLOG(peer_->log_, info(LS_SBI"[CONNID:{}-REQID:{}][SBSRES:{}, VLGCOD:{}, SBSID:{}]",
                             connid_,
                             pkt_hdr->row_2.rqstid.rqstid,
                             pkt_hdr->row_1.sbresw.sbresl,
@@ -1570,11 +1570,11 @@ RetCode outgoing_connection_impl::recv_sbs_evt(const vlg_hdr_rec *pkt_hdr,
                              pkt_hdr->row_2.sevttp.sbeact))
     outgoing_subscription_impl *subscription = nullptr;
     if((rcode = outg_sbsid_sbs_map_.get(&pkt_hdr->row_1.sbsrid.sbsrid, &subscription))) {
-        IFLOG(peer_->log_, critical(LS_SBS"[error getting subscription from sbsid map][res:%d]", rcode))
+        IFLOG(peer_->log_, critical(LS_SBS"[error getting subscription from sbsid map][res:{}]", rcode))
         mng = false;
     } else {
         if(mng && (rcode = subscription->receive_event(pkt_hdr, pkt_body))) {
-            IFLOG(peer_->log_, warn(LS_SBS"[subscription event:%d management failed][res:%d]",
+            IFLOG(peer_->log_, warn(LS_SBS"[subscription event:{} management failed][res:{}]",
                                     pkt_hdr->row_3.sevtid.sevtid,
                                     rcode))
         }
@@ -1585,7 +1585,7 @@ RetCode outgoing_connection_impl::recv_sbs_evt(const vlg_hdr_rec *pkt_hdr,
 RetCode outgoing_connection_impl::recv_sbs_stop_response(const vlg_hdr_rec *pkt_hdr)
 {
     RetCode rcode = RetCode_OK;
-    IFLOG(peer_->log_, info(LS_INC LS_SBS"[CONNID:%u-SBSID:%u][SBSRES:%d, VLGCOD:%d]",
+    IFLOG(peer_->log_, info(LS_INC LS_SBS"[CONNID:{}-SBSID:{}][SBSRES:{}, VLGCOD:{}]",
                             connid_,
                             pkt_hdr->row_2.sbsrid.sbsrid,
                             pkt_hdr->row_1.sbresw.sbresl,

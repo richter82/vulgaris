@@ -109,7 +109,7 @@ inline void sbs_impl::ntfy_sel_snd_pkt()
 
 RetCode sbs_impl::set_started()
 {
-    IFLOG(conn_->peer_->log_, info(LS_SBS"[CONNID:%u-SBSID:%u][started]", conn_->connid_, sbsid_))
+    IFLOG(conn_->peer_->log_, info(LS_SBS"[CONNID:{}-SBSID:{}][started]", conn_->connid_, sbsid_))
     set_status(SubscriptionStatus_STARTED);
     if(opubl_) {
         olistener_->on_start(*opubl_);
@@ -119,7 +119,7 @@ RetCode sbs_impl::set_started()
 
 RetCode sbs_impl::set_stopped()
 {
-    IFLOG(conn_->peer_->log_, info(LS_SBS"[CONNID:%u-SBSID:%u][stopped]", conn_->connid_, sbsid_))
+    IFLOG(conn_->peer_->log_, info(LS_SBS"[CONNID:{}-SBSID:{}][stopped]", conn_->connid_, sbsid_))
     set_status(SubscriptionStatus_STOPPED);
     if(ipubl_) {
         ilistener_->on_stop(*ipubl_);
@@ -131,7 +131,7 @@ RetCode sbs_impl::set_stopped()
 
 RetCode sbs_impl::set_released()
 {
-    IFLOG(conn_->peer_->log_, debug(LS_SBS"[CONNID:%u-SBSID:%u][released]", conn_->connid_, sbsid_))
+    IFLOG(conn_->peer_->log_, debug(LS_SBS"[CONNID:{}-SBSID:{}][released]", conn_->connid_, sbsid_))
     set_status(SubscriptionStatus_RELEASED);
     return RetCode_OK;
 }
@@ -169,7 +169,7 @@ RetCode sbs_impl::await_for_status_reached(SubscriptionStatus test,
         }
     }
     current = status_;
-    IFLOG(conn_->peer_->log_, trace(LS_CLO "test:%d [reached] current:%d",
+    IFLOG(conn_->peer_->log_, trace(LS_CLO "test:{} [reached] current:{}",
                                     __func__,
                                     test,
                                     status_))
@@ -357,7 +357,7 @@ RetCode incoming_subscription_impl::send_initial_query()
     std::unique_ptr<nclass> dwnl_obj;
     unsigned int ts_0 = 0, ts_1 = 0;
     if((rcode = conn_->peer_->get_per_nclassid_helper_rec(nclassid_, &sdr))) {
-        IFLOG(conn_->peer_->log_, critical(LS_CLO "[failed get per-nclass_id helper class][res:%d]", __func__, rcode))
+        IFLOG(conn_->peer_->log_, critical(LS_CLO "[failed get per-nclass_id helper class][res:{}]", __func__, rcode))
         return rcode;
     }
 
@@ -381,7 +381,7 @@ RetCode incoming_subscription_impl::send_initial_query()
     ntfy_sel_snd_pkt();
 
     if((rcode = initial_query_->release())) {
-        IFLOG(conn_->peer_->log_, critical(LS_TRL "[download query failed to release][res:%d]", __func__, rcode))
+        IFLOG(conn_->peer_->log_, critical(LS_TRL "[download query failed to release][res:{}]", __func__, rcode))
     }
 
     initial_query_.release();
@@ -413,20 +413,20 @@ RetCode incoming_subscription_impl::execute_initial_query()
                     ss << ";";
                     rcode = conn->execute_query(ss.str().c_str(), conn_->peer_->nem_, initial_query_);
                 } else {
-                    IFLOG(conn_->peer_->log_, error(LS_TRL "[no available persistence-connection for nclass_id:%u]", __func__,
+                    IFLOG(conn_->peer_->log_, error(LS_TRL "[no available persistence-connection for nclass_id:{}]", __func__,
                                                     nclassid_))
                     rcode = RetCode_KO;
                 }
             } else {
-                IFLOG(conn_->peer_->log_, error(LS_TRL "[no available persistence-driver for nclass_id:%u]", __func__, nclassid_))
+                IFLOG(conn_->peer_->log_, error(LS_TRL "[no available persistence-driver for nclass_id:{}]", __func__, nclassid_))
                 rcode = RetCode_KO;
             }
         } else {
-            IFLOG(conn_->peer_->log_, error(LS_TRL "[nclass is not persistent][nclass_id:%u]", __func__, nclassid_))
+            IFLOG(conn_->peer_->log_, error(LS_TRL "[nclass is not persistent][nclass_id:{}]", __func__, nclassid_))
             rcode = RetCode_KO;
         }
     } else {
-        IFLOG(conn_->peer_->log_, critical(LS_TRL "[nclass descriptor not found][nclass_id:%u]", __func__, nclassid_))
+        IFLOG(conn_->peer_->log_, critical(LS_TRL "[nclass descriptor not found][nclass_id:{}]", __func__, nclassid_))
     }
     if(rcode) {
         initial_query_ended_ = true;
@@ -434,7 +434,7 @@ RetCode incoming_subscription_impl::execute_initial_query()
             initial_query_->release();
         }
         initial_query_.release();
-        IFLOG(conn_->peer_->log_, error(LS_CLO "[sbsid:%d - download query failed][res:%d].", __func__, sbsid_, rcode))
+        IFLOG(conn_->peer_->log_, error(LS_CLO "[sbsid:{} - download query failed][res:{}].", __func__, sbsid_, rcode))
     }
     return rcode;
 }
@@ -492,7 +492,7 @@ RetCode outgoing_subscription_impl::set_req_sent()
 RetCode outgoing_subscription_impl::start()
 {
     if(status_ != SubscriptionStatus_INITIALIZED && status_ != SubscriptionStatus_STOPPED) {
-        IFLOG(conn_->peer_->log_, error(LS_CLO "[status:%d]", __func__, status_))
+        IFLOG(conn_->peer_->log_, error(LS_CLO "[status:{}]", __func__, status_))
         return RetCode_BADSTTS;
     }
     RetCode rcode = RetCode_OK;
@@ -501,7 +501,7 @@ RetCode outgoing_subscription_impl::start()
     outgoing_subscription_impl *self = this;
     rcode = oconn.outg_reqid_sbs_map_.put(&reqid_, &self);
     if((rcode = send_start_request())) {
-        IFLOG(conn_->peer_->log_, error(LS_TRL "[send request failed][res:%d]", __func__, rcode))
+        IFLOG(conn_->peer_->log_, error(LS_TRL "[send request failed][res:{}]", __func__, rcode))
     }
     return rcode;
 }
@@ -528,7 +528,7 @@ RetCode outgoing_subscription_impl::start(SubscriptionType sbscr_type,
               start_timestamp_0,
               start_timestamp_1))
     if(status_ != SubscriptionStatus_INITIALIZED && status_ != SubscriptionStatus_STOPPED) {
-        IFLOG(conn_->peer_->log_, error(LS_CLO "[status:%d]", __func__, status_))
+        IFLOG(conn_->peer_->log_, error(LS_CLO "[status:{}]", __func__, status_))
         return RetCode_BADSTTS;
     }
     sbstyp_ = sbscr_type;
@@ -585,7 +585,7 @@ RetCode outgoing_subscription_impl::receive_event(const vlg_hdr_rec *pkt_hdr,
                       nclassid_))
             return rcode;
         } else {
-            //IFLOG(conn_->peer_->log_, dbg_nclass(nobj.get(), true, LS_SBI"[ACT:%d] ", pkt_hdr->row_2.sevttp.sbeact))
+            //IFLOG(conn_->peer_->log_, dbg_nclass(nobj.get(), true, LS_SBI"[ACT:{}] ", pkt_hdr->row_2.sevttp.sbeact))
         }
     }
 

@@ -6,6 +6,7 @@
 
 #pragma once
 #include "vlg.h"
+#include <iostream>
 
 namespace vlg {
 

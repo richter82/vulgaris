@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 {
     own_peer *op = peer_create();
     peer *p = own_peer_get_ptr(op);
-	logger *own_log = syslog_get_retained("root");
+	logger *own_log = syslog_get_retained("vlglog");
 	nentity_manager *smplm = get_c_nem_smplmdl(own_log);
 
     peer_set_name(p, cpeer_name, NULL, NULL);

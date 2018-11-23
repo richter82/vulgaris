@@ -23,7 +23,7 @@ RetCode WSA_init(std::shared_ptr<spdlog::logger> &log)
     WSAData wsaData;
     int nCode;
     if((nCode = WSAStartup(MAKEWORD(2, 2), &wsaData)) != 0) {
-        IFLOG(log, critical(LS_SYS"[WSADATA error code:%d]", nCode))
+        IFLOG(log, critical(LS_SYS"[WSADATA error code:{}]", nCode))
         return RetCode_KO;
     }
     IFLOG(log, info(LS_SYS"[WSADATA loaded]"))
@@ -72,12 +72,12 @@ RetCode acceptor::set_sockaddr_in(sockaddr_in &serv_sockaddr_in) {
 }
 
 RetCode acceptor::create_server_socket(SOCKET &serv_socket) {
-    IFLOG(peer_.log_, info(LS_OPN "[interface:%s, port:%d]",
+    IFLOG(peer_.log_, info(LS_OPN "[interface:{}, port:{}]",
                            __func__,
                            inet_ntoa(serv_sockaddr_in_.sin_addr),
                            ntohs(serv_sockaddr_in_.sin_port)))
     if((serv_socket = serv_socket_ = socket(AF_INET, SOCK_STREAM, 0)) != INVALID_SOCKET) {
-        IFLOG(peer_.log_, debug(LS_TRL "[socket:%d][OK]", __func__, serv_socket))
+        IFLOG(peer_.log_, debug(LS_TRL "[socket:{}][OK]", __func__, serv_socket))
         if(!bind(serv_socket_, (sockaddr *)&serv_sockaddr_in_, sizeof(sockaddr_in))) {
             IFLOG(peer_.log_, debug(LS_TRL "[bind OK]", __func__))
             if(!listen(serv_socket_, SOMAXCONN)) {
@@ -93,7 +93,7 @@ RetCode acceptor::create_server_socket(SOCKET &serv_socket) {
 #else
             err = errno;
 #endif
-            IFLOG(peer_.log_, error(LS_CLO "[bind KO][err:%d]", __func__, err))
+            IFLOG(peer_.log_, error(LS_CLO "[bind KO][err:{}]", __func__, err))
             return RetCode_SYSERR;
         }
     } else {
@@ -119,10 +119,10 @@ RetCode acceptor::accept(unsigned int new_connid, std::shared_ptr<incoming_conne
 #else
         err = errno;
 #endif
-        IFLOG(peer_.log_, error(LS_CLO "[accept KO][err:%d]", __func__, err))
+        IFLOG(peer_.log_, error(LS_CLO "[accept KO][err:{}]", __func__, err))
         return RetCode_SYSERR;
     } else {
-        IFLOG(peer_.log_, debug(LS_TRL "[socket:%d, host:%s, port:%d][accept OK][candidate connid:%d]",
+        IFLOG(peer_.log_, debug(LS_TRL "[socket:{}, host:{}, port:{}][accept OK][candidate connid:{}]",
                                 __func__,
                                 socket,
                                 inet_ntoa(addr.sin_addr),
@@ -136,7 +136,7 @@ RetCode acceptor::accept(unsigned int new_connid, std::shared_ptr<incoming_conne
 
     RetCode rcode = RetCode_OK;
     if((rcode = new_connection->impl_->set_connection_established(socket))) {
-        IFLOG(peer_.log_, error(LS_CLO "[new_connid:%d - setting connection established fail with res:%d]", __func__,
+        IFLOG(peer_.log_, error(LS_CLO "[new_connid:{} - setting connection established fail with res:{}]", __func__,
                                 new_connid,
                                 rcode))
     }

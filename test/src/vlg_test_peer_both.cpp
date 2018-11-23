@@ -577,7 +577,7 @@ struct entry_point {
 int main(int argc, char *argv[])
 {
     vlg::syslog_load_config();
-    own_log = vlg::syslog_get_retained("root");
+    own_log = vlg::syslog_get_retained("vlglog");
 
     entry_point ep;
     ep.init();

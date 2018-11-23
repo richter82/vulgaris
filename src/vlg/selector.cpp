@@ -56,7 +56,7 @@ selector::selector(peer_impl &peer) :
 selector::~selector()
 {
     if(!(status_ <= SelectorStatus_INIT) && !(status_ >= SelectorStatus_STOPPED)) {
-        IFLOG(peer_.log_, critical(LS_DTR"[selector:%d is not in a safe state:%d] " LS_EXUNX, __func__, peer_.peer_id_,
+        IFLOG(peer_.log_, critical(LS_DTR"[selector:{} is not in a safe state:{}] " LS_EXUNX, __func__, peer_.peer_id_,
                                    status_))
     }
 }
@@ -88,7 +88,7 @@ RetCode selector::set_status(SelectorStatus status)
     scoped_mx smx(mon_);
     status_ = status;
     mon_.notify_all();
-    IFLOG(peer_.log_, trace(LS_CLO "[status:%d]", __func__, status))
+    IFLOG(peer_.log_, trace(LS_CLO "[status:{}]", __func__, status))
     return RetCode_OK;
 }
 
@@ -112,7 +112,7 @@ RetCode selector::await_for_status_reached(SelectorStatus test,
         }
     }
     current = status_;
-    IFLOG(peer_.log_, trace(LS_CLO "test:%d [reached] current:%d", __func__,
+    IFLOG(peer_.log_, trace(LS_CLO "test:{} [reached] current:{}", __func__,
                             test,
                             status_))
     return rcode;
@@ -122,18 +122,18 @@ RetCode selector::create_UDP_notify_srv_sock()
 {
     int res = 0, err = 0;
     if((udp_ntfy_srv_socket_ = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) != INVALID_SOCKET) {
-        IFLOG(peer_.log_, debug(LS_TRL "[udp_ntfy_srv_socket_:%d][OK]", __func__, udp_ntfy_srv_socket_))
+        IFLOG(peer_.log_, debug(LS_TRL "[udp_ntfy_srv_socket_:{}][OK]", __func__, udp_ntfy_srv_socket_))
         if(!bind(udp_ntfy_srv_socket_, (sockaddr *)&udp_ntfy_sa_in_, sizeof(udp_ntfy_sa_in_))) {
-            IFLOG(peer_.log_, trace(LS_TRL "[udp_ntfy_srv_socket_:%d][bind OK]", __func__, udp_ntfy_srv_socket_))
+            IFLOG(peer_.log_, trace(LS_TRL "[udp_ntfy_srv_socket_:{}][bind OK]", __func__, udp_ntfy_srv_socket_))
 #if defined WIN32 && defined _MSC_VER
             unsigned long mode = 1; //non-blocking mode
             if((res = ioctlsocket(udp_ntfy_srv_socket_, FIONBIO, &mode))) {
                 err = WSAGetLastError();
-                IFLOG(peer_.log_, critical(LS_CLO "[udp_ntfy_srv_socket_:%d][ioctlsocket KO][err:%d]", __func__, udp_ntfy_srv_socket_,
+                IFLOG(peer_.log_, critical(LS_CLO "[udp_ntfy_srv_socket_:{}][ioctlsocket KO][err:{}]", __func__, udp_ntfy_srv_socket_,
                                            err))
                 return RetCode_SYSERR;
             } else {
-                IFLOG(peer_.log_, trace(LS_TRL "[udp_ntfy_srv_socket_:%d][ioctlsocket OK]", __func__, udp_ntfy_srv_socket_))
+                IFLOG(peer_.log_, trace(LS_TRL "[udp_ntfy_srv_socket_:{}][ioctlsocket OK]", __func__, udp_ntfy_srv_socket_))
             }
 #else
             int flags = fcntl(udp_ntfy_srv_socket_, F_GETFL, 0);
@@ -142,11 +142,11 @@ RetCode selector::create_UDP_notify_srv_sock()
             }
             flags = (flags|O_NONBLOCK);
             if((res = fcntl(udp_ntfy_srv_socket_, F_SETFL, flags))) {
-                IFLOG(peer_.log_, critical(LS_CLO "[udp_ntfy_srv_socket_:%d][fcntl KO][err:%d]", __func__, udp_ntfy_srv_socket_,
+                IFLOG(peer_.log_, critical(LS_CLO "[udp_ntfy_srv_socket_:{}][fcntl KO][err:{}]", __func__, udp_ntfy_srv_socket_,
                                            errno))
                 return RetCode_SYSERR;
             } else {
-                IFLOG(peer_.log_, trace(LS_TRL "[udp_ntfy_srv_socket_:%d][fcntl OK]", __func__, udp_ntfy_srv_socket_))
+                IFLOG(peer_.log_, trace(LS_TRL "[udp_ntfy_srv_socket_:{}][fcntl OK]", __func__, udp_ntfy_srv_socket_))
             }
 #endif
         } else {
@@ -155,11 +155,11 @@ RetCode selector::create_UDP_notify_srv_sock()
 #else
             err = errno;
 #endif
-            IFLOG(peer_.log_, critical(LS_CLO "[udp_ntfy_srv_socket_:%d][bind KO][err:%d]", __func__, udp_ntfy_srv_socket_, err))
+            IFLOG(peer_.log_, critical(LS_CLO "[udp_ntfy_srv_socket_:{}][bind KO][err:{}]", __func__, udp_ntfy_srv_socket_, err))
             return RetCode_SYSERR;
         }
     } else {
-        IFLOG(peer_.log_, critical(LS_CLO "[socket KO][err:%d]", __func__, err))
+        IFLOG(peer_.log_, critical(LS_CLO "[socket KO][err:{}]", __func__, err))
         return RetCode_SYSERR;
     }
     return RetCode_OK;
@@ -170,18 +170,18 @@ RetCode selector::connect_UDP_notify_cli_sock()
     int err = 0;
     socklen_t len = sizeof(udp_ntfy_sa_in_);
     getsockname(udp_ntfy_srv_socket_, (struct sockaddr *)&udp_ntfy_sa_in_, &len);
-    IFLOG(peer_.log_, trace(LS_OPN "[sin_addr:%s, sin_port:%d]", __func__,
+    IFLOG(peer_.log_, trace(LS_OPN "[sin_addr:{}, sin_port:{}]", __func__,
                             inet_ntoa(udp_ntfy_sa_in_.sin_addr),
                             htons(udp_ntfy_sa_in_.sin_port)))
     if((udp_ntfy_cli_socket_ = socket(AF_INET, SOCK_DGRAM, 0)) != INVALID_SOCKET) {
-        IFLOG(peer_.log_, debug(LS_TRL "[udp_ntfy_cli_socket_:%d][OK]", __func__, udp_ntfy_cli_socket_))
+        IFLOG(peer_.log_, debug(LS_TRL "[udp_ntfy_cli_socket_:{}][OK]", __func__, udp_ntfy_cli_socket_))
         if((connect(udp_ntfy_cli_socket_, (struct sockaddr *)&udp_ntfy_sa_in_, sizeof(udp_ntfy_sa_in_))) != INVALID_SOCKET) {
-            IFLOG(peer_.log_, debug(LS_TRL "[udp_ntfy_cli_socket_:%d][connect OK]", __func__, udp_ntfy_cli_socket_))
+            IFLOG(peer_.log_, debug(LS_TRL "[udp_ntfy_cli_socket_:{}][connect OK]", __func__, udp_ntfy_cli_socket_))
         } else {
 #if defined WIN32 && defined _MSC_VER
             err = WSAGetLastError();
 #endif
-            IFLOG(peer_.log_, critical(LS_CLO "[udp_ntfy_cli_socket_:%d][connect KO][err:%d]", __func__, udp_ntfy_cli_socket_,
+            IFLOG(peer_.log_, critical(LS_CLO "[udp_ntfy_cli_socket_:{}][connect KO][err:{}]", __func__, udp_ntfy_cli_socket_,
                                        err))
             return RetCode_SYSERR;
         }
@@ -219,11 +219,11 @@ RetCode selector::notify(const sel_evt *evt)
 #else
         } else if(err == ECONNRESET) {
 #endif
-            IFLOG(peer_.log_, error(LS_CLO "[udp_ntfy_cli_socket_:%d][err:%d]", __func__, udp_ntfy_cli_socket_, err))
+            IFLOG(peer_.log_, error(LS_CLO "[udp_ntfy_cli_socket_:{}][err:{}]", __func__, udp_ntfy_cli_socket_, err))
             return RetCode_KO;
         } else {
             perror(__func__);
-            IFLOG(peer_.log_, error(LS_CLO "[udp_ntfy_cli_socket_:%d][errno:%d]", __func__, udp_ntfy_cli_socket_, errno))
+            IFLOG(peer_.log_, error(LS_CLO "[udp_ntfy_cli_socket_:{}][errno:{}]", __func__, udp_ntfy_cli_socket_, errno))
             return RetCode_SYSERR;
         }
     }
@@ -237,7 +237,7 @@ RetCode selector::start_exec_services()
     if(peer_.personality_ == PeerPersonality_PURE_SERVER || peer_.personality_ == PeerPersonality_BOTH) {
         IFLOG(peer_.log_, debug(LS_TRL "[starting server side executor service]", __func__))
         if((res = inco_exec_srv_.start())) {
-            IFLOG(peer_.log_, critical(LS_CLO "[starting server side, last_err:%d]", __func__, res))
+            IFLOG(peer_.log_, critical(LS_CLO "[starting server side, last_err:{}]", __func__, res))
             return RetCode_KO;
         }
         inco_exec_srv_.await_for_status_reached(PExecSrvStatus_STARTED, current);
@@ -246,7 +246,7 @@ RetCode selector::start_exec_services()
     if(peer_.personality_ == PeerPersonality_PURE_CLIENT || peer_.personality_ == PeerPersonality_BOTH) {
         IFLOG(peer_.log_, debug(LS_TRL "[starting client side executor service]", __func__))
         if((res = outg_exec_srv_.start())) {
-            IFLOG(peer_.log_, critical(LS_CLO "[starting client side, last_err:%d]", __func__, res))
+            IFLOG(peer_.log_, critical(LS_CLO "[starting client side, last_err:{}]", __func__, res))
             return RetCode_KO;
         }
         outg_exec_srv_.await_for_status_reached(PExecSrvStatus_STARTED, current);
@@ -260,7 +260,7 @@ RetCode selector::start_conn_objs()
     RetCode res = RetCode_OK;
     if(peer_.personality_ == PeerPersonality_PURE_SERVER || peer_.personality_ == PeerPersonality_BOTH) {
         if((res = srv_acceptor_.create_server_socket(srv_socket_))) {
-            IFLOG(peer_.log_, critical(LS_CLO "[starting acceptor, last_err:%d]", __func__, res))
+            IFLOG(peer_.log_, critical(LS_CLO "[starting acceptor, last_err:{}]", __func__, res))
             return RetCode_KO;
         }
         FD_SET(srv_socket_, &read_FDs_);
@@ -285,7 +285,7 @@ RetCode selector::process_inco_sock_inco_events()
                 if(it->second->impl_->status_ != ConnectionStatus_ESTABLISHED &&
                         it->second->impl_->status_ != ConnectionStatus_PROTOCOL_HANDSHAKE &&
                         it->second->impl_->status_ != ConnectionStatus_AUTHENTICATED) {
-                    IFLOG(peer_.log_, trace(LS_TRL"[socket:%d, connid:%d, status:%d][not eligible for recv()]",
+                    IFLOG(peer_.log_, trace(LS_TRL"[socket:{}, connid:{}, status:{}][not eligible for recv()]",
                                             __func__,
                                             sckt,
                                             it->second->impl_->connid_,
@@ -338,7 +338,7 @@ RetCode selector::process_outg_sock_inco_events()
                 if(it->second->status_ != ConnectionStatus_ESTABLISHED &&
                         it->second->status_ != ConnectionStatus_PROTOCOL_HANDSHAKE &&
                         it->second->status_ != ConnectionStatus_AUTHENTICATED) {
-                    IFLOG(peer_.log_, trace(LS_TRL"[socket:%d, connid:%d, status:%d][not eligible for recv()]", __func__,
+                    IFLOG(peer_.log_, trace(LS_TRL"[socket:{}, connid:{}, status:{}][not eligible for recv()]", __func__,
                                             it->second->socket_,
                                             it->second->connid_,
                                             it->second->status_))
@@ -359,7 +359,7 @@ RetCode selector::process_outg_sock_inco_events()
                 if(it->second->status_ != ConnectionStatus_ESTABLISHED &&
                         it->second->status_ != ConnectionStatus_PROTOCOL_HANDSHAKE &&
                         it->second->status_ != ConnectionStatus_AUTHENTICATED) {
-                    IFLOG(peer_.log_, trace(LS_TRL "[socket:%d, connid:%d, status:%d][not eligible for recv()]", __func__,
+                    IFLOG(peer_.log_, trace(LS_TRL "[socket:{}, connid:{}, status:{}][not eligible for recv()]", __func__,
                                             it->second->socket_,
                                             it->second->connid_,
                                             it->second->status_))
@@ -388,7 +388,7 @@ RetCode selector::consume_inco_sock_events()
             return RetCode_KO;
         }
         inco_conn_map_[new_conn_shp->get_socket()] = new_conn_shp;
-        IFLOG(peer_.log_, debug(LS_CON"[socket:%d, host:%s, port:%d, connid:%d][socket accepted]",
+        IFLOG(peer_.log_, debug(LS_CON"[socket:{}, host:{}, port:{}, connid:{}][socket accepted]",
                                 new_conn_shp->get_socket(),
                                 new_conn_shp->get_host_ip(),
                                 new_conn_shp->get_host_port(),
@@ -613,7 +613,7 @@ RetCode selector::process_asyn_evts()
                         break;
                 }
             } else {
-                IFLOG(peer_.log_, info(LS_TRL "[socket:%d is no longer valid]", __func__, conn_evt->socket_))
+                IFLOG(peer_.log_, info(LS_TRL "[socket:{} is no longer valid]", __func__, conn_evt->socket_))
             }
         }
         delete conn_evt;
@@ -636,11 +636,11 @@ RetCode selector::process_asyn_evts()
 #else
         } else if(errno == ECONNRESET) {
 #endif
-            IFLOG(peer_.log_, error(LS_CLO "[err:%d]", __func__, err))
+            IFLOG(peer_.log_, error(LS_CLO "[err:{}]", __func__, err))
             return RetCode_KO;
         } else {
             perror(__func__);
-            IFLOG(peer_.log_, critical(LS_CLO "[errno:%d]", __func__, errno))
+            IFLOG(peer_.log_, critical(LS_CLO "[errno:{}]", __func__, errno))
             return RetCode_SYSERR;
         }
     }
@@ -684,26 +684,26 @@ RetCode selector::server_socket_shutdown()
     int last_err_ = 0;
 #if defined WIN32 && defined _MSC_VER
     if((last_err_ = closesocket(srv_socket_))) {
-        IFLOG(peer_.log_, error(LS_CLO "[socket:%d][closesocket KO][res:%d]", __func__,
+        IFLOG(peer_.log_, error(LS_CLO "[socket:{}][closesocket KO][res:{}]", __func__,
                                 srv_socket_, last_err_))
     } else {
-        IFLOG(peer_.log_, trace(LS_TRL "[socket:%d][closesocket OK][res:%d]", __func__,
+        IFLOG(peer_.log_, trace(LS_TRL "[socket:{}][closesocket OK][res:{}]", __func__,
                                 srv_socket_, last_err_))
     }
 #else
     if((last_err_ = close(srv_socket_))) {
-        IFLOG(peer_.log_, error(LS_CLO "[socket:%d][closesocket KO][res:%d]", __func__,
+        IFLOG(peer_.log_, error(LS_CLO "[socket:{}][closesocket KO][res:{}]", __func__,
                                 srv_socket_, last_err_))
     } else {
-        IFLOG(peer_.log_, trace(LS_TRL "[socket:%d][closesocket OK][res:%d]", __func__,
+        IFLOG(peer_.log_, trace(LS_TRL "[socket:{}][closesocket OK][res:{}]", __func__,
                                 srv_socket_, last_err_))
     }
 #if 0
     if((last_err_ = shutdown(srv_socket_, SHUT_RDWR))) {
-        IFLOG(peer_.log_, error(LS_CLO "[socket:%d][shutdown KO][res:%d]", __func__,
+        IFLOG(peer_.log_, error(LS_CLO "[socket:{}][shutdown KO][res:{}]", __func__,
                                 srv_socket_, last_err_))
     } else {
-        IFLOG(peer_.log_, trace(LS_TRL "[socket:%d][shutdown OK][res:%d]", __func__,
+        IFLOG(peer_.log_, trace(LS_TRL "[socket:{}][shutdown OK][res:{}]", __func__,
                                 srv_socket_, last_err_))
     }
 #endif
@@ -774,7 +774,7 @@ void *selector::run()
 {
     SelectorStatus current = SelectorStatus_UNDEF;
     if(status_ != SelectorStatus_INIT && status_ != SelectorStatus_REQUEST_READY) {
-        IFLOG(peer_.log_, error(LS_CLO "[status_=%d, exp:2][BAD STATUS]", __func__, status_))
+        IFLOG(peer_.log_, error(LS_CLO "[status_={}, exp:2][BAD STATUS]", __func__, status_))
         return 0;
     }
     do {
@@ -795,7 +795,7 @@ void *selector::run()
                 IFLOG(peer_.log_, trace(LS_SEL"+select() [timeout]+", __func__))
             } else {
                 //error
-                IFLOG(peer_.log_, error(LS_SEL"+select() [error:%d]+", __func__, sel_res_))
+                IFLOG(peer_.log_, error(LS_SEL"+select() [error:{}]+", __func__, sel_res_))
                 set_status(SelectorStatus_ERROR);
             }
             FDSET_sockets();
@@ -814,7 +814,7 @@ void *selector::run()
     } while(true);
     set_status(SelectorStatus_STOPPED);
     int stop_res = stop();
-    IFLOG(peer_.log_, trace(LS_CLO "[res:%d]", __func__, stop_res))
+    IFLOG(peer_.log_, trace(LS_CLO "[res:{}]", __func__, stop_res))
     return 0;
 }
 
