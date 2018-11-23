@@ -576,7 +576,9 @@ struct entry_point {
 
 int main(int argc, char *argv[])
 {
+    vlg::syslog_load_config();
     own_log = vlg::syslog_get_retained("root");
+
     entry_point ep;
     ep.init();
     ep.start_peer(argc, argv, true);
