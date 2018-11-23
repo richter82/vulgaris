@@ -10,6 +10,7 @@ OUTDIR = ../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/lib
 INCLUDES = 	-I../public\
 			-I../public/cpp\
 			-I../public/c\
+			-I../contrib\
 			-I../src
 			
 CCFLAGS = -std=c++14 -Wall -fPIC $(CC_DBG_REL_OPT)

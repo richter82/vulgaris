@@ -509,7 +509,7 @@ struct nentity_manager_impl {
 // nentity_manager
 
 nentity_manager::nentity_manager(vlg::logger *log) :
-    impl_(new nentity_manager_impl(log ? *(std::shared_ptr<spdlog::logger> *)log : spdlog::default_logger()))
+    impl_(new nentity_manager_impl(*(std::shared_ptr<spdlog::logger> *)log))
 {}
 
 nentity_manager::~nentity_manager()
