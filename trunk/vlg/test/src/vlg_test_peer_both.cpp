@@ -21,11 +21,11 @@
 //needed only if statically linked
 #include "vlg_sqlite.h"
 
-#define LS_TST "TT|%s"
+#define LS_TST "TT|{}"
 #define TEST_TMOUT 4
 
 static vlg::logger *own_log = nullptr;
-static auto test_log = spdlog::stdout_color_mt("console");
+static std::shared_ptr<spdlog::logger> test_log;
 
 int save_nclass_position(const char *filename,
                          unsigned int ts_0,
@@ -423,6 +423,7 @@ struct entry_point {
 #if STA_L
             vlg::persistence_driver *sqlite_dri = vlg::get_pers_driv_sqlite(own_log);
             vlg::persistence_manager::load_driver(&sqlite_dri, 1);
+			test_log->info(LS_TST"[sqlite_dri]{}", __func__, !sqlite_dri ? "fail" : "success");
             tpeer_.extend_model(*get_nem_smplmdl(own_log));
 #endif
             return vlg::RetCode_OK;
@@ -577,6 +578,7 @@ struct entry_point {
 int main(int argc, char *argv[])
 {
     vlg::syslog_load_config();
+	test_log = spdlog::stdout_color_mt("console");
     own_log = vlg::syslog_get_retained("vlglog");
 
     entry_point ep;
