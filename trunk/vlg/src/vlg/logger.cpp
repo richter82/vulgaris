@@ -426,6 +426,8 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
         if(glob_logger_format_patter.length() > 0) {
             spdlog::set_pattern(glob_logger_format_patter);
         }
+        spdlog::flush_every(std::chrono::seconds(5));
+
         return res;
     }
 

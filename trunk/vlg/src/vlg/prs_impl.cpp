@@ -202,7 +202,7 @@ RetCode persistence_connection_impl::connect()
     if(rcode == RetCode_OK) {
         status_ = PersistenceConnectionStatus_CONNECTED;
     }
-    IFLOG(log_, trace(LS_CLO "[res:%d]", __func__, rcode))
+    IFLOG(log_, trace(LS_CLO "[res:{}]", __func__, rcode))
     return rcode;
 }
 
@@ -210,7 +210,7 @@ RetCode persistence_connection_impl::create_entity_schema(PersistenceAlteringMod
                                                           const nentity_manager &nem,
                                                           unsigned int nclass_id)
 {
-    IFLOG(log_, trace(LS_OPN "[mode:%d, nclass_id:%d]", __func__, mode, nclass_id))
+    IFLOG(log_, trace(LS_OPN "[mode:{}, nclass_id:{}]", __func__, mode, nclass_id))
     RetCode rcode = RetCode_OK;
     const nentity_desc *edesc = nem.get_nentity_descriptor(nclass_id);
     if(!edesc || !edesc->is_persistent()) {
@@ -236,7 +236,7 @@ RetCode persistence_connection_impl::create_entity_schema(PersistenceAlteringMod
                                                           const nentity_manager &nem,
                                                           const nentity_desc &edesc)
 {
-    IFLOG(log_, trace(LS_OPN "[mode:%d]", __func__, mode))
+    IFLOG(log_, trace(LS_OPN "[mode:{}]", __func__, mode))
     RetCode rcode = RetCode_OK;
     if(!edesc.is_persistent()) {
         return RetCode_BADARG;
@@ -421,24 +421,24 @@ RetCode persistence_driver::load_driver_dyna(const char *drvname,
     void *dynalib = dynamic_lib_open(slib_name);
 #endif
     if(!dynalib) {
-        IFLOG(log, error(LS_CLO "[failed loading so-lib for driver:%s]", __func__, drvname))
+        IFLOG(log, error(LS_CLO "[failed loading so-lib for driver:{}]", __func__, drvname))
         return RetCode_KO;
     }
     char dri_ep_f[VLG_DRV_NAME_LEN] = {0};
     sprintf(dri_ep_f, "get_pers_driv_%s", drvname);
     persistence_driver_load dri_f = (persistence_driver_load)dynamic_lib_load_symbol(dynalib, dri_ep_f);
     if(!dri_f) {
-        IFLOG(log, error(LS_CLO "[failed to locate entrypoint in so-lib for driver:%s]", __func__, drvname))
+        IFLOG(log, error(LS_CLO "[failed to locate entrypoint in so-lib for driver:{}]", __func__, drvname))
         return RetCode_KO;
     }
     if(!(*driver = dri_f((logger *)&log))) {
-        IFLOG(log, error(LS_CLO "[failed to get driver instance for driver:%s]", __func__, drvname))
+        IFLOG(log, error(LS_CLO "[failed to get driver instance for driver:{}]", __func__, drvname))
         return RetCode_KO;
     } else {
         char driv_f_n[VLG_MDL_NAME_LEN] = {0};
         sprintf(driv_f_n, "get_pers_driv_ver_%s", drvname);
         persistence_driver_version_get driv_f = (persistence_driver_version_get) dynamic_lib_load_symbol(dynalib, driv_f_n);
-        IFLOG(log, info(LS_DRV"driver:%s [loaded]", driv_f()))
+        IFLOG(log, info(LS_DRV"driver:{} [loaded]", driv_f()))
     }
     return RetCode_OK;
 }
@@ -451,11 +451,11 @@ RetCode persistence_driver::start_all_pools()
     RetCode rcode = RetCode_OK;
     for(auto it = conn_pool_hm_.begin(); it != conn_pool_hm_.end(); it++) {
         if((rcode = it->second->start())) {
-            IFLOG(log_, critical(LS_TRL "[failed to start conn_pool_name:%s]", __func__, it->first.c_str()))
+            IFLOG(log_, critical(LS_TRL "[failed to start conn_pool_name:{}]", __func__, it->first.c_str()))
             break;
         }
     }
-    IFLOG(log_, trace(LS_CLO "[res:%d]", __func__, rcode))
+    IFLOG(log_, trace(LS_CLO "[res:{}]", __func__, rcode))
     return rcode;
 }
 
@@ -466,7 +466,7 @@ RetCode persistence_driver::add_pool(const char *conn_pool_name,
                                      unsigned int conn_pool_sz,
                                      unsigned int conn_pool_th_max_sz)
 {
-    IFLOG(log_, trace(LS_OPN"[conn_pool_name:%s, url:%s, usr:%s, conn_pool_sz:%d, thread_sz:%d]",
+    IFLOG(log_, trace(LS_OPN"[conn_pool_name:{}, url:{}, usr:{}, conn_pool_sz:{}, thread_sz:{}]",
                       __func__,
                       conn_pool_name,
                       url,
@@ -486,12 +486,12 @@ RetCode persistence_driver::add_pool(const char *conn_pool_name,
 RetCode persistence_driver::map_nclassid_to_pool(unsigned int nclass_id,
                                                  const char *conn_pool_name)
 {
-    IFLOG(log_, trace(LS_OPN "[nclass_id:%d -> conn_pool:%s]", __func__, nclass_id, conn_pool_name))
+    IFLOG(log_, trace(LS_OPN "[nclass_id:{} -> conn_pool:{}]", __func__, nclass_id, conn_pool_name))
     auto it = conn_pool_hm_.find(conn_pool_name);
     if(it != conn_pool_hm_.end()) {
         nclassid_conn_pool_hm_[nclass_id] = it->second;
     } else {
-        IFLOG(log_, critical(LS_TRL "[conn_pool_name:%s is not defined]", __func__, conn_pool_name))
+        IFLOG(log_, critical(LS_TRL "[conn_pool_name:{} is not defined]", __func__, conn_pool_name))
     }
     return RetCode_OK;
 }
@@ -503,7 +503,7 @@ persistence_connection_impl *persistence_driver::available_connection(unsigned i
     if(conn_pool_it != nclassid_conn_pool_hm_.end()) {
         conn_out = conn_pool_it->second->request_connection();
     } else {
-        IFLOG(log_, error(LS_TRL "[nclass_id:%d has no connection-pool available]", __func__, nclass_id))
+        IFLOG(log_, error(LS_TRL "[nclass_id:{} has no connection-pool available]", __func__, nclass_id))
     }
     return conn_out;
 }

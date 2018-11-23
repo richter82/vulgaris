@@ -36,7 +36,7 @@ void peer_automa::peer_param_clbk_ud(int pnum,
     if(res) {
         peer->peer_last_error_ = res;
     }
-    IFLOG(peer->log_, info(" -%-20s %s", param, value ? value : ""))
+    IFLOG(peer->log_, info(" -{} {}", param, value ? value : ""))
 }
 
 static unsigned int peer_id = 0;
@@ -61,7 +61,7 @@ peer_automa::peer_automa(peer &publ, peer_listener &listener) :
 peer_automa::~peer_automa()
 {
     if(!(peer_status_ <= PeerStatus_INITIALIZED) && !(peer_status_ >= PeerStatus_STOPPED)) {
-        IFLOG(log_, critical(LS_DTR "[peer:%d is not in a safe state:%d] " LS_EXUNX, __func__, peer_id_, peer_status_))
+        IFLOG(log_, critical(LS_DTR "[peer:{} is not in a safe state:{}] " LS_EXUNX, __func__, peer_id_, peer_status_))
     }
 }
 
@@ -84,7 +84,7 @@ RetCode peer_automa::early_init()
 
 RetCode peer_automa::set_status(PeerStatus peer_status)
 {
-    IFLOG(log_, trace(LS_OPN "[status:%d]", __func__, peer_status))
+    IFLOG(log_, trace(LS_OPN "[status:{}]", __func__, peer_status))
     scoped_mx smx(peer_mon_);
     peer_status_ = peer_status;
     listener_.on_status_change(publ_, peer_status_);
@@ -112,7 +112,7 @@ RetCode peer_automa::await_for_status_reached(PeerStatus test,
         }
     }
     current = peer_status_;
-    IFLOG(log_, debug(LS_CLO "test:%d [reached] current:%d",
+    IFLOG(log_, debug(LS_CLO "test:{} [reached] current:{}",
                       __func__,
                       test,
                       peer_status_))
@@ -137,7 +137,7 @@ RetCode peer_automa::await_for_status_change(PeerStatus &peer_status,
             }
         }
     }
-    IFLOG(log_, trace(LS_CLO "status:%d [changed] current:%d", __func__,
+    IFLOG(log_, trace(LS_CLO "status:{} [changed] current:{}", __func__,
                       peer_status,
                       peer_status_))
     peer_status = peer_status_;
@@ -170,12 +170,12 @@ RetCode peer_automa::start(int argc,
         }
         memcpy(peer_ver_, peer_ver, sizeof(peer_ver_));
         if((peer_last_error_ = step_welcome())) {
-            IFLOG(log_, critical(LS_APL"#welcome FAIL with res:%d#", peer_last_error_))
+            IFLOG(log_, critical(LS_APL"#welcome FAIL with res:{}#", peer_last_error_))
             step_dying_breath();
             return RetCode_EXIT;
         }
         if((peer_last_error_ = step_init())) {
-            IFLOG(log_, critical(LS_APL"#init FAIL with res:%d#", peer_last_error_))
+            IFLOG(log_, critical(LS_APL"#init FAIL with res:{}#", peer_last_error_))
             step_dying_breath();
             return RetCode_EXIT;
         }
@@ -183,7 +183,7 @@ RetCode peer_automa::start(int argc,
         set_status(PeerStatus_RESTART_REQUESTED);
     }
     if((peer_last_error_ = step_start())) {
-        IFLOG(log_, critical(LS_APL"#start FAIL with res:%d#", peer_last_error_))
+        IFLOG(log_, critical(LS_APL"#start FAIL with res:{}#", peer_last_error_))
         step_dying_breath();
         return RetCode_EXIT;
     }
@@ -206,7 +206,7 @@ RetCode peer_automa::stop(bool force_disconnect)
     }
     force_disconnect_on_stop_ = force_disconnect;
     RetCode rcode = set_stop_request();
-    IFLOG(log_, trace(LS_CLO "[res:%d]", __func__, rcode))
+    IFLOG(log_, trace(LS_CLO "[res:{}]", __func__, rcode))
     return rcode;
 }
 
@@ -220,7 +220,7 @@ RetCode peer_automa::running_cycle()
     do {
         if(move_running) {
             if((peer_last_error_ = handlers_res = step_move_running())) {
-                IFLOG(log_, critical(LS_APL"#move running FAIL with res:%d#", handlers_res))
+                IFLOG(log_, critical(LS_APL"#move running FAIL with res:{}#", handlers_res))
                 step_dying_breath();
                 return RetCode_EXIT;
             }
@@ -233,7 +233,7 @@ RetCode peer_automa::running_cycle()
             case PeerStatus_STOP_REQUESTED:
                 IFLOG(log_, info(LS_APL"#peer requested to stop#"))
                 if((peer_last_error_ = handlers_res = step_stop())) {
-                    IFLOG(log_, critical(LS_APL"#stop FAIL with res:%d#", handlers_res))
+                    IFLOG(log_, critical(LS_APL"#stop FAIL with res:{}#", handlers_res))
                     step_dying_breath();
                     return RetCode_EXIT;
                 }
@@ -268,7 +268,7 @@ static const char *get_arch()
 #endif
 }
 
-const char *peer_welcome_fmt = LS_WEL "@%s %s" "@%s %u.%u.%u" "@%s %s";
+const char *peer_welcome_fmt = LS_WEL "@{} {}" "@{} {}.{}.{}" "@{} {}";
 
 RetCode peer_automa::step_welcome()
 {
@@ -298,23 +298,23 @@ RetCode peer_automa::step_init()
     if(!configured_) {
         bool params_chance = false;
         if(peer_argc_ < 2) {
-            IFLOG(log_, warn(LS_APL"#init# [invalid argc:%d - peer will try to load params file]", peer_argc_))
+            IFLOG(log_, warn(LS_APL"#init# [invalid argc:{} - peer will try to load params file]", peer_argc_))
             params_chance = true;
         }
         if(params_chance || !strcmp("-file", peer_argv_[1])) {
             if((peer_last_error_ = peer_conf_ldr_.init(peer_cfg_file_path_name_.length() ? peer_cfg_file_path_name_.c_str() :
                                                        "params"))) {
-                IFLOG(log_, error(LS_APL"#init FAIL# [loading file params] errcode:%d", peer_last_error_))
+                IFLOG(log_, error(LS_APL"#init FAIL# [loading file params] errcode:{}", peer_last_error_))
                 return RetCode_BADCFG;
             }
         } else {
             if((peer_last_error_ = peer_conf_ldr_.init(peer_argc_, peer_argv_))) {
-                IFLOG(log_, error(LS_APL"#init FAIL# [loading argv params] errcode:%d", peer_last_error_))
+                IFLOG(log_, error(LS_APL"#init FAIL# [loading argv params] errcode:{}", peer_last_error_))
                 return RetCode_BADCFG;
             }
         }
         if((peer_last_error_ = peer_conf_ldr_.load_config())) {
-            IFLOG(log_, error(LS_APL"#init FAIL# [reading params] errcode:%d", peer_last_error_))
+            IFLOG(log_, error(LS_APL"#init FAIL# [reading params] errcode:{}", peer_last_error_))
             return RetCode_BADCFG;
         }
         peer_conf_ldr_.enum_params(peer_param_clbk_ud, this);

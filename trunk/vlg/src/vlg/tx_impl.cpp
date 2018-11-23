@@ -84,7 +84,7 @@ RetCode tx_impl::await_for_status_reached(TransactionStatus test,
         }
     }
     current = status_;
-    IFLOG(conn_->peer_->log_, trace(LS_CLO "test:%d [reached] current:%d",
+    IFLOG(conn_->peer_->log_, trace(LS_CLO "test:{} [reached] current:{}",
                                     __func__,
                                     test,
                                     status_))
@@ -108,7 +108,7 @@ RetCode tx_impl::await_for_closure(time_t sec, long nsec)
             }
         }
     }
-    IFLOG(conn_->peer_->log_, trace(LS_CLO "[res:%d][closed %s]",
+    IFLOG(conn_->peer_->log_, trace(LS_CLO "[res:{}][closed {}]",
                                     __func__, rcode, rcode ? "not reached" : "reached"))
     return rcode;
 }
@@ -158,7 +158,7 @@ inline void tx_impl::trace_tx_closure(const char *tx_res_str)
             //                                     txid_.txcnid,
             //                                     txid_.txprid))
         } else {
-            IFLOG(conn_->peer_->log_, info(LS_TXI"[%08x%08x%08x%08x]{%s}",
+            IFLOG(conn_->peer_->log_, info(LS_TXI"[%08x%08x%08x%08x]{{}}",
                                            txid_.txplid,
                                            txid_.txsvid,
                                            txid_.txcnid,
@@ -174,7 +174,7 @@ inline void tx_impl::trace_tx_closure(const char *tx_res_str)
             //                                     txid_.txcnid,
             //                                     txid_.txprid))
         } else {
-            IFLOG(conn_->peer_->log_, info(LS_TXO"[%08x%08x%08x%08x]{%s}",
+            IFLOG(conn_->peer_->log_, info(LS_TXO"[%08x%08x%08x%08x]{{}}",
                                            txid_.txplid,
                                            txid_.txsvid,
                                            txid_.txcnid,
@@ -191,7 +191,7 @@ inline void tx_impl::trace_tx_closure(const char *tx_res_str)
             //                                     txid_.txcnid,
             //                                     txid_.txprid))
         } else {
-            IFLOG(conn_->peer_->log_, info(LS_TXO"[%08x%08x%08x%08x]{%s}",
+            IFLOG(conn_->peer_->log_, info(LS_TXO"[%08x%08x%08x%08x]{{}}",
                                            txid_.txplid,
                                            txid_.txsvid,
                                            txid_.txcnid,
@@ -207,7 +207,7 @@ inline void tx_impl::trace_tx_closure(const char *tx_res_str)
             //                                     txid_.txcnid,
             //                                     txid_.txprid))
         } else {
-            IFLOG(conn_->peer_->log_, info(LS_TXI"[%08x%08x%08x%08x]{%s}",
+            IFLOG(conn_->peer_->log_, info(LS_TXI"[%08x%08x%08x%08x]{{}}",
                                            txid_.txplid,
                                            txid_.txsvid,
                                            txid_.txcnid,
@@ -215,7 +215,7 @@ inline void tx_impl::trace_tx_closure(const char *tx_res_str)
                                            TX_NO_OBJ))
         }
     }
-    IFLOG(conn_->peer_->log_, info(LS_TRX"[%08x%08x%08x%08x][%s][TXRES:%d, TXRESCODE:%d, RESCLS:%d][RTT-NS:%s]",
+    IFLOG(conn_->peer_->log_, info(LS_TRX"[%08x%08x%08x%08x][{}][TXRES:{}, TXRESCODE:{}, RESCLS:{}][RTT-NS:{}]",
                                    txid_.txplid,
                                    txid_.txsvid,
                                    txid_.txcnid,
@@ -284,7 +284,7 @@ incoming_transaction_impl::incoming_transaction_impl(incoming_transaction &publ,
 incoming_transaction_impl::~incoming_transaction_impl()
 {
     if(status_ ==  TransactionStatus_FLYING) {
-        IFLOG(conn_->peer_->log_, critical(LS_DTR"[transaction is not in a safe state::%d]" LS_EXUNX, __func__, status_))
+        IFLOG(conn_->peer_->log_, critical(LS_DTR"[transaction is not in a safe state::{}]" LS_EXUNX, __func__, status_))
     }
 }
 
@@ -334,7 +334,7 @@ outgoing_transaction_impl::outgoing_transaction_impl(outgoing_transaction &publ,
 outgoing_transaction_impl::~outgoing_transaction_impl()
 {
     if(status_ ==  TransactionStatus_FLYING) {
-        IFLOG(conn_->peer_->log_, critical(LS_DTR"[transaction is not in a safe state::%d]" LS_EXUNX, __func__, status_))
+        IFLOG(conn_->peer_->log_, critical(LS_DTR"[transaction is not in a safe state::{}]" LS_EXUNX, __func__, status_))
     }
 }
 
@@ -368,7 +368,7 @@ RetCode outgoing_transaction_impl::send()
     set_flying();
     outgoing_transaction_impl *self = this;
     static_cast<outgoing_connection_impl *>(conn_)->outg_flytx_map_.put(&txid_, &self);
-    IFLOG(conn_->peer_->log_, info(LS_OUT"[%08x%08x%08x%08x][TXTYPE:%d, TXACT:%d, CLSENC:%d, RSCLREQ:%d]",
+    IFLOG(conn_->peer_->log_, info(LS_OUT"[%08x%08x%08x%08x][TXTYPE:{}, TXACT:{}, CLSENC:{}, RSCLREQ:{}]",
                                    txid_.txplid,
                                    txid_.txsvid,
                                    txid_.txcnid,
