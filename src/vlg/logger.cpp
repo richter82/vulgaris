@@ -24,6 +24,8 @@
 
 #define TKLGR   "logger"
 #define TKAPND  "appender"
+#define TKGLOB  "global"
+#define TKPTTRN "pattern"
 #define S_NL    "{New Line}"
 #define S_APNM  "{apname}"
 #define S_LGNM  "{lgname}"
@@ -229,55 +231,62 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
         return res;
     }
 
-    RetCode parse_lines_max(str_tok &toknz, int &lnmax) {
+    // trim from start (in place)
+    static inline void ltrim(std::string &s) {
+        s.erase(s.begin(),
+                std::find_if(s.begin(),
+                             s.end(),
+                             std::not1(std::ptr_fun<int, int>(std::isspace))));
+    }
+
+    // trim from end (in place)
+    static inline void rtrim(std::string &s) {
+        s.erase(std::find_if(s.rbegin(),
+                             s.rend(),
+                             std::not1(std::ptr_fun<int, int>(std::isspace))).base(),
+                s.end());
+    }
+
+    // trim from both ends (in place)
+    static inline void trim(std::string &s) {
+        ltrim(s);
+        rtrim(s);
+    }
+
+    RetCode read_expected_token(unsigned long &lnum,
+                                const char *add_delims,
+                                const char *exp_tok,
+                                bool skip_sp_tab,
+                                str_tok &tknz) {
         std::string tkn;
-        while(toknz.next_token(tkn)) {
-            SKIP_SP_TAB(tkn)
-            if(is_new_line(tkn)) {
-                LPrsERR_FND_EXP(TKLGR, S_NL, S_LF);
-                return RetCode_BADCFG;
-            } else if(tkn == CM) {
-                LPrsERR_UNEXP(TKAPND, CM);
-                return RetCode_BADCFG;
-            } else {
-                lnmax = atoi(tkn.c_str());
+        std::string delims(DF_DLM);
+        if(add_delims) {
+            delims += add_delims;
+        }
+        while(tknz.next_token(tkn, delims.c_str(), true)) {
+            if(skip_sp_tab) {
+                SKIP_SP_TAB(tkn)
+            }
+            if(tkn == exp_tok) {
                 return RetCode_OK;
+            } else {
+                return RetCode_BADCFG;
             }
         }
-        LPrsERR_EXP(TKLGR, S_LF);
         return RetCode_BADCFG;
     }
 
-    RetCode read_dot(unsigned long &lnum, str_tok &tknz) {
+    RetCode skip_sp_tab_and_read_tkn(unsigned long &lnum,
+                                     const char *add_delims,
+                                     str_tok &tknz,
+                                     std::string &tkn_out) {
         std::string tkn;
-        while(tknz.next_token(tkn, DF_DLM DT, true)) {
-            if(tkn == DT) {
-                break;
-            } else {
-                return RetCode_BADCFG;
-            }
+        std::string delims(DF_DLM);
+        if(add_delims) {
+            delims += add_delims;
         }
-        return RetCode_OK;
-    }
-
-    RetCode skip_sp_tab_and_read_eq(unsigned long &lnum, str_tok &tknz) {
-        std::string tkn;
-        while(tknz.next_token(tkn, DF_DLM EQ, true)) {
+        while(tknz.next_token(tkn, delims.c_str(), true)) {
             SKIP_SP_TAB(tkn)
-            DO_CMD_ON_NL(tkn, return RetCode_BADCFG)
-            if(tkn == EQ) {
-                break;
-            } else {
-                return RetCode_BADCFG;
-            }
-        }
-        return RetCode_OK;
-    }
-
-    RetCode read_tkn(unsigned long &lnum, str_tok &tknz,
-                     std::string &tkn_out) {
-        std::string tkn;
-        if(tknz.next_token(tkn, DF_DLM DT EQ, true)) {
             DO_CMD_ON_NL(tkn, return RetCode_BADCFG)
             tkn_out.assign(tkn);
             return RetCode_OK;
@@ -285,195 +294,137 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
         return RetCode_BADCFG;
     }
 
-    RetCode parse_apnd(std::string &apname, str_tok &toknz) {
-        RetCode res = RetCode_OK;
-        int lnmax;
+    RetCode read_tkn_no_nwl(unsigned long &lnum,
+                            const char *add_delims,
+                            str_tok &tknz,
+                            std::string &tkn_out) {
         std::string tkn;
-        std::string app_file_name;
-        std::shared_ptr<spdlog::sinks::sink> apnd;
-        TraceLVL lvl = TL_EVL;
-        bool apnd_parsed = false, skip = false;
-        while(!apnd_parsed && toknz.next_token(tkn, ",\n\r\f\t ", true)) {
-            SKIP_SP_TAB(tkn)
-            lvl = get_trace_level_enum(tkn.c_str());
-            if(lvl >= 0) {
-                if(tkn == "console") {
-                    while(toknz.next_token(tkn, nullptr, true)) {
-                        SKIP_SP_TAB(tkn)
-                        if(is_new_line(tkn)) {
-                            apnd = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-                            apnd_parsed = skip = true;
-                            break;
-                        } else if(tkn == CM) {
-                            if((res = parse_lines_max(toknz, lnmax))) {
-                                return res;
-                            }
-                            apnd = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-                            apnd_parsed = true;
-                            break;
-                        } else {
-                            LPrsERR_UNEXP(TKAPND, tkn.c_str());
-                            return RetCode_BADCFG;
-                        }
-                    }
-                } else if(tkn == "file") {
-                    while(toknz.next_token(tkn, nullptr, true)) {
-                        SKIP_SP_TAB(tkn)
-                        BRK_ON_TKN(tkn, CM)
-                        if(is_new_line(tkn)) {
-                            LPrsERR_EXP(TKAPND, S_NL);
-                            return RetCode_BADCFG;
-                        } else {
-                            LPrsERR_UNEXP(TKAPND, tkn.c_str());
-                        }
-                    }
-                    while(toknz.next_token(tkn, nullptr, true)) {
-                        SKIP_SP_TAB(tkn)
-                        if(tkn == CM) {
-                            LPrsERR_UNEXP(TKAPND, CM);
-                            return RetCode_BADCFG;
-                        }
-                        if(is_new_line(tkn)) {
-                            LPrsERR_UNEXP(TKAPND, S_NL);
-                            return RetCode_BADCFG;
-                        }
-                        break;
-                    }
-                    app_file_name.assign(tkn);
-                    while(toknz.next_token(tkn, nullptr, true)) {
-                        SKIP_SP_TAB(tkn)
-                        BRK_ON_TKN(tkn, CM)
-                        if(is_new_line(tkn)) {
-                            apnd = std::make_shared<spdlog::sinks::basic_file_sink_mt>(app_file_name.c_str(), true);
-                            apnd_parsed = skip = true;
-                            break;
-                        }
-                    }
-                    if(apnd_parsed) {
-                        break;
-                    }
-                    if((res = parse_lines_max(toknz, lnmax))) {
-                        return res;
-                    }
-                    apnd = std::make_shared<spdlog::sinks::basic_file_sink_mt>(app_file_name.c_str(), true);
-                    break;
-                }
-            } else if(is_new_line(tkn)) {
-                LPrsERR_UNEXP(TKAPND, S_NL);
-                return RetCode_BADCFG;
-            } else if(tkn == CM) {
-                LPrsERR_UNEXP(TKAPND, CM);
-                return RetCode_BADCFG;
-            } else {
-                LPrsERR_UNEXP(TKAPND, tkn.c_str());
-                return RetCode_BADCFG;
-            }
+        std::string delims(DF_DLM);
+        if(add_delims) {
+            delims += add_delims;
         }
-        while(!skip && toknz.next_token(tkn, "\n\r\f\t ", true)) {
-            SKIP_SP_TAB(tkn)
-            if(is_new_line(tkn)) {
-                break;
-            }
-            LPrsERR_UNEXP(TKAPND, tkn.c_str());
-            return RetCode_BADCFG;
+        if(tknz.next_token(tkn, delims.c_str(), true)) {
+            DO_CMD_ON_NL(tkn, return RetCode_BADCFG)
+            tkn_out.assign(tkn);
+            return RetCode_OK;
         }
-        apnd->set_level(get_spdlevel(lvl));
-        get_appender_map()[apname] = apnd;
-        return RetCode_OK;
+        return RetCode_BADCFG;
     }
 
-    RetCode parse_lggr(std::string &lggrname,
-                       str_tok &toknz) {
+    RetCode read_tkn_until_nwl(unsigned long &lnum,
+                               str_tok &tknz,
+                               std::string &tkn_out) {
         std::string tkn;
-        std::shared_ptr<spdlog::logger> lggr;
-        TraceLVL lvl = TL_EVL;
-
-        bool lggr_parsed = false;
-        while(!lggr_parsed && toknz.next_token(tkn, ",\n\r\f\t ", true)) {
-            SKIP_SP_TAB(tkn)
-            lvl = get_trace_level_enum(tkn.c_str());
-            if(lvl >= 0) {
-                std::list<std::shared_ptr<spdlog::sinks::sink>> apnds_l;
-
-                while(toknz.next_token(tkn, nullptr, true)) {
-                    SKIP_SP_TAB(tkn)
-                    if(tkn == CM) {
-                        while(toknz.next_token(tkn, nullptr, true)) {
-                            SKIP_SP_TAB(tkn)
-                            if(is_new_line(tkn)) {
-                                LPrsERR_UNEXP(TKLGR, S_NL);
-                                return RetCode_BADCFG;
-                            }
-                            if(tkn == CM) {
-                                LPrsERR_UNEXP(TKLGR, CM);
-                                return RetCode_BADCFG;
-                            }
-                            break;
-                        }
-                        auto it = get_appender_map().find(tkn);
-                        if(it != get_appender_map().end()) {
-                            apnds_l.push_back(it->second);
-                            continue;
-                        } else {
-                            LPrsERR_APNF(lggrname.c_str(), tkn.c_str());
-                            return RetCode_BADCFG;
-                        }
-                    }
-                    if(is_new_line(tkn)) {
-                        if(!apnds_l.empty()) {
-                            lggr_parsed = true;
-                            break;
-                        } else {
-                            LPrsERR_NOAP(lggrname.c_str());
-                            return RetCode_BADCFG;
-                        }
-                    }
-                }
-                lggr.reset(new spdlog::logger(lggrname.c_str(), apnds_l.begin(), apnds_l.end()));
-            } else if(is_new_line(tkn)) {
-                LPrsERR_UNEXP(TKLGR, S_NL);
-                return RetCode_BADCFG;
-            } else if(tkn == ",") {
-                LPrsERR_UNEXP(TKLGR, CM);
-                return RetCode_BADCFG;
-            } else {
-                LPrsERR_UNEXP(TKLGR, tkn.c_str());
-                return RetCode_BADCFG;
-            }
+        if(tknz.next_token(tkn, NL_DLM, true)) {
+            DO_CMD_ON_NL(tkn, return RetCode_BADCFG)
+            tkn_out.assign(tkn);
+            trim(tkn_out);
+            return RetCode_OK;
         }
-        lggr->set_level(get_spdlevel(lvl));
-        spdlog::register_logger(lggr);
+        return RetCode_BADCFG;
+    }
+
+    RetCode add_appender(unsigned long &lnum,
+                         str_tok &tknz,
+                         const std::string &apname,
+                         const std::string &aptype,
+                         TraceLVL vlglvl) {
+        std::shared_ptr<spdlog::sinks::sink> apnd;
+
+        if(aptype == "console") {
+            apnd = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+        } else if(aptype == "file") {
+            std::string apfile;
+            RET_ON_KO(read_expected_token(lnum, CM, CM, true, tknz))
+            RET_ON_KO(skip_sp_tab_and_read_tkn(lnum, nullptr, tknz, apfile))
+            apnd = std::make_shared<spdlog::sinks::basic_file_sink_mt>(apfile.c_str(), true);
+        }
+        apnd->set_level(get_spdlevel(vlglvl));
+        get_appender_map()[apname] = apnd;
         return RetCode_OK;
     }
 
     RetCode parse_data(std::string &data) {
         RetCode res = RetCode_OK;
         unsigned long lnum = 1;
-        std::string tkn, apname, lggrname;
+        std::string tkn, apname, aptype, lggrname, glob_logger_format_patter;
+        TraceLVL vlglvl = TL_EVL;
+
         str_tok tknz(data);
         while(tknz.next_token(tkn, DF_DLM DT EQ, true)) {
             SKIP_SP_TAB(tkn)
             DO_CMD_ON_NL(tkn, lnum++; continue)
-            if(tkn == TKAPND) {
-                //APPENDER
-                RET_ON_KO(read_dot(lnum, tknz))
-                RET_ON_KO(read_tkn(lnum, tknz, apname))
-                RET_ON_KO(skip_sp_tab_and_read_eq(lnum, tknz))
-                if((res = parse_apnd(apname, tknz))) {
-                    break;
+            if(tkn == TKAPND) { //APPENDER
+                RET_ON_KO(read_expected_token(lnum, DT, DT, false, tknz))
+                RET_ON_KO(read_tkn_no_nwl(lnum, DT EQ, tknz, apname))
+                RET_ON_KO(read_expected_token(lnum, EQ, EQ, true, tknz))
+
+                //appender level
+                RET_ON_KO(skip_sp_tab_and_read_tkn(lnum, CM, tknz, tkn))
+                vlglvl = get_trace_level_enum(tkn.c_str());
+                if(vlglvl == TL_EVL) {
+                    LPrsERR_UNEXP(tkn.c_str());
+                    return RetCode_BADCFG;
                 }
-            } else if(tkn == TKLGR) {
-                //LOGGER
-                RET_ON_KO(read_dot(lnum, tknz))
-                RET_ON_KO(read_tkn(lnum, tknz, lggrname))
-                RET_ON_KO(skip_sp_tab_and_read_eq(lnum, tknz))
-                if((res = parse_lggr(lggrname, tknz))) {
-                    break;
+                RET_ON_KO(read_expected_token(lnum, CM, CM, true, tknz))
+
+                //appender type
+                RET_ON_KO(skip_sp_tab_and_read_tkn(lnum, CM, tknz, aptype))
+                RET_ON_KO(add_appender(lnum, tknz, apname, aptype, vlglvl))
+            } else if(tkn == TKLGR) { //LOGGER
+                RET_ON_KO(read_expected_token(lnum, DT, DT, false, tknz))
+                RET_ON_KO(read_tkn_no_nwl(lnum, DT EQ, tknz, lggrname))
+                RET_ON_KO(read_expected_token(lnum, EQ, EQ, true, tknz))
+
+                //logger level
+                RET_ON_KO(skip_sp_tab_and_read_tkn(lnum, CM, tknz, tkn))
+                vlglvl = get_trace_level_enum(tkn.c_str());
+                if(vlglvl == TL_EVL) {
+                    LPrsERR_UNEXP(tkn.c_str());
+                    return RetCode_BADCFG;
+                }
+
+                //appenders
+                std::list<std::shared_ptr<spdlog::sinks::sink>> apnds_l;
+                while(read_expected_token(lnum, CM, CM, true, tknz) == RetCode_OK) {
+                    RET_ON_KO(skip_sp_tab_and_read_tkn(lnum, CM, tknz, tkn))
+                    auto it = get_appender_map().find(tkn);
+                    if(it != get_appender_map().end()) {
+                        apnds_l.push_back(it->second);
+                        continue;
+                    } else {
+                        LPrsERR_APNF(lggrname.c_str(), tkn.c_str());
+                        return RetCode_BADCFG;
+                    }
+                }
+
+                std::shared_ptr<spdlog::logger> lggr(new spdlog::logger(lggrname.c_str(), apnds_l.begin(), apnds_l.end()));
+                lggr->set_level(get_spdlevel(vlglvl));
+                spdlog::register_logger(lggr);
+            } else if(tkn == TKGLOB) {  //GLOBAL
+                RET_ON_KO(read_expected_token(lnum, DT, DT, false, tknz))
+                RET_ON_KO(read_tkn_no_nwl(lnum, DT EQ, tknz, tkn))
+                if(tkn == TKLGR) {
+                    RET_ON_KO(read_expected_token(lnum, DT, DT, false, tknz))
+                    RET_ON_KO(read_tkn_no_nwl(lnum, DT EQ, tknz, tkn))
+                    if(tkn == TKPTTRN) {
+                        RET_ON_KO(read_expected_token(lnum, EQ, EQ, true, tknz))
+                        RET_ON_KO(read_tkn_until_nwl(lnum, tknz, glob_logger_format_patter))
+                    } else {
+                        LPrsERR_UNEXP(tkn.c_str());
+                        return RetCode_BADCFG;
+                    }
+                } else {
+                    LPrsERR_UNEXP(tkn.c_str());
+                    return RetCode_BADCFG;
                 }
             } else {
                 LPrsERR_UNEXP(tkn.c_str());
                 return RetCode_BADCFG;
             }
+        }
+        if(glob_logger_format_patter.length() > 0) {
+            spdlog::set_pattern(glob_logger_format_patter);
         }
         return res;
     }
