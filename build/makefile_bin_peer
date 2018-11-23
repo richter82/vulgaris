@@ -5,6 +5,7 @@ INCLUDES = 	-I../public\
 			-I../public/cpp\
 			-I../public/storage\
 			-I../src\
+			-I../contrib\
 			-I../test/sample_vlg_model
 			
 CCFLAGS = -std=c++14 -Wall -fPIC -DSTA_L $(CC_DBG_REL_OPT)
