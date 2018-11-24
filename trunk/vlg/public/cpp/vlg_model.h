@@ -197,11 +197,8 @@ struct nclass {
 
     virtual const nentity_desc &get_nentity_descriptor() const = 0;
 
-    virtual size_t pretty_dump_to_buffer(char *buffer,
-                                         bool print_nclass_name = true) const = 0;
-
-    virtual size_t pretty_dump_to_file(FILE *file,
-                                       bool print_nclass_name = true) const = 0;
+    virtual void to_string(std::ostream &os,
+                           bool print_nclass_name = true) const = 0;
 
     /*
     serialize / restore

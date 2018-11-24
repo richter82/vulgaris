@@ -150,15 +150,14 @@ inline void tx_impl::trace_tx_closure(const char *tx_res_str)
     ss << std::setw(14) << dt_mark_tim;
     if(ipubl_) {
         if(request_obj_) {
-            //IFLOG(conn_->peer_->log_, inf_nclass(request_obj_.get(),
-            //                                     true,
-            //                                     LS_TXI"[%08x%08x%08x%08x]",
-            //                                     txid_.txplid,
-            //                                     txid_.txsvid,
-            //                                     txid_.txcnid,
-            //                                     txid_.txprid))
+            IFLOG(conn_->peer_->log_, info(LS_TXI"[{:08x}{:08x}{:08x}{:08x}]{}",
+                                           txid_.txplid,
+                                           txid_.txsvid,
+                                           txid_.txcnid,
+                                           txid_.txprid,
+                                           spdlog_nclass_type{*request_obj_.get()}))
         } else {
-            IFLOG(conn_->peer_->log_, info(LS_TXI"[%08x%08x%08x%08x]{{}}",
+            IFLOG(conn_->peer_->log_, info(LS_TXI"[{:08x}{:08x}{:08x}{:08x}]{{}}",
                                            txid_.txplid,
                                            txid_.txsvid,
                                            txid_.txcnid,
@@ -166,15 +165,14 @@ inline void tx_impl::trace_tx_closure(const char *tx_res_str)
                                            TX_NO_OBJ))
         }
         if(result_obj_) {
-            //IFLOG(conn_->peer_->log_, inf_nclass(result_obj_.get(),
-            //                                     true,
-            //                                     LS_TXO"[%08x%08x%08x%08x]",
-            //                                     txid_.txplid,
-            //                                     txid_.txsvid,
-            //                                     txid_.txcnid,
-            //                                     txid_.txprid))
+            IFLOG(conn_->peer_->log_, info(LS_TXO"[{:08x}{:08x}{:08x}{:08x}]{}",
+                                           txid_.txplid,
+                                           txid_.txsvid,
+                                           txid_.txcnid,
+                                           txid_.txprid,
+                                           spdlog_nclass_type{*result_obj_.get()}))
         } else {
-            IFLOG(conn_->peer_->log_, info(LS_TXO"[%08x%08x%08x%08x]{{}}",
+            IFLOG(conn_->peer_->log_, info(LS_TXO"[{:08x}{:08x}{:08x}{:08x}]{{}}",
                                            txid_.txplid,
                                            txid_.txsvid,
                                            txid_.txcnid,
@@ -183,15 +181,14 @@ inline void tx_impl::trace_tx_closure(const char *tx_res_str)
         }
     } else {
         if(request_obj_) {
-            //IFLOG(conn_->peer_->log_, inf_nclass(request_obj_.get(),
-            //                                     true,
-            //                                     LS_TXO"[%08x%08x%08x%08x]",
-            //                                     txid_.txplid,
-            //                                     txid_.txsvid,
-            //                                     txid_.txcnid,
-            //                                     txid_.txprid))
+            IFLOG(conn_->peer_->log_, info(LS_TXO"[{:08x}{:08x}{:08x}{:08x}]{}",
+                                           txid_.txplid,
+                                           txid_.txsvid,
+                                           txid_.txcnid,
+                                           txid_.txprid,
+                                           spdlog_nclass_type{*request_obj_.get()}))
         } else {
-            IFLOG(conn_->peer_->log_, info(LS_TXO"[%08x%08x%08x%08x]{{}}",
+            IFLOG(conn_->peer_->log_, info(LS_TXO"[{:08x}{:08x}{:08x}{:08x}]{{}}",
                                            txid_.txplid,
                                            txid_.txsvid,
                                            txid_.txcnid,
@@ -199,15 +196,14 @@ inline void tx_impl::trace_tx_closure(const char *tx_res_str)
                                            TX_NO_OBJ))
         }
         if(result_obj_) {
-            //IFLOG(conn_->peer_->log_, inf_nclass(result_obj_.get(),
-            //                                     true,
-            //                                     LS_TXI"[%08x%08x%08x%08x]",
-            //                                     txid_.txplid,
-            //                                     txid_.txsvid,
-            //                                     txid_.txcnid,
-            //                                     txid_.txprid))
+            IFLOG(conn_->peer_->log_, info(LS_TXI"[{:08x}{:08x}{:08x}{:08x}]{}",
+                                           txid_.txplid,
+                                           txid_.txsvid,
+                                           txid_.txcnid,
+                                           txid_.txprid,
+                                           spdlog_nclass_type{*result_obj_.get()}))
         } else {
-            IFLOG(conn_->peer_->log_, info(LS_TXI"[%08x%08x%08x%08x]{{}}",
+            IFLOG(conn_->peer_->log_, info(LS_TXI"[{:08x}{:08x}{:08x}{:08x}]{{}}",
                                            txid_.txplid,
                                            txid_.txsvid,
                                            txid_.txcnid,
@@ -215,7 +211,7 @@ inline void tx_impl::trace_tx_closure(const char *tx_res_str)
                                            TX_NO_OBJ))
         }
     }
-    IFLOG(conn_->peer_->log_, info(LS_TRX"[%08x%08x%08x%08x][{}][TXRES:{}, TXRESCODE:{}, RESCLS:{}][RTT-NS:{}]",
+    IFLOG(conn_->peer_->log_, info(LS_TRX"[{:08x}{:08x}{:08x}{:08x}][{}][TXRES:{}, TXRESCODE:{}, RESCLS:{}][RTT-NS:{}]",
                                    txid_.txplid,
                                    txid_.txsvid,
                                    txid_.txcnid,
@@ -368,7 +364,7 @@ RetCode outgoing_transaction_impl::send()
     set_flying();
     outgoing_transaction_impl *self = this;
     static_cast<outgoing_connection_impl *>(conn_)->outg_flytx_map_.put(&txid_, &self);
-    IFLOG(conn_->peer_->log_, info(LS_OUT"[%08x%08x%08x%08x][TXTYPE:{}, TXACT:{}, CLSENC:{}, RSCLREQ:{}]",
+    IFLOG(conn_->peer_->log_, info(LS_OUT"[{:08x}{:08x}{:08x}{:08x}][TXTYPE:{}, TXACT:{}, CLSENC:{}, RSCLREQ:{}]",
                                    txid_.txplid,
                                    txid_.txsvid,
                                    txid_.txcnid,

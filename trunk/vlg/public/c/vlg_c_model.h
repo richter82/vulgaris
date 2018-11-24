@@ -87,8 +87,6 @@ RetCode nclass_set_field_zero_by_name(nclass *obj, const char *field_name);
 RetCode nclass_set_field_zero_by_id_index(nclass *obj, unsigned int field_id, unsigned int index, unsigned int nmenb);
 RetCode nclass_set_field_zero_by_name_index(nclass *obj, const char *field_name, unsigned int index, unsigned int nmenb);
 const nentity_desc *nclass_get_nentity_descriptor(nclass *obj);
-size_t nclass_pretty_dump_to_buffer(nclass *obj, char *buffer, int print_nclass_name);
-size_t nclass_pretty_dump_to_file(nclass *obj, FILE *file, int print_nclass_name);
 RetCode nclass_get_primary_key_value_as_string(nclass *obj, char **newly_alloc_out_pkey);
 
 /************************************************************************

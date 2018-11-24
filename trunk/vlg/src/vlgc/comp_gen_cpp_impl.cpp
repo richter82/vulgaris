@@ -165,76 +165,32 @@ RetCode VLG_COMP_Gen_Serialize_new__CPP_(std::map<std::string, entity_desc_comp 
 GEN- VLG_COMP_Gen_ScalarMember_Buff_CPP_
 ***********************************/
 RetCode VLG_COMP_Gen_ScalarMember_Buff_CPP_(member_desc_comp *mdsc,
-                                            std::string &tmp,
                                             FILE *file)
 {
     if(mdsc->get_nmemb() > 1) {
-        fprintf(file, IND_2"if(!is_zero_%s()){\n" IND_2 IND_2
-                "blen += sprintf(&buff[blen], \"%s=[\");\n",
+        fprintf(file, IND_2"if(!is_zero_%s()){\n" IND_3
+                "os << \"%s=[\";\n",
                 mdsc->get_member_name(),
                 mdsc->get_member_name());
         if(mdsc->get_field_type() == Type_BYTE) {
-            fprintf(file, IND_2 IND_2"blen += sprintf(&buff[blen], \"byte\");\n");
+            fprintf(file, IND_3"os << \"byte\";\n");
         } else {
-            fprintf(file, IND_2 IND_2
-                    "for(int i=0; i<%zu; i++){\n",
+            fprintf(file, IND_3"for(int i=0; i<%zu; i++){\n",
                     mdsc->get_nmemb());
-            if(mdsc->get_field_type() == Type_INT64 ||
-                    mdsc->get_field_type() == Type_UINT64) {
-                std::string tmp_lnx;
-                fprintf(file, "%s", VLG_COMP_DPND_strict_linux);
-                RET_ON_KO(printf_percent_from_VLG_TYPE(*mdsc, tmp_lnx, true))
-                fprintf(file, IND_2 IND_2 IND_2
-                        "blen += sprintf(&buff[blen], \"%%%s\", %s[i]);\n",
-                        tmp_lnx.c_str(),
-                        mdsc->get_member_name());
-                fprintf(file, "#else\n");
-                fprintf(file, IND_2 IND_2 IND_2
-                        "blen += sprintf(&buff[blen], \"%%%s\", %s[i]);\n",
-                        tmp.c_str(),
-                        mdsc->get_member_name());
-                fprintf(file, "#endif\n");
-            } else {
-                fprintf(file, IND_2 IND_2 IND_2
-                        "blen += sprintf(&buff[blen], \"%%%s\", %s[i]);\n",
-                        tmp.c_str(),
-                        mdsc->get_member_name());
-            }
-            fprintf(file, IND_2 IND_2 IND_2
-                    "if(%zu>i+1) blen += sprintf(&buff[blen], \",\");\n",
+            fprintf(file, IND_2 IND_2"os << %s[i];\n",
+                    mdsc->get_member_name());
+            fprintf(file, IND_2 IND_2"if(%zu>i+1) os << \",\";\n",
                     mdsc->get_nmemb());
-            fprintf(file, IND_2 IND_2 "}\n");
+            fprintf(file, IND_3 "}\n");
         }
-        fprintf(file, IND_2 IND_2 "blen += sprintf(&buff[blen], \"]\");\n");
+        fprintf(file, IND_3 "os << \"]\";\n");
         fprintf(file, IND_2"}\n");
     } else {
-        if(mdsc->get_field_type() == Type_INT64 ||
-                mdsc->get_field_type() == Type_UINT64) {
-            std::string tmp_lnx;
-            fprintf(file, "%s", VLG_COMP_DPND_strict_linux);
-            RET_ON_KO(printf_percent_from_VLG_TYPE(*mdsc, tmp_lnx, true))
-            fprintf(file,
-                    IND_2"if(!is_zero_%s()) blen += sprintf(&buff[blen], \"%s=%%%s|\", %s);\n",
-                    mdsc->get_member_name(),
-                    mdsc->get_member_name(),
-                    tmp_lnx.c_str(),
-                    mdsc->get_member_name());
-            fprintf(file, "#else\n");
-            fprintf(file,
-                    IND_2"if(!is_zero_%s()) blen += sprintf(&buff[blen], \"%s=%%%s|\", %s);\n",
-                    mdsc->get_member_name(),
-                    mdsc->get_member_name(),
-                    tmp.c_str(),
-                    mdsc->get_member_name());
-            fprintf(file, "#endif\n");
-        } else {
-            fprintf(file,
-                    IND_2"if(!is_zero_%s()) blen += sprintf(&buff[blen], \"%s=%%%s|\", %s);\n",
-                    mdsc->get_member_name(),
-                    mdsc->get_member_name(),
-                    tmp.c_str(),
-                    mdsc->get_member_name());
-        }
+        fprintf(file,
+                IND_2"if(!is_zero_%s()) os << \"%s=\" << %s << \"|\";\n",
+                mdsc->get_member_name(),
+                mdsc->get_member_name(),
+                mdsc->get_member_name());
     }
     return vlg::RetCode_OK;
 }
@@ -249,146 +205,21 @@ RetCode VLG_COMP_Gen_EntityMember_Buff_CPP_(entity_desc_comp &nclass_desc,
                                             FILE *file)
 {
     if(ent_mdsc->get_nmemb() > 1) {
-        fprintf(file, IND_2
-                "if(!is_zero_%s()){\n"
-                IND_2 IND_2
-                "blen += sprintf(&buff[blen], \"%s=[\");\n",
+        fprintf(file, IND_2"if(!is_zero_%s()){\n"
+                IND_3"os << \"%s=[\";\n",
                 ent_mdsc->get_member_name(),
                 ent_mdsc->get_member_name());
-        fprintf(file, IND_2 IND_2
-                "for(int i=0; i<%zu; i++){\n",
+        fprintf(file, IND_3"for(int i=0; i<%zu; i++){\n",
                 ent_mdsc->get_nmemb());
-        fprintf(file, IND_2 IND_2 IND_2
-                "blen += %s[i].pretty_dump_to_buffer(&buff[blen], false);\n",
+        fprintf(file, IND_2 IND_2"%s[i].to_string(os, false);\n",
                 ent_mdsc->get_member_name());
-        fprintf(file, IND_2 IND_2 IND_2
-                "if(%zu>i+1) blen += sprintf(&buff[blen], \",\");\n",
+        fprintf(file, IND_2 IND_2"if(%zu>i+1) os << \",\";\n",
                 ent_mdsc->get_nmemb());
-        fprintf(file, IND_2 IND_2
-                "}\n");
-        fprintf(file, IND_2 IND_2
-                "blen += sprintf(&buff[blen], \"]\");\n");
+        fprintf(file, IND_3"}\n");
+        fprintf(file, IND_3"os << \"]\";\n");
         fprintf(file, IND_2"}\n");
     } else {
-        fprintf(file, IND_2
-                "if(!is_zero_%s()) blen += %s.pretty_dump_to_buffer(&buff[blen], false);\n",
-                ent_mdsc->get_member_name(),
-                ent_mdsc->get_member_name());
-    }
-    return vlg::RetCode_OK;
-}
-
-/***********************************
-GEN- VLG_COMP_Gen_ScalarMember_FILE__CPP_
-***********************************/
-RetCode VLG_COMP_Gen_ScalarMember_FILE__CPP_(member_desc_comp *mdsc,
-                                             std::string &tmp,
-                                             FILE *file)
-{
-    if(mdsc->get_nmemb() > 1) {
-        fprintf(file, IND_2
-                "if(!is_zero_%s()){\n"
-                IND_2 IND_2
-                "blen += fprintf(f, \"%s=[\");\n",
-                mdsc->get_member_name(),
-                mdsc->get_member_name());
-        fprintf(file, IND_2 IND_2
-                "for(int i=0; i<%zu; i++){\n",
-                mdsc->get_nmemb());
-        if(mdsc->get_field_type() == Type_INT64 ||
-                mdsc->get_field_type() == Type_UINT64) {
-            std::string tmp_lnx;
-            fprintf(file, "%s", VLG_COMP_DPND_strict_linux);
-            RET_ON_KO(printf_percent_from_VLG_TYPE(*mdsc, tmp_lnx, true))
-            fprintf(file, IND_2 IND_2 IND_2
-                    "blen += fprintf(f, \"%%%s\", %s[i]);\n",
-                    tmp_lnx.c_str(),
-                    mdsc->get_member_name());
-            fprintf(file, "#else\n");
-            fprintf(file, IND_2 IND_2 IND_2
-                    "blen += fprintf(f, \"%%%s\", %s[i]);\n",
-                    tmp.c_str(),
-                    mdsc->get_member_name());
-            fprintf(file, "#endif\n");
-        } else {
-            fprintf(file, IND_2 IND_2 IND_2
-                    "blen += fprintf(f, \"%%%s\", %s[i]);\n",
-                    tmp.c_str(),
-                    mdsc->get_member_name());
-        }
-        fprintf(file, IND_2 IND_2 IND_2
-                "if(%zu>i+1) blen += fprintf(f, \",\");\n",
-                mdsc->get_nmemb());
-        fprintf(file, IND_2 IND_2
-                "}\n");
-        fprintf(file, IND_2 IND_2
-                "blen += fprintf(f, \"]\");\n");
-        fprintf(file, IND_2"}\n");
-    } else {
-        if(mdsc->get_field_type() == Type_INT64 ||
-                mdsc->get_field_type() == Type_UINT64) {
-            std::string tmp_lnx;
-            fprintf(file, "%s", VLG_COMP_DPND_strict_linux);
-            RET_ON_KO(printf_percent_from_VLG_TYPE(*mdsc, tmp_lnx, true))
-            fprintf(file,
-                    IND_2"if(!is_zero_%s()) blen += fprintf(f, \"%s=%%%s|\", %s);\n",
-                    mdsc->get_member_name(),
-                    mdsc->get_member_name(),
-                    tmp_lnx.c_str(),
-                    mdsc->get_member_name());
-            fprintf(file, "#else\n");
-            fprintf(file,
-                    IND_2"if(!is_zero_%s()) blen += fprintf(f, \"%s=%%%s|\", %s);\n",
-                    mdsc->get_member_name(),
-                    mdsc->get_member_name(),
-                    tmp.c_str(),
-                    mdsc->get_member_name());
-            fprintf(file, "#endif\n");
-        } else {
-            fprintf(file,
-                    IND_2"if(!is_zero_%s()) blen += fprintf(f, \"%s=%%%s|\", %s);\n",
-                    mdsc->get_member_name(),
-                    mdsc->get_member_name(),
-                    tmp.c_str(),
-                    mdsc->get_member_name());
-        }
-    }
-    return vlg::RetCode_OK;
-}
-
-/***********************************
-GEN- VLG_COMP_Gen_EntityMember_FILE__CPP_
-***********************************/
-RetCode VLG_COMP_Gen_EntityMember_FILE__CPP_(entity_desc_comp &nclass_desc,
-                                             member_desc_comp *ent_mdsc,
-                                             entity_desc_comp *ent_desc,
-                                             std::map<std::string, entity_desc_comp *> &entitymap,
-                                             FILE *file)
-{
-    if(ent_mdsc->get_nmemb() > 1) {
-        fprintf(file, IND_2
-                "if(!is_zero_%s()){\n"
-                IND_2 IND_2
-                "blen += fprintf(f, \"%s=[\");\n",
-                ent_mdsc->get_member_name(),
-                ent_mdsc->get_member_name());
-        fprintf(file, IND_2 IND_2
-                "for(int i=0; i<%zu; i++){\n",
-                ent_mdsc->get_nmemb());
-        fprintf(file, IND_2 IND_2 IND_2
-                "blen += %s[i].pretty_dump_to_file(f, false);\n",
-                ent_mdsc->get_member_name());
-        fprintf(file, IND_2 IND_2 IND_2
-                "if(%zu>i+1) blen += fprintf(f, \",\");\n",
-                ent_mdsc->get_nmemb());
-        fprintf(file, IND_2 IND_2
-                "}\n");
-        fprintf(file, IND_2 IND_2
-                "blen += fprintf(f, \"]\");\n");
-        fprintf(file, IND_2"}\n");
-    } else {
-        fprintf(file, IND_2
-                "if(!is_zero_%s()) blen += %s.pretty_dump_to_file(f, false);\n",
+        fprintf(file, IND_2"if(!is_zero_%s()) %s.to_string(os, false);\n",
                 ent_mdsc->get_member_name(),
                 ent_mdsc->get_member_name());
     }
@@ -402,7 +233,6 @@ RetCode VLG_COMP_Gen_EntityNotZeroMode_Buff__CPP_(std::map<std::string, entity_d
                                                   entity_desc_comp &ent_desc,
                                                   FILE *file)
 {
-    std::string tmp;
     auto &mmbrmap = ent_desc.get_map_id_MMBRDSC();
     for(auto mdesc = mmbrmap.begin(); mdesc != mmbrmap.end(); mdesc++) {
         if(mdesc->second->get_member_type() != MemberType_FIELD) {
@@ -411,13 +241,12 @@ RetCode VLG_COMP_Gen_EntityNotZeroMode_Buff__CPP_(std::map<std::string, entity_d
         if(mdesc->second->get_field_type() != Type_ENTITY) {
             // built in type
             if(mdesc->second->get_field_type() == Type_ASCII && mdesc->second->get_nmemb() > 1) {
-                fprintf(file, IND_2"if(!is_zero_%s()) blen += sprintf(&buff[blen], \"%s=[%%s]\", %s);\n",
+                fprintf(file, IND_2"if(!is_zero_%s()) os << \"%s=[\" << %s << \"]\";\n",
                         mdesc->second->get_member_name(),
                         mdesc->second->get_member_name(),
                         mdesc->second->get_member_name());
             } else {
-                RET_ON_KO(printf_percent_from_VLG_TYPE(*mdesc->second, tmp))
-                RET_ON_KO(VLG_COMP_Gen_ScalarMember_Buff_CPP_(mdesc->second, tmp, file))
+                RET_ON_KO(VLG_COMP_Gen_ScalarMember_Buff_CPP_(mdesc->second, file))
             }
         } else {
             //entity
@@ -425,8 +254,7 @@ RetCode VLG_COMP_Gen_EntityNotZeroMode_Buff__CPP_(std::map<std::string, entity_d
             if((fdesc = entitymap.find(mdesc->second->get_field_usr_str_type())) != entitymap.end()) {
                 switch(fdesc->second->get_nentity_type()) {
                     case NEntityType_NENUM:
-                        tmp.assign("d");
-                        RET_ON_KO(VLG_COMP_Gen_ScalarMember_Buff_CPP_(mdesc->second, tmp, file))
+                        RET_ON_KO(VLG_COMP_Gen_ScalarMember_Buff_CPP_(mdesc->second, file))
                         break;
                     case NEntityType_NCLASS:
                         RET_ON_KO(VLG_COMP_Gen_EntityMember_Buff_CPP_(ent_desc,
@@ -445,87 +273,18 @@ RetCode VLG_COMP_Gen_EntityNotZeroMode_Buff__CPP_(std::map<std::string, entity_d
 }
 
 /***********************************
-GEN- VLG_COMP_Gen_EntityNotZeroMode_FILE__CPP_
+GEN- VLG_COMP_Gen_EntitytToString__CPP_
 ***********************************/
-RetCode VLG_COMP_Gen_EntityNotZeroMode_FILE__CPP_(std::map<std::string, entity_desc_comp *> &entitymap,
-                                                  entity_desc_comp &ent_desc,
-                                                  FILE *file)
+RetCode VLG_COMP_Gen_EntitytToString__CPP_(std::map<std::string, entity_desc_comp *> &entitymap,
+                                           entity_desc_comp &ent_desc,
+                                           FILE *file)
 {
-    std::string tmp;
-    auto &mmbrmap = ent_desc.get_map_id_MMBRDSC();
-    for(auto mdesc = mmbrmap.begin(); mdesc != mmbrmap.end(); mdesc++) {
-        if(mdesc->second->get_member_type() != MemberType_FIELD) {
-            continue;
-        }
-        if(mdesc->second->get_field_type() != Type_ENTITY) {
-            // built in type
-            if(mdesc->second->get_field_type() == Type_ASCII && mdesc->second->get_nmemb() > 1) {
-                fprintf(file, IND_2"if(!is_zero_%s()) blen += fprintf(f, \"%s=[%%s]\", %s);\n",
-                        mdesc->second->get_member_name(),
-                        mdesc->second->get_member_name(),
-                        mdesc->second->get_member_name());
-            } else {
-                RET_ON_KO(printf_percent_from_VLG_TYPE(*mdesc->second, tmp))
-                RET_ON_KO(VLG_COMP_Gen_ScalarMember_FILE__CPP_(mdesc->second, tmp, file))
-            }
-        } else {
-            //entity
-            auto fdesc = entitymap.end();
-            if((fdesc = entitymap.find(mdesc->second->get_field_usr_str_type())) != entitymap.end()) {
-                switch(fdesc->second->get_nentity_type()) {
-                    case NEntityType_NENUM:
-                        tmp.assign("d");
-                        RET_ON_KO(VLG_COMP_Gen_ScalarMember_FILE__CPP_(mdesc->second, tmp, file))
-                        break;
-                    case NEntityType_NCLASS:
-                        RET_ON_KO(VLG_COMP_Gen_EntityMember_FILE__CPP_(ent_desc,
-                                                                       mdesc->second,
-                                                                       fdesc->second,
-                                                                       entitymap,
-                                                                       file))
-                        break;
-                    default:
-                        return vlg::RetCode_KO;
-                }
-            }
-        }
-    }
-    return vlg::RetCode_OK;
-}
-
-/***********************************
-GEN- VLG_COMP_Gen_EntitytPrintToBuff__CPP_
-***********************************/
-RetCode VLG_COMP_Gen_EntitytPrintToBuff__CPP_(std::map<std::string, entity_desc_comp *> &entitymap,
-                                              entity_desc_comp &ent_desc,
-                                              FILE *file)
-{
-    fprintf(file, IND_1 "size_t blen = 0;\n");
-    fprintf(file, IND_1 "if(print_name) blen += sprintf(&buff[blen], \"%s\");\n", ent_desc.get_nentity_name());
+    fprintf(file, IND_1 "if(print_cname) os << \"%s\";\n", ent_desc.get_nentity_name());
     //class opening curl brace
-    fprintf(file, IND_1 "blen += sprintf(&buff[blen], \"{\");\n");
+    fprintf(file, IND_1 "os << \"{\";\n");
     RET_ON_KO(VLG_COMP_Gen_EntityNotZeroMode_Buff__CPP_(entitymap, ent_desc, file))
     //class closing curl brace
-    fprintf(file, IND_1 "blen += sprintf(&buff[blen], \"}\");\n");
-    fprintf(file, IND_1 "return blen;\n");
-    return vlg::RetCode_OK;
-}
-
-/***********************************
-GEN- VLG_COMP_Gen_EntityPrintToFile__CPP_
-***********************************/
-RetCode VLG_COMP_Gen_EntityPrintToFile__CPP_(std::map<std::string, entity_desc_comp *> &entitymap,
-                                             entity_desc_comp &ent_desc,
-                                             FILE *file)
-{
-    fprintf(file, IND_1 "size_t blen = 0;\n");
-    fprintf(file, IND_1 "if(print_name) blen += fprintf(f, \"%s\");\n", ent_desc.get_nentity_name());
-    //class opening curl brace
-    fprintf(file, IND_1 "blen += fprintf(f, \"{\");\n");
-    RET_ON_KO(VLG_COMP_Gen_EntityNotZeroMode_FILE__CPP_(entitymap, ent_desc, file))
-    //class closing curl brace
-    fprintf(file, IND_1 "blen += fprintf(f, \"}\");\n");
-    fprintf(file, IND_1 "return blen;\n");
+    fprintf(file, IND_1 "os << \"}\";\n");
     return vlg::RetCode_OK;
 }
 
@@ -1198,24 +957,29 @@ RetCode VLG_COMP_Gen_VirtualMeths__CPP_(std::map<std::string, entity_desc_comp *
     fprintf(file, EXPORT_SYMBOL"unsigned int %s::get_id() const\n{\n", nclass_desc.get_nentity_name());
     fprintf(file, IND_1 "return %d;\n", nclass_desc.get_nclassid());
     fprintf(file, "}\n");
+
     fprintf(file, OPN_CMMNT_LN "CLASS %s get_compiler_version.\n" CLS_CMMNT_LN, nclass_desc.get_nentity_name());
     fprintf(file, EXPORT_SYMBOL"unsigned int %s::get_compiler_version() const\n{\n", nclass_desc.get_nentity_name());
     fprintf(file, IND_1 "return %d;\n", 0);
     fprintf(file, "}\n");
+
     fprintf(file, OPN_CMMNT_LN "CLASS %s get_size.\n" CLS_CMMNT_LN, nclass_desc.get_nentity_name());
     fprintf(file, EXPORT_SYMBOL"size_t %s::get_size() const\n{\n", nclass_desc.get_nentity_name());
     fprintf(file, IND_1 "return sizeof(%s);\n", nclass_desc.get_nentity_name());
     fprintf(file, "}\n");
+
     fprintf(file, OPN_CMMNT_LN "CLASS %s get_zero_object.\n" CLS_CMMNT_LN, nclass_desc.get_nentity_name());
     fprintf(file, EXPORT_SYMBOL"const %s& %s::get_zero_object() const\n{\n",
             nclass_desc.get_nentity_name(),
             nclass_desc.get_nentity_name());
     fprintf(file, IND_1 "return ZERO_OBJ;\n");
     fprintf(file, "}\n");
+
     fprintf(file, OPN_CMMNT_LN "CLASS %s copy_to.\n" CLS_CMMNT_LN, nclass_desc.get_nentity_name());
     fprintf(file, EXPORT_SYMBOL"void %s::copy_to(nclass &out) const\n{\n", nclass_desc.get_nentity_name());
     fprintf(file, IND_1 "memcpy((void*)(&out), (void*)(this), sizeof(%s));\n", nclass_desc.get_nentity_name());
     fprintf(file, "}\n");
+
     fprintf(file, OPN_CMMNT_LN "CLASS %s clone.\n" CLS_CMMNT_LN, nclass_desc.get_nentity_name());
     fprintf(file, EXPORT_SYMBOL"std::unique_ptr<vlg::nclass> %s::clone() const\n{\n",
             nclass_desc.get_nentity_name());
@@ -1227,33 +991,34 @@ RetCode VLG_COMP_Gen_VirtualMeths__CPP_(std::map<std::string, entity_desc_comp *
             nclass_desc.get_nentity_name(),
             nclass_desc.get_nentity_name());
     fprintf(file, "}\n");
+
     fprintf(file, OPN_CMMNT_LN "CLASS %s is_zero.\n" CLS_CMMNT_LN, nclass_desc.get_nentity_name());
     fprintf(file, EXPORT_SYMBOL"bool %s::is_zero() const\n{\n", nclass_desc.get_nentity_name());
     RET_ON_KO(VLG_COMP_Gen_IsZero_Body__CPP_(entitymap, nclass_desc, file))
     fprintf(file, "}\n");
+
     fprintf(file, OPN_CMMNT_LN "CLASS %s set_zero.\n" CLS_CMMNT_LN, nclass_desc.get_nentity_name());
     fprintf(file, EXPORT_SYMBOL"void %s::set_zero()\n{\n", nclass_desc.get_nentity_name());
     fprintf(file, IND_1"memcpy((void*)(this), (void*)(&ZERO_OBJ), sizeof(%s));\n", nclass_desc.get_nentity_name());
     fprintf(file, "}\n");
+
     fprintf(file, OPN_CMMNT_LN "CLASS %s set_from.\n" CLS_CMMNT_LN, nclass_desc.get_nentity_name());
     fprintf(file, EXPORT_SYMBOL"void %s::set_from(const nclass &obj)\n{\n", nclass_desc.get_nentity_name());
     fprintf(file, IND_1"memcpy((void*)(this), (void*)(&obj), sizeof(%s));\n", nclass_desc.get_nentity_name());
     fprintf(file, "}\n");
+
     fprintf(file, OPN_CMMNT_LN "CLASS %s get_nentity_descriptor.\n" CLS_CMMNT_LN, nclass_desc.get_nentity_name());
     fprintf(file, EXPORT_SYMBOL"const vlg::nentity_desc& %s::get_nentity_descriptor() const\n{\n",
             nclass_desc.get_nentity_name());
     fprintf(file, IND_1"return %s_EntityDesc;\n", nclass_desc.get_nentity_name());
     fprintf(file, "}\n");
-    fprintf(file, OPN_CMMNT_LN "CLASS %s pretty_dump_to_buffer.\n" CLS_CMMNT_LN, nclass_desc.get_nentity_name());
-    fprintf(file, EXPORT_SYMBOL"size_t %s::pretty_dump_to_buffer(char *buff, bool print_name) const\n{\n",
+
+    fprintf(file, OPN_CMMNT_LN "CLASS %s to_string.\n" CLS_CMMNT_LN, nclass_desc.get_nentity_name());
+    fprintf(file, EXPORT_SYMBOL"void %s::to_string(std::ostream &os, bool print_cname) const\n{\n",
             nclass_desc.get_nentity_name());
-    RET_ON_KO(VLG_COMP_Gen_EntitytPrintToBuff__CPP_(entitymap, nclass_desc, file))
+    RET_ON_KO(VLG_COMP_Gen_EntitytToString__CPP_(entitymap, nclass_desc, file))
     fprintf(file, "}\n");
-    fprintf(file, OPN_CMMNT_LN "CLASS %s pretty_dump_to_file.\n" CLS_CMMNT_LN, nclass_desc.get_nentity_name());
-    fprintf(file, EXPORT_SYMBOL"size_t %s::pretty_dump_to_file(FILE *f, bool print_name) const\n{\n",
-            nclass_desc.get_nentity_name());
-    RET_ON_KO(VLG_COMP_Gen_EntityPrintToFile__CPP_(entitymap, nclass_desc, file))
-    fprintf(file, "}\n");
+
     fprintf(file, OPN_CMMNT_LN "CLASS %s serialize.\n" CLS_CMMNT_LN, nclass_desc.get_nentity_name());
     fprintf(file,
             EXPORT_SYMBOL"int %s::serialize(vlg::Encode enctyp, const nclass *prev_image, vlg::g_bbuf *obb) const\n{\n",
