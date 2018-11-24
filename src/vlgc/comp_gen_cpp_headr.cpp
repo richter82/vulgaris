@@ -144,9 +144,7 @@ RetCode VLG_COMP_Gen_ClassVirtualMeths__H_(std::map<std::string, entity_desc_com
     RET_ON_KO(put_newline(file))
     fprintf(file, EXPORT_SYMBOL"virtual const vlg::nentity_desc& get_nentity_descriptor() const;");
     RET_ON_KO(put_newline(file))
-    fprintf(file, EXPORT_SYMBOL"virtual size_t pretty_dump_to_buffer(char *buff, bool print_cname = true) const;");
-    RET_ON_KO(put_newline(file))
-    fprintf(file, EXPORT_SYMBOL"virtual size_t pretty_dump_to_file(FILE *f, bool print_cname = true) const;");
+    fprintf(file, EXPORT_SYMBOL"virtual void to_string(std::ostream &os, bool print_cname = true) const;");
     RET_ON_KO(put_newline(file))
     fprintf(file,
             EXPORT_SYMBOL"virtual int serialize(vlg::Encode enctyp, const vlg::nclass *prev_image, vlg::g_bbuf *obb) const;");

@@ -43,8 +43,9 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/sinks/basic_file_sink.h"
-#include "spdlog/sinks/rotating_file_sink.h"
-#include "spdlog/sinks/daily_file_sink.h"
+//#include "spdlog/sinks/rotating_file_sink.h"
+//#include "spdlog/sinks/daily_file_sink.h"
+#include "spdlog/fmt/ostr.h"
 
 #if defined WIN32 && defined _MSC_VER
 #define __func__ __FUNCTION__
@@ -136,6 +137,15 @@ std::shared_ptr<spdlog::logger> get_logger(const char *logger_name);
 
 #define IFLOG(log, meth) if(log) log->meth;
 #define DTOR_TRC(log) IFLOG(log, trace(LS_DTR, __func__))
+
+struct spdlog_nclass_type {
+    nclass &nc;
+    template<typename OStream>
+    friend OStream &operator<<(OStream &os, const spdlog_nclass_type &c) {
+        c.nc.to_string(os);
+        return os;
+    }
+};
 
 inline void *grow_buff_or_die(void *buffer, size_t current_size, size_t amount)
 {

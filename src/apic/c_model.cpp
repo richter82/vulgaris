@@ -373,20 +373,6 @@ extern "C" {
         return &obj->get_nentity_descriptor();
     }
 
-    size_t nclass_pretty_dump_to_buffer(nclass *obj,
-                                        char *buffer,
-                                        int print_nclass_name)
-    {
-        return obj->pretty_dump_to_buffer(buffer, print_nclass_name ? true : false);
-    }
-
-    size_t nclass_pretty_dump_to_file(nclass *obj,
-                                      FILE *file,
-                                      int print_nclass_name)
-    {
-        return obj->pretty_dump_to_file(file, print_nclass_name ? true : false);
-    }
-
     RetCode nclass_get_primary_key_value_as_string(nclass *obj,
                                                    char **newly_alloc_out_pkey)
     {

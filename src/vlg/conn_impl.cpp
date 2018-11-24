@@ -780,9 +780,8 @@ RetCode conn_impl::send_acc_buff()
             break;
         }
     }
-    if(peer_->log_ && peer_->log_->level() <= TL_TRC) {
-
-        peer_->log_->trace(LS_CLO "[socket:%d, sent:%d, remaining:%d][res:%d]",
+    if(peer_->log_ && peer_->log_->level() <= spdlog::level::level_enum::trace) {
+        peer_->log_->trace(LS_CLO "[socket:{}, sent:{}, remaining:{}][res:{}]",
                            __func__,
                            socket_,
                            tot_bsent,
@@ -1009,7 +1008,7 @@ RetCode incoming_connection_impl::recv_tx_request(const vlg_hdr_rec *pkt_hdr,
     timpl->txid_.txprid = pkt_hdr->row_5.txprid.txprid;
     rt_mark_time(&trans->impl_->start_mark_tim_);
 
-    IFLOG(peer_->log_, info(LS_TRX"[%08x%08x%08x%08x][TXTYPE:{}, TXACT:{}, RSCLREQ:{}]",
+    IFLOG(peer_->log_, info(LS_TRX"[{:08x}{:08x}{:08x}{:08x}][TXTYPE:{}, TXACT:{}, RSCLREQ:{}]",
                             pkt_hdr->row_2.txplid.txplid,
                             pkt_hdr->row_3.txsvid.txsvid,
                             pkt_hdr->row_4.txcnid.txcnid,
@@ -1446,7 +1445,7 @@ RetCode outgoing_connection_impl::recv_tx_response(const vlg_hdr_rec *pkt_hdr,
     txid.txcnid = pkt_hdr->row_4.txcnid.txcnid;
     txid.txprid = pkt_hdr->row_5.txprid.txprid;
 
-    IFLOG(peer_->log_, debug(LS_INC"[%08x%08x%08x%08x][TXRES:{}, TXRESCODE:{}, RESCLS:{}] ",
+    IFLOG(peer_->log_, debug(LS_INC"[{:08x}{:08x}{:08x}{:08x}][TXRES:{}, TXRESCODE:{}, RESCLS:{}] ",
                              txid.txplid,
                              txid.txsvid,
                              txid.txcnid,

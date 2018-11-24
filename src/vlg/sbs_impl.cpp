@@ -585,7 +585,7 @@ RetCode outgoing_subscription_impl::receive_event(const vlg_hdr_rec *pkt_hdr,
                       nclassid_))
             return rcode;
         } else {
-            //IFLOG(conn_->peer_->log_, dbg_nclass(nobj.get(), true, LS_SBI"[ACT:{}] ", pkt_hdr->row_2.sevttp.sbeact))
+            IFLOG(conn_->peer_->log_, debug(LS_SBI"[ACT:{}]{}", pkt_hdr->row_2.sevttp.sbeact, spdlog_nclass_type{*nobj.get()}))
         }
     }
 
