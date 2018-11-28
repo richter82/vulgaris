@@ -10,7 +10,7 @@ CCFLAGS = -std=c++14 -Wall -fPIC $(CC_DBG_REL_OPT)
 CCC = g++
 LDFLAGS = -shared
 LDFLAGS_1 = -Wl$(LDFLAGS_1_OPT)
-LDLIBS= -L../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/lib -lvlg -lpthread $(LD_ARCH_LIB)
+LDLIBS= -L../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/lib -lvlg -lapicpp -lpthread $(LD_ARCH_LIB)
 LDFLAGS_2 = -Wl$(LDFLAGS_2_OPT)
 
 ifndef SOLIB_EXT
