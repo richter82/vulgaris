@@ -72,15 +72,18 @@ vlg_toolkit_MainWindow::vlg_toolkit_MainWindow(QWidget *parent) :
     vlgmodel_load_list_model_(this),
     pers_dri_file_load_list_model_(this),
     vlg_model_loaded_model_(peer_.get_nentity_manager(), this),
-    pte_apnd_(this),
     ui(new Ui::vlg_toolkit_MainWindow),
-    flash_info_msg_val_(0)
+    flash_info_msg_val_(0),
+    apnd_(new vlg_tlkt::QPlainTextEditApnd(this))
 {
     ui->setupUi(this);
     InitGuiConfig();
 
+    vlg::syslog_load_config();
     //peer_ logger cfg bgn
-    vlg::logger::add_appender_to_all_loggers(&pte_apnd_);
+    spdlog::apply_all([&](std::shared_ptr<spdlog::logger> l) {
+        l->sinks().push_back(apnd_);
+    });
     //peer_ logger cfg end
 
     //cfg peer models-view connection
@@ -104,13 +107,12 @@ vlg_toolkit_MainWindow::vlg_toolkit_MainWindow(QWidget *parent) :
 
 vlg_toolkit_MainWindow::~vlg_toolkit_MainWindow()
 {
-    vlg::logger::remove_last_appender_from_all_loggers();
     delete ui;
 }
 
 void vlg_toolkit_MainWindow::InitGuiConfig()
 {
-    qRegisterMetaType<vlg::TraceLVL>("vlg::TraceLVL");
+    qRegisterMetaType<spdlog::level::level_enum>("spdlog::level::level_enum");
     qRegisterMetaType<QTextCursor>("QTextCursor");
     qRegisterMetaType<vlg::PeerStatus>("vlg::PeerStatus");
     qRegisterMetaType<vlg::ConnectionStatus>("vlg::ConnectionStatus");
@@ -123,10 +125,10 @@ void vlg_toolkit_MainWindow::InitGuiConfig()
     ui->action_Stop_Peer->setDisabled(true);
     ui->actionConnect->setDisabled(true);
 
-    connect(&pte_apnd_,
-            SIGNAL(messageReady(vlg::TraceLVL, const QString &)),
+    connect(apnd_.get(),
+            SIGNAL(messageReady(spdlog::level::level_enum, const QString &)),
             this,
-            SLOT(OnLogEvent(vlg::TraceLVL, const QString &)));
+            SLOT(OnLogEvent(spdlog::level::level_enum, const QString &)));
 
     connect(this,
             SIGNAL(Peer_status_change(vlg::PeerStatus)),
@@ -588,37 +590,28 @@ void vlg_toolkit_MainWindow::on_actionConnect_triggered()
     }
 }
 
-void vlg_toolkit_MainWindow::OnLogEvent(vlg::TraceLVL tlvl,
+void vlg_toolkit_MainWindow::OnLogEvent(spdlog::level::level_enum tlvl,
                                         const QString &msg)
 {
     QString beginHtml;
     switch(tlvl) {
-        case vlg::TL_PLN:
-            beginHtml = "<p style=\"color: Black; background-color: White\">";
-            break;
-        case vlg::TL_LOW:
+        case spdlog::level::level_enum::trace:
             beginHtml = "<p style=\"color: Beige; background-color: Black\">";
             break;
-        case vlg::TL_TRC:
-            beginHtml = "<p style=\"color: Beige; background-color: Black\">";
-            break;
-        case vlg::TL_DBG:
+        case spdlog::level::level_enum::debug:
             beginHtml = "<p style=\"color: Khaki; background-color: Black\">";
             break;
-        case vlg::TL_INF:
+        case spdlog::level::level_enum::info:
             beginHtml = "<p style=\"color: DarkSeaGreen; background-color: Black\">";
             break;
-        case vlg::TL_WRN:
+        case spdlog::level::level_enum::warn:
             beginHtml = "<p style=\"color: Orange; background-color: Black\">";
             break;
-        case vlg::TL_ERR:
+        case spdlog::level::level_enum::err:
             beginHtml = "<p style=\"color: Red; background-color: Black\">";
             break;
-        case vlg::TL_CRI:
+        case spdlog::level::level_enum::critical:
             beginHtml = "<p style=\"color: White; background-color: Red\">";
-            break;
-        case vlg::TL_FAT:
-            beginHtml = "<p style=\"color: Black; background-color: Red\">";
             break;
         default:
             break;
@@ -643,44 +636,46 @@ void vlg_toolkit_MainWindow::on_peer_Tab_tabCloseRequested(int index)
     delete connwidg;
 }
 
-void vlg_toolkit_MainWindow::on_actionLow_triggered()
-{
-    vlg::logger::set_level_for_all_loggers(vlg::TL_LOW);
-}
-
 void vlg_toolkit_MainWindow::on_actionTrace_triggered()
 {
-    vlg::logger::set_level_for_all_loggers(vlg::TL_TRC);
+    spdlog::apply_all([&](std::shared_ptr<spdlog::logger> l) {
+        l->set_level(spdlog::level::level_enum::trace);
+    });
 }
 
 void vlg_toolkit_MainWindow::on_actionDebug_triggered()
 {
-    vlg::logger::set_level_for_all_loggers(vlg::TL_DBG);
+    spdlog::apply_all([&](std::shared_ptr<spdlog::logger> l) {
+        l->set_level(spdlog::level::level_enum::debug);
+    });
 }
 
 void vlg_toolkit_MainWindow::on_actionInfo_triggered()
 {
-    vlg::logger::set_level_for_all_loggers(vlg::TL_INF);
+    spdlog::apply_all([&](std::shared_ptr<spdlog::logger> l) {
+        l->set_level(spdlog::level::level_enum::info);
+    });
 }
 
 void vlg_toolkit_MainWindow::on_actionWarning_triggered()
 {
-    vlg::logger::set_level_for_all_loggers(vlg::TL_WRN);
+    spdlog::apply_all([&](std::shared_ptr<spdlog::logger> l) {
+        l->set_level(spdlog::level::level_enum::warn);
+    });
 }
 
 void vlg_toolkit_MainWindow::on_actionError_triggered()
 {
-    vlg::logger::set_level_for_all_loggers(vlg::TL_ERR);
+    spdlog::apply_all([&](std::shared_ptr<spdlog::logger> l) {
+        l->set_level(spdlog::level::level_enum::err);
+    });
 }
 
 void vlg_toolkit_MainWindow::on_actionCritical_triggered()
 {
-    vlg::logger::set_level_for_all_loggers(vlg::TL_CRI);
-}
-
-void vlg_toolkit_MainWindow::on_actionFatal_triggered()
-{
-    vlg::logger::set_level_for_all_loggers(vlg::TL_FAT);
+    spdlog::apply_all([&](std::shared_ptr<spdlog::logger> l) {
+        l->set_level(spdlog::level::level_enum::critical);
+    });
 }
 
 void vlg_toolkit_MainWindow::on_actionClean_Console_triggered()

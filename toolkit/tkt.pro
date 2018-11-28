@@ -59,7 +59,8 @@ win32 {
 INCLUDEPATH += $$PWD/../src\
                $$PWD/../public\
                $$PWD/../public/cpp\
-               $$PWD/../src/vlg
+               $$PWD/../src/vlg\
+               $$PWD/../contrib
 
 win32 {
     LIBS += -L$$PWD/../contrib_lib/nt10_x64\

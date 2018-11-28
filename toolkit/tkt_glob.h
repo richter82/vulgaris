@@ -14,12 +14,14 @@
 #include <QtCore>
 #include <QVector>
 
-#include "vlg_logger.h"
 #include "vlg_model.h"
 #include "vlg_peer.h"
 #include "vlg_connection.h"
 #include "vlg_transaction.h"
 #include "vlg_subscription.h"
+
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/base_sink.h"
 
 #include <QMainWindow>
 #include <QtGui>
