@@ -6,7 +6,7 @@
 
 #pragma once
 #include "tkt_glob.h"
-
+#include <mutex>
 class vlg_toolkit_MainWindow;
 
 namespace vlg_tlkt {
@@ -14,47 +14,31 @@ namespace vlg_tlkt {
 //-----------------------------------------------------------------------------
 // QPlainTextEditApnd
 //-----------------------------------------------------------------------------
-class QPlainTextEditApnd : public QObject, public vlg::appender {
+class QPlainTextEditApnd : public QObject, public spdlog::sinks::base_sink<std::mutex> {
         Q_OBJECT
 
         //---ctors
     public:
-        QPlainTextEditApnd(vlg_toolkit_MainWindow      *btmw);
+        QPlainTextEditApnd(vlg_toolkit_MainWindow *btmw);
 
         vlg_toolkit_MainWindow *btmw() const;
         void setBtmw(vlg_toolkit_MainWindow *btmw);
 
 
     signals:
-        void messageReady(vlg::TraceLVL tlvl, const QString &s);
+        void messageReady(spdlog::level::level_enum tlvl, const QString &s);
 
+    protected:
+        void sink_it_(const spdlog::details::log_msg &msg) override {
+            fmt::memory_buffer formatted;
+            sink::formatter_->format(msg, formatted);
+            emit messageReady(msg.level, tr(fmt::to_string(formatted).c_str()));
+        }
 
-    public:
-        virtual void   flush();
-
-        //---pub meths
-    public:
-        virtual size_t put_msg(vlg::TraceLVL tlvl,
-                               const char *sign,
-                               uint16_t sign_len,
-                               uint32_t id,
-                               const char *msg);
-
-        virtual size_t put_msg_plain(const char *msg);
-
-        virtual size_t put_msg_va(vlg::TraceLVL tlvl,
-                                  const char *sign,
-                                  uint16_t sign_len,
-                                  uint32_t id,
-                                  const char *msg,
-                                  va_list args);
-
-        virtual size_t put_msg_va_plain(const char *msg,
-                                        va_list args);
-
+        void flush_() override {}
 
     private:
-        vlg_toolkit_MainWindow      *btmw_;
+        vlg_toolkit_MainWindow *btmw_;
 };
 
 //-----------------------------------------------------------------------------

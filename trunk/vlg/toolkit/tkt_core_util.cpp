@@ -161,65 +161,8 @@ namespace vlg_tlkt {
 //-----------------------------------------------------------------------------
 
 QPlainTextEditApnd::QPlainTextEditApnd(vlg_toolkit_MainWindow *btmw) :
-    appender(),
     btmw_(btmw)
 {}
-
-void QPlainTextEditApnd::flush()
-{}
-
-size_t QPlainTextEditApnd::put_msg(vlg::TraceLVL tlvl,
-                                   const char *sign,
-                                   uint16_t sign_len,
-                                   uint32_t id,
-                                   const char *msg)
-{
-    const char *lvl_str = vlg::get_trace_level_string(tlvl);
-    char msg_b[LG_BUF_LEN_16K] = {0};
-    uint16_t msg_b_idx = 0;
-    memset(msg_b, 0, LG_BUF_LEN_16K);
-    render_msg(lvl_str, sign, sign_len, id, msg, msg_b, &msg_b_idx);
-    msg_b[msg_b_idx-1] = '\0';
-    emit messageReady(tlvl, tr(msg_b));
-    return msg_b_idx;
-}
-
-size_t QPlainTextEditApnd::put_msg_plain(const char *msg)
-{
-    char msg_b[LG_BUF_LEN_16K] = {0};
-    uint16_t msg_b_idx = 0;
-    memset(msg_b, 0, LG_BUF_LEN_16K);
-    render_msg_pln(msg, msg_b, &msg_b_idx);
-    msg_b[msg_b_idx-1] = '\0';
-    emit messageReady(vlg::TL_PLN, tr(msg_b));
-    return msg_b_idx;
-}
-
-size_t QPlainTextEditApnd::put_msg_va(vlg::TraceLVL tlvl,
-                                      const char *sign,
-                                      uint16_t sign_len,
-                                      uint32_t id,
-                                      const char *msg,
-                                      va_list args)
-{
-    const char *lvl_str = vlg::get_trace_level_string(tlvl);
-    char msg_b[LG_BUF_LEN_16K] = {0};
-    uint16_t msg_b_idx = 0;
-    render_msg_va(lvl_str, sign, sign_len, id, msg, msg_b, &msg_b_idx, args);
-    msg_b[msg_b_idx-1] = '\0';
-    emit messageReady(tlvl, tr(msg_b));
-    return msg_b_idx;
-}
-
-size_t QPlainTextEditApnd::put_msg_va_plain(const char *msg, va_list args)
-{
-    char msg_b[LG_BUF_LEN_16K] = {0};
-    uint16_t msg_b_idx = 0;
-    render_msg_va_pln(msg, msg_b, &msg_b_idx, args);
-    msg_b[msg_b_idx-1] = '\0';
-    emit messageReady(vlg::TL_PLN, tr(msg_b));
-    return msg_b_idx;
-}
 
 vlg_toolkit_MainWindow *QPlainTextEditApnd::btmw() const
 {

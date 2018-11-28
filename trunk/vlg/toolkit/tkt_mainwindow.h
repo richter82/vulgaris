@@ -59,9 +59,7 @@ class vlg_toolkit_MainWindow : public QMainWindow {
         void on_action_Stop_Peer_triggered();
         void on_actionConnect_triggered();
         void on_peer_Tab_tabCloseRequested(int index);
-        void on_actionLow_triggered();
         void on_actionTrace_triggered();
-        void on_actionFatal_triggered();
         void on_actionDebug_triggered();
         void on_actionInfo_triggered();
         void on_actionWarning_triggered();
@@ -70,7 +68,7 @@ class vlg_toolkit_MainWindow : public QMainWindow {
         void on_actionClean_Console_triggered();
 
     public slots:
-        void OnLogEvent(vlg::TraceLVL tlvl, const QString &msg);
+        void OnLogEvent(spdlog::level::level_enum tlvl, const QString &msg);
         void OnPeer_status_change(vlg::PeerStatus status);
         void On_VLG_MODEL_Update();
         void OnSetInfoMsg(const QString &msg);
@@ -113,7 +111,7 @@ class vlg_toolkit_MainWindow : public QMainWindow {
                                      const char *value);
         //peer
     private:
-        vlg_tlkt::toolkit_peer  peer_;
+        vlg_tlkt::toolkit_peer peer_;
 
         //MODEL: VLG_MODEL(s) TO LOAD by FILE
     private:
@@ -128,10 +126,6 @@ class vlg_toolkit_MainWindow : public QMainWindow {
         //MODEL: VLG_MODEL(s) LOADED.
         vlg_toolkit_vlg_model vlg_model_loaded_model_;
 
-        //business-rep
-    private:
-        vlg_tlkt::QPlainTextEditApnd pte_apnd_;
-
         //static gui rep
     private:
         Ui::vlg_toolkit_MainWindow *ui;
@@ -140,4 +134,5 @@ class vlg_toolkit_MainWindow : public QMainWindow {
         QTimer reset_info_msg_tim_;
         QTimer flash_info_msg_tim_;
         int flash_info_msg_val_;
+        std::shared_ptr<vlg_tlkt::QPlainTextEditApnd> apnd_;
 };
