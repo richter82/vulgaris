@@ -1263,7 +1263,7 @@ outgoing_connection_impl::~outgoing_connection_impl()
             status_ == ConnectionStatus_PROTOCOL_HANDSHAKE ||
             status_ == ConnectionStatus_AUTHENTICATED) {
         IFLOG(peer_->log_, warn(LS_DTR
-                                "[connection:%d in status:%d, closing..]",
+                                "[connection:{} in status:{}, closing..]",
                                 __func__,
                                 connid_,
                                 status_))
@@ -1347,7 +1347,7 @@ RetCode outgoing_connection_impl::await_for_connection_result(ConnectivityEventR
     con_evt_res = con_evt_res_;
     connectivity_evt_type = connectivity_evt_type_;
     IFLOG(peer_->log_, trace(LS_CLO
-                             "[res:%d, socket:%d, last_socket_err:%d, status:%d) - [connection result available] - con_evt_res:%d connectivity_evt_type:%d, conres:%d, resultcode:%d]",
+                             "[res:{}, socket:{}, last_socket_err:{}, status:{}] - [connection result available] - con_evt_res:{} connectivity_evt_type:{}, conres:{}, resultcode:{}]",
                              __func__,
                              rcode,
                              socket_,
@@ -1533,7 +1533,7 @@ RetCode outgoing_connection_impl::recv_sbs_start_response(const vlg_hdr_rec *pkt
 
     outgoing_subscription_impl *subscription = nullptr;
     if((rcode = outg_reqid_sbs_map_.remove(&pkt_hdr->row_2.rqstid.rqstid, &subscription))) {
-        IFLOG(peer_->log_, error(LS_SBS"[subscription not found, aborting.]"))
+        IFLOG(peer_->log_, error(LS_SBS"[subscription not found, aborting]"))
         return RetCode_KO;
     }
 
@@ -1558,7 +1558,7 @@ RetCode outgoing_connection_impl::recv_sbs_evt(const vlg_hdr_rec *pkt_hdr,
     RetCode rcode = RetCode_OK;
     bool mng = true;
     IFLOG(peer_->log_, debug(LS_SBS
-                             "[CONNID:%u-SBSID:%u][EVTID:%d, EVTTYP:%d, PRTCOD:%d, TMSTMP[0]:%d, TMSTMP[1]:%d, ACT:%d]",
+                             "[CONNID:{}-SBSID:{}][EVTID:{}, EVTTYP:{}, PRTCOD:{}, TMSTMP[0]:{}, TMSTMP[1]:{}, ACT:{}]",
                              connid_,
                              pkt_hdr->row_1.sbsrid.sbsrid,
                              pkt_hdr->row_3.sevtid.sevtid,

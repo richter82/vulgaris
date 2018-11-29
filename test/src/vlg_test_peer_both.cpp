@@ -85,7 +85,7 @@ struct outg_conn_listener : public vlg::outgoing_connection_listener {
     virtual void on_connect(vlg::outgoing_connection &oc,
                             vlg::ConnectivityEventResult con_evt_res,
                             vlg::ConnectivityEventType c_evt_type) override {
-        test_log->info(LS_TST"[%d, %d]", __func__,
+        test_log->info(LS_TST"[{}, {}]", __func__,
                        con_evt_res,
                        c_evt_type);
     }
@@ -93,7 +93,7 @@ struct outg_conn_listener : public vlg::outgoing_connection_listener {
     virtual void on_disconnect(vlg::outgoing_connection &oc,
                                vlg::ConnectivityEventResult con_evt_res,
                                vlg::ConnectivityEventType c_evt_type) override {
-        test_log->info(LS_TST"[%d, %d]", __func__,
+        test_log->info(LS_TST"[{}, {}]", __func__,
                        con_evt_res,
                        c_evt_type);
     }
@@ -116,7 +116,7 @@ struct inco_conn_listener : public vlg::incoming_connection_listener {
     virtual void on_disconnect(vlg::incoming_connection &ic,
                                vlg::ConnectivityEventResult con_evt_res,
                                vlg::ConnectivityEventType c_evt_type) override {
-        test_log->info(LS_TST"[%d, %d]", __func__, con_evt_res, c_evt_type);
+        test_log->info(LS_TST"[{}, {}]", __func__, con_evt_res, c_evt_type);
     }
 
     virtual void on_releaseable(vlg::incoming_connection &ic) override {
@@ -547,7 +547,7 @@ struct entry_point {
                         }
 
                         vlg::mssleep(30000);
-                        test_log->debug(LS_TST"subscription dist cycle %d.", __func__, cycl_count_++);
+                        test_log->debug(LS_TST"subscription dist cycle {}", __func__, cycl_count_++);
                     }
                     return 0;
                 }
