@@ -198,7 +198,7 @@ RetCode sbs_impl::await_for_start_result(SubscriptionResponse &sbs_start_result,
     sbs_start_result = sbresl_;
     sbs_start_protocode = last_vlgcod_;
     IFLOG(conn_->peer_->log_, trace(LS_CLO
-                                    "[sbsid:%d, res:%d, status:%d][incoming_subscription start result available][sbs_start_result:%d, sbs_start_protocode:%d]",
+                                    "[sbsid:{}, res:{}, status:{}][incoming_subscription start result available][sbs_start_result:{}, sbs_start_protocode:{}]",
                                     __func__,
                                     sbsid_,
                                     rcode,
@@ -231,7 +231,7 @@ RetCode sbs_impl::await_for_stop_result(SubscriptionResponse &sbs_stop_result,
     sbs_stop_result = sbresl_;
     sbs_stop_protocode = last_vlgcod_;
     IFLOG(conn_->peer_->log_, trace(LS_CLO
-                                    "[sbsid:%d, res:%d, status:%d][incoming_subscription stop result available][sbs_stop_result:%d, sbs_stop_protocode:%d]",
+                                    "[sbsid:{}, res:{}, status:{}][incoming_subscription stop result available][sbs_stop_result:{}, sbs_stop_protocode:{}]",
                                     __func__,
                                     sbsid_,
                                     rcode,
@@ -455,7 +455,7 @@ outgoing_subscription_impl::~outgoing_subscription_impl()
     if(status_ == SubscriptionStatus_REQUEST_SENT ||
             status_ == SubscriptionStatus_STARTED) {
         IFLOG(conn_->peer_->log_, warn(LS_DTR
-                                       "[subscription:%d in status:%d, stopping..]",
+                                       "[subscription:{} in status:{}, stopping..]",
                                        __func__,
                                        sbsid_,
                                        status_))
@@ -474,7 +474,7 @@ outgoing_subscription_impl::~outgoing_subscription_impl()
 RetCode outgoing_subscription_impl::set_req_sent()
 {
     IFLOG(conn_->peer_->log_, info(
-              LS_SBO"[CONNID:%u-REQID:%u][SBSTYP:%d, SBSMOD:%d, FLOTYP:%d, DWLTYP:%d, ENCTYP:%d, NCLSSID:%d, TMSTP0:%u, TMSTP1:%u]",
+              LS_SBO"[CONNID:{}-REQID:{}][SBSTYP:{}, SBSMOD:{}, FLOTYP:{}, DWLTYP:{}, ENCTYP:{}, NCLSSID:{}, TMSTP0:{}, TMSTP1:{}]",
               conn_->connid_,
               reqid_,
               sbstyp_,
@@ -516,7 +516,7 @@ RetCode outgoing_subscription_impl::start(SubscriptionType sbscr_type,
                                           unsigned int start_timestamp_1)
 {
     IFLOG(conn_->peer_->log_, trace(
-              LS_OPN"[sbsid:%d, sbscr_type:%d, sbscr_mode:%d, sbscr_flow_type:%d, sbscr_dwnld_type:%d, sbscr_nclass_encode:%d, nclass_id:%u, ts_0:%u, ts_1:%u]",
+              LS_OPN"[sbsid:{}, sbscr_type:{}, sbscr_mode:{}, sbscr_flow_type:{}, sbscr_dwnld_type:{}, sbscr_nclass_encode:{}, nclass_id:{}, ts_0:{}, ts_1:{}]",
               __func__,
               sbsid_,
               sbscr_type,
@@ -573,14 +573,14 @@ RetCode outgoing_subscription_impl::receive_event(const vlg_hdr_rec *pkt_hdr,
         RetCode rcode = RetCode_OK;
         if((rcode = conn_->peer_->nem_.new_nclass_instance(nclassid_, nobj))) {
             IFLOG(conn_->peer_->log_, critical(
-                      LS_SBS"[incoming_subscription event receive failed: new_nclass_instance fail:%d, nclass_id:%d]",
+                      LS_SBS"[incoming_subscription event receive failed: new_nclass_instance fail:{}, nclass_id:{}]",
                       rcode,
                       nclassid_))
             return rcode;
         }
         if((rcode = nobj->restore(&conn_->peer_->nem_, enctyp_, pkt_body))) {
             IFLOG(conn_->peer_->log_, critical(
-                      LS_SBS"[incoming_subscription event receive failed: nclass restore fail:%d, nclass_id:%d]",
+                      LS_SBS"[incoming_subscription event receive failed: nclass restore fail:{}, nclass_id:{}]",
                       rcode,
                       nclassid_))
             return rcode;
