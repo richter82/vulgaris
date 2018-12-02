@@ -20,7 +20,7 @@ typedef RetCode(*peer_on_init)(peer *p, void *ud, void *ud2);
 typedef RetCode(*peer_on_starting)(peer *p, void *ud, void *ud2);
 typedef RetCode(*peer_on_stopping)(peer *p, void *ud, void *ud2);
 typedef RetCode(*peer_on_move_running)(peer *p, void *ud, void *ud2);
-typedef void(*peer_on_dying_breath)(peer *p, void *ud, void *ud2);
+typedef void(*peer_on_error)(peer *p, void *ud, void *ud2);
 typedef RetCode(*peer_on_incoming_connection)(peer *p, shr_incoming_connection *ic, void *ud, void *ud2);
 
 void peer_set_name(peer *p, peer_name hndl, void *ud, void *ud2);
@@ -30,7 +30,7 @@ void peer_set_on_init(peer *p, peer_on_init hndl, void *ud, void *ud2);
 void peer_set_on_starting(peer *p, peer_on_starting hndl, void *ud, void *ud2);
 void peer_set_on_stopping(peer *p, peer_on_stopping hndl, void *ud, void *ud2);
 void peer_set_on_move_running(peer *p, peer_on_move_running hndl, void *ud, void *ud2);
-void peer_set_on_dying_breath(peer *p, peer_on_dying_breath hndl, void *ud, void *ud2);
+void peer_set_on_error(peer *p, peer_on_error hndl, void *ud, void *ud2);
 void peer_set_on_status_change(peer *p, peer_on_status_change hndl, void *ud, void *ud2);
 void peer_set_on_incoming_connection(peer *p, peer_on_incoming_connection hndl, void *ud, void *ud2);
 

@@ -170,8 +170,8 @@ vlg SUPPORTED TYPES // length expressed is fixed when data is transmitted.
 *******************************************************************************/
 typedef enum  {
     Type_UNDEFINED,
-    Type_ENTITY,                    // special, user defined type
-    Type_BOOL,                      // boolean 1 bit
+    Type_ENTITY,                    // user defined type
+    Type_BOOL,                      // boolean
     Type_INT16,                     // signed integer 16 bit
     Type_UINT16,                    // unsigned integer 16 bit
     Type_INT32,                     // signed integer 32 bit
@@ -180,7 +180,7 @@ typedef enum  {
     Type_UINT64,                    // unsigned integer 16 bit
     Type_FLOAT32,                   // floating point 32 bit
     Type_FLOAT64,                   // floating point 64 bit
-    Type_ASCII,                     // ASCII char 7 bit
+    Type_ASCII,                     // ASCII char
     Type_BYTE,                      // raw byte
 } Type;
 
@@ -343,8 +343,8 @@ vlg SUBSCRIPTION FLOW TYPE
 ******************************************/
 typedef enum  {
     SubscriptionFlowType_UNDEFINED,
-    SubscriptionFlowType_ALL,         //all events transmitted.
-    SubscriptionFlowType_LAST,        //server will do snapshotting.
+    SubscriptionFlowType_ALL,         //all events transmitted
+    SubscriptionFlowType_LAST,        //snapshotting
 } SubscriptionFlowType;
 
 /*****************************************
@@ -432,7 +432,7 @@ typedef enum  {
     PeerStatus_STOP_REQUESTED,     //9
     PeerStatus_STOPPING,           //10
     PeerStatus_STOPPED,            //11 --stop state.
-    PeerStatus_DIED,               //12 --final state.
+    PeerStatus_ERROR,              //12 --error state.
 } PeerStatus;
 
 /*****************************************

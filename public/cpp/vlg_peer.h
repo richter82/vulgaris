@@ -21,7 +21,7 @@ struct peer_listener {
     virtual RetCode on_starting(peer &) = 0;
     virtual RetCode on_stopping(peer &) = 0;
     virtual RetCode on_move_running(peer &) = 0;
-    virtual void on_dying_breath(peer &) = 0;
+    virtual void on_error(peer &) = 0;
     virtual void on_status_change(peer &, PeerStatus) = 0;
 
     /**

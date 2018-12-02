@@ -351,7 +351,7 @@ struct both_peer_listener : public vlg::peer_listener {
         return vlg::RetCode_OK;
     }
 
-    virtual void on_dying_breath(vlg::peer &p) override {
+    virtual void on_error(vlg::peer &p) override {
         test_log->trace(LS_TST, __func__);
     }
 

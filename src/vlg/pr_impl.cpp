@@ -460,9 +460,9 @@ RetCode peer_impl::on_automa_stop()
     return rcode;
 }
 
-void peer_impl::on_automa_dying_breath()
+void peer_impl::on_automa_error()
 {
-    listener_.on_dying_breath(publ_);
+    listener_.on_error(publ_);
 }
 
 RetCode peer_impl::recv_and_route_pkt(outgoing_connection &conn,

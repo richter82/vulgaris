@@ -158,7 +158,7 @@ struct peer_impl : public peer_automa {
         virtual RetCode on_automa_start() override;
         virtual RetCode on_automa_stop() override;
         virtual RetCode on_automa_move_running() override;
-        virtual void on_automa_dying_breath() override;
+        virtual void on_automa_error() override;
 
     public:
         PeerPersonality personality_;

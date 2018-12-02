@@ -10,7 +10,7 @@
 
 namespace vlg_tlkt {
 
-unsigned int VLG_TOOLKIT_PEER_VER[] = {0, 0, 0, 0};
+static unsigned int VLG_TOOLKIT_PEER_VER[] = {0, 0, 0, 0};
 
 //------------------------------------------------------------------------------
 // ****VLG_TOOLKIT_PEER****
@@ -18,11 +18,13 @@ unsigned int VLG_TOOLKIT_PEER_VER[] = {0, 0, 0, 0};
 
 struct toolkit_peer_listener : public vlg::peer_listener {
     virtual vlg::RetCode on_load_config(vlg::peer &,
-                                        int pnum,
-                                        const char *param,
-                                        const char *value) override {
+                                        int,
+                                        const char *,
+                                        const char *) override {
         return vlg::RetCode_OK;
     }
+
+    virtual ~toolkit_peer_listener() = default;
 
     virtual vlg::RetCode on_init(vlg::peer &) override {
         return vlg::RetCode_OK;
@@ -36,7 +38,7 @@ struct toolkit_peer_listener : public vlg::peer_listener {
     virtual vlg::RetCode on_move_running(vlg::peer &) override {
         return vlg::RetCode_OK;
     }
-    virtual void on_dying_breath(vlg::peer &) override {}
+    virtual void on_error(vlg::peer &) override {}
 
     void on_status_change(vlg::peer &p, vlg::PeerStatus current) override {
         qDebug() << "peer status:" << current;
@@ -198,7 +200,7 @@ void vlg_toolkit_MainWindow::peer_params_clbk_ud(int pnum,
 // vlg_toolkit_MainWindow::PeerLoadCfgHndl
 //------------------------------------------------------------------------------
 
-vlg::RetCode vlg_toolkit_MainWindow::PeerLoadCfgHndl(int pnum,
+vlg::RetCode vlg_toolkit_MainWindow::PeerLoadCfgHndl(int,
                                                      const char *param,
                                                      const char *value)
 {
@@ -390,7 +392,7 @@ void vlg_toolkit_MainWindow::on_set_pers_driver_button_clicked()
 void vlg_toolkit_MainWindow::on_action_Start_Peer_triggered()
 {
     ui->peer_Tab->widget(0)->setEnabled(false);
-    peer_.start(0, 0, true);
+    peer_.start(0, nullptr, true);
 }
 
 void vlg_toolkit_MainWindow::OnPeer_status_change(vlg::PeerStatus status)
@@ -439,9 +441,10 @@ void vlg_toolkit_MainWindow::OnPeer_status_change(vlg::PeerStatus status)
         case vlg::PeerStatus_STOPPED:
             Status_STOPPED_Actions();
             break;
-        case vlg::PeerStatus_DIED:
-            ui->peer_status_label_display->setText(QObject::tr("DIED"));
-            ui->peer_status_label_display->setStyleSheet(QObject::tr("background-color : Black; color : white;"));
+        case vlg::PeerStatus_ERROR:
+            ui->peer_status_label_display->setText(QObject::tr("ERROR"));
+            ui->peer_status_label_display->setStyleSheet(QObject::tr("background-color : Red; color : black;"));
+            Status_STOPPED_Actions();
             break;
         default:
             break;

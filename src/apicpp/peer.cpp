@@ -30,7 +30,7 @@ struct default_peer_listener : public peer_listener {
     virtual RetCode on_move_running(peer &) override {
         return RetCode_OK;
     }
-    virtual void on_dying_breath(peer &) override {}
+    virtual void on_error(peer &) override {}
     virtual void on_status_change(peer &, PeerStatus) override {}
     virtual RetCode on_incoming_connection(peer &, std::shared_ptr<incoming_connection> &) override {
         return RetCode_OK;
