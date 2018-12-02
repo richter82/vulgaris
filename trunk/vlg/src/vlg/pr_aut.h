@@ -45,7 +45,7 @@ struct peer_automa {
         RetCode step_start();
         RetCode step_stop();
         RetCode step_move_running();
-        void step_dying_breath();
+        void step_error();
 
         virtual const char *get_automa_name() = 0;
         virtual const unsigned int *get_automa_version() = 0;
@@ -59,7 +59,7 @@ struct peer_automa {
         virtual RetCode on_automa_start() = 0;
         virtual RetCode on_automa_stop() = 0;
         virtual RetCode on_automa_move_running() = 0;
-        virtual void on_automa_dying_breath() = 0;
+        virtual void on_automa_error() = 0;
 
     public:
         unsigned int peer_id_;

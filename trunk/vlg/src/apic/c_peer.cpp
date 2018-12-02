@@ -27,7 +27,7 @@ extern "C" {
     typedef RetCode(*peer_on_starting)(peer *p, void *ud, void *ud2);
     typedef RetCode(*peer_on_stopping)(peer *p, void *ud, void *ud2);
     typedef RetCode(*peer_on_move_running)(peer *p, void *ud, void *ud2);
-    typedef void(*peer_on_dying_breath)(peer *p, void *ud, void *ud2);
+    typedef void(*peer_on_error)(peer *p, void *ud, void *ud2);
     typedef RetCode(*peer_on_incoming_connection)(peer *p, shr_incoming_connection *ic, void *ud, void *ud2);
 
     //incoming connection
@@ -556,7 +556,7 @@ struct c_peer : public peer {
     peer_on_starting pstarth_;
     peer_on_stopping pstoph_;
     peer_on_move_running ptoah_;
-    peer_on_dying_breath pdbh_;
+    peer_on_error pdbh_;
     peer_on_status_change psc_;
     peer_on_incoming_connection sic_;
 
@@ -618,7 +618,7 @@ struct c_peer_listener : public peer_listener {
         }
     }
 
-    virtual void on_dying_breath(peer &p) override {
+    virtual void on_error(peer &p) override {
         if(((c_peer &)p).pdbh_) {
             ((c_peer &)p).pdbh_(&p,
                                 ((c_peer &)p).ud_[PR_DYN_UD_IDX],
@@ -884,7 +884,7 @@ extern "C" {
         static_cast<c_peer *>(p)->ud2_[PR_RUN_UD_IDX] = ud2;
     }
 
-    void peer_set_on_dying_breath(peer *p, peer_on_dying_breath hndl, void *ud, void *ud2)
+    void peer_set_on_error(peer *p, peer_on_error hndl, void *ud, void *ud2)
     {
         static_cast<c_peer *>(p)->pdbh_ = hndl;
         static_cast<c_peer *>(p)->ud_[PR_DYN_UD_IDX] = ud;
