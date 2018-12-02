@@ -178,7 +178,8 @@ extern "C" {
 
     own_incoming_transaction *inco_transaction_get_own_ptr(shr_incoming_transaction *tx)
     {
-        return (own_incoming_transaction *)new std::shared_ptr<incoming_transaction>(*(std::shared_ptr<incoming_transaction> *)tx);
+        return (own_incoming_transaction *)new std::shared_ptr<incoming_transaction>(*(std::shared_ptr<incoming_transaction> *)
+                                                                                     tx);
     }
 
     incoming_transaction *inco_transaction_get_ptr(own_incoming_transaction *tx)
@@ -307,7 +308,8 @@ extern "C" {
 
     own_incoming_subscription *inco_subscription_get_own_ptr(shr_incoming_subscription *sbs)
     {
-        return (own_incoming_subscription *)new std::shared_ptr<incoming_subscription>(*(std::shared_ptr<incoming_subscription> *)sbs);
+        return (own_incoming_subscription *)new std::shared_ptr<incoming_subscription>(*(std::shared_ptr<incoming_subscription>
+                                                                                         *)sbs);
     }
 
     incoming_subscription *inco_subscription_get_ptr(own_incoming_subscription *sbs)
