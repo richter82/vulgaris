@@ -1179,7 +1179,7 @@ RetCode VLG_COMP_Gen_EntryPoint_C__CPP_(compile_unit &cunit,
     fprintf(file, OPN_CMMNT_LN"MODEL:%s C ENTRYPOINT\n" CLS_CMMNT_LN, cunit.model_name());
     fprintf(file, "typedef struct nentity_manager nentity_manager;\n");
     fprintf(file, "extern \"C\"{\n");
-    fprintf(file, "nentity_manager* get_c_nem_%s(vlg::logger *log)\n{\n", cunit.model_name());
+    fprintf(file, EXPORT_SYMBOL "nentity_manager* get_c_nem_%s(vlg::logger *log)\n{\n", cunit.model_name());
     fprintf(file, IND_1"return (nentity_manager*)get_nem_%s(log);\n", cunit.model_name());
     fprintf(file, "}\n");
     fprintf(file, "}\n\n");
