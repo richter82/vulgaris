@@ -4,6 +4,9 @@
  *
  */
 
+#include <mutex>
+#include <condition_variable>
+
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 
@@ -15,7 +18,6 @@
 #include "vlg_persistence.h"
 
 #include "vlg/concurr.h"
-#include "vlg/timing.h"
 
 #include "vlg_model_sample.h"
 //needed only if statically linked
@@ -600,10 +602,14 @@ int main(int argc, char *argv[])
     //}
 
     test_log->info(LS_TST"MAIN WAITS", __func__);
-    vlg::mx mon;
-    mon.lock();
-    mon.wait();
-    mon.unlock();
+
+    std::mutex mtx;
+    std::condition_variable cv;
+    {
+        std::unique_lock<std::mutex> lck(mtx);
+        cv.wait(lck);
+    }
+
     vlg::syslog_release_retained(own_log);
     return 0;
 }

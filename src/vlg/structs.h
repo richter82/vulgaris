@@ -9,6 +9,10 @@
 #define HAVE_STRUCT_TIMESPEC
 #include <pthread.h>
 
+#include <mutex>
+#include <shared_mutex>
+#include <condition_variable>
+
 #define FNV_32_PRIME ((uint32_t)0x01000193)
 
 void MurmurHash3_x86_32(const void *key, int len, uint32_t seed, void *out);
@@ -275,23 +279,55 @@ struct hm_node;
 struct s_hm : public brep {
         explicit s_hm(uint32_t hash_size,
                       size_t elem_size,
-                      size_t key_size,
-                      pthread_rwlockattr_t *attr = nullptr);
+                      size_t key_size) :
+            elem_manager_(elem_size),
+            key_manager_(key_size),
+            hash_size_(hash_size),
+            buckets_((hm_node * *)calloc(hash_size_, sizeof(hm_node *))),
+            head_(nullptr),
+            tail_(nullptr),
+            it_(nullptr),
+            prev_(nullptr)
+        {}
 
         explicit s_hm(uint32_t hash_size,
                       const obj_mng &elem_manager,
-                      const obj_mng &key_manager,
-                      pthread_rwlockattr_t *attr = nullptr);
+                      const obj_mng &key_manager) :
+            elem_manager_(elem_manager),
+            key_manager_(key_manager),
+            hash_size_(hash_size),
+            buckets_((hm_node * *)calloc(hash_size_, sizeof(hm_node *))),
+            head_(nullptr),
+            tail_(nullptr),
+            it_(nullptr),
+            prev_(nullptr)
+        {}
 
         explicit s_hm(uint32_t hash_size,
                       size_t elem_size,
-                      const obj_mng &key_manager,
-                      pthread_rwlockattr_t *attr = nullptr);
+                      const obj_mng &key_manager) :
+            elem_manager_(elem_size),
+            key_manager_(key_manager),
+            hash_size_(hash_size),
+            buckets_((hm_node * *)calloc(hash_size_, sizeof(hm_node *))),
+            head_(nullptr),
+            tail_(nullptr),
+            it_(nullptr),
+            prev_(nullptr)
+        {}
 
         explicit s_hm(uint32_t hash_size,
                       const obj_mng &elem_manager,
-                      size_t key_size,
-                      pthread_rwlockattr_t *attr = nullptr);
+                      size_t key_size) :
+            elem_manager_(elem_manager),
+            key_manager_(key_size),
+            hash_size_(hash_size),
+            buckets_((hm_node * *)calloc(hash_size_, sizeof(hm_node *))),
+            head_(nullptr),
+            tail_(nullptr),
+            it_(nullptr),
+            prev_(nullptr)
+        {}
 
         ~s_hm();
 
@@ -328,30 +364,30 @@ struct s_hm : public brep {
 
         void enum_elements_safe_read(s_hm_enm_func enum_f,
                                      void *ud) const {
-            scoped_rd_lock rl(lock_);
+            std::shared_lock<std::shared_mutex> lock(mutex_);
             enm(*this, enum_f, ud);
         }
 
         void enum_elements_safe_write(s_hm_enm_func enum_f,
                                       void *ud) const {
-            scoped_wr_lock wl(lock_);
+            std::unique_lock<std::shared_mutex> lock(mutex_);
             enm(*this, enum_f, ud);
         }
 
         void enum_elements_breakable_safe_read(s_hm_enm_func_br enum_f,
                                                void *ud) const {
-            scoped_rd_lock rl(lock_);
+            std::shared_lock<std::shared_mutex> lock(mutex_);
             enmbr(*this, enum_f, ud);
         }
 
         void enum_elements_breakable_safe_write(s_hm_enm_func_br enum_f,
                                                 void *ud) const {
-            scoped_wr_lock wl(lock_);
+            std::unique_lock<std::shared_mutex> lock(mutex_);
             enmbr(*this, enum_f, ud);
         }
 
     protected:
-        void init(pthread_rwlockattr_t *attr);
+        void init();
         uint32_t gidx(const void *key) const;
         void rm(hm_node *del_mn, uint32_t idx);
         void enm(const s_hm &map, s_hm_enm_func enum_f, void *ud) const;
@@ -362,7 +398,7 @@ struct s_hm : public brep {
         uint32_t hash_size_;
         hm_node **buckets_;
         hm_node *head_, *tail_, *it_, *prev_;
-        mutable pthread_rwlock_t lock_;
+        mutable std::shared_mutex mutex_;
 };
 
 /** @brief Blocking-Queue.

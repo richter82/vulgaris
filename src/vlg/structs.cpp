@@ -158,70 +158,6 @@ struct hm_node {
     hm_node *insrt_next_, *insrt_prev_;
 };
 
-s_hm::s_hm(uint32_t hash_size,
-           size_t elem_size,
-           size_t key_size,
-           pthread_rwlockattr_t *attr) :
-    elem_manager_(elem_size),
-    key_manager_(key_size),
-    hash_size_(hash_size),
-    buckets_(nullptr),
-    head_(nullptr),
-    tail_(nullptr),
-    it_(nullptr),
-    prev_(nullptr)
-{
-    init(attr);
-}
-
-s_hm::s_hm(uint32_t hash_size,
-           const obj_mng &elem_manager,
-           const obj_mng &key_manager,
-           pthread_rwlockattr_t *attr) :
-    elem_manager_(elem_manager),
-    key_manager_(key_manager),
-    hash_size_(hash_size),
-    buckets_(nullptr),
-    head_(nullptr),
-    tail_(nullptr),
-    it_(nullptr),
-    prev_(nullptr)
-{
-    init(attr);
-}
-
-s_hm::s_hm(uint32_t hash_size,
-           size_t elem_size,
-           const obj_mng &key_manager,
-           pthread_rwlockattr_t *attr) :
-    elem_manager_(elem_size),
-    key_manager_(key_manager),
-    hash_size_(hash_size),
-    buckets_(nullptr),
-    head_(nullptr),
-    tail_(nullptr),
-    it_(nullptr),
-    prev_(nullptr)
-{
-    init(attr);
-}
-
-s_hm::s_hm(uint32_t hash_size,
-           const obj_mng &elem_manager,
-           size_t key_size,
-           pthread_rwlockattr_t *attr) :
-    elem_manager_(elem_manager),
-    key_manager_(key_size),
-    hash_size_(hash_size),
-    buckets_(nullptr),
-    head_(nullptr),
-    tail_(nullptr),
-    it_(nullptr),
-    prev_(nullptr)
-{
-    init(attr);
-}
-
 s_hm::~s_hm()
 {
     if(buckets_) {
@@ -235,13 +171,6 @@ s_hm::~s_hm()
         }
         free(buckets_);
     }
-    pthread_rwlock_destroy(&lock_);
-}
-
-void s_hm::init(pthread_rwlockattr_t *attr)
-{
-    pthread_rwlock_init(&lock_, attr);
-    buckets_ = (hm_node **)calloc(hash_size_, sizeof(hm_node *));
 }
 
 inline uint32_t s_hm::gidx(const void *key) const
@@ -303,7 +232,7 @@ void s_hm::enmbr(const s_hm &map,
 
 RetCode s_hm::clear()
 {
-    scoped_wr_lock wl(lock_);
+    std::unique_lock<std::shared_mutex> lock(mutex_);
     hm_node *cur_mn = head_, *next = nullptr;
     while(cur_mn != nullptr) {
         next = cur_mn->insrt_next_;
@@ -323,7 +252,7 @@ RetCode s_hm::get(const void *key, void *copy) const
     if(!key) {
         return RetCode_BADARG;
     }
-    scoped_rd_lock rl(lock_);
+    std::shared_lock<std::shared_mutex> lock(mutex_);
     hm_node *m_node = buckets_[gidx(key)];
     while(m_node) {
         if(!key_manager_.cmp_func_(m_node->key_ptr_, key, key_manager_.type_size_)) {
@@ -342,7 +271,7 @@ RetCode s_hm::put(const void *key, const void *ptr)
     if(!key || !ptr) {
         return RetCode_BADARG;
     }
-    scoped_wr_lock wl(lock_);
+    std::unique_lock<std::shared_mutex> lock(mutex_);
     uint32_t idx = gidx(key);
     hm_node *cur_node = buckets_[idx];
     bool is_new = true;
@@ -393,7 +322,7 @@ RetCode s_hm::contains_key(const void *key) const
     if(!key) {
         return RetCode_BADARG;
     }
-    scoped_rd_lock rl(lock_);
+    std::shared_lock<std::shared_mutex> lock(mutex_);
     hm_node *m_node = buckets_[gidx(key)];
     while(m_node) {
         if(!key_manager_.cmp_func_(m_node->key_ptr_, key, key_manager_.type_size_)) {
@@ -409,7 +338,7 @@ RetCode s_hm::remove(const void *key, void *copy)
     if(!key) {
         return RetCode_BADARG;
     }
-    scoped_wr_lock wl(lock_);
+    std::unique_lock<std::shared_mutex> lock(mutex_);
     uint32_t idx = gidx(key);
     hm_node *m_node = buckets_[idx];
     while(m_node) {

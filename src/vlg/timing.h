@@ -29,6 +29,5 @@ void rt_mark_time(rt_time_t *t);
 rt_time_t rt_diff_time(rt_time_t t1, rt_time_t t2);
 uint64_t get_timestamp();
 int get_timestamp_ts(struct timespec *tv);
-void mssleep(long msec);
 
 }

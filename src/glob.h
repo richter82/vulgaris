@@ -15,6 +15,10 @@
 #include <fcntl.h>
 #endif
 
+#include <mutex>
+#include <shared_mutex>
+#include <condition_variable>
+
 #include "vlg/timing.h"
 #include "vlg/parse.h"
 #include "vlg/dl.h"
