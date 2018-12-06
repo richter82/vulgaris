@@ -216,10 +216,16 @@ RetCode p_exec_srv::await_termination(time_t sec, long nsec)
 {
     RetCode rcode = RetCode_OK;
     std::unique_lock<std::mutex> lck(mtx_);
-    rcode = cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
-        return status_ >= PExecSrvStatus_STOPPED;
-    }) ? RetCode_OK : RetCode_TIMEOUT;
-    IFLOG(log_, trace(LS_CLO "[sec{}, nsec:{}] - [{}]", __func__, sec, nsec, !rcode ? "terminated" : "timeout"))
+    if(sec<0) {
+        cv_.wait(lck,[&]() {
+            return status_ >= PExecSrvStatus_STOPPED;
+        });
+    } else {
+        rcode = cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
+            return status_ >= PExecSrvStatus_STOPPED;
+        }) ? RetCode_OK : RetCode_TIMEOUT;
+    }
+    IFLOG(log_, trace(LS_CLO "[{}]", __func__, !rcode ? "terminated" : "timeout"))
     return rcode;
 }
 

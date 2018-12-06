@@ -68,14 +68,21 @@ RetCode tx_impl::await_for_status_reached(TransactionStatus test,
                                           time_t sec,
                                           long nsec)
 {
+    RetCode rcode = RetCode_OK;
     std::unique_lock<std::mutex> lck(mtx_);
     if(status_ < TransactionStatus_INITIALIZED) {
         IFLOG(conn_->peer_->log_, error(LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
-    RetCode rcode = cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
-        return status_ >= test;
-    }) ? RetCode_OK : RetCode_TIMEOUT;
+    if(sec<0) {
+        cv_.wait(lck,[&]() {
+            return status_ >= test;
+        });
+    } else {
+        rcode = cv_.wait_for(lck,std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec),[&]() {
+            return status_ >= test;
+        }) ? RetCode_OK : RetCode_TIMEOUT;
+    }
     current = status_;
     IFLOG(conn_->peer_->log_, trace(LS_CLO "test:{} [{}] current:{}", __func__, test, !rcode ? "reached" : "timeout", status_))
     return rcode;
@@ -83,16 +90,22 @@ RetCode tx_impl::await_for_status_reached(TransactionStatus test,
 
 RetCode tx_impl::await_for_closure(time_t sec, long nsec)
 {
+    RetCode rcode = RetCode_OK;
     std::unique_lock<std::mutex> lck(mtx_);
     if(status_ < TransactionStatus_INITIALIZED) {
         IFLOG(conn_->peer_->log_, error(LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
-    auto now = std::chrono::system_clock::now();
-    RetCode rcode = cv_.wait_until(lck, now + std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
-        return status_ >= TransactionStatus_CLOSED;
-    }) ? RetCode_OK : RetCode_TIMEOUT;
-    IFLOG(conn_->peer_->log_, trace(LS_CLO "target:{} [{}]", __func__, TransactionStatus_CLOSED, !rcode ? "reached" : "timeout", status_))
+    if(sec<0) {
+        cv_.wait(lck,[&]() {
+            return status_ >= TransactionStatus_CLOSED;
+        });
+    } else {
+        rcode = cv_.wait_for(lck,std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec),[&]() {
+            return status_ >= TransactionStatus_CLOSED;
+        }) ? RetCode_OK : RetCode_TIMEOUT;
+    }
+    IFLOG(conn_->peer_->log_, trace(LS_CLO "target:{} [{}]", __func__, TransactionStatus_CLOSED, !rcode ? "closed" : "timeout", status_))
     return rcode;
 }
 

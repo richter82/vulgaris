@@ -154,13 +154,20 @@ RetCode sbs_impl::await_for_status_reached(SubscriptionStatus test,
                                            time_t sec,
                                            long nsec)
 {
+    RetCode rcode = RetCode_OK;
     std::unique_lock<std::mutex> lck(mtx_);
     if(status_ < SubscriptionStatus_INITIALIZED) {
         return RetCode_BADSTTS;
     }
-    RetCode rcode = cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
-        return status_ >= test;
-    }) ? RetCode_OK : RetCode_TIMEOUT;
+    if(sec<0) {
+        cv_.wait(lck,[&]() {
+            return status_ >= test;
+        });
+    } else {
+        rcode = cv_.wait_for(lck,std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec),[&]() {
+            return status_ >= test;
+        }) ? RetCode_OK : RetCode_TIMEOUT;
+    }
     current = status_;
     IFLOG(conn_->peer_->log_, trace(LS_CLO "test:{} [{}] current:{}", __func__, test, !rcode ? "reached" : "timeout", status_))
     return rcode;
@@ -171,13 +178,20 @@ RetCode sbs_impl::await_for_start_result(SubscriptionResponse &sbs_start_result,
                                          time_t sec,
                                          long nsec)
 {
+    RetCode rcode = RetCode_OK;
     std::unique_lock<std::mutex> lck(mtx_);
     if(status_ < SubscriptionStatus_INITIALIZED) {
         return RetCode_BADSTTS;
     }
-    RetCode rcode = cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
-        return start_stop_evt_occur_;
-    }) ? RetCode_OK : RetCode_TIMEOUT;
+    if(sec<0) {
+        cv_.wait(lck,[&]() {
+            return start_stop_evt_occur_;
+        });
+    } else {
+        rcode = cv_.wait_for(lck,std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec),[&]() {
+            return start_stop_evt_occur_;
+        }) ? RetCode_OK : RetCode_TIMEOUT;
+    }
     sbs_start_result = sbresl_;
     sbs_start_protocode = last_vlgcod_;
     IFLOG(conn_->peer_->log_, trace(LS_CLO
@@ -197,13 +211,20 @@ RetCode sbs_impl::await_for_stop_result(SubscriptionResponse &sbs_stop_result,
                                         time_t sec,
                                         long nsec)
 {
+    RetCode rcode = RetCode_OK;
     std::unique_lock<std::mutex> lck(mtx_);
     if(status_ < SubscriptionStatus_INITIALIZED) {
         return RetCode_BADSTTS;
     }
-    RetCode rcode = cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
-        return start_stop_evt_occur_;
-    }) ? RetCode_OK : RetCode_TIMEOUT;
+    if(sec<0) {
+        cv_.wait(lck,[&]() {
+            return start_stop_evt_occur_;
+        });
+    } else {
+        rcode = cv_.wait_for(lck,std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec),[&]() {
+            return start_stop_evt_occur_;
+        }) ? RetCode_OK : RetCode_TIMEOUT;
+    }
     sbs_stop_result = sbresl_;
     sbs_stop_protocode = last_vlgcod_;
     IFLOG(conn_->peer_->log_, trace(LS_CLO

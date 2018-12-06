@@ -97,13 +97,20 @@ RetCode peer_automa::await_for_status_reached(PeerStatus test,
                                               time_t sec,
                                               long nsec)
 {
+    RetCode rcode = RetCode_OK;
     std::unique_lock<std::mutex> lck(peer_mtx_);
     if(peer_status_ < PeerStatus_INITIALIZED) {
         return RetCode_BADSTTS;
     }
-    RetCode rcode = peer_cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
-        return peer_status_ >= test;
-    }) ? RetCode_OK : RetCode_TIMEOUT;
+    if(sec<0) {
+        peer_cv_.wait(lck,[&]() {
+            return peer_status_ >= test;
+        });
+    } else {
+        rcode = peer_cv_.wait_for(lck,std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec),[&]() {
+            return peer_status_ >= test;
+        }) ? RetCode_OK : RetCode_TIMEOUT;
+    }
     current = peer_status_;
     IFLOG(log_, trace(LS_CLO "test:{} [{}] current:{}", __func__, test, !rcode ? "reached" : "timeout", peer_status_))
     return rcode;
@@ -113,13 +120,20 @@ RetCode peer_automa::await_for_status_change(PeerStatus &peer_status,
                                              time_t sec,
                                              long nsec)
 {
+    RetCode rcode = RetCode_OK;
     std::unique_lock<std::mutex> lck(peer_mtx_);
     if(peer_status_ < PeerStatus_INITIALIZED) {
         return RetCode_BADSTTS;
     }
-    RetCode rcode = peer_cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
-        return peer_status_ != peer_status;
-    }) ? RetCode_OK : RetCode_TIMEOUT;
+    if(sec<0) {
+        peer_cv_.wait(lck,[&]() {
+            return peer_status_ != peer_status;
+        });
+    } else {
+        rcode = peer_cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
+            return peer_status_ != peer_status;
+        }) ? RetCode_OK : RetCode_TIMEOUT;
+    }
     IFLOG(log_, trace(LS_CLO "test:{} [{}] current:{}", __func__, peer_status, !rcode ? "changed" : "timeout", peer_status_))
     peer_status = peer_status_;
     return rcode;

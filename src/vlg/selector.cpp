@@ -96,13 +96,15 @@ RetCode selector::await_for_status_reached(SelectorStatus test,
                                            time_t sec,
                                            long nsec)
 {
+    RetCode rcode = RetCode_OK;
     std::unique_lock<std::mutex> lck(mtx_);
     if(status_ < SelectorStatus_INIT) {
         return RetCode_BADSTTS;
     }
-    RetCode rcode = RetCode_OK;
     if(sec<0) {
-
+        cv_.wait(lck,[&]() {
+            return status_ >= test;
+        });
     } else {
         rcode = cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
             return status_ >= test;

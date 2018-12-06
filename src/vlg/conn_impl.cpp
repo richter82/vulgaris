@@ -160,13 +160,20 @@ RetCode conn_impl::await_for_status_reached(ConnectionStatus test,
                                             time_t sec,
                                             long nsec)
 {
+    RetCode rcode = RetCode_OK;
     std::unique_lock<std::mutex> lck(mtx_);
     if(status_ < ConnectionStatus_INITIALIZED) {
         return RetCode_BADSTTS;
     }
-    RetCode rcode = cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
-        return status_ >= test;
-    }) ? RetCode_OK : RetCode_TIMEOUT;
+    if(sec<0) {
+        cv_.wait(lck,[&]() {
+            return status_ >= test;
+        });
+    } else {
+        rcode = cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
+            return status_ >= test;
+        }) ? RetCode_OK : RetCode_TIMEOUT;
+    }
     current = status_;
     IFLOG(peer_->log_, trace(LS_CLO "test:{} [{}] current:{}", __func__, test, !rcode ? "reached" : "timeout", status_))
     return rcode;
@@ -176,13 +183,20 @@ RetCode conn_impl::await_for_status_change(ConnectionStatus &status,
                                            time_t sec,
                                            long nsec)
 {
+    RetCode rcode = RetCode_OK;
     std::unique_lock<std::mutex> lck(mtx_);
     if(status_ < ConnectionStatus_INITIALIZED) {
         return RetCode_BADSTTS;
     }
-    RetCode rcode = cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
-        return status_ != status;
-    }) ? RetCode_OK : RetCode_TIMEOUT;
+    if(sec<0) {
+        cv_.wait(lck,[&]() {
+            return status_ != status;
+        });
+    } else {
+        rcode = cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
+            return status_ != status;
+        }) ? RetCode_OK : RetCode_TIMEOUT;
+    }
     IFLOG(peer_->log_, trace(LS_CLO "test:{} [{}] current:{}", __func__, status, !rcode ? "reached" : "timeout", status_))
     status = status_;
     return rcode;
@@ -384,16 +398,20 @@ RetCode conn_impl::await_for_disconnection_result(ConnectivityEventResult &con_e
                                                   time_t sec,
                                                   long nsec)
 {
-    IFLOG(peer_->log_, trace(LS_OPN "[connid:{}]", __func__, connid_))
+    RetCode rcode = RetCode_OK;
     std::unique_lock<std::mutex> lck(mtx_);
     if(status_ < ConnectionStatus_INITIALIZED) {
         return RetCode_BADSTTS;
     }
-
-    RetCode rcode = cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
-        return connect_evt_occur_;
-    }) ? RetCode_OK : RetCode_TIMEOUT;
-
+    if(sec<0) {
+        cv_.wait(lck,[&]() {
+            return connect_evt_occur_;
+        });
+    } else {
+        rcode = cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
+            return connect_evt_occur_;
+        }) ? RetCode_OK : RetCode_TIMEOUT;
+    }
     con_evt_res = con_evt_res_;
     connectivity_evt_type = connectivity_evt_type_;
     IFLOG(peer_->log_, trace(LS_CLO
@@ -1291,15 +1309,20 @@ RetCode outgoing_connection_impl::await_for_connection_result(ConnectivityEventR
                                                               time_t sec,
                                                               long nsec)
 {
+    RetCode rcode = RetCode_OK;
+    std::unique_lock<std::mutex> lck(mtx_);
     if(status_ < ConnectionStatus_INITIALIZED) {
         return RetCode_BADSTTS;
     }
-    std::unique_lock<std::mutex> lck(mtx_);
-
-    RetCode rcode = cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
-        return connect_evt_occur_;
-    }) ? RetCode_OK : RetCode_TIMEOUT;
-
+    if(sec<0) {
+        cv_.wait(lck,[&]() {
+            return connect_evt_occur_;
+        });
+    } else {
+        rcode = cv_.wait_for(lck,std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec),[&]() {
+            return connect_evt_occur_;
+        }) ? RetCode_OK : RetCode_TIMEOUT;
+    }
     con_evt_res = con_evt_res_;
     connectivity_evt_type = connectivity_evt_type_;
     IFLOG(peer_->log_, trace(LS_CLO
