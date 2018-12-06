@@ -49,7 +49,10 @@ It is also used to generate ts_0, ts_1.
 struct per_nclass_id_conn_set {
     explicit per_nclass_id_conn_set();
 
-    unsigned int next_sbs_evt_id();
+    unsigned int next_sbs_evt_id() {
+        std::unique_lock<std::mutex> lck(mtx_);
+        return ++sbsevtid_;
+    }
 
     void next_time_stamp(unsigned int &ts_0,
                          unsigned int &ts_1);
@@ -58,7 +61,8 @@ struct per_nclass_id_conn_set {
     unsigned int ts0_;
     unsigned int ts1_;
     s_hm connid_condesc_set_;  //[connid --> condesc]
-    mutable mx mon_;
+
+    mutable std::mutex mtx_;
 };
 
 // peer_impl
@@ -76,7 +80,7 @@ struct peer_impl : public peer_automa {
         RetCode extend_model(const char *model_name);
 
         unsigned int next_connid() {
-            scoped_mx smx(mon_);
+            std::unique_lock<std::mutex> lck(mtx_);
             return ++prgr_conn_id_;
         }
 
@@ -167,7 +171,10 @@ struct peer_impl : public peer_automa {
         unsigned int srv_sbs_exectrs_;
 
         selector selector_;
-        mutable mx mon_;
+
+        mutable std::mutex mtx_;
+        mutable std::condition_variable cv_;
+
         unsigned int prgr_conn_id_;
         nentity_manager nem_;
         std::set<std::string> model_map_;

@@ -85,10 +85,10 @@ RetCode peer_automa::early_init()
 RetCode peer_automa::set_status(PeerStatus peer_status)
 {
     IFLOG(log_, trace(LS_OPN "[status:{}]", __func__, peer_status))
-    scoped_mx smx(peer_mon_);
+    std::unique_lock<std::mutex> lck(peer_mtx_);
     peer_status_ = peer_status;
     listener_.on_status_change(publ_, peer_status_);
-    peer_mon_.notify_all();
+    peer_cv_.notify_all();
     return RetCode_OK;
 }
 
@@ -97,25 +97,15 @@ RetCode peer_automa::await_for_status_reached(PeerStatus test,
                                               time_t sec,
                                               long nsec)
 {
-    scoped_mx smx(peer_mon_);
+    std::unique_lock<std::mutex> lck(peer_mtx_);
     if(peer_status_ < PeerStatus_INITIALIZED) {
         return RetCode_BADSTTS;
     }
-    RetCode rcode = RetCode_OK;
-    while(peer_status_ < test) {
-        int pthres;
-        if((pthres = peer_mon_.wait(sec, nsec))) {
-            if(pthres == ETIMEDOUT) {
-                rcode =  RetCode_TIMEOUT;
-                break;
-            }
-        }
-    }
+    RetCode rcode = peer_cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
+        return peer_status_ >= test;
+    }) ? RetCode_OK : RetCode_TIMEOUT;
     current = peer_status_;
-    IFLOG(log_, debug(LS_CLO "test:{} [reached] current:{}",
-                      __func__,
-                      test,
-                      peer_status_))
+    IFLOG(log_, trace(LS_CLO "test:{} [{}] current:{}", __func__, test, !rcode ? "reached" : "timeout", peer_status_))
     return rcode;
 }
 
@@ -123,23 +113,14 @@ RetCode peer_automa::await_for_status_change(PeerStatus &peer_status,
                                              time_t sec,
                                              long nsec)
 {
-    scoped_mx smx(peer_mon_);
+    std::unique_lock<std::mutex> lck(peer_mtx_);
     if(peer_status_ < PeerStatus_INITIALIZED) {
         return RetCode_BADSTTS;
     }
-    RetCode rcode = RetCode_OK;
-    while(peer_status == peer_status_) {
-        int pthres;
-        if((pthres = peer_mon_.wait(sec, nsec))) {
-            if(pthres == ETIMEDOUT) {
-                rcode =  RetCode_TIMEOUT;
-                break;
-            }
-        }
-    }
-    IFLOG(log_, trace(LS_CLO "status:{} [changed] current:{}", __func__,
-                      peer_status,
-                      peer_status_))
+    RetCode rcode = peer_cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
+        return peer_status_ != peer_status;
+    }) ? RetCode_OK : RetCode_TIMEOUT;
+    IFLOG(log_, trace(LS_CLO "test:{} [{}] current:{}", __func__, peer_status, !rcode ? "changed" : "timeout", peer_status_))
     peer_status = peer_status_;
     return rcode;
 }

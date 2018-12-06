@@ -78,7 +78,9 @@ struct peer_automa {
 
         // stop / dispose
         bool force_disconnect_on_stop_;
-        mutable mx peer_mon_;
+
+        mutable std::mutex peer_mtx_;
+        mutable std::condition_variable peer_cv_;
 
     private:
         static void peer_param_clbk_ud(int pnum,

@@ -166,7 +166,8 @@ struct conn_impl {
     //accumulating sending buffer
     g_bbuf acc_snd_buff_;
 
-    mutable mx mon_;
+    mutable std::mutex mtx_;
+    mutable std::condition_variable cv_;
 
     incoming_connection *ipubl_;
     outgoing_connection *opubl_;
@@ -213,7 +214,10 @@ struct incoming_connection_impl : public conn_impl {
     RetCode recv_sbs_stop_request(const vlg_hdr_rec *pkt_hdr,
                                   std::shared_ptr<incoming_connection> &inco_conn);
 
-    unsigned int next_sbsid();
+    unsigned int next_sbsid() {
+        std::unique_lock<std::mutex> lck(mtx_);
+        return ++sbsid_;
+    }
 
     //rep
     s_hm inco_flytx_map_;
@@ -269,8 +273,15 @@ struct outgoing_connection_impl : public conn_impl {
 
     RetCode recv_sbs_stop_response(const vlg_hdr_rec *pkt_hdr);
 
-    unsigned int next_prid();
-    unsigned int next_reqid();
+    unsigned int next_prid() {
+        std::unique_lock<std::mutex> lck(mtx_);
+        return ++prid_;
+    }
+
+    unsigned int next_reqid() {
+        std::unique_lock<std::mutex> lck(mtx_);
+        return ++reqid_;
+    }
 
     //rep
     s_hm outg_flytx_map_;

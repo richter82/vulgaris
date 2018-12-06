@@ -144,14 +144,14 @@ RetCode conn_impl::set_connection_established(SOCKET socket)
 RetCode conn_impl::set_status(ConnectionStatus status)
 {
     IFLOG(peer_->log_, trace(LS_OPN "[status:{}]", __func__, status))
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     status_ = status;
     if(con_type_ == ConnectionType_INGOING) {
         ilistener_->on_status_change(*ipubl_, status_);
     } else {
         olistener_->on_status_change(*opubl_, status_);
     }
-    mon_.notify_all();
+    cv_.notify_all();
     return RetCode_OK;
 }
 
@@ -160,22 +160,15 @@ RetCode conn_impl::await_for_status_reached(ConnectionStatus test,
                                             time_t sec,
                                             long nsec)
 {
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     if(status_ < ConnectionStatus_INITIALIZED) {
         return RetCode_BADSTTS;
     }
-    RetCode rcode = RetCode_OK;
-    while(status_ < test) {
-        int pthres;
-        if((pthres = mon_.wait(sec, nsec))) {
-            if(pthres == ETIMEDOUT) {
-                rcode =  RetCode_TIMEOUT;
-                break;
-            }
-        }
-    }
+    RetCode rcode = cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
+        return status_ >= test;
+    }) ? RetCode_OK : RetCode_TIMEOUT;
     current = status_;
-    IFLOG(peer_->log_, trace(LS_CLO"test:{} [reached] current:{}", __func__, test, status_))
+    IFLOG(peer_->log_, trace(LS_CLO "test:{} [{}] current:{}", __func__, test, !rcode ? "reached" : "timeout", status_))
     return rcode;
 }
 
@@ -183,23 +176,14 @@ RetCode conn_impl::await_for_status_change(ConnectionStatus &status,
                                            time_t sec,
                                            long nsec)
 {
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     if(status_ < ConnectionStatus_INITIALIZED) {
         return RetCode_BADSTTS;
     }
-    RetCode rcode = RetCode_OK;
-    while(status == status_) {
-        int pthres;
-        if((pthres = mon_.wait(sec, nsec))) {
-            if(pthres == ETIMEDOUT) {
-                rcode =  RetCode_TIMEOUT;
-                break;
-            }
-        }
-    }
-    IFLOG(peer_->log_, trace(LS_CLO "status:{} [changed] current:{}", __func__,
-                             status,
-                             status_))
+    RetCode rcode = cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
+        return status_ != status;
+    }) ? RetCode_OK : RetCode_TIMEOUT;
+    IFLOG(peer_->log_, trace(LS_CLO "test:{} [{}] current:{}", __func__, status, !rcode ? "reached" : "timeout", status_))
     status = status_;
     return rcode;
 }
@@ -376,11 +360,11 @@ RetCode conn_impl::disconnect(ProtocolCode disres)
 RetCode conn_impl::notify_for_connectivity_result(ConnectivityEventResult con_evt_res,
                                                   ConnectivityEventType connectivity_evt_type)
 {
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     connect_evt_occur_ = true;
     con_evt_res_ = con_evt_res;
     connectivity_evt_type_ = connectivity_evt_type;
-    mon_.notify_all();
+    cv_.notify_all();
     return RetCode_OK;
 }
 
@@ -401,24 +385,19 @@ RetCode conn_impl::await_for_disconnection_result(ConnectivityEventResult &con_e
                                                   long nsec)
 {
     IFLOG(peer_->log_, trace(LS_OPN "[connid:{}]", __func__, connid_))
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     if(status_ < ConnectionStatus_INITIALIZED) {
         return RetCode_BADSTTS;
     }
-    RetCode rcode = RetCode_OK;
-    while(!connect_evt_occur_) {
-        int pthres;
-        if((pthres = mon_.wait(sec, nsec))) {
-            if(pthres == ETIMEDOUT) {
-                rcode =  RetCode_TIMEOUT;
-                break;
-            }
-        }
-    }
+
+    RetCode rcode = cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
+        return connect_evt_occur_;
+    }) ? RetCode_OK : RetCode_TIMEOUT;
+
     con_evt_res = con_evt_res_;
     connectivity_evt_type = connectivity_evt_type_;
     IFLOG(peer_->log_, trace(LS_CLO
-                             "[connid:%d, res:%d, socket:%d, last_socket_err:%d, status:%d) - [disconnection result available] - con_evt_res:%d connectivity_evt_type:%d, conres:%d, resultcode:%d]",
+                             "[connid:{}, res:{}, socket:{}, last_socket_err:{}, status:{}] - [disconnection result available] - [con_evt_res:{} connectivity_evt_type:{}, conres:{}, resultcode:{}]",
                              __func__,
                              connid_,
                              rcode,
@@ -872,12 +851,6 @@ void incoming_connection_impl::release_all_children()
     inco_nclassid_sbs_map_.clear();
 }
 
-unsigned int incoming_connection_impl::next_sbsid()
-{
-    scoped_mx smx(mon_);
-    return ++sbsid_;
-}
-
 RetCode incoming_connection_impl::server_send_connect_res(std::shared_ptr<incoming_connection> &inco_conn)
 {
     if(status_ != ConnectionStatus_ESTABLISHED) {
@@ -1275,18 +1248,6 @@ outgoing_connection_impl::~outgoing_connection_impl()
     }
 }
 
-unsigned int outgoing_connection_impl::next_prid()
-{
-    scoped_mx smx(mon_);
-    return ++prid_;
-}
-
-unsigned int outgoing_connection_impl::next_reqid()
-{
-    scoped_mx smx(mon_);
-    return ++reqid_;
-}
-
 static void(stop_all_outg_sbs)(const s_hm &map,
                                const void *key,
                                void *ptr,
@@ -1333,17 +1294,12 @@ RetCode outgoing_connection_impl::await_for_connection_result(ConnectivityEventR
     if(status_ < ConnectionStatus_INITIALIZED) {
         return RetCode_BADSTTS;
     }
-    RetCode rcode = RetCode_OK;
-    scoped_mx smx(mon_);
-    while(!connect_evt_occur_) {
-        int pthres;
-        if((pthres = mon_.wait(sec, nsec))) {
-            if(pthres == ETIMEDOUT) {
-                rcode =  RetCode_TIMEOUT;
-                break;
-            }
-        }
-    }
+    std::unique_lock<std::mutex> lck(mtx_);
+
+    RetCode rcode = cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
+        return connect_evt_occur_;
+    }) ? RetCode_OK : RetCode_TIMEOUT;
+
     con_evt_res = con_evt_res_;
     connectivity_evt_type = connectivity_evt_type_;
     IFLOG(peer_->log_, trace(LS_CLO

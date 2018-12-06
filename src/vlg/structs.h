@@ -6,12 +6,12 @@
 
 #pragma once
 #include "vlg.h"
-#define HAVE_STRUCT_TIMESPEC
-#include <pthread.h>
 
+#include <chrono>
 #include <mutex>
 #include <shared_mutex>
 #include <condition_variable>
+#include <vector>
 
 #define FNV_32_PRIME ((uint32_t)0x01000193)
 
@@ -146,89 +146,6 @@ struct cstr_obj_mng : public obj_mng {
 
 const ptr_obj_mng &sngl_ptr_obj_mng();
 const cstr_obj_mng &sngl_cstr_obj_mng();
-
-}
-
-namespace vlg {
-
-struct scoped_rd_lock {
-    explicit scoped_rd_lock(pthread_rwlock_t &lock) : lock_(lock) {
-        pthread_rwlock_rdlock(&lock_);
-    }
-    ~scoped_rd_lock() {
-        pthread_rwlock_unlock(&lock_);
-    }
-    pthread_rwlock_t &lock_;
-};
-
-struct scoped_wr_lock {
-    explicit scoped_wr_lock(pthread_rwlock_t &lock) : lock_(lock) {
-        pthread_rwlock_wrlock(&lock_);
-    }
-    ~scoped_wr_lock() {
-        pthread_rwlock_unlock(&lock_);
-    }
-    pthread_rwlock_t &lock_;
-};
-
-/** @brief mutex.
-*/
-struct mx {
-        explicit mx(int pshared = PTHREAD_PROCESS_PRIVATE) {
-            pthread_mutexattr_init(&mattr_);
-            pthread_mutexattr_setpshared(&mattr_, pshared);
-            pthread_mutex_init(&mutex_, &mattr_);
-            pthread_condattr_init(&cattr_);
-            pthread_condattr_setpshared(&cattr_, pshared);
-            pthread_cond_init(&cv_, &cattr_);
-        }
-
-        ~mx() {
-            pthread_cond_destroy(&cv_);
-            pthread_mutex_destroy(&mutex_);
-            pthread_mutexattr_destroy(&mattr_);
-            pthread_condattr_destroy(&cattr_);
-        }
-
-        int lock() {
-            return pthread_mutex_lock(&mutex_);
-        }
-
-        int unlock() {
-            return pthread_mutex_unlock(&mutex_);
-        }
-
-        int wait() {
-            return pthread_cond_wait(&cv_, &mutex_);
-        }
-
-        int wait(time_t sec,
-                 long nsec);
-
-        int notify() {
-            return pthread_cond_signal(&cv_);
-        }
-
-        int notify_all() {
-            return pthread_cond_broadcast(&cv_);
-        }
-
-    private:
-        pthread_mutexattr_t mattr_;
-        pthread_mutex_t mutex_;
-        pthread_condattr_t cattr_;
-        pthread_cond_t cv_;
-};
-
-struct scoped_mx {
-    scoped_mx(mx &mx) : mx_(mx) {
-        mx_.lock();
-    }
-    ~scoped_mx() {
-        mx_.unlock();
-    }
-    mx &mx_;
-};
 
 }
 
@@ -387,7 +304,6 @@ struct s_hm : public brep {
         }
 
     protected:
-        void init();
         uint32_t gidx(const void *key) const;
         void rm(hm_node *del_mn, uint32_t idx);
         void enm(const s_hm &map, s_hm_enm_func enum_f, void *ud) const;
@@ -408,10 +324,26 @@ struct b_qu : public brep {
         typedef void (*rm_idx_func)(b_qu &, const void *);
 
         explicit b_qu(size_t elemsize,
-                      uint32_t capacity = 0);
+                      uint32_t capacity = 0) :
+            manager_(elemsize),
+            capacity_(capacity),
+            head_(nullptr),
+            tail_(nullptr),
+            rif_(nullptr),
+            wt_prod_(0),
+            wt_cons_(0)
+        {}
 
         explicit b_qu(const obj_mng &elem_manager,
-                      uint32_t capacity = 0);
+                      uint32_t capacity = 0) :
+            manager_(elem_manager),
+            capacity_(capacity),
+            head_(nullptr),
+            tail_(nullptr),
+            rif_(nullptr),
+            wt_prod_(0),
+            wt_cons_(0)
+        {}
 
         ~b_qu();
 
@@ -448,6 +380,9 @@ struct b_qu : public brep {
                      void *copy);
 
     protected:
+        void wtCons(time_t sec, long nsec, std::unique_lock<std::mutex> &lck, RetCode &res);
+        void wtProd(time_t sec, long nsec, std::unique_lock<std::mutex> &lck, RetCode &res);
+
         void dq(void *copy);
         RetCode enq(const void *ptr, bool idxed = false);
 
@@ -456,7 +391,9 @@ struct b_qu : public brep {
         lnk_node *head_, *tail_;
         rm_idx_func rif_;
         uint32_t wt_prod_, wt_cons_;
-        mutable mx mon_;
+
+        mutable std::mutex mtx_;
+        mutable std::condition_variable cv_;
 };
 
 /** @brief Blocking-Queue with hash-map capability.

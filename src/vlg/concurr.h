@@ -6,7 +6,9 @@
 
 #pragma once
 #include "structs.h"
-#include <vector>
+
+#define HAVE_STRUCT_TIMESPEC
+#include <pthread.h>
 
 #if defined WIN32 && defined _MSC_VER
 #define TH_ID GetCurrentThreadId()
@@ -175,7 +177,9 @@ struct p_tsk {
         PTskStatus status_;
         RetCode exec_res_;
         mutable uint32_t wt_th_;
-        mutable mx mon_;
+
+        mutable std::mutex mtx_;
+        mutable std::condition_variable cv_;
 };
 
 /** @brief An enum representing the status a p_executor can assume.
@@ -207,7 +211,9 @@ struct p_exectr : public p_th {
     private:
         PExecutorStatus status_;
         p_exec_srv &eserv_;
-        mutable mx mon_;
+
+        mutable std::mutex mtx_;
+        mutable std::condition_variable cv_;
 };
 
 /** @brief An enum representing the status a p_executor_service can assume.
@@ -317,7 +323,9 @@ struct p_exec_srv {
         PExecSrvStatus status_;
         std::vector<std::unique_ptr<p_exectr>> exec_pool_;
         b_qu task_queue_;
-        mutable mx mon_;
+
+        mutable std::mutex mtx_;
+        mutable std::condition_variable cv_;
 
     public:
         std::shared_ptr<spdlog::logger> log_;

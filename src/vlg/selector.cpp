@@ -56,8 +56,7 @@ selector::selector(peer_impl &peer) :
 selector::~selector()
 {
     if(!(status_ <= SelectorStatus_INIT) && !(status_ >= SelectorStatus_STOPPED)) {
-        IFLOG(peer_.log_, critical(LS_DTR"[selector:{} is not in a safe state:{}] " LS_EXUNX, __func__, peer_.peer_id_,
-                                   status_))
+        IFLOG(peer_.log_, critical(LS_DTR"[selector:{} is not in a safe state:{}] " LS_EXUNX, __func__, peer_.peer_id_, status_))
     }
 }
 
@@ -85,9 +84,9 @@ RetCode selector::on_peer_move_running_actions()
 
 RetCode selector::set_status(SelectorStatus status)
 {
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     status_ = status;
-    mon_.notify_all();
+    cv_.notify_all();
     IFLOG(peer_.log_, trace(LS_CLO "[status:{}]", __func__, status))
     return RetCode_OK;
 }
@@ -97,24 +96,20 @@ RetCode selector::await_for_status_reached(SelectorStatus test,
                                            time_t sec,
                                            long nsec)
 {
-    scoped_mx smx(mon_);
-    if(status_ <SelectorStatus_INIT) {
+    std::unique_lock<std::mutex> lck(mtx_);
+    if(status_ < SelectorStatus_INIT) {
         return RetCode_BADSTTS;
     }
     RetCode rcode = RetCode_OK;
-    while(status_ < test) {
-        int pthres;
-        if((pthres = mon_.wait(sec, nsec))) {
-            if(pthres == ETIMEDOUT) {
-                rcode =  RetCode_TIMEOUT;
-                break;
-            }
-        }
+    if(sec<0) {
+
+    } else {
+        rcode = cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
+            return status_ >= test;
+        }) ? RetCode_OK : RetCode_TIMEOUT;
     }
     current = status_;
-    IFLOG(peer_.log_, trace(LS_CLO "test:{} [reached] current:{}", __func__,
-                            test,
-                            status_))
+    IFLOG(peer_.log_, trace(LS_CLO "test:{} [{}] current:{}", __func__, test, !rcode ? "reached" : "timeout", status_))
     return rcode;
 }
 

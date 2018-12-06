@@ -56,7 +56,9 @@ struct tx_impl {
 
     //timing, for stat.
     rt_time_t start_mark_tim_;
-    mutable mx mon_;
+
+    mutable std::mutex mtx_;
+    mutable std::condition_variable cv_;
 
     incoming_transaction *ipubl_;
     outgoing_transaction *opubl_;

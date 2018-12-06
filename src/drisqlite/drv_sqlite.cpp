@@ -1056,7 +1056,7 @@ RetCode pers_conn_sqlite::do_select(unsigned int key,
                                     unsigned int &ts1_out,
                                     nclass &in_out)
 {
-    static pthread_rwlock_t sel_stmt_m_l = PTHREAD_RWLOCK_INITIALIZER;
+    static std::shared_mutex sel_stmt_m_l;
     static std::unordered_map<std::string, std::string> sel_stmt_m;
     RetCode rcode = RetCode_OK;
     const char *sel_stmt = nullptr;
@@ -1064,7 +1064,7 @@ RetCode pers_conn_sqlite::do_select(unsigned int key,
     ss << in_out.get_id() << '_' << key;
 
     {
-        scoped_rd_lock rl(sel_stmt_m_l);
+        std::shared_lock<std::shared_mutex> lck(sel_stmt_m_l);
         auto it = sel_stmt_m.find(ss.str());
         if(it != sel_stmt_m.end()) {
             sel_stmt = it->second.c_str();
@@ -1090,7 +1090,7 @@ RetCode pers_conn_sqlite::do_select(unsigned int key,
         select_stmt.append(where_claus);
         select_stmt.append(";");
         {
-            scoped_wr_lock wl(sel_stmt_m_l);
+            std::unique_lock<std::shared_mutex> lck(sel_stmt_m_l);
             auto nit = sel_stmt_m.insert(std::pair<std::string, std::string>(ss.str(), select_stmt));
             sel_stmt = nit.first->second.c_str();
         }
@@ -1265,7 +1265,7 @@ RetCode pers_conn_sqlite::do_update(unsigned int key,
                                     unsigned int ts_1,
                                     const nclass &in)
 {
-    static pthread_rwlock_t upd_stmt_m_l = PTHREAD_RWLOCK_INITIALIZER;
+    static std::shared_mutex upd_stmt_m_l;
     static std::unordered_map<std::string, std::string> upd_stmt_m;
     RetCode rcode = RetCode_OK;
     const char *upd_stmt = nullptr;
@@ -1273,7 +1273,7 @@ RetCode pers_conn_sqlite::do_update(unsigned int key,
     ss << in.get_id() << '_' << key;
 
     {
-        scoped_rd_lock rl(upd_stmt_m_l);
+        std::shared_lock<std::shared_mutex> lck(upd_stmt_m_l);
         auto it = upd_stmt_m.find(ss.str());
         if(it != upd_stmt_m.end()) {
             upd_stmt = it->second.c_str();
@@ -1319,7 +1319,7 @@ RetCode pers_conn_sqlite::do_update(unsigned int key,
         update_stmt.append(";");
 
         {
-            scoped_wr_lock wl(upd_stmt_m_l);
+            std::unique_lock<std::shared_mutex> lck(upd_stmt_m_l);
             auto nit = upd_stmt_m.insert(std::pair<std::string, std::string>(ss.str(), update_stmt));
             upd_stmt = nit.first->second.c_str();
         }
@@ -1373,7 +1373,7 @@ RetCode pers_conn_sqlite::do_delete(unsigned int key,
                                     PersistenceDeletionMode mode,
                                     const nclass &in)
 {
-    static pthread_rwlock_t del_stmt_m_l = PTHREAD_RWLOCK_INITIALIZER;
+    static std::shared_mutex del_stmt_m_l;
     static std::unordered_map<std::string, std::string> del_stmt_m;
     RetCode rcode = RetCode_OK;
     const char *del_stmt = nullptr;
@@ -1381,7 +1381,7 @@ RetCode pers_conn_sqlite::do_delete(unsigned int key,
     ss << in.get_id() << '_' << key << '_' << mode;
 
     {
-        scoped_rd_lock rl(del_stmt_m_l);
+        std::shared_lock<std::shared_mutex> lck(del_stmt_m_l);
         auto it = del_stmt_m.find(ss.str());
         if(it != del_stmt_m.end()) {
             del_stmt = it->second.c_str();
@@ -1426,7 +1426,7 @@ RetCode pers_conn_sqlite::do_delete(unsigned int key,
         }
 
         {
-            scoped_wr_lock wl(del_stmt_m_l);
+            std::unique_lock<std::shared_mutex> lck(del_stmt_m_l);
             auto nit = del_stmt_m.insert(std::pair<std::string, std::string>(ss.str(), delete_stmt));
             del_stmt = nit.first->second.c_str();
         }
@@ -1589,7 +1589,7 @@ RetCode pers_conn_sqlite::do_insert(const nentity_manager &nem,
                                     const nclass &in,
                                     bool fail_is_error)
 {
-    static pthread_rwlock_t ins_stmt_m_l = PTHREAD_RWLOCK_INITIALIZER;
+    static std::shared_mutex ins_stmt_m_l;
     static std::unordered_map<std::string, std::string> ins_stmt_m;
     RetCode rcode = RetCode_OK;
     const char *ins_stmt = nullptr;
@@ -1597,7 +1597,7 @@ RetCode pers_conn_sqlite::do_insert(const nentity_manager &nem,
     ss << in.get_id();
 
     {
-        scoped_rd_lock rl(ins_stmt_m_l);
+        std::shared_lock<std::shared_mutex> lck(ins_stmt_m_l);
         auto it = ins_stmt_m.find(ss.str());
         if(it != ins_stmt_m.end()) {
             ins_stmt = it->second.c_str();
@@ -1631,7 +1631,7 @@ RetCode pers_conn_sqlite::do_insert(const nentity_manager &nem,
         insert_stmt.append(");");
 
         {
-            scoped_wr_lock wl(ins_stmt_m_l);
+            std::unique_lock<std::shared_mutex> lck(ins_stmt_m_l);
             auto nit = ins_stmt_m.insert(std::pair<std::string, std::string>(ss.str(), insert_stmt));
             ins_stmt = nit.first->second.c_str();
         }

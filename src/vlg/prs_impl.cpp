@@ -102,7 +102,7 @@ RetCode persistence_connection_pool::start()
 persistence_connection_impl *persistence_connection_pool::request_connection()
 {
     persistence_connection_impl *conn = nullptr;
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     auto it = conn_idx_conn_hm_.find(conn_pool_curr_idx_);
     conn = it->second;
     conn_pool_curr_idx_ = (conn_pool_curr_idx_+1) % conn_pool_sz_;

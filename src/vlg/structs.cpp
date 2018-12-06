@@ -371,28 +371,6 @@ struct lnk_node {
 
 // blocking_queue
 
-b_qu::b_qu(size_t elemsize,
-           uint32_t capacity) :
-    manager_(elemsize),
-    capacity_(capacity),
-    head_(nullptr),
-    tail_(nullptr),
-    rif_(nullptr),
-    wt_prod_(0),
-    wt_cons_(0)
-{}
-
-b_qu::b_qu(const obj_mng &elem_manager,
-           uint32_t capacity) :
-    manager_(elem_manager),
-    capacity_(capacity),
-    head_(nullptr),
-    tail_(nullptr),
-    rif_(nullptr),
-    wt_prod_(0),
-    wt_cons_(0)
-{}
-
 b_qu::~b_qu()
 {
     lnk_node *cur = tail_, *next = nullptr;
@@ -402,6 +380,36 @@ b_qu::~b_qu()
         delete cur;
         cur = next;
     }
+}
+
+inline void b_qu::wtCons(time_t sec, long nsec, std::unique_lock<std::mutex> &lck, RetCode &res)
+{
+    wt_cons_++;
+    if(sec < 0) {
+        cv_.wait(lck, [&]() {
+            return elemcount_ > 0;
+        });
+    } else {
+        res = cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
+            return elemcount_ > 0;
+        }) ? RetCode_OK : RetCode_TIMEOUT;
+    }
+    wt_cons_--;
+}
+
+inline void b_qu::wtProd(time_t sec, long nsec, std::unique_lock<std::mutex> &lck, RetCode &res)
+{
+    wt_prod_++;
+    if(sec < 0) {
+        cv_.wait(lck, [&]() {
+            return remain_capacity() > 0;
+        });
+    } else {
+        res = cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
+            return remain_capacity() > 0;
+        }) ? RetCode_OK : RetCode_TIMEOUT;
+    }
+    wt_prod_--;
 }
 
 void b_qu::dq(void *copy)
@@ -442,7 +450,7 @@ RetCode b_qu::enq(const void *ptr, bool idxed)
 
 RetCode b_qu::clear()
 {
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     lnk_node *cur = tail_, *next = nullptr;
     while(cur != nullptr) {
         next = cur->next_;
@@ -454,22 +462,22 @@ RetCode b_qu::clear()
     rst_elems();
     if(wt_prod_) {
         wt_prod_ = 0;
-        mon_.notify_all();
+        cv_.notify_all();
     }
     return RetCode_OK;
 }
 
 RetCode b_qu::take(void *copy)
 {
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     while(!elemcount_) {
         wt_cons_++;
-        mon_.wait();
+        cv_.wait(lck);
     }
     dq(copy);
     if(wt_prod_) {
         wt_prod_ = 0;
-        mon_.notify_all();
+        cv_.notify_all();
     }
     return RetCode_OK;
 }
@@ -477,7 +485,7 @@ RetCode b_qu::take(void *copy)
 RetCode b_qu::take(time_t sec, long nsec, void *copy)
 {
     RetCode res = RetCode_OK;
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     if(!nsec && !sec) {
         if(elemcount_) {
             dq(copy);
@@ -485,22 +493,13 @@ RetCode b_qu::take(time_t sec, long nsec, void *copy)
             res = RetCode_EMPTY;
         }
     } else {
-        while(!elemcount_) {
-            wt_cons_++;
-            int pthres;
-            if((pthres = mon_.wait(sec, nsec))) {
-                if(pthres == ETIMEDOUT) {
-                    wt_cons_--;
-                    return RetCode_TIMEOUT;
-                } else {
-                    return RetCode_PTHERR;
-                }
+        wtCons(sec, nsec, lck, res);
+        if(res == RetCode_OK) {
+            dq(copy);
+            if(wt_prod_) {
+                wt_prod_ = 0;
+                cv_.notify_all();
             }
-        }
-        dq(copy);
-        if(wt_prod_) {
-            wt_prod_ = 0;
-            mon_.notify_all();
         }
     }
     return res;
@@ -509,7 +508,7 @@ RetCode b_qu::take(time_t sec, long nsec, void *copy)
 RetCode b_qu::peek(time_t sec, long nsec, void *copy)
 {
     RetCode res = RetCode_OK;
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     if(!nsec && !sec) {
         if(elemcount_) {
             if(copy) {
@@ -519,19 +518,8 @@ RetCode b_qu::peek(time_t sec, long nsec, void *copy)
             res = RetCode_EMPTY;
         }
     } else {
-        while(!elemcount_) {
-            wt_cons_++;
-            int pthres;
-            if((pthres = mon_.wait(sec, nsec))) {
-                if(pthres == ETIMEDOUT) {
-                    wt_cons_--;
-                    return RetCode_TIMEOUT;
-                } else {
-                    return RetCode_PTHERR;
-                }
-            }
-        }
-        if(copy) {
+        wtCons(sec, nsec, lck, res);
+        if(res == RetCode_OK && copy) {
             manager_.cpy_func_(copy, head_->ptr_, manager_.type_size_);
         }
     }
@@ -544,7 +532,7 @@ RetCode b_qu::put(time_t sec, long nsec, const void *ptr)
         return RetCode_BADARG;
     }
     RetCode res = RetCode_OK;
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     if(!nsec && !sec) {
         if(remain_capacity()) {
             res = enq(ptr);
@@ -552,22 +540,13 @@ RetCode b_qu::put(time_t sec, long nsec, const void *ptr)
             res = RetCode_QFULL;
         }
     } else {
-        while(!remain_capacity()) {
-            wt_prod_++;
-            int pthres;
-            if((pthres = mon_.wait(sec, nsec))) {
-                if(pthres == ETIMEDOUT) {
-                    wt_prod_--;
-                    return RetCode_TIMEOUT;
-                } else {
-                    return RetCode_PTHERR;
-                }
+        wtProd(sec, nsec, lck, res);
+        if(res == RetCode_OK) {
+            res = enq(ptr);
+            if(wt_cons_) {
+                wt_cons_ = 0;
+                cv_.notify_all();
             }
-        }
-        res = enq(ptr);
-        if(wt_cons_) {
-            wt_cons_ = 0;
-            mon_.notify_all();
         }
     }
     return res;
@@ -579,29 +558,25 @@ RetCode b_qu::put(const void *ptr)
         return RetCode_BADARG;
     }
     RetCode res = RetCode_OK;
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     while(!remain_capacity()) {
         wt_prod_++;
-        mon_.wait();
+        cv_.wait(lck);
     }
     res = enq(ptr);
     if(wt_cons_) {
-        if(wt_cons_ > 1) {
-            mon_.notify_all();
-        } else {
-            mon_.notify();
-        }
         wt_cons_ = 0;
+        cv_.notify_all();
     }
     return res;
 }
 
 RetCode b_qu::peek(void *copy)
 {
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     while(!elemcount_) {
         wt_cons_++;
-        mon_.wait();
+        cv_.wait(lck);
     }
     if(copy) {
         manager_.cpy_func_(copy, head_->ptr_, manager_.type_size_);
@@ -731,7 +706,7 @@ void b_qu_hm::hmr(b_qu &self, const void *ptr)
 
 RetCode b_qu_hm::clear()
 {
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     hm_node *cur_mn = hhead_, *hnext = nullptr;
     while(cur_mn != nullptr) {
         hnext = cur_mn->insrt_next_;
@@ -751,7 +726,7 @@ RetCode b_qu_hm::clear()
     rst_elems();
     if(wt_prod_) {
         wt_prod_ = 0;
-        mon_.notify_all();
+        cv_.notify_all();
     }
     return RetCode_OK;
 }
@@ -762,21 +737,17 @@ RetCode b_qu_hm::put_or_update(const void *ptr)
         return RetCode_BADARG;
     }
     RetCode res = RetCode_OK;
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     void *elem_ptr = hmp(ptr);
     if(elem_ptr) {
         while(!remain_capacity()) {
             wt_prod_++;
-            mon_.wait();
+            cv_.wait(lck);
         }
         res = enq(elem_ptr, true);
         if(wt_cons_) {
-            if(wt_cons_ > 1) {
-                mon_.notify_all();
-            } else {
-                mon_.notify();
-            }
             wt_cons_ = 0;
+            cv_.notify_all();
         }
     }
     return res;
@@ -790,7 +761,7 @@ RetCode b_qu_hm::put_or_update(time_t sec,
         return RetCode_BADARG;
     }
     RetCode res = RetCode_OK;
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     void *elem_ptr = hmp(ptr);
     if(elem_ptr) {
         if(!nsec && !sec) {
@@ -800,22 +771,13 @@ RetCode b_qu_hm::put_or_update(time_t sec,
                 res = RetCode_QFULL;
             }
         } else {
-            while(!remain_capacity()) {
-                wt_prod_++;
-                int pthres;
-                if((pthres = mon_.wait(sec, nsec))) {
-                    if(pthres == ETIMEDOUT) {
-                        wt_prod_--;
-                        return RetCode_TIMEOUT;
-                    } else {
-                        return RetCode_PTHERR;
-                    }
+            wtProd(sec, nsec, lck, res);
+            if(res == RetCode_OK) {
+                res = enq(elem_ptr, true);
+                if(wt_cons_) {
+                    wt_cons_ = 0;
+                    cv_.notify_all();
                 }
-            }
-            res = enq(elem_ptr, true);
-            if(wt_cons_) {
-                wt_cons_ = 0;
-                mon_.notify_all();
             }
         }
     }

@@ -121,7 +121,8 @@ struct persistence_connection_pool {
     // allocated threads for this connection pool.
     persistence_worker  **conn_pool_th_pool_;
 
-    mutable mx mon_;
+    mutable std::mutex mtx_;
+    mutable std::condition_variable cv_;
 };
 
 // we cannot use a thread-pool because we want 1 thread per connection.

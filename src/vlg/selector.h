@@ -98,7 +98,9 @@ struct selector : public p_th {
     sockaddr_in udp_ntfy_sa_in_;
     SOCKET udp_ntfy_srv_socket_;
     SOCKET udp_ntfy_cli_socket_;
-    mutable mx mon_;
+
+    mutable std::mutex mtx_;
+    mutable std::condition_variable cv_;
 
     //srv_rep
     SOCKET srv_socket_;

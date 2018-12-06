@@ -14,36 +14,17 @@ namespace vlg {
 
 const std_shared_ptr_obj_mng<p_tsk> tsk_std_shp_omng;
 
-// mx
-
-int mx::wait(time_t sec, long nsec)
-{
-    if(sec<0) {
-        return pthread_cond_wait(&cv_, &mutex_);
-    }
-    timespec abstime;
-    long sc;
-    get_timestamp_ts(&abstime);
-    abstime.tv_sec  += sec;
-    abstime.tv_nsec += nsec;
-    if((sc = (abstime.tv_nsec / 1000000000L))) {
-        abstime.tv_sec += sc;
-        abstime.tv_nsec %= 1000000000L;
-    }
-    return pthread_cond_timedwait(&cv_, &mutex_, &abstime);
-}
-
 // p_task
 
 RetCode p_tsk::set_status(PTskStatus status)
 {
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     if(status <= status_) {
         return RetCode_BADARG;
     }
     status_ = status;
     if(wt_th_) {
-        mon_.notify_all();
+        cv_.notify_all();
         wt_th_ = 0;
     }
     return RetCode_OK;
@@ -53,13 +34,21 @@ RetCode p_tsk::await_for_status(PTskStatus target_status,
                                 time_t sec,
                                 long nsec) const
 {
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     if(status_ < PTskStatus_SUBMITTED) {
         return RetCode_BADSTTS;
     }
-    while(status_ < target_status) {
-        wt_th_++;
-        mon_.wait();
+    wt_th_++;
+    if(sec<0) {
+        cv_.wait(lck, [&]() {
+            return status_ >= target_status;
+        });
+    } else {
+        if(!cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
+        return status_ >= target_status;
+    })) {
+            wt_th_--;
+        }
     }
     return RetCode_OK;
 }
@@ -75,7 +64,7 @@ p_exectr::~p_exectr()
 
 RetCode p_exectr::set_status(PExecutorStatus status)
 {
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     status_ = status;
     return RetCode_OK;
 }
@@ -171,9 +160,9 @@ RetCode p_exec_srv::init(unsigned int executor_num)
 
 RetCode p_exec_srv::set_status(PExecSrvStatus status)
 {
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     status_ = status;
-    mon_.notify_all();
+    cv_.notify_all();
     return RetCode_OK;
 }
 
@@ -196,50 +185,42 @@ RetCode p_exec_srv::await_for_status_reached(PExecSrvStatus test,
                                              long nsec)
 {
     RetCode rcode = RetCode_OK;
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     if(status_ < PExecSrvStatus_INIT) {
         return RetCode_BADSTTS;
     }
-    while(status_ < test) {
-        int pthres;
-        if((pthres = mon_.wait(sec, nsec))) {
-            if(pthres == ETIMEDOUT) {
-                rcode =  RetCode_TIMEOUT;
-                break;
-            }
-        }
+    if(sec<0) {
+        cv_.wait(lck, [&]() {
+            return status_ >= test;
+        });
+    } else {
+        rcode = cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
+            return status_ >= test;
+        }) ? RetCode_OK : RetCode_TIMEOUT;
     }
     current = status_;
-    IFLOG(log_, trace(LS_CLO "test:{} [reached] current:{}",
-                      __func__, test, status_))
+    IFLOG(log_, trace(LS_CLO "test:{} [{}] current:{}", __func__, test, !rcode ? "reached" : "timeout", status_))
     return rcode;
 }
 
 RetCode p_exec_srv::await_termination()
 {
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     while(status_ < PExecSrvStatus_STOPPED) {
-        mon_.wait();
+        cv_.wait(lck);
     }
     return RetCode_OK;
 }
 
 RetCode p_exec_srv::await_termination(time_t sec, long nsec)
 {
-    int pthres;
-    scoped_mx smx(mon_);
-    while(status_ < PExecSrvStatus_STOPPED) {
-        if((pthres = mon_.wait(sec, nsec))) {
-            if(pthres == ETIMEDOUT) {
-                IFLOG(log_, info(LS_CLO "[sec{}, nsec:{}] - [timeout]", __func__, sec, nsec))
-                return RetCode_TIMEOUT;
-            } else {
-                IFLOG(log_, critical(LS_CLO "[sec{}, nsec:{}, pthres:{}] - [pthread error]", __func__, sec, nsec, pthres))
-                return RetCode_PTHERR;
-            }
-        }
-    }
-    return RetCode_OK;
+    RetCode rcode = RetCode_OK;
+    std::unique_lock<std::mutex> lck(mtx_);
+    rcode = cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
+        return status_ >= PExecSrvStatus_STOPPED;
+    }) ? RetCode_OK : RetCode_TIMEOUT;
+    IFLOG(log_, trace(LS_CLO "[sec{}, nsec:{}] - [{}]", __func__, sec, nsec, !rcode ? "terminated" : "timeout"))
+    return rcode;
 }
 
 RetCode p_exec_srv::shutdown()
@@ -270,7 +251,7 @@ RetCode p_exec_srv::submit(std::shared_ptr<p_tsk> &task)
         return RetCode_OK;
     }
     RetCode rcode = RetCode_OK;
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     if((rcode = task_queue_.put(0, 5*MSEC_F, &task))) {
         task->set_status(PTskStatus_REJECTED);
         switch(rcode) {

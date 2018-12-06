@@ -68,48 +68,31 @@ RetCode tx_impl::await_for_status_reached(TransactionStatus test,
                                           time_t sec,
                                           long nsec)
 {
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     if(status_ < TransactionStatus_INITIALIZED) {
         IFLOG(conn_->peer_->log_, error(LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
-    RetCode rcode = RetCode_OK;
-    while(status_ < test) {
-        int pthres;
-        if((pthres = mon_.wait(sec, nsec))) {
-            if(pthres == ETIMEDOUT) {
-                rcode = RetCode_TIMEOUT;
-                break;
-            }
-        }
-    }
+    RetCode rcode = cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
+        return status_ >= test;
+    }) ? RetCode_OK : RetCode_TIMEOUT;
     current = status_;
-    IFLOG(conn_->peer_->log_, trace(LS_CLO "test:{} [reached] current:{}",
-                                    __func__,
-                                    test,
-                                    status_))
+    IFLOG(conn_->peer_->log_, trace(LS_CLO "test:{} [{}] current:{}", __func__, test, !rcode ? "reached" : "timeout", status_))
     return rcode;
 }
 
 RetCode tx_impl::await_for_closure(time_t sec, long nsec)
 {
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     if(status_ < TransactionStatus_INITIALIZED) {
         IFLOG(conn_->peer_->log_, error(LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
-    RetCode rcode = RetCode_OK;
-    while(status_ < TransactionStatus_CLOSED) {
-        int pthres;
-        if((pthres = mon_.wait(sec, nsec))) {
-            if(pthres == ETIMEDOUT) {
-                rcode = RetCode_TIMEOUT;
-                break;
-            }
-        }
-    }
-    IFLOG(conn_->peer_->log_, trace(LS_CLO "[res:{}][closed {}]",
-                                    __func__, rcode, rcode ? "not reached" : "reached"))
+    auto now = std::chrono::system_clock::now();
+    RetCode rcode = cv_.wait_until(lck, now + std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
+        return status_ >= TransactionStatus_CLOSED;
+    }) ? RetCode_OK : RetCode_TIMEOUT;
+    IFLOG(conn_->peer_->log_, trace(LS_CLO "target:{} [{}]", __func__, TransactionStatus_CLOSED, !rcode ? "reached" : "timeout", status_))
     return rcode;
 }
 
@@ -255,14 +238,14 @@ RetCode tx_impl::set_aborted()
 
 RetCode tx_impl::set_status(TransactionStatus status)
 {
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     status_ = status;
     if(ipubl_) {
         ilistener_->on_status_change(*ipubl_, status_);
     } else {
         olistener_->on_status_change(*opubl_, status_);
     }
-    mon_.notify_all();
+    cv_.notify_all();
     return RetCode_OK;
 }
 

@@ -546,16 +546,10 @@ per_nclass_id_conn_set::per_nclass_id_conn_set() :
     connid_condesc_set_(HMSz_1031, conn_std_shp_omng, sizeof(unsigned int))
 {}
 
-unsigned int per_nclass_id_conn_set::next_sbs_evt_id()
-{
-    scoped_mx smx(mon_);
-    return ++sbsevtid_;
-}
-
 void per_nclass_id_conn_set::next_time_stamp(unsigned int &ts_0,
                                              unsigned int &ts_1)
 {
-    scoped_mx smx(mon_);
+    std::unique_lock<std::mutex> lck(mtx_);
     ts_0 = (unsigned int)time(nullptr);
     if(ts_0 == ts0_) {
         ts_1 = ++ts1_;

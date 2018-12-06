@@ -93,7 +93,8 @@ struct sbs_impl {
     SubscriptionResponse sbresl_;       //set by srv - start/stop
     ProtocolCode last_vlgcod_;          //set by srv
 
-    mutable mx mon_;
+    mutable std::mutex mtx_;
+    mutable std::condition_variable cv_;
 
     incoming_subscription *ipubl_;
     outgoing_subscription *opubl_;

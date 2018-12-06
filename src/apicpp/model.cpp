@@ -1002,7 +1002,7 @@ char *nclass::get_field_address_by_column_number(unsigned int col_num,
                                                  const nentity_manager &nem,
                                                  const member_desc **mdesc)
 {
-    static pthread_rwlock_t offst_m_l = PTHREAD_RWLOCK_INITIALIZER;
+    static std::shared_mutex offst_m_l;
     static std::unordered_map<std::string, offst_m_v> offst_m;
     if(!mdesc) {
         return nullptr;
@@ -1011,7 +1011,7 @@ char *nclass::get_field_address_by_column_number(unsigned int col_num,
     std::stringstream ss;
     ss << get_id() << '_' << col_num;
     {
-        scoped_rd_lock rl(offst_m_l);
+        std::shared_lock<std::shared_mutex> lck(offst_m_l);
         auto it = offst_m.find(ss.str());
         if(it != offst_m.end()) {
             *mdesc = it->second.fmdesc;
@@ -1032,7 +1032,7 @@ char *nclass::get_field_address_by_column_number(unsigned int col_num,
     get_nentity_descriptor().enum_member_descriptors(enum_edesc_fnd_idx, &fnd_idx_rud);
     if(fnd_idx_rud.res_valid_) {
         {
-            scoped_wr_lock wl(offst_m_l);
+            std::unique_lock<std::shared_mutex> lck(offst_m_l);
             offst_m.insert(std::pair<std::string, offst_m_v>(ss.str(), {(size_t)(obj_fld_ptr - (char *)this), fnd_idx_rud.fld_mmbrd_}));
         }
         *mdesc = fnd_idx_rud.fld_mmbrd_;
