@@ -15,11 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\contrib_lib\nt10_x64\pthreadVC2.lib">
-      <Filter>Resource Files</Filter>
-    </Library>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\test\src\vlg_test_cpeer.c">
       <Filter>src</Filter>
     </ClCompile>

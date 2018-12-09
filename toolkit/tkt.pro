@@ -52,10 +52,6 @@ FORMS += tkt_mainwindow.ui\
 RESOURCES += \
     tkt_prj_res.qrc
 
-win32 {
-    INCLUDEPATH += $$PWD/../contrib/pthread
-}
-
 INCLUDEPATH += $$PWD/../src\
                $$PWD/../public\
                $$PWD/../public/cpp\
@@ -63,9 +59,10 @@ INCLUDEPATH += $$PWD/../src\
                $$PWD/../contrib
 
 win32 {
-    LIBS += -L$$PWD/../contrib_lib/nt10_x64\
+    LIBS += -L$$PWD\
             -lwsock32\
             -lshell32
+
     CONFIG(debug, debug|release) {
         LIBS += -L$$PWD/../bin/MSVC/x64/Debug/StaticLibrary
         LIBS += -L$$PWD/../bin/MSVC/x64/Debug/DynamicLibrary
@@ -74,7 +71,6 @@ win32 {
         LIBS += -L$$PWD/../bin/MSVC/x64/Release/StaticLibrary
         LIBS += -L$$PWD/../bin/MSVC/x64/Release/DynamicLibrary
     }
-    LIBS += -lpthreadVC2
 
     LIBS += -lvlg\
             -lapicpp

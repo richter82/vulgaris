@@ -35,7 +35,7 @@ typedef enum  {
     VLG_PERS_TASK_OP_EXECUTESTATEMENT,
 } VLG_PERS_TASK_OP;
 
-struct persistence_task : public p_tsk {
+struct persistence_task : public task {
     persistence_task(VLG_PERS_TASK_OP op_code, std::shared_ptr<spdlog::logger> &log) :
         op_code_(op_code),
         op_res_(RetCode_OK),
@@ -126,12 +126,12 @@ struct persistence_connection_pool {
 };
 
 // we cannot use a thread-pool because we want 1 thread per connection.
-struct persistence_worker : public p_th {
+struct persistence_worker : public th {
     persistence_worker(persistence_connection_pool &conn_pool,
                        bool surrogate_th = false);
 
     RetCode submit(persistence_task &task);
-    virtual void *run() override;
+    virtual void run() override;
 
     persistence_connection_pool &conn_pool_;
     b_qu task_queue_;

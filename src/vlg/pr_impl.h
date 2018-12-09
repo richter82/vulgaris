@@ -14,7 +14,7 @@ namespace vlg {
 
 struct connection_impl;
 
-struct peer_recv_task_inco_conn : public p_tsk {
+struct peer_recv_task_inco_conn : public task {
     peer_recv_task_inco_conn(std::shared_ptr<incoming_connection> &conn_sh,
                              vlg_hdr_rec &pkt_hdr,
                              std::unique_ptr<g_bbuf> &pkt_body);
@@ -27,7 +27,7 @@ struct peer_recv_task_inco_conn : public p_tsk {
     std::unique_ptr<g_bbuf> pkt_body_;
 };
 
-struct peer_recv_task_outg_conn : public p_tsk {
+struct peer_recv_task_outg_conn : public task {
     peer_recv_task_outg_conn(outgoing_connection &conn,
                              vlg_hdr_rec &pkt_hdr,
                              std::unique_ptr<g_bbuf> &pkt_body);
@@ -187,7 +187,7 @@ struct peer_impl : public peer_automa {
 
     protected:
         //srv subscription executor service.
-        p_exec_srv srv_sbs_exec_serv_;
+        exec_srv srv_sbs_exec_serv_;
 
         //nclassid --> condesc_set
         s_hm srv_sbs_nclassid_condesc_set_;

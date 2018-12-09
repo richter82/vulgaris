@@ -42,7 +42,7 @@ enum SelectorStatus {
 
 // selector
 
-struct selector : public p_th {
+struct selector : public th {
     explicit selector(peer_impl &);
     ~selector();
 
@@ -61,7 +61,7 @@ struct selector : public p_th {
     RetCode process_asyn_evts();
     RetCode interrupt();
     RetCode set_status(SelectorStatus);
-    virtual void *run() override;
+    virtual void run() override;
     RetCode create_UDP_notify_srv_sock();
     RetCode connect_UDP_notify_cli_sock();
     bool is_still_valid_connection(const sel_evt *);
@@ -108,13 +108,13 @@ struct selector : public p_th {
     acceptor srv_acceptor_;
     std::unordered_map<uint64_t, std::shared_ptr<incoming_connection>> inco_conn_map_;
     std::unordered_map<uint64_t, std::shared_ptr<incoming_connection>> wp_inco_conn_map_;
-    p_exec_srv inco_exec_srv_;
+    exec_srv inco_exec_srv_;
 
     //cli_rep
     std::unordered_map<uint64_t, conn_impl *> outg_early_conn_map_;
     std::unordered_map<uint64_t, conn_impl *> outg_conn_map_;
     std::unordered_map<uint64_t, conn_impl *> wp_outg_conn_map_;
-    p_exec_srv outg_exec_srv_;
+    exec_srv outg_exec_srv_;
 };
 
 }

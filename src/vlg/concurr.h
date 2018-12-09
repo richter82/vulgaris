@@ -7,15 +7,6 @@
 #pragma once
 #include "structs.h"
 
-#define HAVE_STRUCT_TIMESPEC
-#include <pthread.h>
-
-#if defined WIN32 && defined _MSC_VER
-#define TH_ID GetCurrentThreadId()
-#else
-#define TH_ID ((unsigned int)((unsigned long)pthread_self()))
-#endif
-
 namespace spdlog {
 class logger;
 }
@@ -26,107 +17,91 @@ namespace vlg {
 */
 struct runnable {
     virtual ~runnable() {}
-    virtual void *run() = 0;
+    virtual void run() = 0;
 };
 
-/** @brief A convenient wrapper for pthread.
+/** @brief a wrapper to std::thread
 */
-struct p_th : public runnable {
-        explicit p_th() :
-            th_id_(-1),
-            attr_(nullptr),
+struct th : public runnable {
+        explicit th() :
             target_(this) {
         }
 
-        explicit p_th(runnable *target):
-            th_id_(-1),
-            attr_(nullptr),
+        explicit th(runnable *target):
             target_(target) {
         }
 
-        explicit p_th(pthread_attr_t *attr) :
-            th_id_(-1),
-            attr_(attr),
-            target_(this) {
+        virtual ~th() = default;
+
+        std::thread::id thread_id() const {
+            return id_;
         }
 
-        explicit p_th(runnable *target,
-                      pthread_attr_t *attr) :
-            th_id_(-1),
-            attr_(attr),
-            target_(target) {
+        void join() {
+            if(th_) {
+                th_->join();
+            }
         }
 
-        virtual ~p_th() = default;
-
-        int thread_id() const {
-            return th_id_;
+        void stop() {
+            if(th_) {
+                th_->detach();
+                th_.release();
+            }
         }
 
-        int join(void **value_ptr) {
-            return pthread_join(thread_, value_ptr);
+        void start() {
+            th_.reset(new std::thread(th_run, this));
         }
 
-        int stop() {
-            return pthread_cancel(thread_);
-        }
-
-        int start() {
-            return pthread_create(&thread_, attr_, &pthread_run, this);
-        }
-
-        virtual void *run() override {
-            return 0;
+        virtual void run() override {
         }
 
     private:
-        static void *pthread_run(void *arg) {
-            p_th *thread = static_cast<p_th *>(arg);
-            thread->th_id_ = TH_ID;
-            return thread->target_->run();
+        static void th_run(th *thd) {
+            std::this_thread::get_id();
+            thd->target_->run();
         }
 
     private:
-        //thread id has a valid value only when start() has executed.
-        int th_id_;
-        pthread_attr_t *attr_;
         runnable *target_;
-        pthread_t thread_;
+        std::thread::id id_;
+        std::unique_ptr<std::thread> th_;
 };
 
-/** @brief An enum representing the status a p_task can assume.
+/** @brief An enum representing the status a task can assume.
 
 */
-enum PTskStatus {
-    PTskStatus_INIT,
-    PTskStatus_SUBMITTED,
-    PTskStatus_RUNNING,
-    PTskStatus_EXECUTED,
-    PTskStatus_INTERRUPTED,
-    PTskStatus_REJECTED,
-    PTskStatus_EVICTED,
-    PTskStatus_ERROR = 500,
+enum TskStatus {
+    TskStatus_INIT,
+    TskStatus_SUBMITTED,
+    TskStatus_RUNNING,
+    TskStatus_EXECUTED,
+    TskStatus_INTERRUPTED,
+    TskStatus_REJECTED,
+    TskStatus_EVICTED,
+    TskStatus_ERROR = 500,
 };
 
 /** @brief  This class logically represent a task that can be executed
-            by a p_executor.
+            by an executor.
 */
-struct p_tsk {
-        explicit p_tsk() :
+struct task {
+        explicit task() :
             id_(0),
-            status_(PTskStatus_INIT),
+            status_(TskStatus_INIT),
             exec_res_(RetCode_OK),
             wt_th_(0) {
         }
 
-        explicit p_tsk(unsigned int id) :
+        explicit task(unsigned int id) :
             id_(id),
-            status_(PTskStatus_INIT),
+            status_(TskStatus_INIT),
             exec_res_(RetCode_OK),
             wt_th_(0) {
         }
 
-        virtual ~p_tsk() = default;
+        virtual ~task() = default;
 
         unsigned int get_id() const {
             return id_;
@@ -138,11 +113,11 @@ struct p_tsk {
         */
         virtual RetCode execute() = 0;
 
-        PTskStatus get_status() const {
+        TskStatus get_status() const {
             return status_;
         }
 
-        RetCode set_status(PTskStatus status);
+        RetCode set_status(TskStatus status);
 
         RetCode execution_result() const {
             return exec_res_;
@@ -168,13 +143,13 @@ struct p_tsk {
                 RetCode_BDSTTS if this task has not been submitted.
                 RetCode_TMOUT if sec/nsec have been elapsed after invocation.
         */
-        RetCode await_for_status(PTskStatus target_status,
+        RetCode await_for_status(TskStatus target_status,
                                  time_t sec = -1,
                                  long nsec = 0) const;
 
     private:
         unsigned int id_;
-        PTskStatus status_;
+        TskStatus status_;
         RetCode exec_res_;
         mutable uint32_t wt_th_;
 
@@ -182,59 +157,59 @@ struct p_tsk {
         mutable std::condition_variable cv_;
 };
 
-/** @brief An enum representing the status a p_executor can assume.
+/** @brief An enum representing the status an executor can assume.
 */
-enum PExecutorStatus {
-    PExecutorStatus_INIT,
-    PExecutorStatus_IDLE,
-    PExecutorStatus_EXECUTING,
-    PExecutorStatus_DISPOSING,
-    PExecutorStatus_STOPPED,
-    PExecutorStatus_ERROR = 500,
+enum ExecutorStatus {
+    ExecutorStatus_INIT,
+    ExecutorStatus_IDLE,
+    ExecutorStatus_EXECUTING,
+    ExecutorStatus_DISPOSING,
+    ExecutorStatus_STOPPED,
+    ExecutorStatus_ERROR = 500,
 };
 
-/** @brief This class represent an thread-executor used by a p_executor_service.
+/** @brief This class represent an executor used by a exec_srv.
 */
-struct p_exec_srv;
-struct p_exectr : public p_th {
-        explicit p_exectr(p_exec_srv &eserv);
-        ~p_exectr();
+struct exec_srv;
+struct exectr : public th {
+        explicit exectr(exec_srv &eserv);
+        ~exectr();
 
-        PExecutorStatus get_status() const {
+        ExecutorStatus get_status() const {
             return status_;
         }
 
-        RetCode set_status(PExecutorStatus status);
+        RetCode set_status(ExecutorStatus status);
 
-        virtual void *run() override;
+        virtual void run() override;
 
     private:
-        PExecutorStatus status_;
-        p_exec_srv &eserv_;
+        ExecutorStatus status_;
+        exec_srv &eserv_;
 
         mutable std::mutex mtx_;
         mutable std::condition_variable cv_;
 };
 
-/** @brief An enum representing the status a p_executor_service can assume.
+/** @brief An enum representing the status a exec_srv can assume.
 */
-enum PExecSrvStatus {
-    PExecSrvStatus_TOINIT,
-    PExecSrvStatus_INACTIVE,
-    PExecSrvStatus_INIT,
-    PExecSrvStatus_STARTING,
-    PExecSrvStatus_STARTED,
-    PExecSrvStatus_STOPPING,
-    PExecSrvStatus_STOPPED,
-    PExecSrvStatus_ERROR = 500,
+enum ExecSrvStatus {
+    ExecSrvStatus_TOINIT,
+    ExecSrvStatus_INACTIVE,
+    ExecSrvStatus_INIT,
+    ExecSrvStatus_STARTING,
+    ExecSrvStatus_STARTED,
+    ExecSrvStatus_STOPPING,
+    ExecSrvStatus_STOPPED,
+    ExecSrvStatus_ERROR = 500,
 };
 
 /** @brief This class represent an thread-executor-service that can be used
-           to execute asynchronously a set of p_task(s).
+           to execute asynchronously a set of task(s).
 */
-struct p_exec_srv {
-        explicit p_exec_srv(std::shared_ptr<spdlog::logger> &log);
-        ~p_exec_srv();
+struct exec_srv {
+        explicit exec_srv(std::shared_ptr<spdlog::logger> &log);
+        ~exec_srv();
 
         RetCode init(unsigned int executor_num);
 
@@ -250,28 +225,28 @@ struct p_exec_srv {
             return (unsigned int)exec_pool_.size();
         }
 
-        p_exectr &get_executor_at_idx(unsigned int idx) {
+        exectr &get_executor_at_idx(unsigned int idx) {
             return *exec_pool_[idx];
         }
 
-        PExecSrvStatus get_status() const {
+        ExecSrvStatus get_status() const {
             return status_;
         }
 
-        RetCode set_status(PExecSrvStatus status);
+        RetCode set_status(ExecSrvStatus status);
 
         /**
         @return true if this executor has been shut down, false otherwise.
         */
         bool is_shutdown() {
-            return (status_ == PExecSrvStatus_STOPPING);
+            return (status_ == ExecSrvStatus_STOPPING);
         }
 
         /**
         @return true if all tasks have completed following shut down.
         */
         bool is_terminated() {
-            return (status_ == PExecSrvStatus_STOPPED);
+            return (status_ == ExecSrvStatus_STOPPED);
         }
 
         /**
@@ -291,13 +266,11 @@ struct p_exec_srv {
         RetCode start();
 
         /**
-        submits a p_task for execution, returns RetCode_OK if task has been
+        submits a task for execution, returns RetCode_OK if task has been
         accepted for execution, RetCode_QFULL if queue_task has reached its max
         capacity.
-        This executor service must be in PEXEC_SERVICE_STATUS_STARTED state,
-        otherwise this method will return RetCode_BDSTTS.
         */
-        RetCode submit(std::shared_ptr<p_tsk> &task);
+        RetCode submit(std::shared_ptr<task> &task);
 
         /**
         blocks until all tasks have completed execution after a shutdown.
@@ -314,14 +287,14 @@ struct p_exec_srv {
         /**
         await indefinitely until this service reaches or reaches status provided.
         */
-        RetCode await_for_status_reached(PExecSrvStatus test,
-                                         PExecSrvStatus &current,
+        RetCode await_for_status_reached(ExecSrvStatus test,
+                                         ExecSrvStatus &current,
                                          time_t sec = -1,
                                          long nsec = 0);
     private:
         unsigned int id_;
-        PExecSrvStatus status_;
-        std::vector<std::unique_ptr<p_exectr>> exec_pool_;
+        ExecSrvStatus status_;
+        std::vector<std::unique_ptr<exectr>> exec_pool_;
         b_qu task_queue_;
 
         mutable std::mutex mtx_;

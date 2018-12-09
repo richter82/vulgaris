@@ -6,7 +6,7 @@
 
 #include "vlg_sqlite.h"
 #include "vlg/prs_impl.h"
-#include "sqlite3.h"
+#include "sqlite/sqlite3.h"
 
 #define SQLITE_DB_DATA_DIR_LEN 1024
 static char sqlite_db_data_dir[SQLITE_DB_DATA_DIR_LEN] = {0};
@@ -831,7 +831,7 @@ inline RetCode pers_conn_sqlite::do_connect()
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
-        task->await_for_status(PTskStatus_EXECUTED);
+        task->await_for_status(TskStatus_EXECUTED);
     }
     return task->op_res_;
 }
@@ -1025,7 +1025,7 @@ RetCode pers_conn_sqlite::do_create_table(const nentity_manager &nem,
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
-        task->await_for_status(PTskStatus_EXECUTED);
+        task->await_for_status(TskStatus_EXECUTED);
     }
     return task->op_res_;
 }
@@ -1108,7 +1108,7 @@ RetCode pers_conn_sqlite::do_select(unsigned int key,
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
-        task->await_for_status(PTskStatus_EXECUTED);
+        task->await_for_status(TskStatus_EXECUTED);
     }
     return task->op_res_;
 }
@@ -1336,7 +1336,7 @@ RetCode pers_conn_sqlite::do_update(unsigned int key,
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
-        task->await_for_status(PTskStatus_EXECUTED);
+        task->await_for_status(TskStatus_EXECUTED);
     }
     return task->op_res_;
 }
@@ -1444,7 +1444,7 @@ RetCode pers_conn_sqlite::do_delete(unsigned int key,
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
-        task->await_for_status(PTskStatus_EXECUTED);
+        task->await_for_status(TskStatus_EXECUTED);
     }
     return task->op_res_;
 }
@@ -1648,7 +1648,7 @@ RetCode pers_conn_sqlite::do_insert(const nentity_manager &nem,
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
-        task->await_for_status(PTskStatus_EXECUTED);
+        task->await_for_status(TskStatus_EXECUTED);
     }
     return task->op_res_;
 }
@@ -1667,7 +1667,7 @@ RetCode pers_conn_sqlite::do_execute_query(const nentity_manager &nem,
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
-        task->await_for_status(PTskStatus_EXECUTED);
+        task->await_for_status(TskStatus_EXECUTED);
     }
     qry_out.reset(task->in_out_query_);
     return task->op_res_;
@@ -1681,7 +1681,7 @@ RetCode pers_conn_sqlite::do_release_query(persistence_query_impl &qry)
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
-        task->await_for_status(PTskStatus_EXECUTED);
+        task->await_for_status(TskStatus_EXECUTED);
     }
     return task->op_res_;
 }
@@ -1703,7 +1703,7 @@ RetCode pers_conn_sqlite::do_next_entity_from_query(persistence_query_impl &qry,
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
-        task->await_for_status(PTskStatus_EXECUTED);
+        task->await_for_status(TskStatus_EXECUTED);
     }
     return task->op_res_;;
 }
@@ -1720,7 +1720,7 @@ RetCode pers_conn_sqlite::do_execute_statement(const char *sql)
     if((rcode = worker_->submit(*task))) {
         return rcode;
     } else {
-        task->await_for_status(PTskStatus_EXECUTED);
+        task->await_for_status(TskStatus_EXECUTED);
     }
     return task->op_res_;
 }

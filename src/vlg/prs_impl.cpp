@@ -154,39 +154,39 @@ RetCode persistence_worker::submit(persistence_task &task)
 {
     if(surrogate_th_) {
         task.set_execution_result(task.execute());
-        task.set_status(PTskStatus_EXECUTED);
+        task.set_status(TskStatus_EXECUTED);
         return RetCode_OK;
     }
     RetCode rcode = RetCode_OK;
     persistence_task *task_ptr = &task;
     if((rcode = task_queue_.put(&task_ptr))) {
-        task.set_status(PTskStatus_REJECTED);
+        task.set_status(TskStatus_REJECTED);
     } else {
-        task.set_status(PTskStatus_SUBMITTED);
+        task.set_status(TskStatus_SUBMITTED);
     }
     return rcode;
 }
 
-void *persistence_worker::run()
+void persistence_worker::run()
 {
-    p_tsk *task = nullptr;
+    task *task = nullptr;
     RetCode rcode = RetCode_OK;
     do {
         if(!(rcode = task_queue_.take(&task))) {
             task->set_execution_result(task->execute());
-            task->set_status(PTskStatus_EXECUTED);
+            task->set_status(TskStatus_EXECUTED);
         } else {
-            return (void *)1;
+            task->set_status(TskStatus_ERROR);
+            break;
         }
     } while(true);
-    return 0;
 }
 
 // persistence_connection_impl - CONNECTION
 
 unsigned int c_cnt = 0;
-persistence_connection_impl::persistence_connection_impl(persistence_connection_pool &conn_pool
-                                                         , std::shared_ptr<spdlog::logger> &log) :
+persistence_connection_impl::persistence_connection_impl(persistence_connection_pool &conn_pool,
+                                                         std::shared_ptr<spdlog::logger> &log) :
     id_(++c_cnt),
     status_(PersistenceConnectionStatus_DISCONNECTED),
     conn_pool_(conn_pool),

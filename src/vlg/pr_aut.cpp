@@ -9,17 +9,16 @@
 namespace vlg {
 
 // peer_automa_th
-struct peer_automa_th : public p_th {
+struct peer_automa_th : public th {
     peer_automa_th(unsigned int id, peer_automa &peer) :
         id_(id),
         peer_(peer) {
     }
 
-    virtual void *run() override {
+    virtual void run() override {
         IFLOG(peer_.log_, info(LS_APL"#peer automa on this thread#"))
         peer_.running_cycle();
         stop();
-        return 0;
     }
 
     unsigned int id_;

@@ -230,14 +230,14 @@ RetCode selector::notify(const sel_evt *evt)
 RetCode selector::start_exec_services()
 {
     RetCode res = RetCode_OK;
-    PExecSrvStatus current = PExecSrvStatus_TOINIT;
+    ExecSrvStatus current = ExecSrvStatus_TOINIT;
     if(peer_.personality_ == PeerPersonality_PURE_SERVER || peer_.personality_ == PeerPersonality_BOTH) {
         IFLOG(peer_.log_, debug(LS_TRL "[starting server side executor service]", __func__))
         if((res = inco_exec_srv_.start())) {
             IFLOG(peer_.log_, critical(LS_CLO "[starting server side, last_err:{}]", __func__, res))
             return RetCode_KO;
         }
-        inco_exec_srv_.await_for_status_reached(PExecSrvStatus_STARTED, current);
+        inco_exec_srv_.await_for_status_reached(ExecSrvStatus_STARTED, current);
         IFLOG(peer_.log_, debug(LS_TRL "[server side executor service started]", __func__))
     }
     if(peer_.personality_ == PeerPersonality_PURE_CLIENT || peer_.personality_ == PeerPersonality_BOTH) {
@@ -246,7 +246,7 @@ RetCode selector::start_exec_services()
             IFLOG(peer_.log_, critical(LS_CLO "[starting client side, last_err:{}]", __func__, res))
             return RetCode_KO;
         }
-        outg_exec_srv_.await_for_status_reached(PExecSrvStatus_STARTED, current);
+        outg_exec_srv_.await_for_status_reached(ExecSrvStatus_STARTED, current);
         IFLOG(peer_.log_, debug(LS_TRL "[client side executor service started]", __func__))
     }
     return res;
@@ -745,9 +745,9 @@ RetCode selector::inco_conn_process_rdn_buff(std::shared_ptr<incoming_connection
 {
     RetCode rcode = ic->impl_->recv_bytes();
     while(!(rcode = ic->impl_->chase_pkt())) {
-        std::shared_ptr<p_tsk> task(new peer_recv_task_inco_conn(ic,
-                                                                 ic->impl_->curr_rdn_hdr_,
-                                                                 ic->impl_->curr_rdn_body_));
+        std::shared_ptr<task> task(new peer_recv_task_inco_conn(ic,
+                                                                ic->impl_->curr_rdn_hdr_,
+                                                                ic->impl_->curr_rdn_body_));
         inco_exec_srv_.submit(task);
         ic->impl_->curr_rdn_hdr_.reset();
     }
@@ -758,21 +758,20 @@ RetCode selector::outg_conn_process_rdn_buff(conn_impl *oci)
 {
     RetCode rcode = oci->recv_bytes();
     while(!(rcode = oci->chase_pkt())) {
-        std::shared_ptr<p_tsk> task(new peer_recv_task_outg_conn(*oci->opubl_,
-                                                                 oci->curr_rdn_hdr_,
-                                                                 oci->curr_rdn_body_));
+        std::shared_ptr<task> task(new peer_recv_task_outg_conn(*oci->opubl_,
+                                                                oci->curr_rdn_hdr_,
+                                                                oci->curr_rdn_body_));
         outg_exec_srv_.submit(task);
         oci->curr_rdn_hdr_.reset();
     }
     return rcode;
 }
 
-void *selector::run()
+void selector::run()
 {
     SelectorStatus current = SelectorStatus_UNDEF;
     if(status_ != SelectorStatus_INIT && status_ != SelectorStatus_REQUEST_READY) {
         IFLOG(peer_.log_, error(LS_CLO "[status_={}, exp:2][BAD STATUS]", __func__, status_))
-        return 0;
     }
     do {
         IFLOG(peer_.log_, debug(LS_SEL"+wait for go-ready request+"))
@@ -810,9 +809,8 @@ void *selector::run()
         }
     } while(true);
     set_status(SelectorStatus_STOPPED);
-    int stop_res = stop();
-    IFLOG(peer_.log_, trace(LS_CLO "[res:{}]", __func__, stop_res))
-    return 0;
+    stop();
+    IFLOG(peer_.log_, trace(LS_CLO, __func__))
 }
 
 }

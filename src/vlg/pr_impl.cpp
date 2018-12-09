@@ -363,12 +363,12 @@ RetCode peer_impl::on_automa_start()
                      (personality_ == PeerPersonality_BOTH) ? "both" :
                      (personality_ == PeerPersonality_PURE_SERVER) ? "pure-server" : "pure-client"))
     if(personality_ == PeerPersonality_PURE_SERVER || personality_ == PeerPersonality_BOTH) {
-        PExecSrvStatus current_exc_srv = PExecSrvStatus_TOINIT;
+        ExecSrvStatus current_exc_srv = ExecSrvStatus_TOINIT;
         if((rcode = srv_sbs_exec_serv_.start())) {
             IFLOG(log_, critical(LS_CLO "[starting subscription executor service][res:{}]", __func__, rcode))
             return rcode;
         }
-        srv_sbs_exec_serv_.await_for_status_reached(PExecSrvStatus_STARTED, current_exc_srv);
+        srv_sbs_exec_serv_.await_for_status_reached(ExecSrvStatus_STARTED, current_exc_srv);
     }
     //persistence driv. begin
     if(pers_enabled_) {
@@ -396,10 +396,7 @@ RetCode peer_impl::on_automa_start()
         IFLOG(log_, error(LS_CLO "[selector failed starting actions][res:{}]", __func__, rcode))
         return rcode;
     }
-    if((selector_.start())) {
-        IFLOG(log_, error(LS_CLO "[selector failed to start]", __func__))
-        return RetCode_PTHERR;
-    }
+    selector_.start();
     IFLOG(log_, debug(LS_TRL "[wait selector go init]", __func__))
     selector_.await_for_status_reached(SelectorStatus_INIT,
                                        current,
@@ -601,7 +598,7 @@ struct srv_connid_condesc_set_ashsnd_rud {
     RetCode rcode;
 };
 
-struct peer_sbs_task : public p_tsk {
+struct peer_sbs_task : public task {
     peer_sbs_task(peer_impl &peer,
                   subscription_event_impl &sbs_evt,
                   s_hm &connid_condesc_set) :
@@ -659,7 +656,7 @@ RetCode peer_impl::get_per_nclassid_helper_rec(unsigned int nclass_id, per_nclas
 RetCode peer_impl::submit_sbs_evt_task(subscription_event_impl &sbs_evt,
                                        s_hm &connid_condesc_set)
 {
-    std::shared_ptr<p_tsk> stsk(new peer_sbs_task(*this, sbs_evt, connid_condesc_set));
+    std::shared_ptr<task> stsk(new peer_sbs_task(*this, sbs_evt, connid_condesc_set));
     return srv_sbs_exec_serv_.submit(stsk);
 }
 

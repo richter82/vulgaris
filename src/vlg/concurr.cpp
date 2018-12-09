@@ -12,11 +12,11 @@
 
 namespace vlg {
 
-const std_shared_ptr_obj_mng<p_tsk> tsk_std_shp_omng;
+const std_shared_ptr_obj_mng<task> tsk_std_shp_omng;
 
 // p_task
 
-RetCode p_tsk::set_status(PTskStatus status)
+RetCode task::set_status(TskStatus status)
 {
     std::unique_lock<std::mutex> lck(mtx_);
     if(status <= status_) {
@@ -30,12 +30,12 @@ RetCode p_tsk::set_status(PTskStatus status)
     return RetCode_OK;
 }
 
-RetCode p_tsk::await_for_status(PTskStatus target_status,
-                                time_t sec,
-                                long nsec) const
+RetCode task::await_for_status(TskStatus target_status,
+                               time_t sec,
+                               long nsec) const
 {
     std::unique_lock<std::mutex> lck(mtx_);
-    if(status_ < PTskStatus_SUBMITTED) {
+    if(status_ < TskStatus_SUBMITTED) {
         return RetCode_BADSTTS;
     }
     wt_th_++;
@@ -55,67 +55,63 @@ RetCode p_tsk::await_for_status(PTskStatus target_status,
 
 // p_executor
 
-p_exectr::p_exectr(p_exec_srv &eserv)  :
-    status_(PExecutorStatus_INIT),
+exectr::exectr(exec_srv &eserv)  :
+    status_(ExecutorStatus_INIT),
     eserv_(eserv) {}
 
-p_exectr::~p_exectr()
+exectr::~exectr()
 {}
 
-RetCode p_exectr::set_status(PExecutorStatus status)
+RetCode exectr::set_status(ExecutorStatus status)
 {
     std::unique_lock<std::mutex> lck(mtx_);
     status_ = status;
     return RetCode_OK;
 }
 
-void *p_exectr::run()
+void exectr::run()
 {
-    PExecSrvStatus eserv_status = PExecSrvStatus_TOINIT;
-    PExecutorStatus exec_status = PExecutorStatus_INIT;
+    ExecSrvStatus eserv_status = ExecSrvStatus_TOINIT;
+    ExecutorStatus exec_status = ExecutorStatus_INIT;
     uint32_t tq_size = 0;
-    std::shared_ptr<p_tsk> task;
+    std::shared_ptr<task> task;
     RetCode pres = RetCode_KO;
     bool go_term = true;
-    if(status_ != PExecutorStatus_INIT && status_ != PExecutorStatus_STOPPED) {
-        set_status(PExecutorStatus_ERROR);
-        return (void *)1;
+    if(status_ != ExecutorStatus_INIT && status_ != ExecutorStatus_STOPPED) {
+        set_status(ExecutorStatus_ERROR);
     }
-    eserv_.await_for_status_reached(PExecSrvStatus_STARTED, eserv_status);
-    if(eserv_status != PExecSrvStatus_STARTED) {
+    eserv_.await_for_status_reached(ExecSrvStatus_STARTED, eserv_status);
+    if(eserv_status != ExecSrvStatus_STARTED) {
         IFLOG(eserv_.log_, error(LS_TRL "[aborting] [status:{}]", __func__, eserv_.get_status()))
-        return (void *)1;
     }
-    set_status(PExecutorStatus_IDLE);
-    while((eserv_status = eserv_.get_status()) == PExecSrvStatus_STARTED) {
+    set_status(ExecutorStatus_IDLE);
+    while((eserv_status = eserv_.get_status()) == ExecSrvStatus_STARTED) {
         if(!(pres = eserv_.get_task_queue().take(0, 10*MSEC_F, &task))) {
-            set_status(PExecutorStatus_EXECUTING);
+            set_status(ExecutorStatus_EXECUTING);
             task->set_execution_result(task->execute());
-            task->set_status(PTskStatus_EXECUTED);
-            set_status(PExecutorStatus_IDLE);
+            task->set_status(TskStatus_EXECUTED);
+            set_status(ExecutorStatus_IDLE);
         } else if(pres == RetCode_PTHERR) {
-            set_status(PExecutorStatus_ERROR);
-            return (void *)1;
+            set_status(ExecutorStatus_ERROR);
         }
     }
     IFLOG(eserv_.log_, debug(LS_TRL "[stopping]", __func__))
-    while((eserv_status = eserv_.get_status()) == PExecSrvStatus_STOPPING) {
+    while((eserv_status = eserv_.get_status()) == ExecSrvStatus_STOPPING) {
         if(!(pres = eserv_.get_task_queue().take(0, 2*MSEC_F, &task))) {
-            task->set_status(PTskStatus_SUBMITTED);
-            set_status(PExecutorStatus_EXECUTING);
+            task->set_status(TskStatus_SUBMITTED);
+            set_status(ExecutorStatus_EXECUTING);
             task->set_execution_result(task->execute());
-            task->set_status(PTskStatus_EXECUTED);
-            set_status(PExecutorStatus_IDLE);
+            task->set_status(TskStatus_EXECUTED);
+            set_status(ExecutorStatus_IDLE);
         } else if(pres == RetCode_PTHERR) {
-            set_status(PExecutorStatus_ERROR);
-            return (void *)1;
+            set_status(ExecutorStatus_ERROR);
         }
         if(!(tq_size = eserv_.get_task_queue().size())) {
-            set_status(PExecutorStatus_DISPOSING);
+            set_status(ExecutorStatus_DISPOSING);
             for(unsigned int i = 0; i<eserv_.get_executor_count(); i++) {
                 exec_status = eserv_.get_executor_at_idx(i).get_status();
-                go_term &= ((exec_status == PExecutorStatus_DISPOSING) ||
-                            (exec_status == PExecutorStatus_STOPPED));
+                go_term &= ((exec_status == ExecutorStatus_DISPOSING) ||
+                            (exec_status == ExecutorStatus_STOPPED));
             }
             if(go_term) {
                 IFLOG(eserv_.log_, debug(LS_TRL "[terminating executor service]", __func__))
@@ -124,41 +120,40 @@ void *p_exectr::run()
             break;
         }
     }
-    set_status(PExecutorStatus_STOPPED);
+    set_status(ExecutorStatus_STOPPED);
     stop();
-    return 0;
 }
 
 // p_executor_service
 static int p_exec_srv_id = 0;
 
-p_exec_srv::p_exec_srv(std::shared_ptr<spdlog::logger> &log) :
+exec_srv::exec_srv(std::shared_ptr<spdlog::logger> &log) :
     id_(++p_exec_srv_id),
-    status_(PExecSrvStatus_TOINIT),
+    status_(ExecSrvStatus_TOINIT),
     task_queue_(tsk_std_shp_omng),
     log_(log)
 {}
 
-p_exec_srv::~p_exec_srv()
+exec_srv::~exec_srv()
 {}
 
-RetCode p_exec_srv::init(unsigned int executor_num)
+RetCode exec_srv::init(unsigned int executor_num)
 {
     IFLOG(log_, trace(LS_OPN "[executor_num:{}]", __func__, executor_num))
     if(!executor_num) {
         IFLOG(log_, info(LS_TRL "[id:{}][zero executors]", __func__, id_))
-        set_status(PExecSrvStatus_INIT);
+        set_status(ExecSrvStatus_INIT);
     } else {
         exec_pool_.resize(executor_num);
         for(unsigned int i = 0; i<executor_num; i++) {
-            exec_pool_[i] = std::unique_ptr<p_exectr>(new p_exectr(*this));
+            exec_pool_[i] = std::unique_ptr<exectr>(new exectr(*this));
         }
-        set_status(PExecSrvStatus_INIT);
+        set_status(ExecSrvStatus_INIT);
     }
     return RetCode_OK;
 }
 
-RetCode p_exec_srv::set_status(PExecSrvStatus status)
+RetCode exec_srv::set_status(ExecSrvStatus status)
 {
     std::unique_lock<std::mutex> lck(mtx_);
     status_ = status;
@@ -166,27 +161,27 @@ RetCode p_exec_srv::set_status(PExecSrvStatus status)
     return RetCode_OK;
 }
 
-RetCode p_exec_srv::start()
+RetCode exec_srv::start()
 {
-    if(status_ != PExecSrvStatus_INIT && status_ != PExecSrvStatus_STOPPED) {
+    if(status_ != ExecSrvStatus_INIT && status_ != ExecSrvStatus_STOPPED) {
         return RetCode_BADSTTS;
     }
-    set_status(PExecSrvStatus_STARTING);
+    set_status(ExecSrvStatus_STARTING);
     for(unsigned int i = 0; i<exec_pool_.size(); i++) {
         exec_pool_[i]->start();
     }
-    set_status(PExecSrvStatus_STARTED);
+    set_status(ExecSrvStatus_STARTED);
     return RetCode_OK;
 }
 
-RetCode p_exec_srv::await_for_status_reached(PExecSrvStatus test,
-                                             PExecSrvStatus &current,
-                                             time_t sec,
-                                             long nsec)
+RetCode exec_srv::await_for_status_reached(ExecSrvStatus test,
+                                           ExecSrvStatus &current,
+                                           time_t sec,
+                                           long nsec)
 {
     RetCode rcode = RetCode_OK;
     std::unique_lock<std::mutex> lck(mtx_);
-    if(status_ < PExecSrvStatus_INIT) {
+    if(status_ < ExecSrvStatus_INIT) {
         return RetCode_BADSTTS;
     }
     if(sec<0) {
@@ -203,63 +198,63 @@ RetCode p_exec_srv::await_for_status_reached(PExecSrvStatus test,
     return rcode;
 }
 
-RetCode p_exec_srv::await_termination()
+RetCode exec_srv::await_termination()
 {
     std::unique_lock<std::mutex> lck(mtx_);
-    while(status_ < PExecSrvStatus_STOPPED) {
+    while(status_ < ExecSrvStatus_STOPPED) {
         cv_.wait(lck);
     }
     return RetCode_OK;
 }
 
-RetCode p_exec_srv::await_termination(time_t sec, long nsec)
+RetCode exec_srv::await_termination(time_t sec, long nsec)
 {
     RetCode rcode = RetCode_OK;
     std::unique_lock<std::mutex> lck(mtx_);
     if(sec<0) {
         cv_.wait(lck,[&]() {
-            return status_ >= PExecSrvStatus_STOPPED;
+            return status_ >= ExecSrvStatus_STOPPED;
         });
     } else {
         rcode = cv_.wait_for(lck, std::chrono::seconds(sec) + std::chrono::nanoseconds(nsec), [&]() {
-            return status_ >= PExecSrvStatus_STOPPED;
+            return status_ >= ExecSrvStatus_STOPPED;
         }) ? RetCode_OK : RetCode_TIMEOUT;
     }
     IFLOG(log_, trace(LS_CLO "[{}]", __func__, !rcode ? "terminated" : "timeout"))
     return rcode;
 }
 
-RetCode p_exec_srv::shutdown()
+RetCode exec_srv::shutdown()
 {
     if(exec_pool_.empty()) {
-        set_status(PExecSrvStatus_STOPPED);
+        set_status(ExecSrvStatus_STOPPED);
     } else {
-        set_status(PExecSrvStatus_STOPPING);
+        set_status(ExecSrvStatus_STOPPING);
     }
     return RetCode_OK;
 }
 
-RetCode p_exec_srv::terminated()
+RetCode exec_srv::terminated()
 {
-    set_status(PExecSrvStatus_STOPPED);
+    set_status(ExecSrvStatus_STOPPED);
     return RetCode_OK;
 }
 
-RetCode p_exec_srv::submit(std::shared_ptr<p_tsk> &task)
+RetCode exec_srv::submit(std::shared_ptr<task> &task)
 {
-    if(status_ != PExecSrvStatus_STARTED) {
-        task->set_status(PTskStatus_REJECTED);
+    if(status_ != ExecSrvStatus_STARTED) {
+        task->set_status(TskStatus_REJECTED);
         return RetCode_BADSTTS;
     }
     if(exec_pool_.empty()) {
         task->set_execution_result(task->execute());
-        task->set_status(PTskStatus_EXECUTED);
+        task->set_status(TskStatus_EXECUTED);
         return RetCode_OK;
     }
     RetCode rcode = RetCode_OK;
     std::unique_lock<std::mutex> lck(mtx_);
     if((rcode = task_queue_.put(0, 5*MSEC_F, &task))) {
-        task->set_status(PTskStatus_REJECTED);
+        task->set_status(TskStatus_REJECTED);
         switch(rcode) {
             case RetCode_QFULL:
             case RetCode_TIMEOUT:
@@ -273,7 +268,7 @@ RetCode p_exec_srv::submit(std::shared_ptr<p_tsk> &task)
                 break;
         }
     } else {
-        task->set_status(PTskStatus_SUBMITTED);
+        task->set_status(TskStatus_SUBMITTED);
     }
     return rcode;
 }

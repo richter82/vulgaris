@@ -529,7 +529,7 @@ struct entry_point {
         incoming_connection_factory inco_conn_fctry_;
 
     private:
-        class sbs_rr_gen_evts : public vlg::p_th {
+        class sbs_rr_gen_evts : public vlg::th {
             public:
                 sbs_rr_gen_evts(entry_point &ep) : ep_(ep), cycl_count_(1) {}
             public:
@@ -537,7 +537,7 @@ struct entry_point {
                     return vlg::RetCode_OK;
                 }
             public:
-                virtual void *run() {
+                virtual void run() {
                     while(true) {
                         vlg::RetCode rcode = vlg::RetCode_OK;
                         vlg::persistence_query p_qry(ep_.tpeer_.get_nentity_manager());
@@ -551,7 +551,6 @@ struct entry_point {
                         vlg::mssleep(30000);
                         test_log->debug(LS_TST"subscription dist cycle {}", __func__, cycl_count_++);
                     }
-                    return 0;
                 }
 
             private:

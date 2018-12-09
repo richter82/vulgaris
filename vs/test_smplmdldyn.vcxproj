@@ -25,9 +25,6 @@
     <ClCompile Include="..\test\sample_vlg_model\vlg_model_sample.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\contrib_lib\nt10_x64\pthreadVC2.lib" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="apicpp.vcxproj">
       <Project>{86051208-762d-4d3d-a490-59df7ece67ea}</Project>
     </ProjectReference>
@@ -108,7 +105,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src;..\public\cpp;..\contrib\pthread_win;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\public\cpp;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;VLG_DMODEL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -129,7 +126,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src;..\public\cpp;..\contrib\pthread_win;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\public\cpp;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;VLG_DMODEL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -148,7 +145,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\src;..\public\cpp;..\contrib\pthread_win;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\public\cpp;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;NDEBUG;_WINDOWS;_USRDLL;BLZ_DMODEL_EXPORTS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -170,7 +167,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\bin\MSVC\$(PlatformTar
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\src;..\public\cpp;..\contrib\pthread_win;..\contrib\sqlite;..\public</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src;..\public\cpp;..\public</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CRT_NONSTDC_NO_WARNINGS;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;VLG_DMODEL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>

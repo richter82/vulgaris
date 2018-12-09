@@ -1131,7 +1131,7 @@ RetCode incoming_connection_impl::recv_sbs_start_request(const vlg_hdr_rec *pkt_
     }
 
     IFLOG(peer_->log_, info(
-              LS_SBI"[CONNID:%u-REQID:%u][SBSTYP:%d, SBSMOD:%d, FLOTYP:%d, DWLTYP:%d, ENCTYP:%d, NCLSSID:%d, TMSTP0:%u, TMSTP1:%u]",
+              LS_SBI"[CONNID:{}-REQID:{}][SBSTYP:{}, SBSMOD:{}, FLOTYP:{}, DWLTYP:{}, ENCTYP:{}, NCLSSID:{}, TMSTP0:{}, TMSTP1:{}]",
               connid_,
               inc_sbs->reqid_,
               inc_sbs->sbstyp_,
