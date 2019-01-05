@@ -888,7 +888,7 @@ RetCode incoming_connection_impl::server_send_connect_res(std::shared_ptr<incomi
     return peer_->selector_.notify(evt);
 }
 
-RetCode incoming_connection_impl::recv_connection_request(const vlg_hdr_rec *pkt_hdr,
+RetCode incoming_connection_impl::recv_connection_request(const vlg_hdr_rec &pkt_hdr,
                                                           std::shared_ptr<incoming_connection> &inco_conn)
 {
     IFLOG(peer_->log_, trace(LS_OPN "[connid:{}]", __func__, connid_))
@@ -920,7 +920,7 @@ RetCode incoming_connection_impl::recv_connection_request(const vlg_hdr_rec *pkt
 
     conres_ = ConnectionResult_ACCEPTED;
     conrescode_ = ProtocolCode_SUCCESS;
-    srv_agrhbt_ = pkt_hdr->row_1.clihbt.hbtsec;
+    srv_agrhbt_ = pkt_hdr.row_1.clihbt.hbtsec;
     sockaddr_in saddr;
     socklen_t len = sizeof(saddr);
     getpeername(socket_, (sockaddr *)&saddr, &len);
@@ -954,10 +954,10 @@ RetCode incoming_connection_impl::recv_connection_request(const vlg_hdr_rec *pkt
     return rcode;
 }
 
-RetCode incoming_connection_impl::recv_disconnection(const vlg_hdr_rec *pkt_hdr)
+RetCode incoming_connection_impl::recv_disconnection(const vlg_hdr_rec &pkt_hdr)
 {
     IFLOG(peer_->log_, trace(LS_OPN "[connid:{}]", __func__, connid_))
-    disconrescode_ = pkt_hdr->row_1.diswrd.disres;
+    disconrescode_ = pkt_hdr.row_1.diswrd.disres;
     IFLOG(peer_->log_, info(LS_CON"[connid:{}][socket:{}][received disconnection - disconrescode:{}]",
                             connid_,
                             socket_,
@@ -966,7 +966,7 @@ RetCode incoming_connection_impl::recv_disconnection(const vlg_hdr_rec *pkt_hdr)
     return RetCode_OK;
 }
 
-RetCode incoming_connection_impl::recv_test_request(const vlg_hdr_rec *pkt_hdr)
+RetCode incoming_connection_impl::recv_test_request(const vlg_hdr_rec &pkt_hdr)
 {
     return RetCode_UNSP;
 }
@@ -979,8 +979,8 @@ RetCode incoming_connection_impl::new_incoming_transaction(std::shared_ptr<incom
     return RetCode_OK;
 }
 
-RetCode incoming_connection_impl::recv_tx_request(const vlg_hdr_rec *pkt_hdr,
-                                                  g_bbuf *pkt_body,
+RetCode incoming_connection_impl::recv_tx_request(const vlg_hdr_rec &pkt_hdr,
+                                                  g_bbuf &pkt_body,
                                                   std::shared_ptr<incoming_connection> &inco_conn)
 {
     RetCode rcode = RetCode_OK;
@@ -990,23 +990,23 @@ RetCode incoming_connection_impl::recv_tx_request(const vlg_hdr_rec *pkt_hdr,
     new_incoming_transaction(trans, inco_conn);
     incoming_transaction_impl *timpl = trans->impl_.get();
 
-    timpl->txtype_ = pkt_hdr->row_1.txreqw.txtype;
-    timpl->txactn_ = pkt_hdr->row_1.txreqw.txactn;
-    timpl->rsclrq_ = pkt_hdr->row_1.txreqw.rsclrq;
-    timpl->txid_.txplid = pkt_hdr->row_2.txplid.txplid;
-    timpl->txid_.txsvid = pkt_hdr->row_3.txsvid.txsvid;
-    timpl->txid_.txcnid = pkt_hdr->row_4.txcnid.txcnid;
-    timpl->txid_.txprid = pkt_hdr->row_5.txprid.txprid;
+    timpl->txtype_ = pkt_hdr.row_1.txreqw.txtype;
+    timpl->txactn_ = pkt_hdr.row_1.txreqw.txactn;
+    timpl->rsclrq_ = pkt_hdr.row_1.txreqw.rsclrq;
+    timpl->txid_.txplid = pkt_hdr.row_2.txplid.txplid;
+    timpl->txid_.txsvid = pkt_hdr.row_3.txsvid.txsvid;
+    timpl->txid_.txcnid = pkt_hdr.row_4.txcnid.txcnid;
+    timpl->txid_.txprid = pkt_hdr.row_5.txprid.txprid;
     rt_mark_time(&trans->impl_->start_mark_tim_);
 
     IFLOG(peer_->log_, info(LS_TRX"[{:08x}{:08x}{:08x}{:08x}][TXTYPE:{}, TXACT:{}, RSCLREQ:{}]",
-                            pkt_hdr->row_2.txplid.txplid,
-                            pkt_hdr->row_3.txsvid.txsvid,
-                            pkt_hdr->row_4.txcnid.txcnid,
-                            pkt_hdr->row_5.txprid.txprid,
-                            pkt_hdr->row_1.txresw.txresl,
-                            pkt_hdr->row_1.txresw.vlgcod,
-                            pkt_hdr->row_1.txresw.rescls))
+                            pkt_hdr.row_2.txplid.txplid,
+                            pkt_hdr.row_3.txsvid.txsvid,
+                            pkt_hdr.row_4.txcnid.txcnid,
+                            pkt_hdr.row_5.txprid.txprid,
+                            pkt_hdr.row_1.txresw.txresl,
+                            pkt_hdr.row_1.txresw.vlgcod,
+                            pkt_hdr.row_1.txresw.rescls))
 
     if(!inco_flytx_map_.contains_key(&timpl->txid_)) {
         timpl->tx_res_ = TransactionResult_FAILED;
@@ -1028,10 +1028,10 @@ RetCode incoming_connection_impl::recv_tx_request(const vlg_hdr_rec *pkt_hdr,
 
     if(!aborted) {
         timpl->set_flying();
-        if(pkt_hdr->phdr.hdrlen == 9) {
-            timpl->req_nclassid_ = pkt_hdr->row_7.clsenc.nclsid;
-            timpl->req_clsenc_ = pkt_hdr->row_7.clsenc.enctyp;
-            timpl->res_clsenc_ = pkt_hdr->row_7.clsenc.enctyp;
+        if(pkt_hdr.phdr.hdrlen == 9) {
+            timpl->req_nclassid_ = pkt_hdr.row_7.clsenc.nclsid;
+            timpl->req_clsenc_ = pkt_hdr.row_7.clsenc.enctyp;
+            timpl->res_clsenc_ = pkt_hdr.row_7.clsenc.enctyp;
             std::unique_ptr<nclass> req_obj;
             if((rcode = peer_->nem_.new_nclass_instance(timpl->req_nclassid_, req_obj))) {
                 timpl->tx_res_ = TransactionResult_FAILED;
@@ -1041,7 +1041,7 @@ RetCode incoming_connection_impl::recv_tx_request(const vlg_hdr_rec *pkt_hdr,
                 IFLOG(peer_->log_, error(LS_TRX"[tx request receive failed - new_nclass_instance:{}, nclass_id:{}]",
                                          rcode, timpl->req_nclassid_))
             } else {
-                if((rcode = req_obj->restore(&peer_->nem_, timpl->req_clsenc_, pkt_body))) {
+                if((rcode = req_obj->restore(&peer_->nem_, timpl->req_clsenc_, &pkt_body))) {
                     timpl->tx_res_ = TransactionResult_FAILED;
                     timpl->result_code_ = ProtocolCode_MALFORMED_REQUEST;
                     timpl->rescls_ = false;
@@ -1108,7 +1108,7 @@ RetCode incoming_connection_impl::release_subscription(incoming_subscription_imp
     return rcode;
 }
 
-RetCode incoming_connection_impl::recv_sbs_start_request(const vlg_hdr_rec *pkt_hdr,
+RetCode incoming_connection_impl::recv_sbs_start_request(const vlg_hdr_rec &pkt_hdr,
                                                          std::shared_ptr<incoming_connection> &inco_conn)
 {
     RetCode rcode = RetCode_OK;
@@ -1118,16 +1118,16 @@ RetCode incoming_connection_impl::recv_sbs_start_request(const vlg_hdr_rec *pkt_
     new_incoming_subscription(sbs_sh, inco_conn);
     incoming_subscription_impl *inc_sbs = sbs_sh->impl_.get();
 
-    inc_sbs->sbstyp_ = pkt_hdr->row_1.sbreqw.sbstyp;
-    inc_sbs->sbsmod_ = pkt_hdr->row_1.sbreqw.sbsmod;
-    inc_sbs->flotyp_ = pkt_hdr->row_1.sbreqw.flotyp;
-    inc_sbs->dwltyp_ = pkt_hdr->row_1.sbreqw.dwltyp;
-    inc_sbs->enctyp_ = pkt_hdr->row_2.clsenc.enctyp;
-    inc_sbs->nclassid_ = pkt_hdr->row_2.clsenc.nclsid;
-    inc_sbs->reqid_ = pkt_hdr->row_4.rqstid.rqstid;
-    if(pkt_hdr->phdr.hdrlen == 7) {
-        inc_sbs->open_tmstp0_ = pkt_hdr->row_5.tmstmp.tmstmp;
-        inc_sbs->open_tmstp1_ = pkt_hdr->row_6.tmstmp.tmstmp;
+    inc_sbs->sbstyp_ = pkt_hdr.row_1.sbreqw.sbstyp;
+    inc_sbs->sbsmod_ = pkt_hdr.row_1.sbreqw.sbsmod;
+    inc_sbs->flotyp_ = pkt_hdr.row_1.sbreqw.flotyp;
+    inc_sbs->dwltyp_ = pkt_hdr.row_1.sbreqw.dwltyp;
+    inc_sbs->enctyp_ = pkt_hdr.row_2.clsenc.enctyp;
+    inc_sbs->nclassid_ = pkt_hdr.row_2.clsenc.nclsid;
+    inc_sbs->reqid_ = pkt_hdr.row_4.rqstid.rqstid;
+    if(pkt_hdr.phdr.hdrlen == 7) {
+        inc_sbs->open_tmstp0_ = pkt_hdr.row_5.tmstmp.tmstmp;
+        inc_sbs->open_tmstp1_ = pkt_hdr.row_6.tmstmp.tmstmp;
     }
 
     IFLOG(peer_->log_, info(
@@ -1201,11 +1201,11 @@ RetCode incoming_connection_impl::recv_sbs_start_request(const vlg_hdr_rec *pkt_
     return rcode;
 }
 
-RetCode incoming_connection_impl::recv_sbs_stop_request(const vlg_hdr_rec *pkt_hdr,
+RetCode incoming_connection_impl::recv_sbs_stop_request(const vlg_hdr_rec &pkt_hdr,
                                                         std::shared_ptr<incoming_connection> &inco_conn)
 {
     RetCode rcode = RetCode_OK;
-    unsigned int sbsid = pkt_hdr->row_1.sbsrid.sbsrid;
+    unsigned int sbsid = pkt_hdr.row_1.sbsrid.sbsrid;
     IFLOG(peer_->log_, info(LS_SBS"[CONNID:{}-SBSID:{}][stop request]", connid_, sbsid))
     SubscriptionResponse sbresl = SubscriptionResponse_OK;
     ProtocolCode protocode = ProtocolCode_SUCCESS;
@@ -1231,6 +1231,51 @@ RetCode incoming_connection_impl::recv_sbs_stop_request(const vlg_hdr_rec *pkt_h
     pkt_sending_q_.put(&cpkt);
     sel_evt *evt = new sel_evt(VLG_SELECTOR_Evt_SendPacket, inco_conn);
     rcode = peer_->selector_.notify(evt);
+    return rcode;
+}
+
+RetCode incoming_connection_impl::recv_pkt(std::shared_ptr<incoming_connection> &conn_sh,
+                                           vlg_hdr_rec &pkt_hdr,
+                                           std::unique_ptr<g_bbuf> &pkt_body)
+{
+    RetCode rcode = RetCode_OK;
+    switch(pkt_hdr.phdr.pkttyp) {
+        case VLG_PKT_CONREQ_ID:
+            /*CONNECTION REQUEST************************************************************/
+            rcode = recv_connection_request(pkt_hdr,conn_sh);
+            break;
+        case VLG_PKT_DSCOND_ID:
+            /*DISCONNECTED******************************************************************/
+            rcode = recv_disconnection(pkt_hdr);
+            break;
+        case VLG_PKT_SBSREQ_ID:
+            /*SUBSCRIPTION REQUEST**********************************************************/
+            rcode = recv_sbs_start_request(pkt_hdr,conn_sh);
+            break;
+        case VLG_PKT_SBSTOP_ID:
+            /*SUBSCRIPTION STOP REQUEST*****************************************************/
+            rcode = recv_sbs_stop_request(pkt_hdr,conn_sh);
+            break;
+        default:
+            rcode = peer_->submit_inco_evt_task(conn_sh, pkt_hdr, pkt_body);
+            break;
+    }
+    return rcode;
+}
+
+RetCode incoming_connection_impl::recv_pkt_to_exec_srv(std::shared_ptr<incoming_connection> &conn_sh,
+                                                       vlg_hdr_rec &pkt_hdr,
+                                                       std::unique_ptr<g_bbuf> &pkt_body)
+{
+    RetCode rcode = RetCode_OK;
+    switch(pkt_hdr.phdr.pkttyp) {
+        case VLG_PKT_TXRQST_ID:
+            /*TRANSACTION REQUEST***********************************************************/
+            rcode = recv_tx_request(pkt_hdr,*pkt_body.get(),conn_sh);
+            break;
+        default:
+            break;
+    }
     return rcode;
 }
 
@@ -1347,14 +1392,14 @@ RetCode outgoing_connection_impl::notify_connection(ConnectivityEventResult con_
     return notify_for_connectivity_result(con_evt_res, connectivity_evt_type);
 }
 
-RetCode outgoing_connection_impl::recv_connection_response(const vlg_hdr_rec *pkt_hdr)
+RetCode outgoing_connection_impl::recv_connection_response(const vlg_hdr_rec &pkt_hdr)
 {
     RetCode rcode = RetCode_OK;
     ConnectivityEventResult con_evt_res = ConnectivityEventResult_OK;
-    conres_ = pkt_hdr->row_1.srvcrs.conres;
-    conrescode_ = pkt_hdr->row_1.srvcrs.errcod;
-    srv_agrhbt_ = pkt_hdr->row_1.srvcrs.agrhbt;
-    connid_ = pkt_hdr->row_2.connid.connid;
+    conres_ = pkt_hdr.row_1.srvcrs.conres;
+    conrescode_ = pkt_hdr.row_1.srvcrs.errcod;
+    srv_agrhbt_ = pkt_hdr.row_1.srvcrs.agrhbt;
+    connid_ = pkt_hdr.row_2.connid.connid;
     sel_evt *evt = new sel_evt(VLG_SELECTOR_Evt_Undef, this);
     switch(conres_) {
         case ConnectionResult_ACCEPTED:
@@ -1388,9 +1433,9 @@ RetCode outgoing_connection_impl::recv_connection_response(const vlg_hdr_rec *pk
     return RetCode_OK;
 }
 
-RetCode outgoing_connection_impl::recv_disconnection(const vlg_hdr_rec *pkt_hdr)
+RetCode outgoing_connection_impl::recv_disconnection(const vlg_hdr_rec &pkt_hdr)
 {
-    disconrescode_ = pkt_hdr->row_1.diswrd.disres;
+    disconrescode_ = pkt_hdr.row_1.diswrd.disres;
     IFLOG(peer_->log_, info(LS_CON"[connid:{}][socket:{}][received disconnection - disconrescode:{}]",
                             connid_,
                             socket_,
@@ -1399,7 +1444,7 @@ RetCode outgoing_connection_impl::recv_disconnection(const vlg_hdr_rec *pkt_hdr)
     return RetCode_OK;
 }
 
-RetCode outgoing_connection_impl::recv_test_request(const vlg_hdr_rec *pkt_hdr)
+RetCode outgoing_connection_impl::recv_test_request(const vlg_hdr_rec &pkt_hdr)
 {
     return RetCode_UNSP;
 }
@@ -1413,25 +1458,25 @@ RetCode outgoing_connection_impl::next_tx_id(tx_id &txid)
     return RetCode_OK;
 }
 
-RetCode outgoing_connection_impl::recv_tx_response(const vlg_hdr_rec *pkt_hdr,
-                                                   g_bbuf *pkt_body)
+RetCode outgoing_connection_impl::recv_tx_response(const vlg_hdr_rec &pkt_hdr,
+                                                   g_bbuf &pkt_body)
 {
     RetCode rcode = RetCode_OK;
     bool aborted = false;
     tx_id txid;
-    txid.txplid = pkt_hdr->row_2.txplid.txplid;
-    txid.txsvid = pkt_hdr->row_3.txsvid.txsvid;
-    txid.txcnid = pkt_hdr->row_4.txcnid.txcnid;
-    txid.txprid = pkt_hdr->row_5.txprid.txprid;
+    txid.txplid = pkt_hdr.row_2.txplid.txplid;
+    txid.txsvid = pkt_hdr.row_3.txsvid.txsvid;
+    txid.txcnid = pkt_hdr.row_4.txcnid.txcnid;
+    txid.txprid = pkt_hdr.row_5.txprid.txprid;
 
     IFLOG(peer_->log_, debug(LS_INC"[{:08x}{:08x}{:08x}{:08x}][TXRES:{}, TXRESCODE:{}, RESCLS:{}] ",
                              txid.txplid,
                              txid.txsvid,
                              txid.txcnid,
                              txid.txprid,
-                             pkt_hdr->row_1.txresw.txresl,
-                             pkt_hdr->row_1.txresw.vlgcod,
-                             pkt_hdr->row_1.txresw.rescls))
+                             pkt_hdr.row_1.txresw.txresl,
+                             pkt_hdr.row_1.txresw.vlgcod,
+                             pkt_hdr.row_1.txresw.rescls))
 
     outgoing_transaction_impl *trans = nullptr;
     if((rcode = outg_flytx_map_.get(&txid, &trans))) {
@@ -1439,12 +1484,12 @@ RetCode outgoing_connection_impl::recv_tx_response(const vlg_hdr_rec *pkt_hdr,
         return RetCode_ABORT;
     }
 
-    trans->tx_res_ = pkt_hdr->row_1.txresw.txresl;
-    trans->result_code_ = pkt_hdr->row_1.txresw.vlgcod;
-    trans->rescls_ = pkt_hdr->row_1.txresw.rescls;
-    if(pkt_hdr->phdr.hdrlen == 8) {
-        trans->res_nclassid_ = pkt_hdr->row_7.clsenc.nclsid;
-        trans->res_clsenc_ = pkt_hdr->row_7.clsenc.enctyp;
+    trans->tx_res_ = pkt_hdr.row_1.txresw.txresl;
+    trans->result_code_ = pkt_hdr.row_1.txresw.vlgcod;
+    trans->rescls_ = pkt_hdr.row_1.txresw.rescls;
+    if(pkt_hdr.phdr.hdrlen == 8) {
+        trans->res_nclassid_ = pkt_hdr.row_7.clsenc.nclsid;
+        trans->res_clsenc_ = pkt_hdr.row_7.clsenc.enctyp;
         std::unique_ptr<nclass> res_obj;
         if((rcode = peer_->nem_.new_nclass_instance(trans->res_nclassid_, res_obj))) {
             IFLOG(peer_->log_, error(LS_TRX"[tx response receive failed - new_nclass_instance:{}, nclass_id:{}]",
@@ -1452,7 +1497,7 @@ RetCode outgoing_connection_impl::recv_tx_response(const vlg_hdr_rec *pkt_hdr,
                                      trans->res_nclassid_))
             aborted = true;
         }
-        if((rcode = res_obj->restore(&peer_->nem_, trans->res_clsenc_, pkt_body))) {
+        if((rcode = res_obj->restore(&peer_->nem_, trans->res_clsenc_, &pkt_body))) {
             IFLOG(peer_->log_, error(LS_TRX"[tx response receive failed - nclass restore fail:{}, nclass_id:{}]",
                                      rcode,
                                      trans->res_nclassid_))
@@ -1497,28 +1542,28 @@ RetCode outgoing_connection_impl::release_subscription(outgoing_subscription_imp
     return RetCode_OK;
 }
 
-RetCode outgoing_connection_impl::recv_sbs_start_response(const vlg_hdr_rec *pkt_hdr)
+RetCode outgoing_connection_impl::recv_sbs_start_response(const vlg_hdr_rec &pkt_hdr)
 {
     RetCode rcode = RetCode_OK;
-    unsigned int sbsid = ((pkt_hdr->row_1.sbresw.sbresl == SubscriptionResponse_OK) ||
-                          (pkt_hdr->row_1.sbresw.sbresl == SubscriptionResponse_PARTIAL)) ?
-                         pkt_hdr->row_3.sbsrid.sbsrid : 0;
+    unsigned int sbsid = ((pkt_hdr.row_1.sbresw.sbresl == SubscriptionResponse_OK) ||
+                          (pkt_hdr.row_1.sbresw.sbresl == SubscriptionResponse_PARTIAL)) ?
+                         pkt_hdr.row_3.sbsrid.sbsrid : 0;
     IFLOG(peer_->log_, info(LS_SBI"[CONNID:{}-REQID:{}][SBSRES:{}, VLGCOD:{}, SBSID:{}]",
                             connid_,
-                            pkt_hdr->row_2.rqstid.rqstid,
-                            pkt_hdr->row_1.sbresw.sbresl,
-                            pkt_hdr->row_1.sbresw.vlgcod,
+                            pkt_hdr.row_2.rqstid.rqstid,
+                            pkt_hdr.row_1.sbresw.sbresl,
+                            pkt_hdr.row_1.sbresw.vlgcod,
                             sbsid))
 
     outgoing_subscription_impl *subscription = nullptr;
-    if((rcode = outg_reqid_sbs_map_.remove(&pkt_hdr->row_2.rqstid.rqstid, &subscription))) {
+    if((rcode = outg_reqid_sbs_map_.remove(&pkt_hdr.row_2.rqstid.rqstid, &subscription))) {
         IFLOG(peer_->log_, error(LS_SBS"[subscription not found, aborting]"))
         return RetCode_KO;
     }
 
     subscription->sbsid_ = sbsid;
-    subscription->sbresl_ = pkt_hdr->row_1.sbresw.sbresl;
-    subscription->last_vlgcod_ = pkt_hdr->row_1.sbresw.vlgcod;
+    subscription->sbresl_ = pkt_hdr.row_1.sbresw.sbresl;
+    subscription->last_vlgcod_ = pkt_hdr.row_1.sbresw.vlgcod;
     outg_sbsid_sbs_map_.put(&sbsid, &subscription);
 
     if(!sbsid) {
@@ -1531,53 +1576,103 @@ RetCode outgoing_connection_impl::recv_sbs_start_response(const vlg_hdr_rec *pkt
     return rcode;
 }
 
-RetCode outgoing_connection_impl::recv_sbs_evt(const vlg_hdr_rec *pkt_hdr,
-                                               g_bbuf *pkt_body)
+RetCode outgoing_connection_impl::recv_sbs_evt(const vlg_hdr_rec &pkt_hdr,
+                                               g_bbuf &pkt_body)
 {
     RetCode rcode = RetCode_OK;
     bool mng = true;
     IFLOG(peer_->log_, debug(LS_SBS
                              "[CONNID:{}-SBSID:{}][EVTID:{}, EVTTYP:{}, PRTCOD:{}, TMSTMP[0]:{}, TMSTMP[1]:{}, ACT:{}]",
                              connid_,
-                             pkt_hdr->row_1.sbsrid.sbsrid,
-                             pkt_hdr->row_3.sevtid.sevtid,
-                             pkt_hdr->row_2.sevttp.sevttp,
-                             pkt_hdr->row_2.sevttp.vlgcod,
-                             pkt_hdr->row_4.tmstmp.tmstmp,
-                             pkt_hdr->row_5.tmstmp.tmstmp,
-                             pkt_hdr->row_2.sevttp.sbeact))
+                             pkt_hdr.row_1.sbsrid.sbsrid,
+                             pkt_hdr.row_3.sevtid.sevtid,
+                             pkt_hdr.row_2.sevttp.sevttp,
+                             pkt_hdr.row_2.sevttp.vlgcod,
+                             pkt_hdr.row_4.tmstmp.tmstmp,
+                             pkt_hdr.row_5.tmstmp.tmstmp,
+                             pkt_hdr.row_2.sevttp.sbeact))
     outgoing_subscription_impl *subscription = nullptr;
-    if((rcode = outg_sbsid_sbs_map_.get(&pkt_hdr->row_1.sbsrid.sbsrid, &subscription))) {
+    if((rcode = outg_sbsid_sbs_map_.get(&pkt_hdr.row_1.sbsrid.sbsrid, &subscription))) {
         IFLOG(peer_->log_, critical(LS_SBS"[error getting subscription from sbsid map][res:{}]", rcode))
         mng = false;
     } else {
-        if(mng && (rcode = subscription->receive_event(pkt_hdr, pkt_body))) {
+        if(mng && (rcode = subscription->receive_event(&pkt_hdr, &pkt_body))) {
             IFLOG(peer_->log_, warn(LS_SBS"[subscription event:{} management failed][res:{}]",
-                                    pkt_hdr->row_3.sevtid.sevtid,
+                                    pkt_hdr.row_3.sevtid.sevtid,
                                     rcode))
         }
     }
     return rcode;
 }
 
-RetCode outgoing_connection_impl::recv_sbs_stop_response(const vlg_hdr_rec *pkt_hdr)
+RetCode outgoing_connection_impl::recv_sbs_stop_response(const vlg_hdr_rec &pkt_hdr)
 {
     RetCode rcode = RetCode_OK;
     IFLOG(peer_->log_, info(LS_INC LS_SBS"[CONNID:{}-SBSID:{}][SBSRES:{}, VLGCOD:{}]",
                             connid_,
-                            pkt_hdr->row_2.sbsrid.sbsrid,
-                            pkt_hdr->row_1.sbresw.sbresl,
-                            pkt_hdr->row_1.sbresw.vlgcod))
+                            pkt_hdr.row_2.sbsrid.sbsrid,
+                            pkt_hdr.row_1.sbresw.sbresl,
+                            pkt_hdr.row_1.sbresw.vlgcod))
     outgoing_subscription_impl *subscription = nullptr;
-    if((rcode = outg_sbsid_sbs_map_.get(&pkt_hdr->row_2.sbsrid.sbsrid, &subscription))) {
+    if((rcode = outg_sbsid_sbs_map_.get(&pkt_hdr.row_2.sbsrid.sbsrid, &subscription))) {
         IFLOG(peer_->log_, warn(LS_SBS"[no subscription from sbsid map]"))
     } else {
         outg_reqid_sbs_map_.remove(&subscription->reqid_, nullptr);
         outg_sbsid_sbs_map_.remove(&subscription->sbsid_, nullptr);
         subscription->notify_for_start_stop_result();
-        if(pkt_hdr->row_1.sbresw.sbresl == SubscriptionResponse_OK) {
+        if(pkt_hdr.row_1.sbresw.sbresl == SubscriptionResponse_OK) {
             subscription->set_stopped();
         }
+    }
+    return rcode;
+}
+
+RetCode outgoing_connection_impl::recv_pkt(vlg_hdr_rec &pkt_hdr,
+                                           std::unique_ptr<g_bbuf> &pkt_body)
+{
+    RetCode rcode = RetCode_OK;
+    switch(pkt_hdr.phdr.pkttyp) {
+        case VLG_PKT_TSTREQ_ID:
+            /*TEST REQUEST******************************************************************/
+            rcode = recv_test_request(pkt_hdr);
+            break;
+        case VLG_PKT_CONRES_ID:
+            /*CONNECTION RESPONSE***********************************************************/
+            rcode = recv_connection_response(pkt_hdr);
+            break;
+        case VLG_PKT_DSCOND_ID:
+            /*DISCONNECTED******************************************************************/
+            rcode = recv_disconnection(pkt_hdr);
+            break;
+        case VLG_PKT_SBSRES_ID:
+            /*SUBSCRIPTION RESPONSE*********************************************************/
+            rcode = recv_sbs_start_response(pkt_hdr);
+            break;
+        case VLG_PKT_SBSSPR_ID:
+            /*SUBSCRIPTION STOP RESPONSE****************************************************/
+            rcode = recv_sbs_stop_response(pkt_hdr);
+            break;
+        default:
+            rcode = peer_->submit_outg_evt_task(this, pkt_hdr, pkt_body);
+            break;
+    }
+    return rcode;
+}
+
+RetCode outgoing_connection_impl::recv_pkt_to_exec_srv(vlg_hdr_rec &pkt_hdr,
+                                                       std::unique_ptr<g_bbuf> &pkt_body)
+{
+    RetCode rcode = RetCode_OK;
+    switch(pkt_hdr.phdr.pkttyp) {
+        case VLG_PKT_TXRESP_ID:
+            /*TRANSACTION RESPONSE**********************************************************/
+            rcode = recv_tx_response(pkt_hdr,*pkt_body.get());
+            break;
+        case VLG_PKT_SBSEVT_ID:
+            /*SUBSCRIPTION EVENT************************************************************/
+            rcode = recv_sbs_evt(pkt_hdr,*pkt_body.get());
+        default:
+            break;
     }
     return rcode;
 }

@@ -38,52 +38,6 @@ incoming_connection &incoming_connection_factory::make_incoming_connection(peer 
 
 namespace vlg {
 
-// peer_recv_task_inco_conn
-
-peer_recv_task_inco_conn::peer_recv_task_inco_conn(std::shared_ptr<incoming_connection> &conn_sh,
-                                                   vlg_hdr_rec &pkt_hdr,
-                                                   std::unique_ptr<g_bbuf> &pkt_body) :
-    conn_sh_(conn_sh),
-    pkt_hdr_(pkt_hdr),
-    pkt_body_(std::move(pkt_body))
-{}
-
-peer_recv_task_inco_conn::~peer_recv_task_inco_conn()
-{}
-
-RetCode peer_recv_task_inco_conn::execute()
-{
-    RetCode rcode = RetCode_OK;
-    if((rcode = conn_sh_->impl_->peer_->recv_and_route_pkt(conn_sh_, &pkt_hdr_, pkt_body_.get()))) {
-        IFLOG(conn_sh_->impl_->peer_->log_, trace(LS_EXE "[recv task:{} - execution failed - res:{}]", __func__, get_id(),
-                                                  rcode))
-    }
-    return rcode;
-}
-
-// peer_recv_task_outg_conn
-
-peer_recv_task_outg_conn::peer_recv_task_outg_conn(outgoing_connection &conn,
-                                                   vlg_hdr_rec &pkt_hdr,
-                                                   std::unique_ptr<g_bbuf> &pkt_body) :
-    conn_(conn),
-    pkt_hdr_(pkt_hdr),
-    pkt_body_(std::move(pkt_body))
-{}
-
-peer_recv_task_outg_conn::~peer_recv_task_outg_conn()
-{}
-
-RetCode peer_recv_task_outg_conn::execute()
-{
-    RetCode rcode = RetCode_OK;
-    if((rcode = conn_.impl_->peer_->recv_and_route_pkt(conn_, &pkt_hdr_, pkt_body_.get()))) {
-        IFLOG(conn_.impl_->peer_->log_, trace(LS_EXE "[recv task:{} - execution failed - res:{}]", __func__, get_id(),
-                                              rcode))
-    }
-    return rcode;
-}
-
 // peer_impl
 
 peer_impl::peer_impl(peer &publ, peer_listener &listener) :
@@ -99,6 +53,8 @@ peer_impl::peer_impl(peer &publ, peer_listener &listener) :
     pers_mng_(persistence_manager_impl::get_instance()),
     pers_schema_create_(false),
     drop_existing_schema_(false),
+    inco_exec_srv_(log_),
+    outg_exec_srv_(log_),
     srv_sbs_exec_serv_(log_),
     srv_sbs_nclassid_condesc_set_(HMSz_1031, sngl_ptr_obj_mng(), sizeof(unsigned int)),
     inco_conn_factory_(nullptr)
@@ -114,8 +70,10 @@ RetCode peer_impl::set_params_file_dir(const char *dir)
 RetCode peer_impl::init()
 {
     RetCode rcode = RetCode_OK;
-    selector_.init(srv_exectrs_, cli_exectrs_);
-    srv_sbs_exec_serv_.init(srv_sbs_exectrs_);
+    RET_ON_KO(selector_.init())
+    RET_ON_KO(inco_exec_srv_.init(srv_exectrs_))
+    RET_ON_KO(outg_exec_srv_.init(cli_exectrs_))
+    RET_ON_KO(srv_sbs_exec_serv_.init(srv_sbs_exectrs_))
 #ifdef __APPLE__
 #include "TargetConditionals.h"
 #if TARGET_IPHONE_SIMULATOR
@@ -163,6 +121,31 @@ RetCode peer_impl::init_dyna()
     }
     IFLOG(log_, trace(LS_CLO "[res:{}]", __func__, rcode))
     return rcode;
+}
+
+RetCode peer_impl::start_exec_services()
+{
+    RetCode res = RetCode_OK;
+    ExecSrvStatus current = ExecSrvStatus_TOINIT;
+    if(personality_ == PeerPersonality_PURE_SERVER || personality_ == PeerPersonality_BOTH) {
+        IFLOG(log_,debug(LS_TRL "[starting server side executor service]",__func__))
+        if((res = inco_exec_srv_.start())) {
+            IFLOG(log_,critical(LS_CLO "[starting server side, last_err:{}]",__func__,res))
+            return RetCode_KO;
+        }
+        inco_exec_srv_.await_for_status_reached(ExecSrvStatus_STARTED,current);
+        IFLOG(log_,debug(LS_TRL "[server side executor service started]",__func__))
+    }
+    if(personality_ == PeerPersonality_PURE_CLIENT || personality_ == PeerPersonality_BOTH) {
+        IFLOG(log_,debug(LS_TRL "[starting client side executor service]",__func__))
+        if((res = outg_exec_srv_.start())) {
+            IFLOG(log_,critical(LS_CLO "[starting client side, last_err:{}]",__func__,res))
+            return RetCode_KO;
+        }
+        outg_exec_srv_.await_for_status_reached(ExecSrvStatus_STARTED,current);
+        IFLOG(log_,debug(LS_TRL "[client side executor service started]",__func__))
+    }
+    return res;
 }
 
 // CONFIG SETTERS
@@ -390,12 +373,11 @@ RetCode peer_impl::on_automa_start()
             IFLOG(log_, info(LS_TRL "[persistence schema created]", __func__))
         }
     }
-    //persistence driv. end
-    IFLOG(log_, debug(LS_TRL "[start selector thread]", __func__))
-    if((rcode = selector_.on_peer_start_actions())) {
-        IFLOG(log_, error(LS_CLO "[selector failed starting actions][res:{}]", __func__, rcode))
+    if((rcode = start_exec_services())) {
+        IFLOG(log_,error(LS_CLO "[starting executor services][res:{}]",__func__,rcode))
         return rcode;
     }
+    IFLOG(log_, debug(LS_TRL "[start selector thread]", __func__))
     selector_.start();
     IFLOG(log_, debug(LS_TRL "[wait selector go init]", __func__))
     selector_.await_for_status_reached(SelectorStatus_INIT,
@@ -448,6 +430,10 @@ RetCode peer_impl::on_automa_stop()
     selector_.await_for_status_reached(SelectorStatus_STOPPED, current);
     IFLOG(log_, debug(LS_TRL "[selector stopped]", __func__))
     selector_.set_status(SelectorStatus_INIT);
+    inco_exec_srv_.shutdown();
+    inco_exec_srv_.await_termination();
+    outg_exec_srv_.shutdown();
+    outg_exec_srv_.await_termination();
     srv_sbs_exec_serv_.shutdown();
     srv_sbs_exec_serv_.await_termination();
     if(!rcode) {
@@ -460,78 +446,6 @@ RetCode peer_impl::on_automa_stop()
 void peer_impl::on_automa_error()
 {
     listener_.on_error(publ_);
-}
-
-RetCode peer_impl::recv_and_route_pkt(outgoing_connection &conn,
-                                      vlg_hdr_rec *hdr,
-                                      g_bbuf *body)
-{
-    RetCode rcode = RetCode_OK;
-    switch(hdr->phdr.pkttyp) {
-        case VLG_PKT_TSTREQ_ID:
-            /*TEST REQUEST******************************************************************/
-            rcode = conn.impl_->recv_test_request(hdr);
-            break;
-        case VLG_PKT_CONRES_ID:
-            /*CONNECTION RESPONSE***********************************************************/
-            rcode = conn.impl_->recv_connection_response(hdr);
-            break;
-        case VLG_PKT_DSCOND_ID:
-            /*DISCONNECTED******************************************************************/
-            rcode = conn.impl_->recv_disconnection(hdr);
-            break;
-        case VLG_PKT_TXRESP_ID:
-            /*TRANSACTION RESPONSE**********************************************************/
-            rcode = conn.impl_->recv_tx_response(hdr, body);
-            break;
-        case VLG_PKT_SBSRES_ID:
-            /*SUBSCRIPTION RESPONSE*********************************************************/
-            rcode = conn.impl_->recv_sbs_start_response(hdr);
-            break;
-        case VLG_PKT_SBSEVT_ID:
-            /*SUBSCRIPTION EVENT************************************************************/
-            rcode = conn.impl_->recv_sbs_evt(hdr, body);
-            break;
-        case VLG_PKT_SBSSPR_ID:
-            /*SUBSCRIPTION STOP RESPONSE****************************************************/
-            rcode = conn.impl_->recv_sbs_stop_response(hdr);
-            break;
-        default:
-            break;
-    }
-    return rcode;
-}
-
-RetCode peer_impl::recv_and_route_pkt(std::shared_ptr<incoming_connection> &inco_conn,
-                                      vlg_hdr_rec *hdr,
-                                      g_bbuf *body)
-{
-    RetCode rcode = RetCode_OK;
-    switch(hdr->phdr.pkttyp) {
-        case VLG_PKT_CONREQ_ID:
-            /*CONNECTION REQUEST************************************************************/
-            rcode = inco_conn->impl_->recv_connection_request(hdr, inco_conn);
-            break;
-        case VLG_PKT_DSCOND_ID:
-            /*DISCONNECTED******************************************************************/
-            rcode = inco_conn->impl_->recv_disconnection(hdr);
-            break;
-        case VLG_PKT_TXRQST_ID:
-            /*TRANSACTION REQUEST***********************************************************/
-            rcode = inco_conn->impl_->recv_tx_request(hdr, body, inco_conn);
-            break;
-        case VLG_PKT_SBSREQ_ID:
-            /*SUBSCRIPTION REQUEST**********************************************************/
-            rcode = inco_conn->impl_->recv_sbs_start_request(hdr, inco_conn);
-            break;
-        case VLG_PKT_SBSTOP_ID:
-            /*SUBSCRIPTION STOP REQUEST*****************************************************/
-            rcode = inco_conn->impl_->recv_sbs_stop_request(hdr, inco_conn);
-            break;
-        default:
-            break;
-    }
-    return rcode;
 }
 
 // per_nclass_id_conn_set
@@ -651,6 +565,26 @@ RetCode peer_impl::get_per_nclassid_helper_rec(unsigned int nclass_id, per_nclas
     }
     *out = sdrec;
     return rcode;
+}
+
+RetCode peer_impl::submit_inco_evt_task(std::shared_ptr<incoming_connection> &conn_sh,
+                                        vlg_hdr_rec &pkt_hdr,
+                                        std::unique_ptr<g_bbuf> &pkt_body)
+{
+    std::shared_ptr<task> task(new inco_conn_task(conn_sh,
+                                                  pkt_hdr,
+                                                  pkt_body));
+    return inco_exec_srv_.submit(task);
+}
+
+RetCode peer_impl::submit_outg_evt_task(outgoing_connection_impl *oconn,
+                                        vlg_hdr_rec &pkt_hdr,
+                                        std::unique_ptr<g_bbuf> &pkt_body)
+{
+    std::shared_ptr<task> task(new outg_conn_task(*oconn->opubl_,
+                                                  pkt_hdr,
+                                                  pkt_body));
+    return outg_exec_srv_.submit(task);
 }
 
 RetCode peer_impl::submit_sbs_evt_task(subscription_event_impl &sbs_evt,

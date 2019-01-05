@@ -12,34 +12,6 @@
 
 namespace vlg {
 
-struct connection_impl;
-
-struct peer_recv_task_inco_conn : public task {
-    peer_recv_task_inco_conn(std::shared_ptr<incoming_connection> &conn_sh,
-                             vlg_hdr_rec &pkt_hdr,
-                             std::unique_ptr<g_bbuf> &pkt_body);
-
-    ~peer_recv_task_inco_conn();
-    virtual RetCode execute() override;
-
-    std::shared_ptr<incoming_connection> conn_sh_;
-    vlg_hdr_rec pkt_hdr_;
-    std::unique_ptr<g_bbuf> pkt_body_;
-};
-
-struct peer_recv_task_outg_conn : public task {
-    peer_recv_task_outg_conn(outgoing_connection &conn,
-                             vlg_hdr_rec &pkt_hdr,
-                             std::unique_ptr<g_bbuf> &pkt_body);
-
-    ~peer_recv_task_outg_conn();
-    virtual RetCode execute() override;
-
-    outgoing_connection &conn_;
-    vlg_hdr_rec pkt_hdr_;
-    std::unique_ptr<g_bbuf> pkt_body_;
-};
-
 /***********************************
 an helper class used to server peer
 to generate a progressive
@@ -90,19 +62,19 @@ struct peer_impl : public peer_automa {
         incoming_connection_factory &get_incoming_connection_factory() const;
         void set_incoming_connection_factory(incoming_connection_factory &conn_f);
 
-        RetCode recv_and_route_pkt(outgoing_connection &conn,
-                                   vlg_hdr_rec *hdr,
-                                   g_bbuf *body);
-
-        RetCode recv_and_route_pkt(std::shared_ptr<incoming_connection> &inco_conn,
-                                   vlg_hdr_rec *hdr,
-                                   g_bbuf *body);
-
         RetCode add_subscriber(incoming_subscription_impl *sbsdesc);
         RetCode remove_subscriber(incoming_subscription_impl *sbsdesc);
 
         RetCode get_per_nclassid_helper_rec(unsigned int nclass_id,
                                             per_nclass_id_conn_set **out);
+
+        RetCode submit_inco_evt_task(std::shared_ptr<incoming_connection> &conn_sh,
+                                     vlg_hdr_rec &pkt_hdr,
+                                     std::unique_ptr<g_bbuf> &pkt_body);
+
+        RetCode submit_outg_evt_task(outgoing_connection_impl *oconn,
+                                     vlg_hdr_rec &pkt_hdr,
+                                     std::unique_ptr<g_bbuf> &pkt_body);
 
         RetCode submit_sbs_evt_task(subscription_event_impl &sbs_evt,
                                     s_hm &connid_condesc_set);
@@ -148,6 +120,7 @@ struct peer_impl : public peer_automa {
     private:
         RetCode init();
         RetCode init_dyna();
+        RetCode start_exec_services();
 
     private:
         virtual const char *get_automa_name() override;
@@ -186,6 +159,9 @@ struct peer_impl : public peer_automa {
         bool drop_existing_schema_;
 
     protected:
+        exec_srv inco_exec_srv_;
+        exec_srv outg_exec_srv_;
+
         //srv subscription executor service.
         exec_srv srv_sbs_exec_serv_;
 

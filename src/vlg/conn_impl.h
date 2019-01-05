@@ -198,26 +198,34 @@ struct incoming_connection_impl : public conn_impl {
 
     RetCode release_subscription(incoming_subscription_impl *subscription);
 
-    RetCode recv_connection_request(const vlg_hdr_rec *pkt_hdr,
+    RetCode recv_connection_request(const vlg_hdr_rec &pkt_hdr,
                                     std::shared_ptr<incoming_connection> &inco_conn);
 
-    RetCode recv_test_request(const vlg_hdr_rec *pkt_hdr);
-    RetCode recv_disconnection(const vlg_hdr_rec *pkt_hdr);
+    RetCode recv_test_request(const vlg_hdr_rec &pkt_hdr);
+    RetCode recv_disconnection(const vlg_hdr_rec &pkt_hdr);
 
-    RetCode recv_tx_request(const vlg_hdr_rec *pkt_hdr,
-                            g_bbuf *pkt_body,
+    RetCode recv_tx_request(const vlg_hdr_rec &pkt_hdr,
+                            g_bbuf &pkt_body,
                             std::shared_ptr<incoming_connection> &inco_conn);
 
-    RetCode recv_sbs_start_request(const vlg_hdr_rec *pkt_hdr,
+    RetCode recv_sbs_start_request(const vlg_hdr_rec &pkt_hdr,
                                    std::shared_ptr<incoming_connection> &inco_conn);
 
-    RetCode recv_sbs_stop_request(const vlg_hdr_rec *pkt_hdr,
+    RetCode recv_sbs_stop_request(const vlg_hdr_rec &pkt_hdr,
                                   std::shared_ptr<incoming_connection> &inco_conn);
 
     unsigned int next_sbsid() {
         std::unique_lock<std::mutex> lck(mtx_);
         return ++sbsid_;
     }
+
+    RetCode recv_pkt(std::shared_ptr<incoming_connection> &conn_sh,
+                     vlg_hdr_rec &pkt_hdr,
+                     std::unique_ptr<g_bbuf> &pkt_body);
+
+    RetCode recv_pkt_to_exec_srv(std::shared_ptr<incoming_connection> &conn_sh,
+                                 vlg_hdr_rec &pkt_hdr,
+                                 std::unique_ptr<g_bbuf> &pkt_body);
 
     //rep
     s_hm inco_flytx_map_;
@@ -259,19 +267,19 @@ struct outgoing_connection_impl : public conn_impl {
     RetCode next_tx_id(tx_id &txid);
     RetCode release_subscription(outgoing_subscription_impl *subscription);
 
-    RetCode recv_connection_response(const vlg_hdr_rec *pkt_hdr);
-    RetCode recv_test_request(const vlg_hdr_rec *pkt_hdr);
-    RetCode recv_disconnection(const vlg_hdr_rec *pkt_hdr);
+    RetCode recv_connection_response(const vlg_hdr_rec &pkt_hdr);
+    RetCode recv_test_request(const vlg_hdr_rec &pkt_hdr);
+    RetCode recv_disconnection(const vlg_hdr_rec &pkt_hdr);
 
-    RetCode recv_tx_response(const vlg_hdr_rec *pkt_hdr,
-                             g_bbuf *pkt_body);
+    RetCode recv_tx_response(const vlg_hdr_rec &pkt_hdr,
+                             g_bbuf &pkt_body);
 
-    RetCode recv_sbs_start_response(const vlg_hdr_rec *pkt_hdr);
+    RetCode recv_sbs_start_response(const vlg_hdr_rec &pkt_hdr);
 
-    RetCode recv_sbs_evt(const vlg_hdr_rec *pkt_hdr,
-                         g_bbuf *pkt_body);
+    RetCode recv_sbs_evt(const vlg_hdr_rec &pkt_hdr,
+                         g_bbuf &pkt_body);
 
-    RetCode recv_sbs_stop_response(const vlg_hdr_rec *pkt_hdr);
+    RetCode recv_sbs_stop_response(const vlg_hdr_rec &pkt_hdr);
 
     unsigned int next_prid() {
         std::unique_lock<std::mutex> lck(mtx_);
@@ -283,6 +291,12 @@ struct outgoing_connection_impl : public conn_impl {
         return ++reqid_;
     }
 
+    RetCode recv_pkt(vlg_hdr_rec &pkt_hdr,
+                     std::unique_ptr<g_bbuf> &pkt_body);
+
+    RetCode recv_pkt_to_exec_srv(vlg_hdr_rec &pkt_hdr,
+                                 std::unique_ptr<g_bbuf> &pkt_body);
+
     //rep
     s_hm outg_flytx_map_;
 
@@ -292,6 +306,42 @@ struct outgoing_connection_impl : public conn_impl {
 
     unsigned int prid_;
     unsigned int reqid_;
+};
+
+struct inco_conn_task: public task {
+    inco_conn_task(std::shared_ptr<incoming_connection> &conn_sh,
+                   vlg_hdr_rec &pkt_hdr,
+                   std::unique_ptr<g_bbuf> &pkt_body):
+        conn_sh_(conn_sh),
+        pkt_hdr_(pkt_hdr),
+        pkt_body_(std::move(pkt_body))
+    {}
+
+    virtual RetCode execute() override {
+        return conn_sh_->impl_->recv_pkt_to_exec_srv(conn_sh_, pkt_hdr_, pkt_body_);
+    }
+
+    std::shared_ptr<incoming_connection> conn_sh_;
+    vlg_hdr_rec pkt_hdr_;
+    std::unique_ptr<g_bbuf> pkt_body_;
+};
+
+struct outg_conn_task: public task {
+    outg_conn_task(outgoing_connection &conn,
+                   vlg_hdr_rec &pkt_hdr,
+                   std::unique_ptr<g_bbuf> &pkt_body):
+        conn_(conn),
+        pkt_hdr_(pkt_hdr),
+        pkt_body_(std::move(pkt_body))
+    {}
+
+    virtual RetCode execute() override {
+        return conn_.impl_->recv_pkt_to_exec_srv(pkt_hdr_, pkt_body_);
+    }
+
+    outgoing_connection &conn_;
+    vlg_hdr_rec pkt_hdr_;
+    std::unique_ptr<g_bbuf> pkt_body_;
 };
 
 }

@@ -37,9 +37,7 @@ selector::selector(peer_impl &peer) :
     udp_ntfy_srv_socket_(INVALID_SOCKET),
     udp_ntfy_cli_socket_(INVALID_SOCKET),
     srv_socket_(INVALID_SOCKET),
-    srv_acceptor_(peer),
-    inco_exec_srv_(peer_.log_),
-    outg_exec_srv_(peer_.log_)
+    srv_acceptor_(peer)
 {
     memset(&udp_ntfy_sa_in_, 0, sizeof(udp_ntfy_sa_in_));
     udp_ntfy_sa_in_.sin_family = AF_INET;
@@ -60,21 +58,13 @@ selector::~selector()
     }
 }
 
-RetCode selector::init(unsigned int srv_executors,
-                       unsigned int cli_executors)
+RetCode selector::init()
 {
     RET_ON_KO(srv_acceptor_.set_sockaddr_in(srv_sockaddr_in_))
-    RET_ON_KO(inco_exec_srv_.init(srv_executors))
-    RET_ON_KO(outg_exec_srv_.init(cli_executors))
     RET_ON_KO(create_UDP_notify_srv_sock())
     RET_ON_KO(connect_UDP_notify_cli_sock())
     set_status(SelectorStatus_INIT);
     return RetCode_OK;
-}
-
-RetCode selector::on_peer_start_actions()
-{
-    return start_exec_services();
 }
 
 RetCode selector::on_peer_move_running_actions()
@@ -225,31 +215,6 @@ RetCode selector::notify(const sel_evt *evt)
         }
     }
     return RetCode_OK;
-}
-
-RetCode selector::start_exec_services()
-{
-    RetCode res = RetCode_OK;
-    ExecSrvStatus current = ExecSrvStatus_TOINIT;
-    if(peer_.personality_ == PeerPersonality_PURE_SERVER || peer_.personality_ == PeerPersonality_BOTH) {
-        IFLOG(peer_.log_, debug(LS_TRL "[starting server side executor service]", __func__))
-        if((res = inco_exec_srv_.start())) {
-            IFLOG(peer_.log_, critical(LS_CLO "[starting server side, last_err:{}]", __func__, res))
-            return RetCode_KO;
-        }
-        inco_exec_srv_.await_for_status_reached(ExecSrvStatus_STARTED, current);
-        IFLOG(peer_.log_, debug(LS_TRL "[server side executor service started]", __func__))
-    }
-    if(peer_.personality_ == PeerPersonality_PURE_CLIENT || peer_.personality_ == PeerPersonality_BOTH) {
-        IFLOG(peer_.log_, debug(LS_TRL "[starting client side executor service]", __func__))
-        if((res = outg_exec_srv_.start())) {
-            IFLOG(peer_.log_, critical(LS_CLO "[starting client side, last_err:{}]", __func__, res))
-            return RetCode_KO;
-        }
-        outg_exec_srv_.await_for_status_reached(ExecSrvStatus_STARTED, current);
-        IFLOG(peer_.log_, debug(LS_TRL "[client side executor service started]", __func__))
-    }
-    return res;
 }
 
 RetCode selector::start_conn_objs()
@@ -536,18 +501,18 @@ inline RetCode selector::add_early_outg_conn(sel_evt *conn_evt)
         return RetCode_KO;
     }
     conn_evt->conn_->aggr_msgs_and_send_pkt();
-    outg_early_conn_map_[conn_evt->conn_->socket_] = conn_evt->conn_;
+    outg_early_conn_map_[conn_evt->conn_->socket_] = (outgoing_connection_impl *)conn_evt->conn_;
     return RetCode_OK;
 }
 
-inline RetCode selector::promote_early_outg_conn(conn_impl *conn)
+inline RetCode selector::promote_early_outg_conn(outgoing_connection_impl *conn)
 {
     outg_early_conn_map_.erase(conn->socket_);
     outg_conn_map_[conn->socket_] = conn;
     return RetCode_OK;
 }
 
-inline RetCode selector::delete_early_outg_conn(conn_impl *conn)
+inline RetCode selector::delete_early_outg_conn(outgoing_connection_impl *conn)
 {
     outg_early_conn_map_.erase(conn->socket_);
     return RetCode_OK;
@@ -587,7 +552,7 @@ RetCode selector::process_asyn_evts()
                         if(conn_evt->con_type_ == ConnectionType_INGOING) {
                             wp_inco_conn_map_[conn_evt->socket_] = conn_evt->inco_conn_;
                         } else {
-                            wp_outg_conn_map_[conn_evt->socket_] = conn_evt->conn_;
+                            wp_outg_conn_map_[conn_evt->socket_] = (outgoing_connection_impl *)conn_evt->conn_;
                         }
                         break;
                     case VLG_SELECTOR_Evt_ConnectRequest:
@@ -597,10 +562,10 @@ RetCode selector::process_asyn_evts()
                         manage_disconnect_conn(conn_evt);
                         break;
                     case VLG_SELECTOR_Evt_ConnReqAccepted:
-                        promote_early_outg_conn(conn_evt->conn_);
+                        promote_early_outg_conn((outgoing_connection_impl *)conn_evt->conn_);
                         break;
                     case VLG_SELECTOR_Evt_ConnReqRefused:
-                        delete_early_outg_conn(conn_evt->conn_);
+                        delete_early_outg_conn((outgoing_connection_impl *)conn_evt->conn_);
                         break;
                     case VLG_SELECTOR_Evt_Inactivity:
                         //@todo
@@ -719,8 +684,6 @@ RetCode selector::stop_and_clean()
         wp_inco_conn_map_.clear();
         inco_conn_map_.clear();
         server_socket_shutdown();
-        inco_exec_srv_.shutdown();
-        inco_exec_srv_.await_termination();
     }
     if(peer_.personality_ == PeerPersonality_PURE_CLIENT || peer_.personality_ == PeerPersonality_BOTH) {
         for(auto it = outg_conn_map_.begin(); it != outg_conn_map_.end(); ++it)
@@ -733,8 +696,6 @@ RetCode selector::stop_and_clean()
                 it->second->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
             }
         outg_early_conn_map_.clear();
-        outg_exec_srv_.shutdown();
-        outg_exec_srv_.await_termination();
     }
     FD_ZERO(&read_FDs_);
     FD_ZERO(&write_FDs_);
@@ -745,23 +706,19 @@ RetCode selector::inco_conn_process_rdn_buff(std::shared_ptr<incoming_connection
 {
     RetCode rcode = ic->impl_->recv_bytes();
     while(!(rcode = ic->impl_->chase_pkt())) {
-        std::shared_ptr<task> task(new peer_recv_task_inco_conn(ic,
-                                                                ic->impl_->curr_rdn_hdr_,
-                                                                ic->impl_->curr_rdn_body_));
-        inco_exec_srv_.submit(task);
+        ic->impl_->recv_pkt(ic,
+                            ic->impl_->curr_rdn_hdr_,
+                            ic->impl_->curr_rdn_body_);
         ic->impl_->curr_rdn_hdr_.reset();
     }
     return rcode;
 }
 
-RetCode selector::outg_conn_process_rdn_buff(conn_impl *oci)
+RetCode selector::outg_conn_process_rdn_buff(outgoing_connection_impl *oci)
 {
     RetCode rcode = oci->recv_bytes();
     while(!(rcode = oci->chase_pkt())) {
-        std::shared_ptr<task> task(new peer_recv_task_outg_conn(*oci->opubl_,
-                                                                oci->curr_rdn_hdr_,
-                                                                oci->curr_rdn_body_));
-        outg_exec_srv_.submit(task);
+        oci->recv_pkt(oci->curr_rdn_hdr_, oci->curr_rdn_body_);
         oci->curr_rdn_hdr_.reset();
     }
     return rcode;

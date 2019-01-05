@@ -44,12 +44,9 @@ enum SelectorStatus {
 
 struct selector : public th {
     explicit selector(peer_impl &);
-    ~selector();
+    virtual ~selector();
 
-    RetCode init(unsigned int srv_executors,
-                 unsigned int cli_executors);
-
-    RetCode on_peer_start_actions();
+    RetCode init();
     RetCode on_peer_move_running_actions();
 
     RetCode await_for_status_reached(SelectorStatus test,
@@ -65,7 +62,6 @@ struct selector : public th {
     RetCode create_UDP_notify_srv_sock();
     RetCode connect_UDP_notify_cli_sock();
     bool is_still_valid_connection(const sel_evt *);
-    RetCode start_exec_services();
     RetCode process_inco_sock_inco_events();
     RetCode process_inco_sock_outg_events();
     RetCode process_outg_sock_inco_events();
@@ -80,12 +76,12 @@ struct selector : public th {
     RetCode consume_events();
     RetCode consume_inco_sock_events();
     RetCode add_early_outg_conn(sel_evt *);
-    RetCode promote_early_outg_conn(conn_impl *);
-    RetCode delete_early_outg_conn(conn_impl *);
+    RetCode promote_early_outg_conn(outgoing_connection_impl *);
+    RetCode delete_early_outg_conn(outgoing_connection_impl *);
     RetCode manage_disconnect_conn(sel_evt *);
     RetCode stop_and_clean();
     RetCode inco_conn_process_rdn_buff(std::shared_ptr<incoming_connection> &);
-    RetCode outg_conn_process_rdn_buff(conn_impl *);
+    RetCode outg_conn_process_rdn_buff(outgoing_connection_impl *);
 
     //rep
     peer_impl &peer_;
@@ -102,19 +98,17 @@ struct selector : public th {
     mutable std::mutex mtx_;
     mutable std::condition_variable cv_;
 
-    //srv_rep
+    //incoming
     SOCKET srv_socket_;
     sockaddr_in srv_sockaddr_in_;
     acceptor srv_acceptor_;
     std::unordered_map<uint64_t, std::shared_ptr<incoming_connection>> inco_conn_map_;
     std::unordered_map<uint64_t, std::shared_ptr<incoming_connection>> wp_inco_conn_map_;
-    exec_srv inco_exec_srv_;
 
-    //cli_rep
-    std::unordered_map<uint64_t, conn_impl *> outg_early_conn_map_;
-    std::unordered_map<uint64_t, conn_impl *> outg_conn_map_;
-    std::unordered_map<uint64_t, conn_impl *> wp_outg_conn_map_;
-    exec_srv outg_exec_srv_;
+    //outgoing
+    std::unordered_map<uint64_t, outgoing_connection_impl *> outg_early_conn_map_;
+    std::unordered_map<uint64_t, outgoing_connection_impl *> outg_conn_map_;
+    std::unordered_map<uint64_t, outgoing_connection_impl *> wp_outg_conn_map_;
 };
 
 }
