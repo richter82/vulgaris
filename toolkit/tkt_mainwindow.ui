@@ -65,7 +65,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QFrame" name="peer_Status">
+        <widget class="QFrame" name="broker_Status">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -98,7 +98,7 @@
            <number>2</number>
           </property>
           <item>
-           <widget class="QLabel" name="peer_status_label_display">
+           <widget class="QLabel" name="broker_status_label_display">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -156,7 +156,7 @@
       <property name="orientation">
        <enum>Qt::Vertical</enum>
       </property>
-      <widget class="QTabWidget" name="peer_Tab">
+      <widget class="QTabWidget" name="broker_Tab">
        <property name="minimumSize">
         <size>
          <width>0</width>
@@ -169,13 +169,13 @@
        <property name="tabsClosable">
         <bool>true</bool>
        </property>
-       <widget class="QWidget" name="peer_config">
+       <widget class="QWidget" name="broker_config">
         <attribute name="icon">
          <iconset resource="tkt_prj_res.qrc">
           <normaloff>:/icon/icons/gear-b.png</normaloff>:/icon/icons/gear-b.png</iconset>
         </attribute>
         <attribute name="title">
-         <string>Peer Config</string>
+         <string>Broker Config</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_6">
          <item>
@@ -205,7 +205,7 @@
              <number>1</number>
             </property>
             <item>
-             <widget class="QPushButton" name="set_peer_cfg_all_button">
+             <widget class="QPushButton" name="set_broker_cfg_all_button">
               <property name="styleSheet">
                <string notr="true"/>
               </property>
@@ -219,7 +219,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QFrame" name="peer_Status_4">
+             <widget class="QFrame" name="broker_Status_4">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -252,7 +252,7 @@
                 <number>2</number>
                </property>
                <item>
-                <widget class="QLabel" name="peer_status_label_4">
+                <widget class="QLabel" name="broker_status_label_4">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                    <horstretch>0</horstretch>
@@ -272,12 +272,12 @@
                   </font>
                  </property>
                  <property name="text">
-                  <string>Peer Config</string>
+                  <string>Broker Config</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="peer_cfg_status_label">
+                <widget class="QLabel" name="broker_cfg_status_label">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -308,7 +308,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QFrame" name="peer_Status_3">
+             <widget class="QFrame" name="broker_Status_3">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -341,7 +341,7 @@
                 <number>2</number>
                </property>
                <item>
-                <widget class="QLabel" name="peer_status_label_3">
+                <widget class="QLabel" name="broker_status_label_3">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                    <horstretch>0</horstretch>
@@ -361,12 +361,12 @@
                   </font>
                  </property>
                  <property name="text">
-                  <string>Peer Model</string>
+                  <string>Broker Model</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="peer_model_label_status">
+                <widget class="QLabel" name="broker_model_label_status">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -397,7 +397,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QFrame" name="peer_Status_2">
+             <widget class="QFrame" name="broker_Status_2">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -430,7 +430,7 @@
                 <number>2</number>
                </property>
                <item>
-                <widget class="QLabel" name="peer_status_label_2">
+                <widget class="QLabel" name="broker_status_label_2">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                    <horstretch>0</horstretch>
@@ -450,12 +450,12 @@
                   </font>
                  </property>
                  <property name="text">
-                  <string>Peer Pers Divers</string>
+                  <string>Broker Pers Divers</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="peer_pers_driv_status_label">
+                <widget class="QLabel" name="broker_pers_driv_status_label">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -533,7 +533,7 @@
                  </size>
                 </property>
                 <property name="title">
-                 <string>Peer Params</string>
+                 <string>Broker Params</string>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_9">
                  <item>
@@ -541,12 +541,12 @@
                    <item>
                     <widget class="QLabel" name="label_5">
                      <property name="text">
-                      <string>peer_personality:</string>
+                      <string>broker_personality:</string>
                      </property>
                     </widget>
                    </item>
                    <item>
-                    <widget class="QComboBox" name="pp_cfg_peer_personality">
+                    <widget class="QComboBox" name="pp_cfg_broker_personality">
                      <property name="whatsThis">
                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                      </property>
@@ -679,7 +679,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="set_peer_params_button">
+               <widget class="QPushButton" name="set_broker_params_button">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -687,7 +687,7 @@
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>Set Peer Params</string>
+                 <string>Set Broker Params</string>
                 </property>
                </widget>
               </item>
@@ -710,11 +710,11 @@
                  </size>
                 </property>
                 <property name="title">
-                 <string>Peer Models</string>
+                 <string>Broker Models</string>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_7">
                  <item>
-                  <widget class="QListView" name="peer_cfg_view_list_vlgmodel">
+                  <widget class="QListView" name="broker_cfg_view_list_vlgmodel">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                      <horstretch>0</horstretch>
@@ -748,7 +748,7 @@
                  </spacer>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="update_peer_model_button">
+                 <widget class="QPushButton" name="update_broker_model_button">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                     <horstretch>0</horstretch>
@@ -756,7 +756,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>Set Peer Model</string>
+                   <string>Set Broker Model</string>
                   </property>
                  </widget>
                 </item>
@@ -781,11 +781,11 @@
                  </size>
                 </property>
                 <property name="title">
-                 <string>Peer Pers Drivers</string>
+                 <string>Broker Pers Drivers</string>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_8">
                  <item>
-                  <widget class="QListView" name="peer_cfg_view_list_vlgpersdriv">
+                  <widget class="QListView" name="broker_cfg_view_list_vlgpersdriv">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                      <horstretch>0</horstretch>
@@ -919,13 +919,13 @@
      <string>&amp;About</string>
     </property>
    </widget>
-   <widget class="QMenu" name="menuPeer">
+   <widget class="QMenu" name="menuBroker">
     <property name="title">
-     <string>&amp;Peer</string>
+     <string>&amp;Broker</string>
     </property>
     <addaction name="separator"/>
-    <addaction name="action_Start_Peer"/>
-    <addaction name="action_Stop_Peer"/>
+    <addaction name="action_Start_Broker"/>
+    <addaction name="action_Stop_Broker"/>
    </widget>
    <widget class="QMenu" name="menuLog">
     <property name="title">
@@ -941,7 +941,7 @@
     <addaction name="actionClean_Console"/>
    </widget>
    <addaction name="menu_File"/>
-   <addaction name="menuPeer"/>
+   <addaction name="menuBroker"/>
    <addaction name="menuConnection"/>
    <addaction name="menuLog"/>
    <addaction name="menuAbout"/>
@@ -955,8 +955,8 @@
    </attribute>
    <addaction name="action_Load_Config"/>
    <addaction name="separator"/>
-   <addaction name="action_Start_Peer"/>
-   <addaction name="action_Stop_Peer"/>
+   <addaction name="action_Start_Broker"/>
+   <addaction name="action_Stop_Broker"/>
    <addaction name="separator"/>
    <addaction name="actionConnect"/>
    <addaction name="separator"/>
@@ -990,25 +990,25 @@
     <string>&amp;Connect</string>
    </property>
    <property name="statusTip">
-    <string>Connect to peer</string>
+    <string>Connect to broker</string>
    </property>
   </action>
-  <action name="action_Start_Peer">
+  <action name="action_Start_Broker">
    <property name="icon">
     <iconset resource="tkt_prj_res.qrc">
      <normaloff>:/icon/icons/play.png</normaloff>:/icon/icons/play.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;Start Peer</string>
+    <string>&amp;Start Broker</string>
    </property>
   </action>
-  <action name="action_Stop_Peer">
+  <action name="action_Stop_Broker">
    <property name="icon">
     <iconset resource="tkt_prj_res.qrc">
      <normaloff>:/icon/icons/stop.png</normaloff>:/icon/icons/stop.png</iconset>
    </property>
    <property name="text">
-    <string>S&amp;top Peer</string>
+    <string>S&amp;top Broker</string>
    </property>
   </action>
   <action name="actionTrace">

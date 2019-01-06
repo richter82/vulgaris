@@ -4,7 +4,7 @@
  *
  */
 
-#include "pr_impl.h"
+#include "brk_impl.h"
 #include "conn_impl.h"
 #include "tx_impl.h"
 #include "sbs_impl.h"
@@ -1329,7 +1329,7 @@ void outgoing_connection_impl::release_all_children()
 
 RetCode outgoing_connection_impl::client_connect(sockaddr_in &params)
 {
-    if(broker_->broker_status_ != PeerStatus_RUNNING) {
+    if(broker_->broker_status_ != BrokerStatus_RUNNING) {
         IFLOG(broker_->log_, error(LS_CLO "[invalid broker status][{}]", __func__, broker_->broker_status_))
         return RetCode_BADSTTS;
     }

@@ -6,7 +6,7 @@
 
 #include "vlg_broker.h"
 #include "vlg_connection.h"
-#include "vlg/pr_impl.h"
+#include "vlg/brk_impl.h"
 
 namespace vlg {
 
@@ -31,7 +31,7 @@ struct default_broker_listener : public broker_listener {
         return RetCode_OK;
     }
     virtual void on_error(broker &) override {}
-    virtual void on_status_change(broker &, PeerStatus) override {}
+    virtual void on_status_change(broker &, BrokerStatus) override {}
     virtual RetCode on_incoming_connection(broker &, std::shared_ptr<incoming_connection> &) override {
         return RetCode_OK;
     }
@@ -107,7 +107,7 @@ bool broker::is_drop_existing_persistent_schema()
     return impl_->drop_existing_schema_;
 }
 
-PeerPersonality broker::get_personality()
+BrokerPersonality broker::get_personality()
 {
     return impl_->personality_;
 }
@@ -132,7 +132,7 @@ unsigned int broker::get_server_subscription_service_executor_size()
     return impl_->srv_sbs_exectrs_;
 }
 
-void broker::set_personality(PeerPersonality personality)
+void broker::set_personality(BrokerPersonality personality)
 {
     impl_->personality_ = personality;
 }
@@ -202,13 +202,13 @@ void broker::set_configured(bool configured)
     impl_->configured_ = configured;
 }
 
-PeerStatus broker::get_status()
+BrokerStatus broker::get_status()
 {
     return impl_->broker_status_;
 }
 
-RetCode broker::await_for_status_reached(PeerStatus test,
-                                         PeerStatus &current,
+RetCode broker::await_for_status_reached(BrokerStatus test,
+                                         BrokerStatus &current,
                                          time_t sec,
                                          long nsec)
 {
@@ -218,7 +218,7 @@ RetCode broker::await_for_status_reached(PeerStatus test,
                                            nsec);
 }
 
-RetCode broker::await_for_status_change(PeerStatus &broker_status,
+RetCode broker::await_for_status_change(BrokerStatus &broker_status,
                                         time_t sec,
                                         long nsec)
 {

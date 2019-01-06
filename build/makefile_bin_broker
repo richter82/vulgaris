@@ -1,4 +1,4 @@
-SRC = ../test/src/vlg_test_peer_both.cpp
+SRC = ../test/src/vlg_test_broker_both.cpp
 OBJ = $(SRC:.cpp=.o)
 OUTDIR = ../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/bin
 INCLUDES = 	-I../public\
@@ -12,15 +12,15 @@ CCFLAGS = -std=c++14 -Wall -fPIC -DSTA_L $(CC_DBG_REL_OPT)
 CCC = g++
 LDLIBS= -L../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/lib -L../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/contrib/lib -lsmplmdl -ldrvsqlite -lsqlite -lapicpp -lvlg -lpthread $(LD_ARCH_LIB)
 
-default: peer
+default: broker
 
-all: clean peer
+all: clean broker
 
 .cpp.o:
 	$(CCC) $(INCLUDES) $(CCFLAGS) -c $< -o $@
 
-peer: $(OBJ)
-	$(CCC) $(LD_DBG_REL_OPT) -o $(OUTDIR)/peer $(OBJ) $(LDLIBS)
+broker: $(OBJ)
+	$(CCC) $(LD_DBG_REL_OPT) -o $(OUTDIR)/broker $(OBJ) $(LDLIBS)
 
 clean:
-	rm -f $(OBJ) $(OUTDIR)/peer
+	rm -f $(OBJ) $(OUTDIR)/broker

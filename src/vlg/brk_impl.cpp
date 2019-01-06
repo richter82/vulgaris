@@ -4,7 +4,7 @@
  *
  */
 
-#include "pr_impl.h"
+#include "brk_impl.h"
 #include "conn_impl.h"
 #include "sbs_impl.h"
 
@@ -42,7 +42,7 @@ namespace vlg {
 
 broker_impl::broker_impl(broker &publ, broker_listener &listener) :
     broker_automa(publ, listener),
-    personality_(PeerPersonality_BOTH),
+    personality_(BrokerPersonality_BOTH),
     srv_exectrs_(0),
     cli_exectrs_(0),
     srv_sbs_exectrs_(0),
@@ -127,7 +127,7 @@ RetCode broker_impl::start_exec_services()
 {
     RetCode res = RetCode_OK;
     ExecSrvStatus current = ExecSrvStatus_TOINIT;
-    if(personality_ == PeerPersonality_PURE_SERVER || personality_ == PeerPersonality_BOTH) {
+    if(personality_ == BrokerPersonality_PURE_SERVER || personality_ == BrokerPersonality_BOTH) {
         IFLOG(log_,debug(LS_TRL "[starting server side executor service]",__func__))
         if((res = inco_exec_srv_.start())) {
             IFLOG(log_,critical(LS_CLO "[starting server side, last_err:{}]",__func__,res))
@@ -136,7 +136,7 @@ RetCode broker_impl::start_exec_services()
         inco_exec_srv_.await_for_status_reached(ExecSrvStatus_STARTED,current);
         IFLOG(log_,debug(LS_TRL "[server side executor service started]",__func__))
     }
-    if(personality_ == PeerPersonality_PURE_CLIENT || personality_ == PeerPersonality_BOTH) {
+    if(personality_ == BrokerPersonality_PURE_CLIENT || personality_ == BrokerPersonality_BOTH) {
         IFLOG(log_,debug(LS_TRL "[starting client side executor service]",__func__))
         if((res = outg_exec_srv_.start())) {
             IFLOG(log_,critical(LS_CLO "[starting client side, last_err:{}]",__func__,res))
@@ -221,16 +221,16 @@ RetCode broker_impl::on_automa_load_config(int pnum,
                                            const char *value)
 {
     if(!strcmp(param, "pure_server")) {
-        if(personality_ != PeerPersonality_BOTH) {
+        if(personality_ != BrokerPersonality_BOTH) {
             IFLOG(log_, error(LS_PAR"[pure_server] check params"))
         }
-        personality_ = PeerPersonality_PURE_SERVER;
+        personality_ = BrokerPersonality_PURE_SERVER;
     }
     if(!strcmp(param, "pure_client")) {
-        if(personality_ != PeerPersonality_BOTH) {
+        if(personality_ != BrokerPersonality_BOTH) {
             IFLOG(log_, error(LS_PAR"[pure_client] check params"))
         }
-        personality_ = PeerPersonality_PURE_CLIENT;
+        personality_ = BrokerPersonality_PURE_CLIENT;
     }
     if(!strcmp(param, "load_model")) {
         if(value) {
@@ -343,9 +343,9 @@ RetCode broker_impl::on_automa_start()
     SelectorStatus current = SelectorStatus_UNDEF;
     RetCode rcode = RetCode_OK;
     IFLOG(log_, info(LS_APL"[broker personality: << {} >>]",
-                     (personality_ == PeerPersonality_BOTH) ? "both" :
-                     (personality_ == PeerPersonality_PURE_SERVER) ? "pure-server" : "pure-client"))
-    if(personality_ == PeerPersonality_PURE_SERVER || personality_ == PeerPersonality_BOTH) {
+                     (personality_ == BrokerPersonality_BOTH) ? "both" :
+                     (personality_ == BrokerPersonality_PURE_SERVER) ? "pure-server" : "pure-client"))
+    if(personality_ == BrokerPersonality_PURE_SERVER || personality_ == BrokerPersonality_BOTH) {
         ExecSrvStatus current_exc_srv = ExecSrvStatus_TOINIT;
         if((rcode = srv_sbs_exec_serv_.start())) {
             IFLOG(log_, critical(LS_CLO "[starting subscription executor service][res:{}]", __func__, rcode))

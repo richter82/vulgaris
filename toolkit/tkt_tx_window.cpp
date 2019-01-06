@@ -56,7 +56,7 @@ vlg_toolkit_tx_window::vlg_toolkit_tx_window(vlg::outgoing_connection &conn,
                                              const vlg::nclass *opt_img,
                                              QWidget *parent) :
     tx_(*this),
-    tx_mdl_(edesc, conn.get_peer().get_nentity_manager(), this),
+    tx_mdl_(edesc, conn.get_broker().get_nentity_manager(), this),
     tx_mdl_wrp_(tx_mdl_),
     QMainWindow(parent),
     ui(new Ui::vlg_toolkit_tx_window)
@@ -90,6 +90,7 @@ vlg_toolkit_tx_window::~vlg_toolkit_tx_window()
 {
     qDebug() << "~vlg_toolkit_tx_window()";
     delete ui;
+    ui = nullptr;
 }
 
 void vlg_toolkit_tx_window::closeEvent(QCloseEvent *event)

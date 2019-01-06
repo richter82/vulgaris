@@ -22,6 +22,8 @@
     <ClInclude Include="..\src\glob.h" />
     <ClInclude Include="..\src\vlg\acceptor.h" />
     <ClInclude Include="..\src\vlg\bbuf.h" />
+    <ClInclude Include="..\src\vlg\brk_aut.h" />
+    <ClInclude Include="..\src\vlg\brk_impl.h" />
     <ClInclude Include="..\src\vlg\cfg.h" />
     <ClInclude Include="..\src\vlg\concurr.h" />
     <ClInclude Include="..\src\vlg\conn_impl.h" />
@@ -29,8 +31,6 @@
     <ClInclude Include="..\src\vlg\parse.h" />
     <ClInclude Include="..\src\vlg\proto.h" />
     <ClInclude Include="..\src\vlg\prs_impl.h" />
-    <ClInclude Include="..\src\vlg\pr_aut.h" />
-    <ClInclude Include="..\src\vlg\pr_impl.h" />
     <ClInclude Include="..\src\vlg\sbs_impl.h" />
     <ClInclude Include="..\src\vlg\selector.h" />
     <ClInclude Include="..\src\vlg\structs.h" />
@@ -40,6 +40,8 @@
   <ItemGroup>
     <ClCompile Include="..\src\vlg\acceptor.cpp" />
     <ClCompile Include="..\src\vlg\bbuf.cpp" />
+    <ClCompile Include="..\src\vlg\brk_aut.cpp" />
+    <ClCompile Include="..\src\vlg\brk_impl.cpp" />
     <ClCompile Include="..\src\vlg\cfg.cpp" />
     <ClCompile Include="..\src\vlg\concurr.cpp" />
     <ClCompile Include="..\src\vlg\conn_impl.cpp" />
@@ -50,8 +52,6 @@
     <ClCompile Include="..\src\vlg\prs_impl.cpp" />
     <ClCompile Include="..\src\vlg\prs_mng.cpp" />
     <ClCompile Include="..\src\vlg\prs_sbs.cpp" />
-    <ClCompile Include="..\src\vlg\pr_aut.cpp" />
-    <ClCompile Include="..\src\vlg\pr_impl.cpp" />
     <ClCompile Include="..\src\vlg\restore.cpp" />
     <ClCompile Include="..\src\vlg\sbs_impl.cpp" />
     <ClCompile Include="..\src\vlg\selector.cpp" />

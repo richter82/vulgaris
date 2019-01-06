@@ -12,7 +12,7 @@
 BROKER HANDLERS
 ************************************************************************/
 
-typedef void (*broker_on_status_change)(broker *p, PeerStatus status, void *ud, void *ud2);
+typedef void (*broker_on_status_change)(broker *p, BrokerStatus status, void *ud, void *ud2);
 typedef const char *(*broker_name)(broker *p, void *ud, void *ud2);
 typedef const unsigned int *(*broker_version)(broker *p, void *ud, void *ud2);
 typedef RetCode(*broker_on_load_config)(broker *p, int pnum, const char *param, const char *value, void *ud, void *ud2);
@@ -54,12 +54,12 @@ const nentity_manager *broker_get_nentity_manager(broker *p);
 int broker_is_persistent(broker *p);
 int broker_is_persistent_schema_creating(broker *p);
 int broker_is_dropping_existing_schema(broker *p);
-PeerPersonality broker_get_personality(broker *p);
+BrokerPersonality broker_get_personality(broker *p);
 struct sockaddr_in broker_get_server_sockaddr(broker *p);
 unsigned int broker_server_executor_count(broker *p);
 unsigned int broker_client_executor_count(broker *p);
 unsigned int broker_server_sbs_executor_count(broker *p);
-void broker_set_personality(broker *p, PeerPersonality personality);
+void broker_set_personality(broker *p, BrokerPersonality personality);
 void broker_add_load_model(broker *p, const char *model);
 void broker_set_srv_sin_addr(broker *p, const char *address);
 void broker_set_sin_port(broker *p, int port);
@@ -73,9 +73,9 @@ void broker_add_load_persistent_driver(broker *p, const char *driver);
 RetCode broker_extend_model_with_nem(broker *p, nentity_manager *nem);
 RetCode broker_extend_model_with_model_name(broker *p, const char *model_name);
 void broker_set_configured(broker *p, int configured);
-PeerStatus broker_get_status(broker *p);
-RetCode broker_await_for_status_reached(broker *p, PeerStatus test, PeerStatus *current, time_t sec, long nsec);
-RetCode broker_await_for_status_change(broker *p, PeerStatus *broker_status, time_t sec, long nsec);
+BrokerStatus broker_get_status(broker *p);
+RetCode broker_await_for_status_reached(broker *p, BrokerStatus test, BrokerStatus *current, time_t sec, long nsec);
+RetCode broker_await_for_status_change(broker *p, BrokerStatus *broker_status, time_t sec, long nsec);
 RetCode broker_start(broker *p, int argc, char *argv[], int spawn_new_thread);
 RetCode broker_stop(broker *p, int force_disconnect);
 RetCode broker_persistence_schema_create(broker *p, PersistenceAlteringMode mode);

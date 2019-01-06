@@ -44,12 +44,6 @@
     <ClInclude Include="..\src\vlg\proto.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\vlg\pr_impl.h">
-      <Filter>h</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\vlg\pr_aut.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\vlg\conn_impl.h">
       <Filter>h</Filter>
     </ClInclude>
@@ -60,6 +54,12 @@
       <Filter>h</Filter>
     </ClInclude>
     <ClInclude Include="..\src\glob.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vlg\brk_impl.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vlg\brk_aut.h">
       <Filter>h</Filter>
     </ClInclude>
   </ItemGroup>
@@ -94,12 +94,6 @@
     <ClCompile Include="..\src\vlg\proto.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\vlg\pr_impl.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\vlg\pr_aut.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\vlg\conn_impl.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -122,6 +116,12 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\src\vlg\prs_impl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vlg\brk_impl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vlg\brk_aut.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

@@ -16,4 +16,5 @@ vlg_toolkit_NewConnDlg::vlg_toolkit_NewConnDlg(QWidget *parent) :
 vlg_toolkit_NewConnDlg::~vlg_toolkit_NewConnDlg()
 {
     delete ui;
+    ui = nullptr;
 }

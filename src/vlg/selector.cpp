@@ -5,7 +5,7 @@
  */
 
 #include "selector.h"
-#include "pr_impl.h"
+#include "brk_impl.h"
 #include "conn_impl.h"
 
 namespace vlg {
@@ -220,7 +220,7 @@ RetCode selector::notify(const sel_evt *evt)
 RetCode selector::start_conn_objs()
 {
     RetCode res = RetCode_OK;
-    if(broker_.personality_ == PeerPersonality_PURE_SERVER || broker_.personality_ == PeerPersonality_BOTH) {
+    if(broker_.personality_ == BrokerPersonality_PURE_SERVER || broker_.personality_ == BrokerPersonality_BOTH) {
         if((res = srv_acceptor_.create_server_socket(srv_socket_))) {
             IFLOG(broker_.log_, critical(LS_CLO "[starting acceptor, last_err:{}]", __func__, res))
             return RetCode_KO;
@@ -228,7 +228,7 @@ RetCode selector::start_conn_objs()
         FD_SET(srv_socket_, &read_FDs_);
         nfds_ = (int)srv_socket_;
     }
-    if(broker_.personality_ == PeerPersonality_PURE_CLIENT || broker_.personality_ == PeerPersonality_BOTH) {
+    if(broker_.personality_ == BrokerPersonality_PURE_CLIENT || broker_.personality_ == BrokerPersonality_BOTH) {
         //???
     }
     FD_SET(udp_ntfy_srv_socket_, &read_FDs_);
@@ -375,10 +375,10 @@ inline void selector::FDSET_sockets()
 {
     FD_ZERO(&read_FDs_);
     FD_ZERO(&write_FDs_);
-    if(broker_.personality_ == PeerPersonality_PURE_SERVER || broker_.personality_ == PeerPersonality_BOTH) {
+    if(broker_.personality_ == BrokerPersonality_PURE_SERVER || broker_.personality_ == BrokerPersonality_BOTH) {
         FDSET_incoming_sockets();
     }
-    if(broker_.personality_ == PeerPersonality_PURE_CLIENT || broker_.personality_ == PeerPersonality_BOTH) {
+    if(broker_.personality_ == BrokerPersonality_PURE_CLIENT || broker_.personality_ == BrokerPersonality_BOTH) {
         FDSET_outgoing_sockets();
     }
     FDSET_write_incoming_pending_sockets();
@@ -613,20 +613,20 @@ inline RetCode selector::consume_events()
         sel_res_--;
     }
     if(sel_res_) {
-        if(broker_.personality_ == PeerPersonality_PURE_SERVER || broker_.personality_ == PeerPersonality_BOTH) {
+        if(broker_.personality_ == BrokerPersonality_PURE_SERVER || broker_.personality_ == BrokerPersonality_BOTH) {
             consume_inco_sock_events();
         }
-        if(broker_.personality_ == PeerPersonality_PURE_CLIENT || broker_.personality_ == PeerPersonality_BOTH) {
+        if(broker_.personality_ == BrokerPersonality_PURE_CLIENT || broker_.personality_ == BrokerPersonality_BOTH) {
             if(sel_res_) {
                 process_outg_sock_inco_events();
             }
         }
     }
     if(sel_res_) {
-        if(broker_.personality_ == PeerPersonality_PURE_SERVER || broker_.personality_ == PeerPersonality_BOTH) {
+        if(broker_.personality_ == BrokerPersonality_PURE_SERVER || broker_.personality_ == BrokerPersonality_BOTH) {
             process_inco_sock_outg_events();
         }
-        if(broker_.personality_ == PeerPersonality_PURE_CLIENT || broker_.personality_ == PeerPersonality_BOTH) {
+        if(broker_.personality_ == BrokerPersonality_PURE_CLIENT || broker_.personality_ == BrokerPersonality_BOTH) {
             if(sel_res_) {
                 process_outg_sock_outg_events();
             }
@@ -669,7 +669,7 @@ RetCode selector::server_socket_shutdown()
 
 RetCode selector::stop_and_clean()
 {
-    if(broker_.personality_ == PeerPersonality_PURE_SERVER || broker_.personality_ == PeerPersonality_BOTH) {
+    if(broker_.personality_ == BrokerPersonality_PURE_SERVER || broker_.personality_ == BrokerPersonality_BOTH) {
         for(auto it = inco_conn_map_.begin(); it != inco_conn_map_.end(); ++it)
             if(it->second->get_status() != ConnectionStatus_DISCONNECTED) {
                 it->second->impl_->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
@@ -679,7 +679,7 @@ RetCode selector::stop_and_clean()
         inco_conn_map_.clear();
         server_socket_shutdown();
     }
-    if(broker_.personality_ == PeerPersonality_PURE_CLIENT || broker_.personality_ == PeerPersonality_BOTH) {
+    if(broker_.personality_ == BrokerPersonality_PURE_CLIENT || broker_.personality_ == BrokerPersonality_BOTH) {
         for(auto it = outg_conn_map_.begin(); it != outg_conn_map_.end(); ++it)
             if(it->second->status_ != ConnectionStatus_DISCONNECTED) {
                 it->second->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);

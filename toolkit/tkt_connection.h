@@ -49,7 +49,7 @@ class vlg_toolkit_Connection : public QWidget {
         Q_OBJECT
 
     public:
-        explicit vlg_toolkit_Connection(vlg::peer &peer,
+        explicit vlg_toolkit_Connection(vlg::broker &broker,
                                         const QString &host,
                                         const QString &port,
                                         const QString &usr,

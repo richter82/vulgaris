@@ -15,7 +15,7 @@
 #include <QVector>
 
 #include "vlg_model.h"
-#include "vlg_peer.h"
+#include "vlg_broker.h"
 #include "vlg_connection.h"
 #include "vlg_transaction.h"
 #include "vlg_subscription.h"

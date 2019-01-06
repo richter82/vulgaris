@@ -1,6 +1,6 @@
 SRC = 	../src/apic/c_connection.cpp\
 		../src/apic/c_model.cpp\
-		../src/apic/c_peer.cpp\
+		../src/apic/c_broker.cpp\
 		../src/apic/c_persistence.cpp\
 		../src/apic/c_subscription.cpp\
 		../src/apic/c_transaction.cpp

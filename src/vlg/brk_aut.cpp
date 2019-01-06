@@ -4,7 +4,7 @@
  *
  */
 
-#include "pr_aut.h"
+#include "brk_aut.h"
 
 namespace vlg {
 
@@ -44,7 +44,7 @@ broker_automa::broker_automa(broker &publ, broker_listener &listener) :
     broker_id_(++broker_id),
     broker_plid_(0),
     broker_svid_(0),
-    broker_status_(PeerStatus_ZERO),
+    broker_status_(BrokerStatus_ZERO),
     broker_argc_(0),
     broker_argv_(nullptr),
     configured_(false),
@@ -59,7 +59,7 @@ broker_automa::broker_automa(broker &publ, broker_listener &listener) :
 
 broker_automa::~broker_automa()
 {
-    if(!(broker_status_ <= PeerStatus_INITIALIZED) && !(broker_status_ >= PeerStatus_STOPPED)) {
+    if(!(broker_status_ <= BrokerStatus_INITIALIZED) && !(broker_status_ >= BrokerStatus_STOPPED)) {
         IFLOG(log_, critical(LS_DTR "[broker:{} is not in a safe state:{}] " LS_EXUNX, __func__, broker_id_, broker_status_))
     }
 }
@@ -76,12 +76,12 @@ RetCode broker_automa::early_init()
         IFLOG(log_, error(LS_APL "#early init FAIL#"))
         return broker_last_error_;
     }
-    broker_status_ = PeerStatus_EARLY;
+    broker_status_ = BrokerStatus_EARLY;
     IFLOG(log_, info(LS_APL"#early init#"))
     return RetCode_OK;
 }
 
-RetCode broker_automa::set_status(PeerStatus broker_status)
+RetCode broker_automa::set_status(BrokerStatus broker_status)
 {
     IFLOG(log_, trace(LS_OPN "[status:{}]", __func__, broker_status))
     std::unique_lock<std::mutex> lck(broker_mtx_);
@@ -91,14 +91,14 @@ RetCode broker_automa::set_status(PeerStatus broker_status)
     return RetCode_OK;
 }
 
-RetCode broker_automa::await_for_status_reached(PeerStatus test,
-                                                PeerStatus &current,
+RetCode broker_automa::await_for_status_reached(BrokerStatus test,
+                                                BrokerStatus &current,
                                                 time_t sec,
                                                 long nsec)
 {
     RetCode rcode = RetCode_OK;
     std::unique_lock<std::mutex> lck(broker_mtx_);
-    if(broker_status_ < PeerStatus_INITIALIZED) {
+    if(broker_status_ < BrokerStatus_INITIALIZED) {
         return RetCode_BADSTTS;
     }
     if(sec<0) {
@@ -115,13 +115,13 @@ RetCode broker_automa::await_for_status_reached(PeerStatus test,
     return rcode;
 }
 
-RetCode broker_automa::await_for_status_change(PeerStatus &broker_status,
+RetCode broker_automa::await_for_status_change(BrokerStatus &broker_status,
                                                time_t sec,
                                                long nsec)
 {
     RetCode rcode = RetCode_OK;
     std::unique_lock<std::mutex> lck(broker_mtx_);
-    if(broker_status_ < PeerStatus_INITIALIZED) {
+    if(broker_status_ < BrokerStatus_INITIALIZED) {
         return RetCode_BADSTTS;
     }
     if(sec<0) {
@@ -144,15 +144,15 @@ RetCode broker_automa::start(int argc,
                              char *argv[],
                              bool spawn_new_thread)
 {
-    if(broker_status_ != PeerStatus_EARLY &&
-            broker_status_ != PeerStatus_STOPPED &&
-            broker_status_ != PeerStatus_ERROR) {
+    if(broker_status_ != BrokerStatus_EARLY &&
+            broker_status_ != BrokerStatus_STOPPED &&
+            broker_status_ != BrokerStatus_ERROR) {
         return RetCode_BADSTTS;
     }
     broker_argc_ = argc;
     broker_argv_ = argv;
     broker_last_error_ = RetCode_OK;
-    if(broker_status_ == PeerStatus_EARLY) {
+    if(broker_status_ == BrokerStatus_EARLY) {
         const char *broker_name = get_automa_name();
         if(!broker_name) {
             IFLOG(log_, critical(LS_APL"#early FAIL: invalid broker name#"))
@@ -174,7 +174,7 @@ RetCode broker_automa::start(int argc,
             step_error();
         }
     } else {
-        set_status(PeerStatus_RESTART_REQUESTED);
+        set_status(BrokerStatus_RESTART_REQUESTED);
     }
     if((broker_last_error_ = step_start())) {
         IFLOG(log_, error(LS_APL"#start FAIL with res:{}#", broker_last_error_))
@@ -194,7 +194,7 @@ RetCode broker_automa::start(int argc,
 
 RetCode broker_automa::stop(bool force_disconnect)
 {
-    if(broker_status_ != PeerStatus_RUNNING) {
+    if(broker_status_ != BrokerStatus_RUNNING) {
         return RetCode_BADSTTS;
     }
     force_disconnect_on_stop_ = force_disconnect;
@@ -208,7 +208,7 @@ RetCode broker_automa::stop(bool force_disconnect)
 RetCode broker_automa::running_cycle()
 {
     RetCode handlers_res = RetCode_OK;
-    PeerStatus p_status = PeerStatus_ZERO;
+    BrokerStatus p_status = BrokerStatus_ZERO;
     bool move_running = true;
     do {
         if(move_running) {
@@ -217,12 +217,12 @@ RetCode broker_automa::running_cycle()
                 step_error();
             }
             //here we are RUNNING
-            p_status = PeerStatus_RUNNING;
+            p_status = BrokerStatus_RUNNING;
             await_for_status_change(p_status);
             move_running = false;
         }
         switch(p_status) {
-            case PeerStatus_STOP_REQUESTED:
+            case BrokerStatus_STOP_REQUESTED:
                 IFLOG(log_, info(LS_APL"#broker requested to stop#"))
                 if((broker_last_error_ = handlers_res = step_stop())) {
                     IFLOG(log_, error(LS_APL"#stop FAIL with res:{}#", handlers_res))
@@ -233,7 +233,7 @@ RetCode broker_automa::running_cycle()
                 IFLOG(log_, critical(LS_APL"#broker in unknown status#"))
                 step_error();
         }
-    } while(broker_status_ != PeerStatus_STOPPED && broker_status_ != PeerStatus_ERROR);
+    } while(broker_status_ != BrokerStatus_STOPPED && broker_status_ != BrokerStatus_ERROR);
     return RetCode_OK;
 }
 
@@ -262,7 +262,7 @@ const char *broker_welcome_fmt = LS_WEL "@{} {}" "@{} {}.{}.{}" "@{} {}";
 
 RetCode broker_automa::step_welcome()
 {
-    if(broker_status_ > PeerStatus_EARLY) {
+    if(broker_status_ > BrokerStatus_EARLY) {
         return RetCode_BADSTTS;
     }
     IFLOG(log_, info(broker_welcome_fmt, "BROKER:",
@@ -273,18 +273,18 @@ RetCode broker_automa::step_welcome()
                      broker_ver_[2],
                      "ARCH:",
                      get_arch()))
-    set_status(PeerStatus_WELCOMED);
+    set_status(BrokerStatus_WELCOMED);
     IFLOG(log_, info(LS_APL"#welcomed#"))
     return RetCode_OK;
 }
 
 RetCode broker_automa::step_init()
 {
-    if(broker_status_ > PeerStatus_INITIALIZED) {
+    if(broker_status_ > BrokerStatus_INITIALIZED) {
         return RetCode_BADSTTS;
     }
     IFLOG(log_, info(LS_APL"#initializing#"))
-    set_status(PeerStatus_INITIALIZING);
+    set_status(BrokerStatus_INITIALIZING);
     if(!configured_) {
         bool params_chance = false;
         if(broker_argc_ < 2) {
@@ -320,29 +320,29 @@ RetCode broker_automa::step_init()
         return broker_last_error_;
     }
     IFLOG(log_, info(LS_APL"#init#"))
-    set_status(PeerStatus_INITIALIZED);
+    set_status(BrokerStatus_INITIALIZED);
     return RetCode_OK;
 }
 
 RetCode broker_automa::step_start()
 {
-    if(broker_status_ > PeerStatus_STARTED) {
+    if(broker_status_ > BrokerStatus_STARTED) {
         return RetCode_BADSTTS;
     }
     IFLOG(log_, info(LS_APL"#starting#"))
-    set_status(PeerStatus_STARTING);
+    set_status(BrokerStatus_STARTING);
     if((broker_last_error_ = on_automa_start())) {
         IFLOG(log_, error(LS_APL"#start FAIL#"))
         return broker_last_error_;
     }
     IFLOG(log_, info(LS_APL"#started#"))
-    set_status(PeerStatus_STARTED);
+    set_status(BrokerStatus_STARTED);
     return RetCode_OK;
 }
 
 RetCode broker_automa::step_move_running()
 {
-    if(broker_status_ != PeerStatus_STARTED) {
+    if(broker_status_ != BrokerStatus_STARTED) {
         return RetCode_BADSTTS;
     }
     IFLOG(log_, info(LS_APL"#move running#"))
@@ -355,34 +355,34 @@ RetCode broker_automa::step_move_running()
 
 RetCode broker_automa::set_running()
 {
-    if(broker_status_ > PeerStatus_RUNNING) {
+    if(broker_status_ > BrokerStatus_RUNNING) {
         return RetCode_BADSTTS;
     }
     IFLOG(log_, info(LS_APL"#running#"))
-    set_status(PeerStatus_RUNNING);
+    set_status(BrokerStatus_RUNNING);
     return RetCode_OK;
 }
 
 RetCode broker_automa::step_stop()
 {
-    if(broker_status_ > PeerStatus_STOPPED) {
+    if(broker_status_ > BrokerStatus_STOPPED) {
         return RetCode_BADSTTS;
     }
     IFLOG(log_, info(LS_APL"#stopping#"))
-    set_status(PeerStatus_STOPPING);
+    set_status(BrokerStatus_STOPPING);
     if((broker_last_error_ = on_automa_stop())) {
         IFLOG(log_, error(LS_APL"#stop FAIL#"))
         return broker_last_error_;
     }
     IFLOG(log_, info(LS_APL"#stopped#"))
-    set_status(PeerStatus_STOPPED);
+    set_status(BrokerStatus_STOPPED);
     return RetCode_OK;
 }
 
 RetCode broker_automa::set_stop_request()
 {
     IFLOG(log_, info(LS_APL"#stop request#"))
-    set_status(PeerStatus_STOP_REQUESTED);
+    set_status(BrokerStatus_STOP_REQUESTED);
     return RetCode_OK;
 }
 
@@ -391,7 +391,7 @@ void broker_automa::step_error()
     IFLOG(log_, warn(LS_APL"#going error#"))
     on_automa_error();
     IFLOG(log_, error(LS_APL"#error#"))
-    set_status(PeerStatus_ERROR);
+    set_status(BrokerStatus_ERROR);
 }
 
 }

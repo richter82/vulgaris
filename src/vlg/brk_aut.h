@@ -24,16 +24,16 @@ struct broker_automa {
 
         RetCode stop(bool force_disconnect = false);
 
-        RetCode await_for_status_reached(PeerStatus test,
-                                         PeerStatus &current,
+        RetCode await_for_status_reached(BrokerStatus test,
+                                         BrokerStatus &current,
                                          time_t sec = -1,
                                          long nsec = 0);
 
-        RetCode await_for_status_change(PeerStatus &broker_status,
+        RetCode await_for_status_change(BrokerStatus &broker_status,
                                         time_t sec = -1,
                                         long nsec = 0);
 
-        RetCode set_status(PeerStatus);
+        RetCode set_status(BrokerStatus);
         RetCode set_running();
         RetCode set_stop_request();
 
@@ -65,7 +65,7 @@ struct broker_automa {
         unsigned int broker_id_;
         unsigned int broker_plid_;
         unsigned int broker_svid_;
-        PeerStatus broker_status_;
+        BrokerStatus broker_status_;
         std::string broker_name_;
         unsigned int broker_ver_[4];
         int broker_argc_;

@@ -19,7 +19,7 @@ extern "C" {
 
     //broker
 
-    typedef void (*broker_on_status_change)(broker *p, PeerStatus status, void *ud, void *ud2);
+    typedef void (*broker_on_status_change)(broker *p, BrokerStatus status, void *ud, void *ud2);
     typedef const char *(*broker_name)(broker *p, void *ud, void *ud2);
     typedef const unsigned int *(*broker_version)(broker *p, void *ud, void *ud2);
     typedef RetCode(*broker_on_load_config)(broker *p, int pnum, const char *param, const char *value, void *ud, void *ud2);
@@ -626,7 +626,7 @@ struct c_broker_listener : public broker_listener {
         }
     }
 
-    virtual void on_status_change(broker &p, PeerStatus status) override {
+    virtual void on_status_change(broker &p, BrokerStatus status) override {
         if(((c_broker &)p).psc_) {
             ((c_broker &)p).psc_(&p, status,
                                  ((c_broker &)p).ud_[PR_STC_UD_IDX],
@@ -745,7 +745,7 @@ extern "C" {
         return p->is_drop_existing_persistent_schema() ? 1 : 0;
     }
 
-    PeerPersonality broker_get_personality(broker *p)
+    BrokerPersonality broker_get_personality(broker *p)
     {
         return p->get_personality();
     }
@@ -770,7 +770,7 @@ extern "C" {
         return p->get_server_subscription_service_executor_size();
     }
 
-    void broker_set_personality(broker *p, PeerPersonality personality)
+    void broker_set_personality(broker *p, BrokerPersonality personality)
     {
         p->set_personality(personality);
     }
@@ -896,7 +896,7 @@ extern "C" {
         p->set_configured(configured ? true : false);
     }
 
-    PeerStatus broker_get_status(broker *p)
+    BrokerStatus broker_get_status(broker *p)
     {
         return p->get_status();
     }
@@ -918,8 +918,8 @@ extern "C" {
     }
 
     RetCode broker_await_for_status_reached(broker *p,
-                                            PeerStatus test,
-                                            PeerStatus *current,
+                                            BrokerStatus test,
+                                            BrokerStatus *current,
                                             time_t sec,
                                             long nsec)
     {
@@ -927,7 +927,7 @@ extern "C" {
     }
 
     RetCode broker_await_for_status_change(broker *p,
-                                           PeerStatus *broker_status,
+                                           BrokerStatus *broker_status,
                                            time_t sec,
                                            long nsec)
     {

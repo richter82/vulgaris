@@ -69,7 +69,7 @@ vlg_toolkit_sbs_window::vlg_toolkit_sbs_window(vlg::outgoing_connection &conn,
                                                const vlg::nentity_desc &edesc,
                                                QWidget *parent) :
     sbs_(*this),
-    sbs_mdl_(edesc, conn.get_peer().get_nentity_manager()),
+    sbs_mdl_(edesc, conn.get_broker().get_nentity_manager()),
     sbs_mdl_wr_(sbs_mdl_, this),
     QMainWindow(parent),
     ui(new Ui::vlg_toolkit_sbs_window)
@@ -104,6 +104,7 @@ vlg_toolkit_sbs_window::~vlg_toolkit_sbs_window()
         sbs_.await_for_stop_result(sbs_stop_result, sbs_stop_protocode);
     }
     delete ui;
+    ui = nullptr;
 }
 
 void vlg_toolkit_sbs_window::on_actionStart_SBS_triggered()
@@ -254,7 +255,7 @@ void vlg_toolkit_sbs_window::OnNewTxRequested()
     }
 
     const vlg::nentity_desc *edesc = sbs_.get_connection().
-                                     get_peer().
+                                     get_broker().
                                      get_nentity_manager().
                                      get_nentity_descriptor(item->get_id());
     if(!edesc) {

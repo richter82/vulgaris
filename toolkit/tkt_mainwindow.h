@@ -18,9 +18,9 @@ namespace vlg_tlkt {
 // ****VLG_TOOLKIT_PEER****
 //------------------------------------------------------------------------------
 
-class toolkit_peer : public vlg::peer {
+class toolkit_broker : public vlg::broker {
     public:
-        toolkit_peer(vlg_toolkit_MainWindow &widget);
+        toolkit_broker(vlg_toolkit_MainWindow &widget);
 
     private:
         virtual const char *get_name() override;
@@ -52,13 +52,13 @@ class vlg_toolkit_MainWindow : public QMainWindow {
     private slots:
         void on_action_Exit_triggered();
         void on_action_Load_Config_triggered();
-        void on_set_peer_params_button_clicked();
-        void on_update_peer_model_button_clicked();
+        void on_set_broker_params_button_clicked();
+        void on_update_broker_model_button_clicked();
         void on_set_pers_driver_button_clicked();
-        void on_action_Start_Peer_triggered();
-        void on_action_Stop_Peer_triggered();
+        void on_action_Start_Broker_triggered();
+        void on_action_Stop_Broker_triggered();
         void on_actionConnect_triggered();
-        void on_peer_Tab_tabCloseRequested(int index);
+        void on_broker_Tab_tabCloseRequested(int index);
         void on_actionTrace_triggered();
         void on_actionDebug_triggered();
         void on_actionInfo_triggered();
@@ -69,23 +69,23 @@ class vlg_toolkit_MainWindow : public QMainWindow {
 
     public slots:
         void OnLogEvent(spdlog::level::level_enum tlvl, const QString &msg);
-        void OnPeer_status_change(vlg::PeerStatus status);
+        void OnBroker_status_change(vlg::BrokerStatus status);
         void On_VLG_MODEL_Update();
         void OnSetInfoMsg(const QString &msg);
         void OnFlashInfoMsg();
         void OnResetInfoMsg();
 
     signals:
-        void Peer_status_change(vlg::PeerStatus status);
+        void Broker_status_change(vlg::BrokerStatus status);
         void VLG_MODEL_Update_event();
         void SignalNewConnectionTimeout(const QString &msg);
 
     public:
-        void EmitPeerStatus(vlg::PeerStatus status);
+        void EmitBrokerStatus(vlg::BrokerStatus status);
 
-        friend void vlg_toolkit_peer_status_change_hndlr(vlg::peer &p,
-                                                         vlg::PeerStatus status,
-                                                         void *ud);
+        friend void vlg_toolkit_broker_status_change_hndlr(vlg::broker &p,
+                                                           vlg::BrokerStatus status,
+                                                           void *ud);
     private:
         void Status_RUNNING_Actions();
         void Status_STOPPED_Actions();
@@ -96,22 +96,22 @@ class vlg_toolkit_MainWindow : public QMainWindow {
                                  const QString &port,
                                  const QString &usr,
                                  const QString &psswd);
-        void LoadDefPeerCfgFile();
+        void LoadDefBrokerCfgFile();
 
-        //peer cfg loading
+        //broker cfg loading
     public:
-        static void peer_params_clbk_ud(int pnum,
-                                        const char *param,
-                                        const char *value,
-                                        void *ud);
+        static void broker_params_clbk_ud(int pnum,
+                                          const char *param,
+                                          const char *value,
+                                          void *ud);
 
     private:
-        vlg::RetCode PeerLoadCfgHndl(int pnum,
-                                     const char *param,
-                                     const char *value);
-        //peer
+        vlg::RetCode BrokerLoadCfgHndl(int pnum,
+                                       const char *param,
+                                       const char *value);
+        //broker
     private:
-        vlg_tlkt::toolkit_peer peer_;
+        vlg_tlkt::toolkit_broker broker_;
 
         //MODEL: VLG_MODEL(s) TO LOAD by FILE
     private:

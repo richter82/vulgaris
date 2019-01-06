@@ -5,7 +5,7 @@
  */
 
 #pragma once
-#include "pr_aut.h"
+#include "brk_aut.h"
 #include "selector.h"
 #include "prs_impl.h"
 #include "sbs_impl.h"
@@ -138,7 +138,7 @@ struct broker_impl : public broker_automa {
         virtual void on_automa_error() override;
 
     public:
-        PeerPersonality personality_;
+        BrokerPersonality personality_;
         unsigned int srv_exectrs_;
         unsigned int cli_exectrs_;
         unsigned int srv_sbs_exectrs_;

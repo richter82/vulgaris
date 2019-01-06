@@ -91,8 +91,6 @@ void exectr::run()
             task->set_execution_result(task->execute());
             task->set_status(TskStatus_EXECUTED);
             set_status(ExecutorStatus_IDLE);
-        } else if(pres == RetCode_PTHERR) {
-            set_status(ExecutorStatus_ERROR);
         }
     }
     IFLOG(eserv_.log_, debug(LS_TRL "[stopping]", __func__))
@@ -103,8 +101,6 @@ void exectr::run()
             task->set_execution_result(task->execute());
             task->set_status(TskStatus_EXECUTED);
             set_status(ExecutorStatus_IDLE);
-        } else if(pres == RetCode_PTHERR) {
-            set_status(ExecutorStatus_ERROR);
         }
         if(!(tq_size = eserv_.get_task_queue().size())) {
             set_status(ExecutorStatus_DISPOSING);
@@ -259,9 +255,6 @@ RetCode exec_srv::submit(std::shared_ptr<task> &task)
             case RetCode_QFULL:
             case RetCode_TIMEOUT:
                 IFLOG(log_, warn(LS_TRL "[id:{}][queue full]", __func__, id_))
-                break;
-            case RetCode_PTHERR:
-                IFLOG(log_, critical(LS_TRL "[id:{}][pthread error]", __func__, id_))
                 break;
             default:
                 IFLOG(log_, error(LS_TRL "[id:{}][res:{}]", __func__, id_, rcode))

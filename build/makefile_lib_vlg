@@ -10,8 +10,8 @@ SRC =	../src/vlg/acceptor.cpp\
 		../src/vlg/prs_impl.cpp\
 		../src/vlg/prs_mng.cpp\
 		../src/vlg/prs_sbs.cpp\
-		../src/vlg/pr_aut.cpp\
-		../src/vlg/pr_impl.cpp\
+		../src/vlg/brk_aut.cpp\
+		../src/vlg/brk_impl.cpp\
 		../src/vlg/restore.cpp\
 		../src/vlg/sbs_impl.cpp\
 		../src/vlg/selector.cpp\

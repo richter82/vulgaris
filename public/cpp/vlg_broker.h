@@ -22,7 +22,7 @@ struct broker_listener {
     virtual RetCode on_stopping(broker &) = 0;
     virtual RetCode on_move_running(broker &) = 0;
     virtual void on_error(broker &) = 0;
-    virtual void on_status_change(broker &, PeerStatus) = 0;
+    virtual void on_status_change(broker &, BrokerStatus) = 0;
 
     /**
     @return default implementation always returns RetCode_OK,
@@ -52,13 +52,13 @@ struct broker {
     bool is_create_persistent_schema();
     bool is_drop_existing_persistent_schema();
 
-    PeerPersonality get_personality();
+    BrokerPersonality get_personality();
     sockaddr_in get_server_sockaddr();
     unsigned int get_server_transaction_service_executor_size();
     unsigned int get_server_subscription_service_executor_size();
     unsigned int get_client_transaction_service_executor_size();
 
-    void set_personality(PeerPersonality);
+    void set_personality(BrokerPersonality);
     void set_server_address(const char *);
     void set_server_port(int);
     void set_server_transaction_service_executor_size(unsigned int);
@@ -77,14 +77,14 @@ struct broker {
     virtual const char *get_name() = 0;
     virtual const unsigned int *get_version() = 0;
 
-    PeerStatus get_status();
+    BrokerStatus get_status();
 
-    RetCode await_for_status_reached(PeerStatus test,
-                                     PeerStatus &current,
+    RetCode await_for_status_reached(BrokerStatus test,
+                                     BrokerStatus &current,
                                      time_t sec = -1,
                                      long nsec = 0);
 
-    RetCode await_for_status_change(PeerStatus &broker_status,
+    RetCode await_for_status_change(BrokerStatus &broker_status,
                                     time_t sec = -1,
                                     long nsec = 0);
 

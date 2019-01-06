@@ -1,5 +1,5 @@
 SRC = 	../src/apicpp/connection.cpp\
-		../src/apicpp/peer.cpp\
+		../src/apicpp/broker.cpp\
 		../src/apicpp/persistence.cpp\
 		../src/apicpp/subscription.cpp\
 		../src/apicpp/transaction.cpp\

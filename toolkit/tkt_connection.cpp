@@ -60,7 +60,7 @@ static toolkit_connection_listener tcl;
 toolkit_connection::toolkit_connection(vlg_toolkit_Connection &widget) : vlg::outgoing_connection(tcl), widget_(widget)
 {}
 
-vlg_toolkit_Connection::vlg_toolkit_Connection(vlg::peer &peer,
+vlg_toolkit_Connection::vlg_toolkit_Connection(vlg::broker &broker,
                                                const QString &host,
                                                const QString &port,
                                                const QString &usr,
@@ -90,7 +90,7 @@ vlg_toolkit_Connection::vlg_toolkit_Connection(vlg::peer &peer,
     conn_params.sin_addr.s_addr = inet_addr(host.toLatin1().data());
     conn_params.sin_port = htons(atoi(port.toLatin1().data()));
 
-    conn_.bind(peer);
+    conn_.bind(broker);
     conn_.connect(conn_params);
 
     connect(this, SIGNAL(SignalConnStatusChange(vlg::ConnectionStatus)),
@@ -98,8 +98,8 @@ vlg_toolkit_Connection::vlg_toolkit_Connection(vlg::peer &peer,
             SLOT(OnConnStatusChange(vlg::ConnectionStatus)));
     EmitConnStatus(conn_.get_status());
 
-    ui->peer_model_tree_view->setModel(&b_mdl_);
-    connect(ui->peer_model_tree_view,
+    ui->broker_model_tree_view->setModel(&b_mdl_);
+    connect(ui->broker_model_tree_view,
             SIGNAL(customContextMenuRequested(const QPoint &)), this,
             SLOT(OnCustomMenuRequested(const QPoint &)));
 
@@ -113,6 +113,7 @@ vlg_toolkit_Connection::vlg_toolkit_Connection(vlg::peer &peer,
 vlg_toolkit_Connection::~vlg_toolkit_Connection()
 {
     delete ui;
+    ui = nullptr;
 }
 
 void vlg_toolkit_Connection::UpdateTabHeader()
@@ -201,6 +202,9 @@ int vlg_toolkit_Connection::NextCount()
 
 void vlg_toolkit_Connection::OnConnStatusChange(vlg::ConnectionStatus status)
 {
+    if(!ui) {
+        return;
+    }
     switch(status) {
         case vlg::ConnectionStatus_INITIALIZED:
             ui->conn_status_label_disp->setText(QObject::tr("INITIALIZED"));
@@ -258,7 +262,7 @@ void vlg_toolkit_Connection::OnTestSlot()
 
 void vlg_toolkit_Connection::OnCustomMenuRequested(const QPoint &pos)
 {
-    QModelIndex proxy_index = ui->peer_model_tree_view->indexAt(pos);
+    QModelIndex proxy_index = ui->broker_model_tree_view->indexAt(pos);
     QModelIndex index = b_mdl_.mapToSource(proxy_index);
     model_item *item = static_cast<model_item *>(index.internalPointer());
     if(!item) {
@@ -279,7 +283,7 @@ void vlg_toolkit_Connection::OnCustomMenuRequested(const QPoint &pos)
     custom_menu->addAction(ntx);
     custom_menu->addAction(nsbs);
 
-    custom_menu->popup(ui->peer_model_tree_view->viewport()->mapToGlobal(pos));
+    custom_menu->popup(ui->broker_model_tree_view->viewport()->mapToGlobal(pos));
 }
 
 void vlg_toolkit_Connection::EmitConnStatus(vlg::ConnectionStatus status)
@@ -315,7 +319,7 @@ void vlg_toolkit_Connection::on_extend_model_button_clicked() {}
 
 void vlg_toolkit_Connection::on_new_tx_button_clicked()
 {
-    QModelIndexList indexes = ui->peer_model_tree_view->selectionModel()->selectedRows();
+    QModelIndexList indexes = ui->broker_model_tree_view->selectionModel()->selectedRows();
     if(!indexes.count()) {
         return;
     }
@@ -344,7 +348,7 @@ void vlg_toolkit_Connection::on_new_tx_button_clicked()
 
 void vlg_toolkit_Connection::on_new_sbs_button_clicked()
 {
-    QModelIndexList indexes = ui->peer_model_tree_view->selectionModel()->selectedRows();
+    QModelIndexList indexes = ui->broker_model_tree_view->selectionModel()->selectedRows();
     if(!indexes.count()) {
         return;
     }

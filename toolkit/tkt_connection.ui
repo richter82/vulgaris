@@ -446,7 +446,7 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_15">
         <item>
-         <widget class="QTreeView" name="peer_model_tree_view">
+         <widget class="QTreeView" name="broker_model_tree_view">
           <property name="contextMenuPolicy">
            <enum>Qt::CustomContextMenu</enum>
           </property>

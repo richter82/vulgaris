@@ -31,9 +31,9 @@ extern "C" {
 namespace vlg {
 #endif
 
-/** @brief vlg return codes.
-    When possible functions and methods of the vlg framework
-    use this set of codes as return value.
+/** @brief return codes.
+    When possible functions and methods of the vulgaris framework
+    will use this set of codes as return value.
 */
 typedef enum {
     RetCode_UNKERR           = -1000,    /**< unknown error */
@@ -43,8 +43,7 @@ typedef enum {
     RetCode_DBERR            = -104,     /**< database error */
     RetCode_IOERR            = -103,     /**< I/O operation fail */
     RetCode_MEMERR           = -102,     /**< memory error */
-    RetCode_PTHERR           = -101,     /**< pthread error */
-    RetCode_SYSERR           = -100,     /**< system error */
+    RetCode_SYSERR           = -101,     /**< system error */
 
     //generic error
     RetCode_UNVRSC           = -2,       /**< unavailable resource */
@@ -320,7 +319,7 @@ typedef enum  {
 } TransactionStatus;
 
 /*****************************************
-vlg SUBSCRIPTION TYPE
+SUBSCRIPTION TYPE
 ******************************************/
 typedef enum  {
     SubscriptionType_UNDEFINED,
@@ -329,7 +328,7 @@ typedef enum  {
 } SubscriptionType;
 
 /*****************************************
-vlg SUBSCRIPTION MODE
+SUBSCRIPTION MODE
 ******************************************/
 typedef enum  {
     SubscriptionMode_UNDEFINED,
@@ -339,7 +338,7 @@ typedef enum  {
 } SubscriptionMode;
 
 /*****************************************
-vlg SUBSCRIPTION FLOW TYPE
+SUBSCRIPTION FLOW TYPE
 ******************************************/
 typedef enum  {
     SubscriptionFlowType_UNDEFINED,
@@ -348,7 +347,7 @@ typedef enum  {
 } SubscriptionFlowType;
 
 /*****************************************
-vlg SUBSCRIPTION DOWNLOAD TYPE
+SUBSCRIPTION DOWNLOAD TYPE
 ******************************************/
 typedef enum  {
     SubscriptionDownloadType_UNDEFINED,
@@ -392,48 +391,48 @@ typedef enum  {
 BROKER PERSONALITY
 ******************************************/
 typedef enum  {
-    PeerPersonality_BOTH,
-    PeerPersonality_PURE_SERVER,
-    PeerPersonality_PURE_CLIENT,
-} PeerPersonality;
+    BrokerPersonality_BOTH,
+    BrokerPersonality_PURE_SERVER,
+    BrokerPersonality_PURE_CLIENT,
+} BrokerPersonality;
 
 /*****************************************
 BROKER STATUS
 ******************************************/
 typedef enum  {
-    PeerStatus_ZERO,               //0
-    PeerStatus_EARLY,              //1
-    PeerStatus_WELCOMED,           //2
-    PeerStatus_INITIALIZING,       //3
+    BrokerStatus_ZERO,               //0
+    BrokerStatus_EARLY,              //1
+    BrokerStatus_WELCOMED,           //2
+    BrokerStatus_INITIALIZING,       //3
 
     /**
     it means that caller thread has statically initialized this broker.
     */
-    PeerStatus_INITIALIZED,        //4
+    BrokerStatus_INITIALIZED,        //4
 
     /**
     convenience state used when a broker has been stopped and then restarted.
     */
-    PeerStatus_RESTART_REQUESTED,  //5
+    BrokerStatus_RESTART_REQUESTED,  //5
 
-    PeerStatus_STARTING,           //6
+    BrokerStatus_STARTING,           //6
 
     /**
     it means that this broker has eventually started other threads
     and they are ready.
     */
-    PeerStatus_STARTED,            //7
+    BrokerStatus_STARTED,            //7
 
     /**
     it means that this broker is running.
     */
-    PeerStatus_RUNNING,            //8
+    BrokerStatus_RUNNING,            //8
 
-    PeerStatus_STOP_REQUESTED,     //9
-    PeerStatus_STOPPING,           //10
-    PeerStatus_STOPPED,            //11 --stop state.
-    PeerStatus_ERROR,              //12 --error state.
-} PeerStatus;
+    BrokerStatus_STOP_REQUESTED,     //9
+    BrokerStatus_STOPPING,           //10
+    BrokerStatus_STOPPED,            //11 --stop state.
+    BrokerStatus_ERROR,              //12 --error state.
+} BrokerStatus;
 
 /*****************************************
 MODEL RELATED

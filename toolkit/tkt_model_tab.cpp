@@ -37,12 +37,13 @@ vlg_toolkit_model_tab::vlg_toolkit_model_tab(vlg_toolkit_vlg_model
 {
     ui->setupUi(this);
     b_mdl_.setSourceModel(&vlg_model_loaded_model);
-    ui->peer_model_tree_main_view->setModel(&b_mdl_);
+    ui->broker_model_tree_main_view->setModel(&b_mdl_);
 }
 
 vlg_toolkit_model_tab::~vlg_toolkit_model_tab()
 {
     delete ui;
+    ui = nullptr;
 }
 
 void vlg_toolkit_model_tab::On_VLG_MODEL_Update()

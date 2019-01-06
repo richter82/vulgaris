@@ -321,7 +321,7 @@ struct incoming_subscription_factory : public vlg::incoming_subscription_factory
 
 struct both_broker_listener : public vlg::broker_listener {
 
-    virtual void on_status_change(vlg::broker &p, vlg::PeerStatus) override {
+    virtual void on_status_change(vlg::broker &p, vlg::BrokerStatus) override {
         test_log->trace(LS_TST, __func__);
     }
 
@@ -414,9 +414,9 @@ struct entry_point {
         }
 
         virtual ~entry_point() {
-            vlg::PeerStatus p_status = vlg::PeerStatus_ZERO;
+            vlg::BrokerStatus p_status = vlg::BrokerStatus_ZERO;
             tbroker_.stop(true);
-            tbroker_.await_for_status_reached(vlg::PeerStatus_STOPPED,
+            tbroker_.await_for_status_reached(vlg::BrokerStatus_STOPPED,
                                               p_status,
                                               TEST_TMOUT);
         }
@@ -432,9 +432,9 @@ struct entry_point {
         }
 
         vlg::RetCode start_broker(int argc, char *argv[], bool spawn_thread) {
-            vlg::PeerStatus p_status = vlg::PeerStatus_ZERO;
+            vlg::BrokerStatus p_status = vlg::BrokerStatus_ZERO;
             tbroker_.start(argc, argv, spawn_thread);
-            return tbroker_.await_for_status_reached(vlg::PeerStatus_RUNNING, p_status, TEST_TMOUT);
+            return tbroker_.await_for_status_reached(vlg::BrokerStatus_RUNNING, p_status, TEST_TMOUT);
         }
 
         vlg::RetCode out_connect() {

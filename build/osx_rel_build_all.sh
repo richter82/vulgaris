@@ -14,6 +14,6 @@ make -f makefile_lib_apicpp all;
 make -f makefile_bin_vlgc all;
 make -f makefile_lib_testing_mdl all;
 make -f makefile_slib_testing_mdl all;
-make -f makefile_bin_peer all;
-make -f makefile_bin_peer_dyn all;
+make -f makefile_bin_broker all;
+make -f makefile_bin_broker_dyn all;
 echo "@@@@@@ end DEBUG build @@@@@@"

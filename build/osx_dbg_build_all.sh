@@ -27,6 +27,6 @@ make -f makefile_lib_drvsqlite;
 make -f makefile_slib_drvsqlite;
 make -f makefile_lib_testing_mdl;
 make -f makefile_slib_testing_mdl;
-make -f makefile_bin_peer;
-make -f makefile_bin_peer_dyn;
+make -f makefile_bin_broker;
+make -f makefile_bin_broker_dyn;
 echo "@@@@@@ end DEBUG build @@@@@@"
