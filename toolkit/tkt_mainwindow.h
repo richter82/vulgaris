@@ -43,7 +43,7 @@ class vlg_toolkit_MainWindow : public QMainWindow {
         void closeEvent(QCloseEvent *event);
 
     public:
-        explicit vlg_toolkit_MainWindow(QWidget *parent = 0);
+        explicit vlg_toolkit_MainWindow(QWidget *parent = nullptr);
         ~vlg_toolkit_MainWindow();
 
     public:

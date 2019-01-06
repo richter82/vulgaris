@@ -459,9 +459,6 @@ inline void selector::FDSET_outgoing_sockets()
         } else {
             conn_impl *ci = it_1->second;
             it_1 = outg_early_conn_map_.erase(it_1);
-            if(ci->status_ != ConnectionStatus_DISCONNECTED) {
-                ci->socket_shutdown();
-            }
             wp_outg_conn_map_.erase(ci->socket_);
         }
     }
@@ -474,9 +471,6 @@ inline void selector::FDSET_outgoing_sockets()
             nfds_ = ((int)it_2->second->socket_ > nfds_) ? (int)it_2->second->socket_ : nfds_;
             it_2++;
         } else {
-            if(it_2->second->status_ != ConnectionStatus_DISCONNECTED) {
-                it_2->second->socket_shutdown();
-            }
             wp_outg_conn_map_.erase(it_2->second->socket_);
             it_2 = outg_conn_map_.erase(it_2);
         }

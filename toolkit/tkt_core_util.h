@@ -31,7 +31,7 @@ class QPlainTextEditApnd : public QObject, public spdlog::sinks::base_sink<std::
     protected:
         void sink_it_(const spdlog::details::log_msg &msg) override {
             fmt::memory_buffer formatted;
-            sink::formatter_->format(msg, formatted);
+            formatter_->format(msg, formatted);
             emit messageReady(msg.level, tr(fmt::to_string(formatted).c_str()));
         }
 

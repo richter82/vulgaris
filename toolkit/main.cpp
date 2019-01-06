@@ -12,6 +12,7 @@
 
 int main(int argc, char *argv[])
 {
+    vlg::syslog_load_config();
     QApplication a(argc, argv);
     qApp->setApplicationVersion(QUOTE(APP_VERSION));
     qApp->setApplicationName(QUOTE(APP_NAME));

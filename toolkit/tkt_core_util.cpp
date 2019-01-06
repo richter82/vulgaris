@@ -162,7 +162,9 @@ namespace vlg_tlkt {
 
 QPlainTextEditApnd::QPlainTextEditApnd(vlg_toolkit_MainWindow *btmw) :
     btmw_(btmw)
-{}
+{
+    set_pattern("[%H:%M:%S:%e][%t][%^%l%$]%v");
+}
 
 vlg_toolkit_MainWindow *QPlainTextEditApnd::btmw() const
 {

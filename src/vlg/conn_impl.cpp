@@ -259,7 +259,7 @@ RetCode conn_impl::close_connection(ConnectivityEventResult cer,
                                     ConnectivityEventType cet)
 {
     socket_shutdown();
-    clean_rdn_rep();
+    reset_rdn_outg_rep();
     release_all_children();
     notify_disconnection(cer, cet);
     return RetCode_OK;
@@ -328,9 +328,6 @@ RetCode conn_impl::establish_connection(sockaddr_in &params)
             last_socket_err_ = errno;
 #endif
             IFLOG(peer_->log_, error(LS_CON "[connection failed][err:{}]", last_socket_err_))
-            if((rcode = socket_shutdown())) {
-                IFLOG(peer_->log_, error(LS_CLO "[failed closing socket][err:{}]", __func__, rcode))
-            }
         }
     } else {
 #if defined WIN32 && defined _MSC_VER
@@ -343,7 +340,7 @@ RetCode conn_impl::establish_connection(sockaddr_in &params)
     if(!connect_res) {
         rcode = set_connection_established(socket_);
     } else {
-        notify_for_connectivity_result(ConnectivityEventResult_KO, ConnectivityEventType_NETWORK);
+        close_connection(ConnectivityEventResult_KO, ConnectivityEventType_NETWORK);
         rcode = RetCode_KO;
     }
     return rcode;
@@ -740,12 +737,15 @@ RetCode conn_impl::read_decode_hdr()
     return rcode;
 }
 
-void conn_impl::clean_rdn_rep()
+void conn_impl::reset_rdn_outg_rep()
 {
     pkt_ch_st_ = PktChasingStatus_HDRLen;
     rdn_buff_.reset();
     curr_rdn_hdr_.reset();
     curr_rdn_body_.release();
+    pkt_sending_q_.clear();
+    cpkt_.release();
+    acc_snd_buff_.reset();
 }
 
 RetCode conn_impl::send_acc_buff()

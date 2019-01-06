@@ -125,7 +125,7 @@ struct conn_impl {
     RetCode recv_bytes();
     RetCode chase_pkt();
     RetCode read_decode_hdr();
-    void clean_rdn_rep();
+    void reset_rdn_outg_rep();
 
     RetCode sckt_hndl_err(long sock_op_res);
 

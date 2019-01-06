@@ -81,7 +81,6 @@ vlg_toolkit_MainWindow::vlg_toolkit_MainWindow(QWidget *parent) :
     ui->setupUi(this);
     InitGuiConfig();
 
-    vlg::syslog_load_config();
     //peer_ logger cfg bgn
     spdlog::apply_all([&](std::shared_ptr<spdlog::logger> l) {
         l->sinks().push_back(apnd_);
@@ -110,6 +109,7 @@ vlg_toolkit_MainWindow::vlg_toolkit_MainWindow(QWidget *parent) :
 vlg_toolkit_MainWindow::~vlg_toolkit_MainWindow()
 {
     delete ui;
+    ui = nullptr;
 }
 
 void vlg_toolkit_MainWindow::InitGuiConfig()
@@ -596,6 +596,9 @@ void vlg_toolkit_MainWindow::on_actionConnect_triggered()
 void vlg_toolkit_MainWindow::OnLogEvent(spdlog::level::level_enum tlvl,
                                         const QString &msg)
 {
+    if(!ui) {
+        return;
+    }
     QString beginHtml;
     switch(tlvl) {
         case spdlog::level::level_enum::trace:
