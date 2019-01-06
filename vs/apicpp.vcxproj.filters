@@ -14,9 +14,6 @@
     <ClInclude Include="..\public\cpp\vlg_model.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\cpp\vlg_peer.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="..\public\cpp\vlg_persistence.h">
       <Filter>h</Filter>
     </ClInclude>
@@ -32,11 +29,11 @@
     <ClInclude Include="..\public\vlg.h">
       <Filter>h</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\cpp\vlg_broker.h">
+      <Filter>h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\apicpp\peer.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\apicpp\persistence.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -50,6 +47,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\src\apicpp\model.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\apicpp\broker.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

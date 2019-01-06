@@ -15,14 +15,14 @@ RetCode WSA_destroy(std::shared_ptr<spdlog::logger> &log);
 #endif
 
 struct acceptor {
-    acceptor(peer_impl &peer);
+    acceptor(broker_impl &broker);
     ~acceptor();
 
     RetCode set_sockaddr_in(sockaddr_in &serv_sockaddr_in);
     RetCode create_server_socket(SOCKET &serv_socket);
     RetCode accept(unsigned int new_connid, std::shared_ptr<incoming_connection> &new_connection);
 
-    peer_impl &peer_;
+    broker_impl &broker_;
     SOCKET serv_socket_;
     sockaddr_in serv_sockaddr_in_;
 };

@@ -13,7 +13,7 @@
 namespace vlg {
 
 /***********************************
-an helper class used to server peer
+an helper class used to server broker
 to generate a progressive
 - per nclass_id - subscription event id.
 It is also used to generate ts_0, ts_1.
@@ -37,9 +37,9 @@ struct per_nclass_id_conn_set {
     mutable std::mutex mtx_;
 };
 
-// peer_impl
-struct peer_impl : public peer_automa {
-        explicit peer_impl(peer &, peer_listener &);
+// broker_impl
+struct broker_impl : public broker_automa {
+        explicit broker_impl(broker &, broker_listener &);
 
         RetCode set_params_file_dir(const char *dir);
 

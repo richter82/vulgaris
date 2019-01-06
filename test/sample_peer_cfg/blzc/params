@@ -1,5 +1,0 @@
--lang CPP
--I "../../src/blz_model_sample"
--O "../../src/blz_model_sample"
--F "blz_model_sample_pers.blz"
-

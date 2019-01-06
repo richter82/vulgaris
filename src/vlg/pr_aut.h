@@ -9,11 +9,11 @@
 
 namespace vlg {
 
-/** @brief peer_automa
+/** @brief broker_automa
 */
-struct peer_automa {
-        explicit peer_automa(peer &, peer_listener &);
-        virtual ~peer_automa();
+struct broker_automa {
+        explicit broker_automa(broker &, broker_listener &);
+        virtual ~broker_automa();
 
         RetCode set_params_file_path_name(const char *);
 
@@ -29,7 +29,7 @@ struct peer_automa {
                                          time_t sec = -1,
                                          long nsec = 0);
 
-        RetCode await_for_status_change(PeerStatus &peer_status,
+        RetCode await_for_status_change(PeerStatus &broker_status,
                                         time_t sec = -1,
                                         long nsec = 0);
 
@@ -62,34 +62,34 @@ struct peer_automa {
         virtual void on_automa_error() = 0;
 
     public:
-        unsigned int peer_id_;
-        unsigned int peer_plid_;
-        unsigned int peer_svid_;
-        PeerStatus peer_status_;
-        std::string peer_name_;
-        unsigned int peer_ver_[4];
-        int peer_argc_;
-        char **peer_argv_;
-        std::string peer_cfg_file_path_name_;
+        unsigned int broker_id_;
+        unsigned int broker_plid_;
+        unsigned int broker_svid_;
+        PeerStatus broker_status_;
+        std::string broker_name_;
+        unsigned int broker_ver_[4];
+        int broker_argc_;
+        char **broker_argv_;
+        std::string broker_cfg_file_path_name_;
 
-        cfg_ldr peer_conf_ldr_;
+        cfg_ldr broker_conf_ldr_;
         bool configured_;
-        RetCode peer_last_error_;
+        RetCode broker_last_error_;
 
         // stop / dispose
         bool force_disconnect_on_stop_;
 
-        mutable std::mutex peer_mtx_;
-        mutable std::condition_variable peer_cv_;
+        mutable std::mutex broker_mtx_;
+        mutable std::condition_variable broker_cv_;
 
     private:
-        static void peer_param_clbk_ud(int pnum,
-                                       const char *param,
-                                       const char *value,
-                                       void *ud);
+        static void broker_param_clbk_ud(int pnum,
+                                         const char *param,
+                                         const char *value,
+                                         void *ud);
     public:
-        peer &publ_;
-        peer_listener &listener_;
+        broker &publ_;
+        broker_listener &listener_;
         std::shared_ptr<spdlog::logger> log_;
 };
 

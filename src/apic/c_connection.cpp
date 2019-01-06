@@ -33,9 +33,9 @@ extern "C" {
 
 extern "C" {
 
-    peer *inco_connection_get_peer(incoming_connection *ic)
+    broker *inco_connection_get_broker(incoming_connection *ic)
     {
-        return &(ic->get_peer());
+        return &(ic->get_broker());
     }
 
     unsigned int inco_connection_get_connection_id(incoming_connection *ic)
@@ -186,14 +186,14 @@ extern "C" {
         delete(c_outg_conn *)oc;
     }
 
-    RetCode outg_connection_bind(outgoing_connection *oc, peer *p)
+    RetCode outg_connection_bind(outgoing_connection *oc, broker *p)
     {
         return oc->bind(*p);
     }
 
-    peer *outg_connection_get_peer(outgoing_connection *oc)
+    broker *outg_connection_get_broker(outgoing_connection *oc)
     {
-        return &(oc->get_peer());
+        return &(oc->get_broker());
     }
 
     unsigned int outg_connection_get_connection_id(outgoing_connection *oc)

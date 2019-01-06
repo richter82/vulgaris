@@ -1,7 +1,0 @@
--lang JAVA
--I "..\..\..\src\blz_model_sample"
--O "..\..\..\..\blz_system_j\src\blz\model\sample"
--F "blz_model_sample_pers.blz"
-
-
-

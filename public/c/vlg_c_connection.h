@@ -31,7 +31,7 @@ INCOMING CONNECTION
 void inco_connection_release(own_incoming_connection *ic);
 own_incoming_connection *inco_connection_get_own_ptr(shr_incoming_connection *ic);
 incoming_connection *inco_connection_get_ptr(own_incoming_connection *ic);
-peer *inco_connection_get_peer(incoming_connection *ic);
+broker *inco_connection_get_broker(incoming_connection *ic);
 unsigned int inco_connection_get_connection_id(incoming_connection *ic);
 unsigned short inco_connection_get_client_heartbeat(incoming_connection *ic);
 unsigned short inco_connection_get_server_agreed_heartbeat(incoming_connection *ic);
@@ -63,8 +63,8 @@ OUTGOING CONNECTION
 own_outgoing_connection *outg_connection_create(void);
 outgoing_connection *outg_connection_get_ptr(own_outgoing_connection *oc);
 void outg_connection_destroy(own_outgoing_connection *oc);
-RetCode outg_connection_bind(outgoing_connection *oc, peer *p);
-peer *outg_connection_get_peer(outgoing_connection *oc);
+RetCode outg_connection_bind(outgoing_connection *oc, broker *p);
+broker *outg_connection_get_broker(outgoing_connection *oc);
 unsigned int outg_connection_get_connection_id(outgoing_connection *oc);
 ConnectionResult outg_connection_get_connection_response(outgoing_connection *oc);
 ProtocolCode outg_connection_get_connection_result_code(outgoing_connection *oc);

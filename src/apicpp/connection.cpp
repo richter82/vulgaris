@@ -4,7 +4,7 @@
  *
  */
 
-#include "vlg_peer.h"
+#include "vlg_broker.h"
 #include "vlg_connection.h"
 #include "vlg_transaction.h"
 #include "vlg_subscription.h"
@@ -41,18 +41,18 @@ incoming_connection_listener &incoming_connection_listener::default_listener()
     return dicl;
 }
 
-incoming_connection::incoming_connection(peer &p, incoming_connection_listener &listener) :
+incoming_connection::incoming_connection(broker &p, incoming_connection_listener &listener) :
     impl_(new incoming_connection_impl(*this, p, listener))
 {}
 
 incoming_connection::~incoming_connection()
 {
-    DTOR_TRC(impl_->peer_->log_)
+    DTOR_TRC(impl_->broker_->log_)
 }
 
-peer &incoming_connection::get_peer()
+broker &incoming_connection::get_broker()
 {
-    return impl_->peer_->publ_;
+    return impl_->broker_->publ_;
 }
 
 unsigned int incoming_connection::get_id() const
@@ -174,18 +174,18 @@ outgoing_connection::outgoing_connection(outgoing_connection_listener &listener)
 
 outgoing_connection::~outgoing_connection()
 {
-    DTOR_TRC(impl_->peer_->log_)
+    DTOR_TRC(impl_->broker_->log_)
 }
 
-RetCode outgoing_connection::bind(peer &p)
+RetCode outgoing_connection::bind(broker &p)
 {
-    impl_->peer_ = &*p.impl_;
+    impl_->broker_ = &*p.impl_;
     return RetCode_OK;
 }
 
-peer &outgoing_connection::get_peer()
+broker &outgoing_connection::get_broker()
 {
-    return impl_->peer_->publ_;
+    return impl_->broker_->publ_;
 }
 
 ConnectionType outgoing_connection::get_connection_type() const

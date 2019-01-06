@@ -43,11 +43,11 @@ enum SelectorStatus {
 // selector
 
 struct selector : public th {
-    explicit selector(peer_impl &);
+    explicit selector(broker_impl &);
     virtual ~selector();
 
     RetCode init();
-    RetCode on_peer_move_running_actions();
+    RetCode on_broker_move_running_actions();
 
     RetCode await_for_status_reached(SelectorStatus test,
                                      SelectorStatus &current,
@@ -84,7 +84,7 @@ struct selector : public th {
     RetCode outg_conn_process_rdn_buff(outgoing_connection_impl *);
 
     //rep
-    peer_impl &peer_;
+    broker_impl &broker_;
     SelectorStatus status_;
     fd_set read_FDs_, write_FDs_;
 

@@ -29,7 +29,7 @@ incoming_connection_factory::incoming_connection_factory()
 incoming_connection_factory::~incoming_connection_factory()
 {}
 
-incoming_connection &incoming_connection_factory::make_incoming_connection(peer &p)
+incoming_connection &incoming_connection_factory::make_incoming_connection(broker &p)
 {
     return *new incoming_connection(p);
 }
@@ -38,10 +38,10 @@ incoming_connection &incoming_connection_factory::make_incoming_connection(peer 
 
 namespace vlg {
 
-// peer_impl
+// broker_impl
 
-peer_impl::peer_impl(peer &publ, peer_listener &listener) :
-    peer_automa(publ, listener),
+broker_impl::broker_impl(broker &publ, broker_listener &listener) :
+    broker_automa(publ, listener),
     personality_(PeerPersonality_BOTH),
     srv_exectrs_(0),
     cli_exectrs_(0),
@@ -62,12 +62,12 @@ peer_impl::peer_impl(peer &publ, peer_listener &listener) :
     early_init();
 }
 
-RetCode peer_impl::set_params_file_dir(const char *dir)
+RetCode broker_impl::set_params_file_dir(const char *dir)
 {
-    return peer_conf_ldr_.set_params_file_dir(dir);
+    return broker_conf_ldr_.set_params_file_dir(dir);
 }
 
-RetCode peer_impl::init()
+RetCode broker_impl::init()
 {
     RetCode rcode = RetCode_OK;
     RET_ON_KO(selector_.init())
@@ -104,7 +104,7 @@ RetCode peer_impl::init()
     return rcode;
 }
 
-RetCode peer_impl::init_dyna()
+RetCode broker_impl::init_dyna()
 {
     RetCode rcode = RetCode_OK;
     IFLOG(log_, debug(LS_TRL "[extending model]", __func__))
@@ -123,7 +123,7 @@ RetCode peer_impl::init_dyna()
     return rcode;
 }
 
-RetCode peer_impl::start_exec_services()
+RetCode broker_impl::start_exec_services()
 {
     RetCode res = RetCode_OK;
     ExecSrvStatus current = ExecSrvStatus_TOINIT;
@@ -150,7 +150,7 @@ RetCode peer_impl::start_exec_services()
 
 // CONFIG SETTERS
 
-void peer_impl::set_cfg_load_model(const char *model)
+void broker_impl::set_cfg_load_model(const char *model)
 {
     if(model_map_.find(model) != model_map_.end()) {
         IFLOG(log_, warn(LS_PAR "[model already specified:{}]", model))
@@ -159,17 +159,17 @@ void peer_impl::set_cfg_load_model(const char *model)
     }
 }
 
-void peer_impl::set_cfg_srv_sin_addr(const char *addr)
+void broker_impl::set_cfg_srv_sin_addr(const char *addr)
 {
     selector_.srv_sockaddr_in_.sin_addr.s_addr = inet_addr(addr);
 }
 
-void peer_impl::set_cfg_srv_sin_port(int port)
+void broker_impl::set_cfg_srv_sin_port(int port)
 {
     selector_.srv_sockaddr_in_.sin_port = htons(port);
 }
 
-void peer_impl::set_cfg_load_pers_driv(const char *driv)
+void broker_impl::set_cfg_load_pers_driv(const char *driv)
 {
     if(pers_dri_load_.find(driv) != pers_dri_load_.end()) {
         IFLOG(log_, warn(LS_PAR "[persistent driver already specified:{}]", driv))
@@ -178,7 +178,7 @@ void peer_impl::set_cfg_load_pers_driv(const char *driv)
     }
 }
 
-RetCode peer_impl::extend_model(nentity_manager &nem)
+RetCode broker_impl::extend_model(nentity_manager &nem)
 {
     RetCode rcode = RetCode_OK;
     if((rcode = nem_.extend(nem))) {
@@ -188,7 +188,7 @@ RetCode peer_impl::extend_model(nentity_manager &nem)
     return rcode;
 }
 
-RetCode peer_impl::extend_model(const char *model_name)
+RetCode broker_impl::extend_model(const char *model_name)
 {
     IFLOG(log_, trace(LS_OPN "[model:{}]", __func__, model_name))
     RetCode rcode = RetCode_OK;
@@ -199,26 +199,26 @@ RetCode peer_impl::extend_model(const char *model_name)
     return rcode;
 }
 
-RetCode peer_impl::new_incoming_connection(std::shared_ptr<incoming_connection> &new_connection, unsigned int connid)
+RetCode broker_impl::new_incoming_connection(std::shared_ptr<incoming_connection> &new_connection, unsigned int connid)
 {
     incoming_connection &publ = inco_conn_factory_->make_incoming_connection(publ_);
     new_connection.reset(&publ);
     return RetCode_OK;
 }
 
-incoming_connection_factory &peer_impl::get_incoming_connection_factory() const
+incoming_connection_factory &broker_impl::get_incoming_connection_factory() const
 {
     return *inco_conn_factory_;
 }
 
-void peer_impl::set_incoming_connection_factory(incoming_connection_factory &val)
+void broker_impl::set_incoming_connection_factory(incoming_connection_factory &val)
 {
     inco_conn_factory_ = &val;
 }
 
-RetCode peer_impl::on_automa_load_config(int pnum,
-                                         const char *param,
-                                         const char *value)
+RetCode broker_impl::on_automa_load_config(int pnum,
+                                           const char *param,
+                                           const char *value)
 {
     if(!strcmp(param, "pure_server")) {
         if(personality_ != PeerPersonality_BOTH) {
@@ -310,7 +310,7 @@ RetCode peer_impl::on_automa_load_config(int pnum,
     return listener_.on_load_config(publ_, pnum, param, value);
 }
 
-RetCode peer_impl::on_automa_early_init()
+RetCode broker_impl::on_automa_early_init()
 {
     rt_init_timers();
 #if defined WIN32 && defined _MSC_VER
@@ -319,17 +319,17 @@ RetCode peer_impl::on_automa_early_init()
     return RetCode_OK;
 }
 
-const char *peer_impl::get_automa_name()
+const char *broker_impl::get_automa_name()
 {
     return publ_.get_name();
 }
 
-const unsigned int *peer_impl::get_automa_version()
+const unsigned int *broker_impl::get_automa_version()
 {
     return publ_.get_version();
 }
 
-RetCode peer_impl::on_automa_init()
+RetCode broker_impl::on_automa_init()
 {
     RetCode rcode = init();
     if(!rcode) {
@@ -338,11 +338,11 @@ RetCode peer_impl::on_automa_init()
     return rcode;
 }
 
-RetCode peer_impl::on_automa_start()
+RetCode broker_impl::on_automa_start()
 {
     SelectorStatus current = SelectorStatus_UNDEF;
     RetCode rcode = RetCode_OK;
-    IFLOG(log_, info(LS_APL"[peer personality: << {} >>]",
+    IFLOG(log_, info(LS_APL"[broker personality: << {} >>]",
                      (personality_ == PeerPersonality_BOTH) ? "both" :
                      (personality_ == PeerPersonality_PURE_SERVER) ? "pure-server" : "pure-client"))
     if(personality_ == PeerPersonality_PURE_SERVER || personality_ == PeerPersonality_BOTH) {
@@ -391,11 +391,11 @@ RetCode peer_impl::on_automa_start()
     return rcode;
 }
 
-RetCode peer_impl::on_automa_move_running()
+RetCode broker_impl::on_automa_move_running()
 {
     SelectorStatus current = SelectorStatus_UNDEF;
     RetCode rcode = RetCode_OK;
-    if((rcode = selector_.on_peer_move_running_actions())) {
+    if((rcode = selector_.on_broker_move_running_actions())) {
         IFLOG(log_, error(LS_CLO "[selector failed running actions][res:{}]", __func__, rcode))
         return rcode;
     }
@@ -414,12 +414,12 @@ RetCode peer_impl::on_automa_move_running()
     return rcode;
 }
 
-RetCode peer_impl::on_automa_stop()
+RetCode broker_impl::on_automa_stop()
 {
     RetCode rcode = RetCode_OK;
     if(!selector_.inco_conn_map_.empty() || !selector_.outg_conn_map_.empty()) {
         if(!force_disconnect_on_stop_) {
-            IFLOG(log_, error(LS_CLO "[active connections detected, cannot stop peer]", __func__))
+            IFLOG(log_, error(LS_CLO "[active connections detected, cannot stop broker]", __func__))
             return RetCode_KO;
         }
     }
@@ -443,7 +443,7 @@ RetCode peer_impl::on_automa_stop()
     return rcode;
 }
 
-void peer_impl::on_automa_error()
+void broker_impl::on_automa_error()
 {
     listener_.on_error(publ_);
 }
@@ -470,7 +470,7 @@ void per_nclass_id_conn_set::next_time_stamp(unsigned int &ts_0,
     }
 }
 
-RetCode peer_impl::add_subscriber(incoming_subscription_impl *sbsdesc)
+RetCode broker_impl::add_subscriber(incoming_subscription_impl *sbsdesc)
 {
     per_nclass_id_conn_set *sdrec = nullptr;
     if(srv_sbs_nclassid_condesc_set_.get(&sbsdesc->nclassid_, &sdrec)) {
@@ -484,7 +484,7 @@ RetCode peer_impl::add_subscriber(incoming_subscription_impl *sbsdesc)
     return RetCode_OK;
 }
 
-RetCode peer_impl::remove_subscriber(incoming_subscription_impl *sbsdesc)
+RetCode broker_impl::remove_subscriber(incoming_subscription_impl *sbsdesc)
 {
     per_nclass_id_conn_set *sdrec = nullptr;
     if(srv_sbs_nclassid_condesc_set_.get(&sbsdesc->nclassid_, &sdrec)) {
@@ -504,23 +504,23 @@ RetCode peer_impl::remove_subscriber(incoming_subscription_impl *sbsdesc)
     return RetCode_OK;
 }
 
-struct peer_sbs_task;
+struct broker_sbs_task;
 
 struct srv_connid_condesc_set_ashsnd_rud {
     unsigned int nclass_id;
-    peer_sbs_task *tsk;
+    broker_sbs_task *tsk;
     RetCode rcode;
 };
 
-struct peer_sbs_task : public task {
-    peer_sbs_task(peer_impl &peer,
-                  subscription_event_impl &sbs_evt,
-                  s_hm &connid_condesc_set) :
-        peer_(peer),
+struct broker_sbs_task : public task {
+    broker_sbs_task(broker_impl &broker,
+                    subscription_event_impl &sbs_evt,
+                    s_hm &connid_condesc_set) :
+        broker_(broker),
         sbs_evt_(new subscription_event(sbs_evt)),
         connid_condesc_set_(connid_condesc_set) {}
 
-    ~peer_sbs_task() {}
+    ~broker_sbs_task() {}
 
     static void enum_srv_connid_connection_map_ashsnd(const s_hm &map,
                                                       const void *key,
@@ -530,8 +530,8 @@ struct peer_sbs_task : public task {
         std::shared_ptr<incoming_connection> *conn = (std::shared_ptr<incoming_connection> *)ptr;
         std::shared_ptr<incoming_subscription> sbs_sh;
         if((*conn)->impl_->inco_nclassid_sbs_map_.get(&rud->nclass_id, &sbs_sh)) {
-            IFLOG((*conn)->impl_->peer_->log_, warn(LS_EXE "[no more active subscriptions on connection:{}]", __func__,
-                                                    (*conn)->get_id()))
+            IFLOG((*conn)->impl_->broker_->log_, warn(LS_EXE "[no more active subscriptions on connection:{}]", __func__,
+                                                      (*conn)->get_id()))
             return;
         }
         sbs_sh->impl_->submit_evt(rud->tsk->sbs_evt_);
@@ -546,16 +546,16 @@ struct peer_sbs_task : public task {
         return RetCode_OK;
     }
 
-    peer_impl &get_peer() {
-        return peer_;
+    broker_impl &get_broker() {
+        return broker_;
     }
 
-    peer_impl &peer_;
+    broker_impl &broker_;
     std::shared_ptr<subscription_event> sbs_evt_;
     s_hm &connid_condesc_set_;  //connid --> condesc [uint --> sh_ptr]
 };
 
-RetCode peer_impl::get_per_nclassid_helper_rec(unsigned int nclass_id, per_nclass_id_conn_set **out)
+RetCode broker_impl::get_per_nclassid_helper_rec(unsigned int nclass_id, per_nclass_id_conn_set **out)
 {
     RetCode rcode = RetCode_OK;
     per_nclass_id_conn_set *sdrec = nullptr;
@@ -567,9 +567,9 @@ RetCode peer_impl::get_per_nclassid_helper_rec(unsigned int nclass_id, per_nclas
     return rcode;
 }
 
-RetCode peer_impl::submit_inco_evt_task(std::shared_ptr<incoming_connection> &conn_sh,
-                                        vlg_hdr_rec &pkt_hdr,
-                                        std::unique_ptr<g_bbuf> &pkt_body)
+RetCode broker_impl::submit_inco_evt_task(std::shared_ptr<incoming_connection> &conn_sh,
+                                          vlg_hdr_rec &pkt_hdr,
+                                          std::unique_ptr<g_bbuf> &pkt_body)
 {
     std::shared_ptr<task> task(new inco_conn_task(conn_sh,
                                                   pkt_hdr,
@@ -577,9 +577,9 @@ RetCode peer_impl::submit_inco_evt_task(std::shared_ptr<incoming_connection> &co
     return inco_exec_srv_.submit(task);
 }
 
-RetCode peer_impl::submit_outg_evt_task(outgoing_connection_impl *oconn,
-                                        vlg_hdr_rec &pkt_hdr,
-                                        std::unique_ptr<g_bbuf> &pkt_body)
+RetCode broker_impl::submit_outg_evt_task(outgoing_connection_impl *oconn,
+                                          vlg_hdr_rec &pkt_hdr,
+                                          std::unique_ptr<g_bbuf> &pkt_body)
 {
     std::shared_ptr<task> task(new outg_conn_task(*oconn->opubl_,
                                                   pkt_hdr,
@@ -587,16 +587,16 @@ RetCode peer_impl::submit_outg_evt_task(outgoing_connection_impl *oconn,
     return outg_exec_srv_.submit(task);
 }
 
-RetCode peer_impl::submit_sbs_evt_task(subscription_event_impl &sbs_evt,
-                                       s_hm &connid_condesc_set)
+RetCode broker_impl::submit_sbs_evt_task(subscription_event_impl &sbs_evt,
+                                         s_hm &connid_condesc_set)
 {
-    std::shared_ptr<task> stsk(new peer_sbs_task(*this, sbs_evt, connid_condesc_set));
+    std::shared_ptr<task> stsk(new broker_sbs_task(*this, sbs_evt, connid_condesc_set));
     return srv_sbs_exec_serv_.submit(stsk);
 }
 
 // #VER#
 
-const char *PEERLIB_VER(void)
+const char *BROKERLIB_VER(void)
 {
     static char str[] = "lib.vlg.ver.0.0.0.date:" __DATE__;
     return str;

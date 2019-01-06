@@ -19,18 +19,18 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\public\c\vlg_c_broker.h" />
     <ClInclude Include="..\public\c\vlg_c_connection.h" />
     <ClInclude Include="..\public\c\vlg_c_model.h" />
-    <ClInclude Include="..\public\c\vlg_c_peer.h" />
     <ClInclude Include="..\public\c\vlg_c_persistence.h" />
     <ClInclude Include="..\public\c\vlg_c_subscription.h" />
     <ClInclude Include="..\public\c\vlg_c_transaction.h" />
     <ClInclude Include="..\public\vlg.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\apic\c_broker.cpp" />
     <ClCompile Include="..\src\apic\c_connection.cpp" />
     <ClCompile Include="..\src\apic\c_model.cpp" />
-    <ClCompile Include="..\src\apic\c_peer.cpp" />
     <ClCompile Include="..\src\apic\c_persistence.cpp" />
     <ClCompile Include="..\src\apic\c_subscription.cpp" />
     <ClCompile Include="..\src\apic\c_transaction.cpp" />

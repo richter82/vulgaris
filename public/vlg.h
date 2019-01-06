@@ -149,7 +149,7 @@ typedef enum  {
     ProtocolCode_ALREADY_CONNECTED = 100,               //- 100  0x64:      ALREADY CONNECTED
     ProtocolCode_SERVER_CHANGED_HEARTBEAT,              //- 101  0x65:      SERVER CHANGED HEARTBEAT
     ProtocolCode_INVALID_CONNECTION_STATUS,             //- 102  0x66:      INVALID CONNECTION STATUS
-    ProtocolCode_PEER_INACTIVITY,                       //- 103  0x67:      PEER INACTIVITY
+    ProtocolCode_BROKER_INACTIVITY,                       //- 103  0x67:      BROKER INACTIVITY
 
     //-- TRANSACTIONAL ERROR CODES                      (200-299) (0xC8-0x12B)
     ProtocolCode_INVALID_TRANSACTION_ID = 200,          //- 200 0xC8:       INVALID TX ID
@@ -389,7 +389,7 @@ typedef enum  {
 } SubscriptionStatus;
 
 /*****************************************
-PEER PERSONALITY
+BROKER PERSONALITY
 ******************************************/
 typedef enum  {
     PeerPersonality_BOTH,
@@ -398,7 +398,7 @@ typedef enum  {
 } PeerPersonality;
 
 /*****************************************
-PEER STATUS
+BROKER STATUS
 ******************************************/
 typedef enum  {
     PeerStatus_ZERO,               //0
@@ -407,25 +407,25 @@ typedef enum  {
     PeerStatus_INITIALIZING,       //3
 
     /**
-    it means that caller thread has statically initialized this peer.
+    it means that caller thread has statically initialized this broker.
     */
     PeerStatus_INITIALIZED,        //4
 
     /**
-    convenience state used when a peer has been stopped and then restarted.
+    convenience state used when a broker has been stopped and then restarted.
     */
     PeerStatus_RESTART_REQUESTED,  //5
 
     PeerStatus_STARTING,           //6
 
     /**
-    it means that this peer has eventually started other threads
+    it means that this broker has eventually started other threads
     and they are ready.
     */
     PeerStatus_STARTED,            //7
 
     /**
-    it means that this peer is running.
+    it means that this broker is running.
     */
     PeerStatus_RUNNING,            //8
 
@@ -486,8 +486,8 @@ struct logger;
 struct nclass;
 struct nentity_desc;
 struct nentity_manager;
-struct peer;
-struct peer_impl;
+struct broker;
+struct broker_impl;
 struct outgoing_connection;
 struct incoming_connection;
 struct conn_impl;
@@ -524,8 +524,8 @@ typedef struct key_desc key_desc;
 typedef struct member_desc member_desc;
 typedef struct nentity_desc nentity_desc;
 typedef struct nentity_manager nentity_manager;
-typedef struct peer peer;
-typedef struct own_peer own_peer;
+typedef struct broker broker;
+typedef struct own_broker own_broker;
 typedef struct outgoing_connection outgoing_connection;
 typedef struct own_outgoing_connection own_outgoing_connection;
 typedef struct incoming_connection incoming_connection;

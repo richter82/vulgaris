@@ -76,7 +76,7 @@ incoming_subscription::incoming_subscription(std::shared_ptr<incoming_connection
 
 incoming_subscription::~incoming_subscription()
 {
-    DTOR_TRC(impl_->conn_->peer_->log_)
+    DTOR_TRC(impl_->conn_->broker_->log_)
 }
 
 incoming_connection &incoming_subscription::get_connection()
@@ -233,7 +233,7 @@ outgoing_subscription::outgoing_subscription(outgoing_subscription_listener &lis
 
 outgoing_subscription::~outgoing_subscription()
 {
-    DTOR_TRC(impl_->conn_->peer_->log_)
+    DTOR_TRC(impl_->conn_->broker_->log_)
 }
 
 RetCode outgoing_subscription::bind(outgoing_connection &conn)

@@ -16,14 +16,9 @@
 
 #define LS_MSEP     ":"
 #define LG_INIT_ERR_TK      "LIE"
-#define TL_LVL_STR_LEN      3
-#define LG_TIME_BUF_LEN     12
-#define LG_MAX_APNDS        32
-#define LG_MAX_SIGN_LEN     8
-#define LG_ID_LEN           8
 
 #define TKLGR   "logger"
-#define TKAPND  "appender"
+#define TKSNK   "sinker"
 #define TKGLOB  "global"
 #define TKPTTRN "pattern"
 #define S_NL    "{New Line}"
@@ -134,7 +129,7 @@ void LPrsERR_UNEXP(const char *sct, const char *unexp)
 void LPrsERR_APNF(const char *lgr, const char *apn)
 {
     FILE *ferr = fopen("log.err", "wa+");
-    fprintf(ferr ? ferr : stderr, LG_INIT_ERR_TK" parsing logger: %s, appender not found: %s\n", lgr, apn);
+    fprintf(ferr ? ferr : stderr, LG_INIT_ERR_TK" parsing logger: %s, sinker not found: %s\n", lgr, apn);
     if(ferr) {
         fclose(ferr);
     }
@@ -143,7 +138,7 @@ void LPrsERR_APNF(const char *lgr, const char *apn)
 void LPrsERR_NOAP(const char *lgr)
 {
     FILE *ferr = fopen("log.err", "wa+");
-    fprintf(ferr ? ferr : stderr, LG_INIT_ERR_TK" parsing logger: %s, no apnds spec.\n", lgr);
+    fprintf(ferr ? ferr : stderr, LG_INIT_ERR_TK" parsing logger: %s, no sinkers\n", lgr);
     if(ferr) {
         fclose(ferr);
     }
@@ -158,16 +153,14 @@ void LPrsERR_UNEXP(const char *unexp)
     }
 }
 
-// appender_impl
+static std::unique_ptr<std::unordered_map<std::string, std::shared_ptr<spdlog::sinks::sink>>> sinkers;
 
-static std::unique_ptr<std::unordered_map<std::string, std::shared_ptr<spdlog::sinks::sink>>> apnds;
-
-std::unordered_map<std::string, std::shared_ptr<spdlog::sinks::sink>> &get_appender_map()
+std::unordered_map<std::string, std::shared_ptr<spdlog::sinks::sink>> &get_sinker_map()
 {
-    if(!apnds) {
-        apnds.reset(new std::unordered_map<std::string, std::shared_ptr<spdlog::sinks::sink>>());
+    if(!sinkers) {
+        sinkers.reset(new std::unordered_map<std::string, std::shared_ptr<spdlog::sinks::sink>>());
     }
-    return *apnds;
+    return *sinkers;
 }
 
 // logger_cfg_loader
@@ -225,7 +218,7 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
             if(ferr) {
                 fclose(ferr);
             }
-            get_appender_map().clear();
+            get_sinker_map().clear();
             spdlog::shutdown();
         }
         return res;
@@ -324,23 +317,23 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
         return RetCode_BADCFG;
     }
 
-    RetCode add_appender(unsigned long &lnum,
-                         str_tok &tknz,
-                         const std::string &apname,
-                         const std::string &aptype,
-                         TraceLVL vlglvl) {
-        std::shared_ptr<spdlog::sinks::sink> apnd;
+    RetCode add_sinker(unsigned long &lnum,
+                       str_tok &tknz,
+                       const std::string &sinkername,
+                       const std::string &aptype,
+                       TraceLVL vlglvl) {
+        std::shared_ptr<spdlog::sinks::sink> sinker;
 
         if(aptype == "console") {
-            apnd = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+            sinker = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
         } else if(aptype == "file") {
             std::string apfile;
             RET_ON_KO(read_expected_token(lnum, CM, CM, true, tknz))
             RET_ON_KO(skip_sp_tab_and_read_tkn(lnum, nullptr, tknz, apfile))
-            apnd = std::make_shared<spdlog::sinks::basic_file_sink_mt>(apfile.c_str(), true);
+            sinker = std::make_shared<spdlog::sinks::basic_file_sink_mt>(apfile.c_str(), true);
         }
-        apnd->set_level(get_spdlevel(vlglvl));
-        get_appender_map()[apname] = apnd;
+        sinker->set_level(get_spdlevel(vlglvl));
+        get_sinker_map()[sinkername] = sinker;
         return RetCode_OK;
     }
 
@@ -354,12 +347,12 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
         while(tknz.next_token(tkn, DF_DLM DT EQ, true)) {
             SKIP_SP_TAB(tkn)
             DO_CMD_ON_NL(tkn, lnum++; continue)
-            if(tkn == TKAPND) { //APPENDER
+            if(tkn == TKSNK) { //sinker
                 RET_ON_KO(read_expected_token(lnum, DT, DT, false, tknz))
                 RET_ON_KO(read_tkn_no_nwl(lnum, DT EQ, tknz, apname))
                 RET_ON_KO(read_expected_token(lnum, EQ, EQ, true, tknz))
 
-                //appender level
+                //sinker level
                 RET_ON_KO(skip_sp_tab_and_read_tkn(lnum, CM, tknz, tkn))
                 vlglvl = get_trace_level_enum(tkn.c_str());
                 if(vlglvl == TL_EVL) {
@@ -368,10 +361,10 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
                 }
                 RET_ON_KO(read_expected_token(lnum, CM, CM, true, tknz))
 
-                //appender type
+                //sinker type
                 RET_ON_KO(skip_sp_tab_and_read_tkn(lnum, CM, tknz, aptype))
-                RET_ON_KO(add_appender(lnum, tknz, apname, aptype, vlglvl))
-            } else if(tkn == TKLGR) { //LOGGER
+                RET_ON_KO(add_sinker(lnum, tknz, apname, aptype, vlglvl))
+            } else if(tkn == TKLGR) { //logger
                 RET_ON_KO(read_expected_token(lnum, DT, DT, false, tknz))
                 RET_ON_KO(read_tkn_no_nwl(lnum, DT EQ, tknz, lggrname))
                 RET_ON_KO(read_expected_token(lnum, EQ, EQ, true, tknz))
@@ -384,13 +377,13 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
                     return RetCode_BADCFG;
                 }
 
-                //appenders
-                std::list<std::shared_ptr<spdlog::sinks::sink>> apnds_l;
+                //sinkers
+                std::list<std::shared_ptr<spdlog::sinks::sink>> sinks_l;
                 while(read_expected_token(lnum, CM, CM, true, tknz) == RetCode_OK) {
                     RET_ON_KO(skip_sp_tab_and_read_tkn(lnum, CM, tknz, tkn))
-                    auto it = get_appender_map().find(tkn);
-                    if(it != get_appender_map().end()) {
-                        apnds_l.push_back(it->second);
+                    auto it = get_sinker_map().find(tkn);
+                    if(it != get_sinker_map().end()) {
+                        sinks_l.push_back(it->second);
                         continue;
                     } else {
                         LPrsERR_APNF(lggrname.c_str(), tkn.c_str());
@@ -398,7 +391,7 @@ struct std_logger_cfg_loader : public logger_cfg_loader {
                     }
                 }
 
-                std::shared_ptr<spdlog::logger> lggr(new spdlog::logger(lggrname.c_str(), apnds_l.begin(), apnds_l.end()));
+                std::shared_ptr<spdlog::logger> lggr(new spdlog::logger(lggrname.c_str(), sinks_l.begin(), sinks_l.end()));
                 lggr->set_level(get_spdlevel(vlglvl));
                 spdlog::register_logger(lggr);
             } else if(tkn == TKGLOB) {  //GLOBAL
@@ -484,7 +477,7 @@ extern "C" {
     void syslog_unload()
     {
         spdlog::shutdown();
-        get_appender_map().clear();
+        get_sinker_map().clear();
     }
 }
 

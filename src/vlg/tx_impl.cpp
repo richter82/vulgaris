@@ -71,7 +71,7 @@ RetCode tx_impl::await_for_status_reached(TransactionStatus test,
     RetCode rcode = RetCode_OK;
     std::unique_lock<std::mutex> lck(mtx_);
     if(status_ < TransactionStatus_INITIALIZED) {
-        IFLOG(conn_->peer_->log_, error(LS_CLO, __func__))
+        IFLOG(conn_->broker_->log_, error(LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
     if(sec<0) {
@@ -84,7 +84,7 @@ RetCode tx_impl::await_for_status_reached(TransactionStatus test,
         }) ? RetCode_OK : RetCode_TIMEOUT;
     }
     current = status_;
-    IFLOG(conn_->peer_->log_, trace(LS_CLO "test:{} [{}] current:{}", __func__, test, !rcode ? "reached" : "timeout", status_))
+    IFLOG(conn_->broker_->log_, trace(LS_CLO "test:{} [{}] current:{}", __func__, test, !rcode ? "reached" : "timeout", status_))
     return rcode;
 }
 
@@ -93,7 +93,7 @@ RetCode tx_impl::await_for_closure(time_t sec, long nsec)
     RetCode rcode = RetCode_OK;
     std::unique_lock<std::mutex> lck(mtx_);
     if(status_ < TransactionStatus_INITIALIZED) {
-        IFLOG(conn_->peer_->log_, error(LS_CLO, __func__))
+        IFLOG(conn_->broker_->log_, error(LS_CLO, __func__))
         return RetCode_BADSTTS;
     }
     if(sec<0) {
@@ -105,7 +105,7 @@ RetCode tx_impl::await_for_closure(time_t sec, long nsec)
             return status_ >= TransactionStatus_CLOSED;
         }) ? RetCode_OK : RetCode_TIMEOUT;
     }
-    IFLOG(conn_->peer_->log_, trace(LS_CLO "target:{} [{}]", __func__, TransactionStatus_CLOSED, !rcode ? "closed" : "timeout", status_))
+    IFLOG(conn_->broker_->log_, trace(LS_CLO "target:{} [{}]", __func__, TransactionStatus_CLOSED, !rcode ? "closed" : "timeout", status_))
     return rcode;
 }
 
@@ -146,77 +146,77 @@ inline void tx_impl::trace_tx_closure(const char *tx_res_str)
     ss << std::setw(14) << dt_mark_tim;
     if(ipubl_) {
         if(request_obj_) {
-            IFLOG(conn_->peer_->log_, info(LS_TXI"[{:08x}{:08x}{:08x}{:08x}]{}",
-                                           txid_.txplid,
-                                           txid_.txsvid,
-                                           txid_.txcnid,
-                                           txid_.txprid,
-                                           spdlog_nclass_type{*request_obj_.get()}))
+            IFLOG(conn_->broker_->log_, info(LS_TXI"[{:08x}{:08x}{:08x}{:08x}]{}",
+                                             txid_.txplid,
+                                             txid_.txsvid,
+                                             txid_.txcnid,
+                                             txid_.txprid,
+                                             spdlog_nclass_type{*request_obj_.get()}))
         } else {
-            IFLOG(conn_->peer_->log_, info(LS_TXI"[{:08x}{:08x}{:08x}{:08x}]{{}}",
-                                           txid_.txplid,
-                                           txid_.txsvid,
-                                           txid_.txcnid,
-                                           txid_.txprid,
-                                           TX_NO_OBJ))
+            IFLOG(conn_->broker_->log_, info(LS_TXI"[{:08x}{:08x}{:08x}{:08x}]{{}}",
+                                             txid_.txplid,
+                                             txid_.txsvid,
+                                             txid_.txcnid,
+                                             txid_.txprid,
+                                             TX_NO_OBJ))
         }
         if(result_obj_) {
-            IFLOG(conn_->peer_->log_, info(LS_TXO"[{:08x}{:08x}{:08x}{:08x}]{}",
-                                           txid_.txplid,
-                                           txid_.txsvid,
-                                           txid_.txcnid,
-                                           txid_.txprid,
-                                           spdlog_nclass_type{*result_obj_.get()}))
+            IFLOG(conn_->broker_->log_, info(LS_TXO"[{:08x}{:08x}{:08x}{:08x}]{}",
+                                             txid_.txplid,
+                                             txid_.txsvid,
+                                             txid_.txcnid,
+                                             txid_.txprid,
+                                             spdlog_nclass_type{*result_obj_.get()}))
         } else {
-            IFLOG(conn_->peer_->log_, info(LS_TXO"[{:08x}{:08x}{:08x}{:08x}]{{}}",
-                                           txid_.txplid,
-                                           txid_.txsvid,
-                                           txid_.txcnid,
-                                           txid_.txprid,
-                                           TX_NO_OBJ))
+            IFLOG(conn_->broker_->log_, info(LS_TXO"[{:08x}{:08x}{:08x}{:08x}]{{}}",
+                                             txid_.txplid,
+                                             txid_.txsvid,
+                                             txid_.txcnid,
+                                             txid_.txprid,
+                                             TX_NO_OBJ))
         }
     } else {
         if(request_obj_) {
-            IFLOG(conn_->peer_->log_, info(LS_TXO"[{:08x}{:08x}{:08x}{:08x}]{}",
-                                           txid_.txplid,
-                                           txid_.txsvid,
-                                           txid_.txcnid,
-                                           txid_.txprid,
-                                           spdlog_nclass_type{*request_obj_.get()}))
+            IFLOG(conn_->broker_->log_, info(LS_TXO"[{:08x}{:08x}{:08x}{:08x}]{}",
+                                             txid_.txplid,
+                                             txid_.txsvid,
+                                             txid_.txcnid,
+                                             txid_.txprid,
+                                             spdlog_nclass_type{*request_obj_.get()}))
         } else {
-            IFLOG(conn_->peer_->log_, info(LS_TXO"[{:08x}{:08x}{:08x}{:08x}]{{}}",
-                                           txid_.txplid,
-                                           txid_.txsvid,
-                                           txid_.txcnid,
-                                           txid_.txprid,
-                                           TX_NO_OBJ))
+            IFLOG(conn_->broker_->log_, info(LS_TXO"[{:08x}{:08x}{:08x}{:08x}]{{}}",
+                                             txid_.txplid,
+                                             txid_.txsvid,
+                                             txid_.txcnid,
+                                             txid_.txprid,
+                                             TX_NO_OBJ))
         }
         if(result_obj_) {
-            IFLOG(conn_->peer_->log_, info(LS_TXI"[{:08x}{:08x}{:08x}{:08x}]{}",
-                                           txid_.txplid,
-                                           txid_.txsvid,
-                                           txid_.txcnid,
-                                           txid_.txprid,
-                                           spdlog_nclass_type{*result_obj_.get()}))
+            IFLOG(conn_->broker_->log_, info(LS_TXI"[{:08x}{:08x}{:08x}{:08x}]{}",
+                                             txid_.txplid,
+                                             txid_.txsvid,
+                                             txid_.txcnid,
+                                             txid_.txprid,
+                                             spdlog_nclass_type{*result_obj_.get()}))
         } else {
-            IFLOG(conn_->peer_->log_, info(LS_TXI"[{:08x}{:08x}{:08x}{:08x}]{{}}",
-                                           txid_.txplid,
-                                           txid_.txsvid,
-                                           txid_.txcnid,
-                                           txid_.txprid,
-                                           TX_NO_OBJ))
+            IFLOG(conn_->broker_->log_, info(LS_TXI"[{:08x}{:08x}{:08x}{:08x}]{{}}",
+                                             txid_.txplid,
+                                             txid_.txsvid,
+                                             txid_.txcnid,
+                                             txid_.txprid,
+                                             TX_NO_OBJ))
         }
     }
-    IFLOG(conn_->peer_->log_, info(LS_TRX"[{:08x}{:08x}{:08x}{:08x}][{}][TXRES:{}, TXRESCODE:{}, RESCLS:{}][RTT-NS:{}]",
-                                   txid_.txplid,
-                                   txid_.txsvid,
-                                   txid_.txcnid,
-                                   txid_.txprid,
-                                   tx_res_str,
-                                   tx_res_,
-                                   result_code_,
-                                   rescls_,
-                                   ss.str().c_str()))
+    IFLOG(conn_->broker_->log_, info(LS_TRX"[{:08x}{:08x}{:08x}{:08x}][{}][TXRES:{}, TXRESCODE:{}, RESCLS:{}][RTT-NS:{}]",
+                                     txid_.txplid,
+                                     txid_.txsvid,
+                                     txid_.txcnid,
+                                     txid_.txprid,
+                                     tx_res_str,
+                                     tx_res_,
+                                     result_code_,
+                                     rescls_,
+                                     ss.str().c_str()))
 }
 
 RetCode tx_impl::set_closed()
@@ -276,7 +276,7 @@ incoming_transaction_impl::incoming_transaction_impl(incoming_transaction &publ,
 incoming_transaction_impl::~incoming_transaction_impl()
 {
     if(status_ ==  TransactionStatus_FLYING) {
-        IFLOG(conn_->peer_->log_, critical(LS_DTR"[transaction is not in a safe state::{}]" LS_EXUNX, __func__, status_))
+        IFLOG(conn_->broker_->log_, critical(LS_DTR"[transaction is not in a safe state::{}]" LS_EXUNX, __func__, status_))
     }
 }
 
@@ -311,7 +311,7 @@ RetCode incoming_transaction_impl::send_response()
     std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
     conn_->pkt_sending_q_.put(&cpkt);
     sel_evt *evt = new sel_evt(VLG_SELECTOR_Evt_SendPacket, conn_sh_);
-    return conn_->peer_->selector_.notify(evt);
+    return conn_->broker_->selector_.notify(evt);
 }
 
 }
@@ -326,14 +326,14 @@ outgoing_transaction_impl::outgoing_transaction_impl(outgoing_transaction &publ,
 outgoing_transaction_impl::~outgoing_transaction_impl()
 {
     if(status_ ==  TransactionStatus_FLYING) {
-        IFLOG(conn_->peer_->log_, critical(LS_DTR"[transaction is not in a safe state::{}]" LS_EXUNX, __func__, status_))
+        IFLOG(conn_->broker_->log_, critical(LS_DTR"[transaction is not in a safe state::{}]" LS_EXUNX, __func__, status_))
     }
 }
 
 RetCode outgoing_transaction_impl::re_new()
 {
     if(status_ == TransactionStatus_FLYING) {
-        IFLOG(conn_->peer_->log_, error(LS_CLO "[transaction is flying, cannot renew]", __func__))
+        IFLOG(conn_->broker_->log_, error(LS_CLO "[transaction is flying, cannot renew]", __func__))
         return RetCode_BADSTTS;
     }
     static_cast<outgoing_connection_impl *>(conn_)->next_tx_id(txid_);
@@ -360,15 +360,15 @@ RetCode outgoing_transaction_impl::send()
     set_flying();
     outgoing_transaction_impl *self = this;
     static_cast<outgoing_connection_impl *>(conn_)->outg_flytx_map_.put(&txid_, &self);
-    IFLOG(conn_->peer_->log_, info(LS_OUT"[{:08x}{:08x}{:08x}{:08x}][TXTYPE:{}, TXACT:{}, CLSENC:{}, RSCLREQ:{}]",
-                                   txid_.txplid,
-                                   txid_.txsvid,
-                                   txid_.txcnid,
-                                   txid_.txprid,
-                                   txtype_,
-                                   txactn_,
-                                   req_clsenc_,
-                                   rsclrq_))
+    IFLOG(conn_->broker_->log_, info(LS_OUT"[{:08x}{:08x}{:08x}{:08x}][TXTYPE:{}, TXACT:{}, CLSENC:{}, RSCLREQ:{}]",
+                                     txid_.txplid,
+                                     txid_.txsvid,
+                                     txid_.txcnid,
+                                     txid_.txprid,
+                                     txtype_,
+                                     txactn_,
+                                     req_clsenc_,
+                                     rsclrq_))
 
     g_bbuf gbb;
     build_PKT_TXRQST(txtype_,
@@ -388,7 +388,7 @@ RetCode outgoing_transaction_impl::send()
     std::unique_ptr<conn_pkt> cpkt(new conn_pkt(nullptr, std::move(gbb)));
     conn_->pkt_sending_q_.put(&cpkt);
     sel_evt *evt = new sel_evt(VLG_SELECTOR_Evt_SendPacket, conn_);
-    return conn_->peer_->selector_.notify(evt);
+    return conn_->broker_->selector_.notify(evt);
 }
 
 }

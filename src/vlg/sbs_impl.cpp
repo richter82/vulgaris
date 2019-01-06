@@ -104,12 +104,12 @@ sbs_impl::sbs_impl(outgoing_subscription &publ,
 inline void sbs_impl::ntfy_sel_snd_pkt()
 {
     sel_evt *evt = new sel_evt(VLG_SELECTOR_Evt_SendPacket, conn_);
-    conn_->peer_->selector_.notify(evt);
+    conn_->broker_->selector_.notify(evt);
 }
 
 RetCode sbs_impl::set_started()
 {
-    IFLOG(conn_->peer_->log_, info(LS_SBS"[CONNID:{}-SBSID:{}][started]", conn_->connid_, sbsid_))
+    IFLOG(conn_->broker_->log_, info(LS_SBS"[CONNID:{}-SBSID:{}][started]", conn_->connid_, sbsid_))
     set_status(SubscriptionStatus_STARTED);
     if(opubl_) {
         olistener_->on_start(*opubl_);
@@ -119,7 +119,7 @@ RetCode sbs_impl::set_started()
 
 RetCode sbs_impl::set_stopped()
 {
-    IFLOG(conn_->peer_->log_, info(LS_SBS"[CONNID:{}-SBSID:{}][stopped]", conn_->connid_, sbsid_))
+    IFLOG(conn_->broker_->log_, info(LS_SBS"[CONNID:{}-SBSID:{}][stopped]", conn_->connid_, sbsid_))
     set_status(SubscriptionStatus_STOPPED);
     if(ipubl_) {
         ilistener_->on_stop(*ipubl_);
@@ -131,7 +131,7 @@ RetCode sbs_impl::set_stopped()
 
 RetCode sbs_impl::set_released()
 {
-    IFLOG(conn_->peer_->log_, debug(LS_SBS"[CONNID:{}-SBSID:{}][released]", conn_->connid_, sbsid_))
+    IFLOG(conn_->broker_->log_, debug(LS_SBS"[CONNID:{}-SBSID:{}][released]", conn_->connid_, sbsid_))
     set_status(SubscriptionStatus_RELEASED);
     return RetCode_OK;
 }
@@ -169,7 +169,7 @@ RetCode sbs_impl::await_for_status_reached(SubscriptionStatus test,
         }) ? RetCode_OK : RetCode_TIMEOUT;
     }
     current = status_;
-    IFLOG(conn_->peer_->log_, trace(LS_CLO "test:{} [{}] current:{}", __func__, test, !rcode ? "reached" : "timeout", status_))
+    IFLOG(conn_->broker_->log_, trace(LS_CLO "test:{} [{}] current:{}", __func__, test, !rcode ? "reached" : "timeout", status_))
     return rcode;
 }
 
@@ -194,14 +194,14 @@ RetCode sbs_impl::await_for_start_result(SubscriptionResponse &sbs_start_result,
     }
     sbs_start_result = sbresl_;
     sbs_start_protocode = last_vlgcod_;
-    IFLOG(conn_->peer_->log_, trace(LS_CLO
-                                    "[sbsid:{}, res:{}, status:{}][incoming_subscription start result available][sbs_start_result:{}, sbs_start_protocode:{}]",
-                                    __func__,
-                                    sbsid_,
-                                    rcode,
-                                    status_,
-                                    sbresl_,
-                                    last_vlgcod_))
+    IFLOG(conn_->broker_->log_, trace(LS_CLO
+                                      "[sbsid:{}, res:{}, status:{}][incoming_subscription start result available][sbs_start_result:{}, sbs_start_protocode:{}]",
+                                      __func__,
+                                      sbsid_,
+                                      rcode,
+                                      status_,
+                                      sbresl_,
+                                      last_vlgcod_))
     start_stop_evt_occur_ = false;
     return rcode;
 }
@@ -227,14 +227,14 @@ RetCode sbs_impl::await_for_stop_result(SubscriptionResponse &sbs_stop_result,
     }
     sbs_stop_result = sbresl_;
     sbs_stop_protocode = last_vlgcod_;
-    IFLOG(conn_->peer_->log_, trace(LS_CLO
-                                    "[sbsid:{}, res:{}, status:{}][incoming_subscription stop result available][sbs_stop_result:{}, sbs_stop_protocode:{}]",
-                                    __func__,
-                                    sbsid_,
-                                    rcode,
-                                    status_,
-                                    sbresl_,
-                                    last_vlgcod_))
+    IFLOG(conn_->broker_->log_, trace(LS_CLO
+                                      "[sbsid:{}, res:{}, status:{}][incoming_subscription stop result available][sbs_stop_result:{}, sbs_stop_protocode:{}]",
+                                      __func__,
+                                      sbsid_,
+                                      rcode,
+                                      status_,
+                                      sbresl_,
+                                      last_vlgcod_))
     start_stop_evt_occur_ = false;
     return rcode;
 }
@@ -280,7 +280,7 @@ incoming_subscription_impl::~incoming_subscription_impl()
 inline void incoming_subscription_impl::ntfy_sel_snd_pkt()
 {
     sel_evt *evt = new sel_evt(VLG_SELECTOR_Evt_SendPacket, conn_sh_);
-    conn_->peer_->selector_.notify(evt);
+    conn_->broker_->selector_.notify(evt);
 }
 
 inline void incoming_subscription_impl::release_initial_query()
@@ -353,13 +353,13 @@ RetCode incoming_subscription_impl::send_initial_query()
     subscription_event_impl *sbs_dwnl_evt_impl = nullptr;
     std::unique_ptr<nclass> dwnl_obj;
     unsigned int ts_0 = 0, ts_1 = 0;
-    if((rcode = conn_->peer_->get_per_nclassid_helper_rec(nclassid_, &sdr))) {
-        IFLOG(conn_->peer_->log_, critical(LS_CLO "[failed get per-nclass_id helper class][res:{}]", __func__, rcode))
+    if((rcode = conn_->broker_->get_per_nclassid_helper_rec(nclassid_, &sdr))) {
+        IFLOG(conn_->broker_->log_, critical(LS_CLO "[failed get per-nclass_id helper class][res:{}]", __func__, rcode))
         return rcode;
     }
 
     do {
-        conn_->peer_->nem_.new_nclass_instance(nclassid_, dwnl_obj);
+        conn_->broker_->nem_.new_nclass_instance(nclassid_, dwnl_obj);
         if((rcode = initial_query_->load_next_entity(ts_0, ts_1, *dwnl_obj)) == RetCode_DBROW) {
             sbs_dwnl_evt_impl = new subscription_event_impl(sbsid_,
                                                             sdr->next_sbs_evt_id(),
@@ -378,7 +378,7 @@ RetCode incoming_subscription_impl::send_initial_query()
     ntfy_sel_snd_pkt();
 
     if((rcode = initial_query_->release())) {
-        IFLOG(conn_->peer_->log_, critical(LS_TRL "[download query failed to release][res:{}]", __func__, rcode))
+        IFLOG(conn_->broker_->log_, critical(LS_TRL "[download query failed to release][res:{}]", __func__, rcode))
     }
 
     initial_query_.release();
@@ -389,11 +389,11 @@ RetCode incoming_subscription_impl::send_initial_query()
 RetCode incoming_subscription_impl::execute_initial_query()
 {
     RetCode rcode = RetCode_OK;
-    const nentity_desc *nclass_desc = conn_->peer_->nem_.get_nentity_descriptor(nclassid_);
+    const nentity_desc *nclass_desc = conn_->broker_->nem_.get_nentity_descriptor(nclassid_);
     if(nclass_desc) {
         if(nclass_desc->is_persistent()) {
             persistence_driver *driv = nullptr;
-            if((driv = conn_->peer_->pers_mng_.available_driver(nclassid_))) {
+            if((driv = conn_->broker_->pers_mng_.available_driver(nclassid_))) {
                 persistence_connection_impl *conn = nullptr;
                 if((conn = driv->available_connection(nclassid_))) {
                     std::stringstream ss;
@@ -408,22 +408,22 @@ RetCode incoming_subscription_impl::execute_initial_query()
                            << ")";
                     }
                     ss << ";";
-                    rcode = conn->execute_query(ss.str().c_str(), conn_->peer_->nem_, initial_query_);
+                    rcode = conn->execute_query(ss.str().c_str(), conn_->broker_->nem_, initial_query_);
                 } else {
-                    IFLOG(conn_->peer_->log_, error(LS_TRL "[no available persistence-connection for nclass_id:{}]", __func__,
-                                                    nclassid_))
+                    IFLOG(conn_->broker_->log_, error(LS_TRL "[no available persistence-connection for nclass_id:{}]", __func__,
+                                                      nclassid_))
                     rcode = RetCode_KO;
                 }
             } else {
-                IFLOG(conn_->peer_->log_, error(LS_TRL "[no available persistence-driver for nclass_id:{}]", __func__, nclassid_))
+                IFLOG(conn_->broker_->log_, error(LS_TRL "[no available persistence-driver for nclass_id:{}]", __func__, nclassid_))
                 rcode = RetCode_KO;
             }
         } else {
-            IFLOG(conn_->peer_->log_, error(LS_TRL "[nclass is not persistent][nclass_id:{}]", __func__, nclassid_))
+            IFLOG(conn_->broker_->log_, error(LS_TRL "[nclass is not persistent][nclass_id:{}]", __func__, nclassid_))
             rcode = RetCode_KO;
         }
     } else {
-        IFLOG(conn_->peer_->log_, critical(LS_TRL "[nclass descriptor not found][nclass_id:{}]", __func__, nclassid_))
+        IFLOG(conn_->broker_->log_, critical(LS_TRL "[nclass descriptor not found][nclass_id:{}]", __func__, nclassid_))
     }
     if(rcode) {
         initial_query_ended_ = true;
@@ -431,7 +431,7 @@ RetCode incoming_subscription_impl::execute_initial_query()
             initial_query_->release();
         }
         initial_query_.release();
-        IFLOG(conn_->peer_->log_, error(LS_CLO "[sbsid:{} - download query failed][res:{}].", __func__, sbsid_, rcode))
+        IFLOG(conn_->broker_->log_, error(LS_CLO "[sbsid:{} - download query failed][res:{}].", __func__, sbsid_, rcode))
     }
     return rcode;
 }
@@ -451,11 +451,11 @@ outgoing_subscription_impl::~outgoing_subscription_impl()
 {
     if(status_ == SubscriptionStatus_REQUEST_SENT ||
             status_ == SubscriptionStatus_STARTED) {
-        IFLOG(conn_->peer_->log_, warn(LS_DTR
-                                       "[subscription:{} in status:{}, stopping..]",
-                                       __func__,
-                                       sbsid_,
-                                       status_))
+        IFLOG(conn_->broker_->log_, warn(LS_DTR
+                                         "[subscription:{} in status:{}, stopping..]",
+                                         __func__,
+                                         sbsid_,
+                                         status_))
         stop();
         SubscriptionResponse sres = SubscriptionResponse_UNDEFINED;
         ProtocolCode spc = ProtocolCode_UNDEFINED;
@@ -470,7 +470,7 @@ outgoing_subscription_impl::~outgoing_subscription_impl()
 
 RetCode outgoing_subscription_impl::set_req_sent()
 {
-    IFLOG(conn_->peer_->log_, info(
+    IFLOG(conn_->broker_->log_, info(
               LS_SBO"[CONNID:{}-REQID:{}][SBSTYP:{}, SBSMOD:{}, FLOTYP:{}, DWLTYP:{}, ENCTYP:{}, NCLSSID:{}, TMSTP0:{}, TMSTP1:{}]",
               conn_->connid_,
               reqid_,
@@ -489,7 +489,7 @@ RetCode outgoing_subscription_impl::set_req_sent()
 RetCode outgoing_subscription_impl::start()
 {
     if(status_ != SubscriptionStatus_INITIALIZED && status_ != SubscriptionStatus_STOPPED) {
-        IFLOG(conn_->peer_->log_, error(LS_CLO "[status:{}]", __func__, status_))
+        IFLOG(conn_->broker_->log_, error(LS_CLO "[status:{}]", __func__, status_))
         return RetCode_BADSTTS;
     }
     RetCode rcode = RetCode_OK;
@@ -498,7 +498,7 @@ RetCode outgoing_subscription_impl::start()
     outgoing_subscription_impl *self = this;
     rcode = oconn.outg_reqid_sbs_map_.put(&reqid_, &self);
     if((rcode = send_start_request())) {
-        IFLOG(conn_->peer_->log_, error(LS_TRL "[send request failed][res:{}]", __func__, rcode))
+        IFLOG(conn_->broker_->log_, error(LS_TRL "[send request failed][res:{}]", __func__, rcode))
     }
     return rcode;
 }
@@ -512,7 +512,7 @@ RetCode outgoing_subscription_impl::start(SubscriptionType sbscr_type,
                                           unsigned int start_timestamp_0,
                                           unsigned int start_timestamp_1)
 {
-    IFLOG(conn_->peer_->log_, trace(
+    IFLOG(conn_->broker_->log_, trace(
               LS_OPN"[sbsid:{}, sbscr_type:{}, sbscr_mode:{}, sbscr_flow_type:{}, sbscr_dwnld_type:{}, sbscr_nclass_encode:{}, nclass_id:{}, ts_0:{}, ts_1:{}]",
               __func__,
               sbsid_,
@@ -525,7 +525,7 @@ RetCode outgoing_subscription_impl::start(SubscriptionType sbscr_type,
               start_timestamp_0,
               start_timestamp_1))
     if(status_ != SubscriptionStatus_INITIALIZED && status_ != SubscriptionStatus_STOPPED) {
-        IFLOG(conn_->peer_->log_, error(LS_CLO "[status:{}]", __func__, status_))
+        IFLOG(conn_->broker_->log_, error(LS_CLO "[status:{}]", __func__, status_))
         return RetCode_BADSTTS;
     }
     sbstyp_ = sbscr_type;
@@ -568,21 +568,21 @@ RetCode outgoing_subscription_impl::receive_event(const vlg_hdr_rec *pkt_hdr,
     std::unique_ptr<nclass> nobj;
     if(pkt_hdr->row_2.sevttp.sevttp != SubscriptionEventType_DOWNLOAD_END) {
         RetCode rcode = RetCode_OK;
-        if((rcode = conn_->peer_->nem_.new_nclass_instance(nclassid_, nobj))) {
-            IFLOG(conn_->peer_->log_, critical(
+        if((rcode = conn_->broker_->nem_.new_nclass_instance(nclassid_, nobj))) {
+            IFLOG(conn_->broker_->log_, critical(
                       LS_SBS"[incoming_subscription event receive failed: new_nclass_instance fail:{}, nclass_id:{}]",
                       rcode,
                       nclassid_))
             return rcode;
         }
-        if((rcode = nobj->restore(&conn_->peer_->nem_, enctyp_, pkt_body))) {
-            IFLOG(conn_->peer_->log_, critical(
+        if((rcode = nobj->restore(&conn_->broker_->nem_, enctyp_, pkt_body))) {
+            IFLOG(conn_->broker_->log_, critical(
                       LS_SBS"[incoming_subscription event receive failed: nclass restore fail:{}, nclass_id:{}]",
                       rcode,
                       nclassid_))
             return rcode;
         } else {
-            IFLOG(conn_->peer_->log_, debug(LS_SBI"[ACT:{}]{}", pkt_hdr->row_2.sevttp.sbeact, spdlog_nclass_type{*nobj.get()}))
+            IFLOG(conn_->broker_->log_, debug(LS_SBI"[ACT:{}]{}", pkt_hdr->row_2.sevttp.sbeact, spdlog_nclass_type{*nobj.get()}))
         }
     }
 

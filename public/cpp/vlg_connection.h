@@ -14,7 +14,7 @@ namespace vlg {
 struct incoming_connection_factory {
     explicit incoming_connection_factory();
     virtual ~incoming_connection_factory();
-    virtual incoming_connection &make_incoming_connection(peer &p);
+    virtual incoming_connection &make_incoming_connection(broker &p);
 
     static incoming_connection_factory &default_factory();
 };
@@ -51,13 +51,13 @@ struct incoming_connection_listener {
 /** @brief incoming_connection.
 */
 struct incoming_connection {
-    explicit incoming_connection(peer &,
+    explicit incoming_connection(broker &,
                                  incoming_connection_listener &listener =
                                      incoming_connection_listener::default_listener());
 
     virtual ~incoming_connection();
 
-    peer &get_peer();
+    broker &get_broker();
     unsigned int get_id() const;
     unsigned short get_client_heartbeat() const;
     unsigned short get_server_agreed_heartbeat() const;
@@ -121,9 +121,9 @@ struct outgoing_connection {
 
     virtual ~outgoing_connection();
 
-    RetCode bind(peer &);
+    RetCode bind(broker &);
 
-    peer &get_peer();
+    broker &get_broker();
     ConnectionType get_connection_type() const;
     unsigned int get_id() const;
     ConnectionResult get_connection_response() const;

@@ -77,7 +77,7 @@ enum PktChasingStatus {
 };
 
 struct conn_impl {
-    conn_impl(incoming_connection &ipubl, peer &p, incoming_connection_listener &);
+    conn_impl(incoming_connection &ipubl, broker &p, incoming_connection_listener &);
     conn_impl(outgoing_connection &opubl, outgoing_connection_listener &);
 
     virtual ~conn_impl() = default;
@@ -174,14 +174,14 @@ struct conn_impl {
     incoming_connection_listener *ilistener_;
     outgoing_connection_listener *olistener_;
 
-    //associated peer.
+    //associated broker.
     //cannot be ref, because bind is after construction.
-    peer_impl *peer_;
+    broker_impl *broker_;
 };
 
 struct incoming_connection_impl : public conn_impl {
     explicit incoming_connection_impl(incoming_connection &publ,
-                                      peer &p,
+                                      broker &p,
                                       incoming_connection_listener &);
 
     virtual ~incoming_connection_impl();

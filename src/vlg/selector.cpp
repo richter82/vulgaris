@@ -29,15 +29,15 @@ sel_evt::sel_evt(VLG_SELECTOR_Evt evt, std::shared_ptr<incoming_connection> &con
     memset(&saddr_, 0, sizeof(sockaddr_in));
 }
 
-selector::selector(peer_impl &peer) :
-    peer_(peer),
+selector::selector(broker_impl &broker) :
+    broker_(broker),
     status_(SelectorStatus_TO_INIT),
     nfds_(-1),
     sel_res_(-1),
     udp_ntfy_srv_socket_(INVALID_SOCKET),
     udp_ntfy_cli_socket_(INVALID_SOCKET),
     srv_socket_(INVALID_SOCKET),
-    srv_acceptor_(peer)
+    srv_acceptor_(broker)
 {
     memset(&udp_ntfy_sa_in_, 0, sizeof(udp_ntfy_sa_in_));
     udp_ntfy_sa_in_.sin_family = AF_INET;
@@ -54,7 +54,7 @@ selector::selector(peer_impl &peer) :
 selector::~selector()
 {
     if(!(status_ <= SelectorStatus_INIT) && !(status_ >= SelectorStatus_STOPPED)) {
-        IFLOG(peer_.log_, critical(LS_DTR"[selector:{} is not in a safe state:{}] " LS_EXUNX, __func__, peer_.peer_id_, status_))
+        IFLOG(broker_.log_, critical(LS_DTR"[selector:{} is not in a safe state:{}] " LS_EXUNX, __func__, broker_.broker_id_, status_))
     }
 }
 
@@ -67,7 +67,7 @@ RetCode selector::init()
     return RetCode_OK;
 }
 
-RetCode selector::on_peer_move_running_actions()
+RetCode selector::on_broker_move_running_actions()
 {
     return start_conn_objs();
 }
@@ -77,7 +77,7 @@ RetCode selector::set_status(SelectorStatus status)
     std::unique_lock<std::mutex> lck(mtx_);
     status_ = status;
     cv_.notify_all();
-    IFLOG(peer_.log_, trace(LS_CLO "[status:{}]", __func__, status))
+    IFLOG(broker_.log_, trace(LS_CLO "[status:{}]", __func__, status))
     return RetCode_OK;
 }
 
@@ -101,7 +101,7 @@ RetCode selector::await_for_status_reached(SelectorStatus test,
         }) ? RetCode_OK : RetCode_TIMEOUT;
     }
     current = status_;
-    IFLOG(peer_.log_, trace(LS_CLO "test:{} [{}] current:{}", __func__, test, !rcode ? "reached" : "timeout", status_))
+    IFLOG(broker_.log_, trace(LS_CLO "test:{} [{}] current:{}", __func__, test, !rcode ? "reached" : "timeout", status_))
     return rcode;
 }
 
@@ -109,18 +109,18 @@ RetCode selector::create_UDP_notify_srv_sock()
 {
     int res = 0, err = 0;
     if((udp_ntfy_srv_socket_ = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) != INVALID_SOCKET) {
-        IFLOG(peer_.log_, debug(LS_TRL "[udp_ntfy_srv_socket_:{}][OK]", __func__, udp_ntfy_srv_socket_))
+        IFLOG(broker_.log_, debug(LS_TRL "[udp_ntfy_srv_socket_:{}][OK]", __func__, udp_ntfy_srv_socket_))
         if(!bind(udp_ntfy_srv_socket_, (sockaddr *)&udp_ntfy_sa_in_, sizeof(udp_ntfy_sa_in_))) {
-            IFLOG(peer_.log_, trace(LS_TRL "[udp_ntfy_srv_socket_:{}][bind OK]", __func__, udp_ntfy_srv_socket_))
+            IFLOG(broker_.log_, trace(LS_TRL "[udp_ntfy_srv_socket_:{}][bind OK]", __func__, udp_ntfy_srv_socket_))
 #if defined WIN32 && defined _MSC_VER
             unsigned long mode = 1; //non-blocking mode
             if((res = ioctlsocket(udp_ntfy_srv_socket_, FIONBIO, &mode))) {
                 err = WSAGetLastError();
-                IFLOG(peer_.log_, critical(LS_CLO "[udp_ntfy_srv_socket_:{}][ioctlsocket KO][err:{}]", __func__, udp_ntfy_srv_socket_,
-                                           err))
+                IFLOG(broker_.log_, critical(LS_CLO "[udp_ntfy_srv_socket_:{}][ioctlsocket KO][err:{}]", __func__, udp_ntfy_srv_socket_,
+                                             err))
                 return RetCode_SYSERR;
             } else {
-                IFLOG(peer_.log_, trace(LS_TRL "[udp_ntfy_srv_socket_:{}][ioctlsocket OK]", __func__, udp_ntfy_srv_socket_))
+                IFLOG(broker_.log_, trace(LS_TRL "[udp_ntfy_srv_socket_:{}][ioctlsocket OK]", __func__, udp_ntfy_srv_socket_))
             }
 #else
             int flags = fcntl(udp_ntfy_srv_socket_, F_GETFL, 0);
@@ -129,11 +129,11 @@ RetCode selector::create_UDP_notify_srv_sock()
             }
             flags = (flags|O_NONBLOCK);
             if((res = fcntl(udp_ntfy_srv_socket_, F_SETFL, flags))) {
-                IFLOG(peer_.log_, critical(LS_CLO "[udp_ntfy_srv_socket_:{}][fcntl KO][err:{}]", __func__, udp_ntfy_srv_socket_,
-                                           errno))
+                IFLOG(broker_.log_, critical(LS_CLO "[udp_ntfy_srv_socket_:{}][fcntl KO][err:{}]", __func__, udp_ntfy_srv_socket_,
+                                             errno))
                 return RetCode_SYSERR;
             } else {
-                IFLOG(peer_.log_, trace(LS_TRL "[udp_ntfy_srv_socket_:{}][fcntl OK]", __func__, udp_ntfy_srv_socket_))
+                IFLOG(broker_.log_, trace(LS_TRL "[udp_ntfy_srv_socket_:{}][fcntl OK]", __func__, udp_ntfy_srv_socket_))
             }
 #endif
         } else {
@@ -142,11 +142,11 @@ RetCode selector::create_UDP_notify_srv_sock()
 #else
             err = errno;
 #endif
-            IFLOG(peer_.log_, critical(LS_CLO "[udp_ntfy_srv_socket_:{}][bind KO][err:{}]", __func__, udp_ntfy_srv_socket_, err))
+            IFLOG(broker_.log_, critical(LS_CLO "[udp_ntfy_srv_socket_:{}][bind KO][err:{}]", __func__, udp_ntfy_srv_socket_, err))
             return RetCode_SYSERR;
         }
     } else {
-        IFLOG(peer_.log_, critical(LS_CLO "[socket KO][err:{}]", __func__, err))
+        IFLOG(broker_.log_, critical(LS_CLO "[socket KO][err:{}]", __func__, err))
         return RetCode_SYSERR;
     }
     return RetCode_OK;
@@ -157,23 +157,23 @@ RetCode selector::connect_UDP_notify_cli_sock()
     int err = 0;
     socklen_t len = sizeof(udp_ntfy_sa_in_);
     getsockname(udp_ntfy_srv_socket_, (struct sockaddr *)&udp_ntfy_sa_in_, &len);
-    IFLOG(peer_.log_, trace(LS_OPN "[sin_addr:{}, sin_port:{}]", __func__,
-                            inet_ntoa(udp_ntfy_sa_in_.sin_addr),
-                            htons(udp_ntfy_sa_in_.sin_port)))
+    IFLOG(broker_.log_, trace(LS_OPN "[sin_addr:{}, sin_port:{}]", __func__,
+                              inet_ntoa(udp_ntfy_sa_in_.sin_addr),
+                              htons(udp_ntfy_sa_in_.sin_port)))
     if((udp_ntfy_cli_socket_ = socket(AF_INET, SOCK_DGRAM, 0)) != INVALID_SOCKET) {
-        IFLOG(peer_.log_, debug(LS_TRL "[udp_ntfy_cli_socket_:{}][OK]", __func__, udp_ntfy_cli_socket_))
+        IFLOG(broker_.log_, debug(LS_TRL "[udp_ntfy_cli_socket_:{}][OK]", __func__, udp_ntfy_cli_socket_))
         if((connect(udp_ntfy_cli_socket_, (struct sockaddr *)&udp_ntfy_sa_in_, sizeof(udp_ntfy_sa_in_))) != INVALID_SOCKET) {
-            IFLOG(peer_.log_, debug(LS_TRL "[udp_ntfy_cli_socket_:{}][connect OK]", __func__, udp_ntfy_cli_socket_))
+            IFLOG(broker_.log_, debug(LS_TRL "[udp_ntfy_cli_socket_:{}][connect OK]", __func__, udp_ntfy_cli_socket_))
         } else {
 #if defined WIN32 && defined _MSC_VER
             err = WSAGetLastError();
 #endif
-            IFLOG(peer_.log_, critical(LS_CLO "[udp_ntfy_cli_socket_:{}][connect KO][err:{}]", __func__, udp_ntfy_cli_socket_,
-                                       err))
+            IFLOG(broker_.log_, critical(LS_CLO "[udp_ntfy_cli_socket_:{}][connect KO][err:{}]", __func__, udp_ntfy_cli_socket_,
+                                         err))
             return RetCode_SYSERR;
         }
     } else {
-        IFLOG(peer_.log_, critical(LS_CLO "[socket KO]", __func__))
+        IFLOG(broker_.log_, critical(LS_CLO "[socket KO]", __func__))
         return RetCode_SYSERR;
     }
     return RetCode_OK;
@@ -206,11 +206,11 @@ RetCode selector::notify(const sel_evt *evt)
 #else
         } else if(err == ECONNRESET) {
 #endif
-            IFLOG(peer_.log_, error(LS_CLO "[udp_ntfy_cli_socket_:{}][err:{}]", __func__, udp_ntfy_cli_socket_, err))
+            IFLOG(broker_.log_, error(LS_CLO "[udp_ntfy_cli_socket_:{}][err:{}]", __func__, udp_ntfy_cli_socket_, err))
             return RetCode_KO;
         } else {
             perror(__func__);
-            IFLOG(peer_.log_, error(LS_CLO "[udp_ntfy_cli_socket_:{}][errno:{}]", __func__, udp_ntfy_cli_socket_, errno))
+            IFLOG(broker_.log_, error(LS_CLO "[udp_ntfy_cli_socket_:{}][errno:{}]", __func__, udp_ntfy_cli_socket_, errno))
             return RetCode_SYSERR;
         }
     }
@@ -220,15 +220,15 @@ RetCode selector::notify(const sel_evt *evt)
 RetCode selector::start_conn_objs()
 {
     RetCode res = RetCode_OK;
-    if(peer_.personality_ == PeerPersonality_PURE_SERVER || peer_.personality_ == PeerPersonality_BOTH) {
+    if(broker_.personality_ == PeerPersonality_PURE_SERVER || broker_.personality_ == PeerPersonality_BOTH) {
         if((res = srv_acceptor_.create_server_socket(srv_socket_))) {
-            IFLOG(peer_.log_, critical(LS_CLO "[starting acceptor, last_err:{}]", __func__, res))
+            IFLOG(broker_.log_, critical(LS_CLO "[starting acceptor, last_err:{}]", __func__, res))
             return RetCode_KO;
         }
         FD_SET(srv_socket_, &read_FDs_);
         nfds_ = (int)srv_socket_;
     }
-    if(peer_.personality_ == PeerPersonality_PURE_CLIENT || peer_.personality_ == PeerPersonality_BOTH) {
+    if(broker_.personality_ == PeerPersonality_PURE_CLIENT || broker_.personality_ == PeerPersonality_BOTH) {
         //???
     }
     FD_SET(udp_ntfy_srv_socket_, &read_FDs_);
@@ -247,11 +247,11 @@ RetCode selector::process_inco_sock_inco_events()
                 if(it->second->impl_->status_ != ConnectionStatus_ESTABLISHED &&
                         it->second->impl_->status_ != ConnectionStatus_PROTOCOL_HANDSHAKE &&
                         it->second->impl_->status_ != ConnectionStatus_AUTHENTICATED) {
-                    IFLOG(peer_.log_, trace(LS_TRL"[socket:{}, connid:{}, status:{}][not eligible for recv()]",
-                                            __func__,
-                                            sckt,
-                                            it->second->impl_->connid_,
-                                            it->second->impl_->status_))
+                    IFLOG(broker_.log_, trace(LS_TRL"[socket:{}, connid:{}, status:{}][not eligible for recv()]",
+                                              __func__,
+                                              sckt,
+                                              it->second->impl_->connid_,
+                                              it->second->impl_->status_))
                     break;
                 }
                 inco_conn_process_rdn_buff(it->second);
@@ -300,10 +300,10 @@ RetCode selector::process_outg_sock_inco_events()
                 if(it->second->status_ != ConnectionStatus_ESTABLISHED &&
                         it->second->status_ != ConnectionStatus_PROTOCOL_HANDSHAKE &&
                         it->second->status_ != ConnectionStatus_AUTHENTICATED) {
-                    IFLOG(peer_.log_, trace(LS_TRL"[socket:{}, connid:{}, status:{}][not eligible for recv()]", __func__,
-                                            it->second->socket_,
-                                            it->second->connid_,
-                                            it->second->status_))
+                    IFLOG(broker_.log_, trace(LS_TRL"[socket:{}, connid:{}, status:{}][not eligible for recv()]", __func__,
+                                              it->second->socket_,
+                                              it->second->connid_,
+                                              it->second->status_))
                     break;
                 }
                 outg_conn_process_rdn_buff(it->second);
@@ -321,10 +321,10 @@ RetCode selector::process_outg_sock_inco_events()
                 if(it->second->status_ != ConnectionStatus_ESTABLISHED &&
                         it->second->status_ != ConnectionStatus_PROTOCOL_HANDSHAKE &&
                         it->second->status_ != ConnectionStatus_AUTHENTICATED) {
-                    IFLOG(peer_.log_, trace(LS_TRL "[socket:{}, connid:{}, status:{}][not eligible for recv()]", __func__,
-                                            it->second->socket_,
-                                            it->second->connid_,
-                                            it->second->status_))
+                    IFLOG(broker_.log_, trace(LS_TRL "[socket:{}, connid:{}, status:{}][not eligible for recv()]", __func__,
+                                              it->second->socket_,
+                                              it->second->connid_,
+                                              it->second->status_))
                     break;
                 }
                 outg_conn_process_rdn_buff(it->second);
@@ -341,30 +341,30 @@ RetCode selector::consume_inco_sock_events()
 {
     std::shared_ptr<incoming_connection> new_conn_shp;
     if(FD_ISSET(srv_socket_, &read_FDs_)) {
-        if(srv_acceptor_.accept(peer_.next_connid(), new_conn_shp)) {
-            IFLOG(peer_.log_, critical(LS_CLO "[accepting new connection]", __func__))
+        if(srv_acceptor_.accept(broker_.next_connid(), new_conn_shp)) {
+            IFLOG(broker_.log_, critical(LS_CLO "[accepting new connection]", __func__))
             return RetCode_KO;
         }
         if(new_conn_shp->impl_->set_socket_blocking_mode(false)) {
-            IFLOG(peer_.log_, critical(LS_CLO "[set socket not blocking]", __func__))
+            IFLOG(broker_.log_, critical(LS_CLO "[set socket not blocking]", __func__))
             return RetCode_KO;
         }
         inco_conn_map_[new_conn_shp->get_socket()] = new_conn_shp;
-        IFLOG(peer_.log_, debug(LS_CON"[socket:{}, host:{}, port:{}, connid:{}][socket accepted]",
-                                new_conn_shp->get_socket(),
-                                new_conn_shp->get_host_ip(),
-                                new_conn_shp->get_host_port(),
-                                new_conn_shp->get_id()))
+        IFLOG(broker_.log_, debug(LS_CON"[socket:{}, host:{}, port:{}, connid:{}][socket accepted]",
+                                  new_conn_shp->get_socket(),
+                                  new_conn_shp->get_host_ip(),
+                                  new_conn_shp->get_host_port(),
+                                  new_conn_shp->get_id()))
         --sel_res_;
         if(sel_res_) {
             if(process_inco_sock_inco_events()) {
-                IFLOG(peer_.log_, critical(LS_CLO "[processing incoming socket events]", __func__))
+                IFLOG(broker_.log_, critical(LS_CLO "[processing incoming socket events]", __func__))
                 return RetCode_KO;
             }
         }
     } else {
         if(process_inco_sock_inco_events()) {
-            IFLOG(peer_.log_, critical(LS_CLO "[processing incoming socket events]", __func__))
+            IFLOG(broker_.log_, critical(LS_CLO "[processing incoming socket events]", __func__))
             return RetCode_KO;
         }
     }
@@ -375,10 +375,10 @@ inline void selector::FDSET_sockets()
 {
     FD_ZERO(&read_FDs_);
     FD_ZERO(&write_FDs_);
-    if(peer_.personality_ == PeerPersonality_PURE_SERVER || peer_.personality_ == PeerPersonality_BOTH) {
+    if(broker_.personality_ == PeerPersonality_PURE_SERVER || broker_.personality_ == PeerPersonality_BOTH) {
         FDSET_incoming_sockets();
     }
-    if(peer_.personality_ == PeerPersonality_PURE_CLIENT || peer_.personality_ == PeerPersonality_BOTH) {
+    if(broker_.personality_ == PeerPersonality_PURE_CLIENT || broker_.personality_ == PeerPersonality_BOTH) {
         FDSET_outgoing_sockets();
     }
     FDSET_write_incoming_pending_sockets();
@@ -491,7 +491,7 @@ inline RetCode selector::add_early_outg_conn(sel_evt *conn_evt)
         return rcode;
     }
     if(conn_evt->conn_->set_socket_blocking_mode(false)) {
-        IFLOG(peer_.log_, critical(LS_CLO "[setting socket not blocking]", __func__))
+        IFLOG(broker_.log_, critical(LS_CLO "[setting socket not blocking]", __func__))
         return RetCode_KO;
     }
     conn_evt->conn_->aggr_msgs_and_send_pkt();
@@ -532,7 +532,7 @@ RetCode selector::process_asyn_evts()
     bool conn_still_valid = true;
     while((brecv = recv(udp_ntfy_srv_socket_, (char *)&conn_evt, recv_buf_sz, 0)) > 0) {
         if(brecv != recv_buf_sz) {
-            IFLOG(peer_.log_, critical(LS_CLO "[brecv != recv_buf_sz]", __func__))
+            IFLOG(broker_.log_, critical(LS_CLO "[brecv != recv_buf_sz]", __func__))
             return RetCode_GENERR;
         }
         if(conn_evt->evt_ != VLG_SELECTOR_Evt_Interrupt) {
@@ -565,11 +565,11 @@ RetCode selector::process_asyn_evts()
                         //@todo
                         break;
                     default:
-                        IFLOG(peer_.log_, critical(LS_CLO "[unknown event]", __func__))
+                        IFLOG(broker_.log_, critical(LS_CLO "[unknown event]", __func__))
                         break;
                 }
             } else {
-                IFLOG(peer_.log_, info(LS_TRL "[socket:{} is no longer valid]", __func__, conn_evt->socket_))
+                IFLOG(broker_.log_, info(LS_TRL "[socket:{} is no longer valid]", __func__, conn_evt->socket_))
             }
         }
         delete conn_evt;
@@ -592,11 +592,11 @@ RetCode selector::process_asyn_evts()
 #else
         } else if(errno == ECONNRESET) {
 #endif
-            IFLOG(peer_.log_, error(LS_CLO "[err:{}]", __func__, err))
+            IFLOG(broker_.log_, error(LS_CLO "[err:{}]", __func__, err))
             return RetCode_KO;
         } else {
             perror(__func__);
-            IFLOG(peer_.log_, critical(LS_CLO "[errno:{}]", __func__, errno))
+            IFLOG(broker_.log_, critical(LS_CLO "[errno:{}]", __func__, errno))
             return RetCode_SYSERR;
         }
     }
@@ -613,20 +613,20 @@ inline RetCode selector::consume_events()
         sel_res_--;
     }
     if(sel_res_) {
-        if(peer_.personality_ == PeerPersonality_PURE_SERVER || peer_.personality_ == PeerPersonality_BOTH) {
+        if(broker_.personality_ == PeerPersonality_PURE_SERVER || broker_.personality_ == PeerPersonality_BOTH) {
             consume_inco_sock_events();
         }
-        if(peer_.personality_ == PeerPersonality_PURE_CLIENT || peer_.personality_ == PeerPersonality_BOTH) {
+        if(broker_.personality_ == PeerPersonality_PURE_CLIENT || broker_.personality_ == PeerPersonality_BOTH) {
             if(sel_res_) {
                 process_outg_sock_inco_events();
             }
         }
     }
     if(sel_res_) {
-        if(peer_.personality_ == PeerPersonality_PURE_SERVER || peer_.personality_ == PeerPersonality_BOTH) {
+        if(broker_.personality_ == PeerPersonality_PURE_SERVER || broker_.personality_ == PeerPersonality_BOTH) {
             process_inco_sock_outg_events();
         }
-        if(peer_.personality_ == PeerPersonality_PURE_CLIENT || peer_.personality_ == PeerPersonality_BOTH) {
+        if(broker_.personality_ == PeerPersonality_PURE_CLIENT || broker_.personality_ == PeerPersonality_BOTH) {
             if(sel_res_) {
                 process_outg_sock_outg_events();
             }
@@ -640,27 +640,27 @@ RetCode selector::server_socket_shutdown()
     int last_err_ = 0;
 #if defined WIN32 && defined _MSC_VER
     if((last_err_ = closesocket(srv_socket_))) {
-        IFLOG(peer_.log_, error(LS_CLO "[socket:{}][closesocket KO][res:{}]", __func__,
-                                srv_socket_, last_err_))
+        IFLOG(broker_.log_, error(LS_CLO "[socket:{}][closesocket KO][res:{}]", __func__,
+                                  srv_socket_, last_err_))
     } else {
-        IFLOG(peer_.log_, trace(LS_TRL "[socket:{}][closesocket OK][res:{}]", __func__,
-                                srv_socket_, last_err_))
+        IFLOG(broker_.log_, trace(LS_TRL "[socket:{}][closesocket OK][res:{}]", __func__,
+                                  srv_socket_, last_err_))
     }
 #else
     if((last_err_ = close(srv_socket_))) {
-        IFLOG(peer_.log_, error(LS_CLO "[socket:{}][closesocket KO][res:{}]", __func__,
-                                srv_socket_, last_err_))
+        IFLOG(broker_.log_, error(LS_CLO "[socket:{}][closesocket KO][res:{}]", __func__,
+                                  srv_socket_, last_err_))
     } else {
-        IFLOG(peer_.log_, trace(LS_TRL "[socket:{}][closesocket OK][res:{}]", __func__,
-                                srv_socket_, last_err_))
+        IFLOG(broker_.log_, trace(LS_TRL "[socket:{}][closesocket OK][res:{}]", __func__,
+                                  srv_socket_, last_err_))
     }
 #if 0
     if((last_err_ = shutdown(srv_socket_, SHUT_RDWR))) {
-        IFLOG(peer_.log_, error(LS_CLO "[socket:{}][shutdown KO][res:{}]", __func__,
-                                srv_socket_, last_err_))
+        IFLOG(broker_.log_, error(LS_CLO "[socket:{}][shutdown KO][res:{}]", __func__,
+                                  srv_socket_, last_err_))
     } else {
-        IFLOG(peer_.log_, trace(LS_TRL "[socket:{}][shutdown OK][res:{}]", __func__,
-                                srv_socket_, last_err_))
+        IFLOG(broker_.log_, trace(LS_TRL "[socket:{}][shutdown OK][res:{}]", __func__,
+                                  srv_socket_, last_err_))
     }
 #endif
 #endif
@@ -669,7 +669,7 @@ RetCode selector::server_socket_shutdown()
 
 RetCode selector::stop_and_clean()
 {
-    if(peer_.personality_ == PeerPersonality_PURE_SERVER || peer_.personality_ == PeerPersonality_BOTH) {
+    if(broker_.personality_ == PeerPersonality_PURE_SERVER || broker_.personality_ == PeerPersonality_BOTH) {
         for(auto it = inco_conn_map_.begin(); it != inco_conn_map_.end(); ++it)
             if(it->second->get_status() != ConnectionStatus_DISCONNECTED) {
                 it->second->impl_->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
@@ -679,7 +679,7 @@ RetCode selector::stop_and_clean()
         inco_conn_map_.clear();
         server_socket_shutdown();
     }
-    if(peer_.personality_ == PeerPersonality_PURE_CLIENT || peer_.personality_ == PeerPersonality_BOTH) {
+    if(broker_.personality_ == PeerPersonality_PURE_CLIENT || broker_.personality_ == PeerPersonality_BOTH) {
         for(auto it = outg_conn_map_.begin(); it != outg_conn_map_.end(); ++it)
             if(it->second->status_ != ConnectionStatus_DISCONNECTED) {
                 it->second->close_connection(ConnectivityEventResult_OK, ConnectivityEventType_APPLICATIVE);
@@ -722,16 +722,16 @@ void selector::run()
 {
     SelectorStatus current = SelectorStatus_UNDEF;
     if(status_ != SelectorStatus_INIT && status_ != SelectorStatus_REQUEST_READY) {
-        IFLOG(peer_.log_, error(LS_CLO "[status_={}, exp:2][BAD STATUS]", __func__, status_))
+        IFLOG(broker_.log_, error(LS_CLO "[status_={}, exp:2][BAD STATUS]", __func__, status_))
     }
     do {
-        IFLOG(peer_.log_, debug(LS_SEL"+wait for go-ready request+"))
+        IFLOG(broker_.log_, debug(LS_SEL"+wait for go-ready request+"))
         await_for_status_reached(SelectorStatus_REQUEST_READY, current);
-        IFLOG(peer_.log_, debug(LS_SEL"+go ready requested, going ready+"))
+        IFLOG(broker_.log_, debug(LS_SEL"+go ready requested, going ready+"))
         set_status(SelectorStatus_READY);
-        IFLOG(peer_.log_, debug(LS_SEL"+wait for go-select request+"))
+        IFLOG(broker_.log_, debug(LS_SEL"+wait for go-select request+"))
         await_for_status_reached(SelectorStatus_REQUEST_SELECT, current);
-        IFLOG(peer_.log_, debug(LS_SEL"+go-select requested, going select+"))
+        IFLOG(broker_.log_, debug(LS_SEL"+go-select requested, going select+"))
         set_status(SelectorStatus_SELECT);
         timeval sel_timeout = sel_timeout_;
         while(status_ == SelectorStatus_SELECT) {
@@ -739,29 +739,29 @@ void selector::run()
                 consume_events();
             } else if(!sel_res_) {
                 //timeout
-                IFLOG(peer_.log_, trace(LS_SEL"+select() [timeout]+", __func__))
+                IFLOG(broker_.log_, trace(LS_SEL"+select() [timeout]+", __func__))
             } else {
                 //error
-                IFLOG(peer_.log_, error(LS_SEL"+select() [error:{}]+", __func__, sel_res_))
+                IFLOG(broker_.log_, error(LS_SEL"+select() [error:{}]+", __func__, sel_res_))
                 set_status(SelectorStatus_ERROR);
             }
             FDSET_sockets();
             sel_timeout = sel_timeout_;
         }
         if(status_ == SelectorStatus_REQUEST_STOP) {
-            IFLOG(peer_.log_, debug(LS_SEL"+stop requested, clean initiated+"))
+            IFLOG(broker_.log_, debug(LS_SEL"+stop requested, clean initiated+"))
             stop_and_clean();
             break;
         }
         if(status_ == SelectorStatus_ERROR) {
-            IFLOG(peer_.log_, error(LS_SEL"+error occurred, clean initiated+"))
+            IFLOG(broker_.log_, error(LS_SEL"+error occurred, clean initiated+"))
             stop_and_clean();
             break;
         }
     } while(true);
     set_status(SelectorStatus_STOPPED);
     stop();
-    IFLOG(peer_.log_, trace(LS_CLO, __func__))
+    IFLOG(broker_.log_, trace(LS_CLO, __func__))
 }
 
 }

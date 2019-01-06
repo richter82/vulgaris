@@ -10,43 +10,43 @@
 
 namespace vlg {
 
-#define NOT_PERS_ENBL_PEER "[peer is not persistence enabled]"
+#define NOT_PERS_ENBL_BROKER "[broker is not persistence enabled]"
 
 // PERSISTENCE
 
 struct SPC_REC {
-    peer_impl *peer;
+    broker_impl *broker;
     PersistenceAlteringMode mode;
     RetCode res;
 };
 
-bool peer_enum_nem_nclasses_create_schema(const nentity_desc &nentity_desc,
-                                          void *ud)
+bool broker_enum_nem_nclasses_create_schema(const nentity_desc &nentity_desc,
+                                            void *ud)
 {
     SPC_REC *pud = static_cast<SPC_REC *>(ud);
     if(nentity_desc.is_persistent()) {
         persistence_driver *driv = nullptr;
-        if((driv = pud->peer->pers_mng_.available_driver(nentity_desc.get_nclass_id()))) {
+        if((driv = pud->broker->pers_mng_.available_driver(nentity_desc.get_nclass_id()))) {
             persistence_connection_impl *conn = nullptr;
             if((conn = driv->available_connection(nentity_desc.get_nclass_id()))) {
                 pud->res = conn->create_entity_schema(pud->mode,
-                                                      pud->peer->nem_,
+                                                      pud->broker->nem_,
                                                       nentity_desc);
             } else {
-                IFLOG(pud->peer->log_, warn(LS_TRL "[no available persistence connection for nclass_id:{}]", __func__,
-                                            nentity_desc.get_nclass_id()))
+                IFLOG(pud->broker->log_, warn(LS_TRL "[no available persistence connection for nclass_id:{}]", __func__,
+                                              nentity_desc.get_nclass_id()))
                 pud->res = RetCode_KO;
             }
         } else {
-            IFLOG(pud->peer->log_, warn(LS_TRL "[no available persistence driver for nclass_id:{}]", __func__,
-                                        nentity_desc.get_nclass_id()))
+            IFLOG(pud->broker->log_, warn(LS_TRL "[no available persistence driver for nclass_id:{}]", __func__,
+                                          nentity_desc.get_nclass_id()))
             pud->res = RetCode_KO;
         }
         if(pud->res) {
-            IFLOG(pud->peer->log_, warn(LS_TRL "[failed to create persistence schema for nclass_id:{}][res:{}]",
-                                        __func__,
-                                        nentity_desc.get_nclass_id(),
-                                        pud->res))
+            IFLOG(pud->broker->log_, warn(LS_TRL "[failed to create persistence schema for nclass_id:{}][res:{}]",
+                                          __func__,
+                                          nentity_desc.get_nclass_id(),
+                                          pud->res))
             if(pud->res != RetCode_DBOPFAIL) {
                 //if it is worst than RetCode_DBOPFAIL we break;
                 return false;
@@ -56,27 +56,27 @@ bool peer_enum_nem_nclasses_create_schema(const nentity_desc &nentity_desc,
     return true;
 }
 
-RetCode peer_impl::create_persistent_schema(PersistenceAlteringMode mode)
+RetCode broker_impl::create_persistent_schema(PersistenceAlteringMode mode)
 {
     if(!pers_enabled_) {
-        IFLOG(log_, error(LS_CLO NOT_PERS_ENBL_PEER, __func__))
+        IFLOG(log_, error(LS_CLO NOT_PERS_ENBL_BROKER, __func__))
         return RetCode_KO;
     }
     SPC_REC ud;
-    ud.peer = this;
+    ud.broker = this;
     ud.mode = mode;
     ud.res = RetCode_OK;
-    nem_.enum_nclass_descriptors(peer_enum_nem_nclasses_create_schema, &ud);
+    nem_.enum_nclass_descriptors(broker_enum_nem_nclasses_create_schema, &ud);
     IFLOG(log_, trace(LS_CLO "[res:{}]", __func__, ud.res))
     return ud.res;
 }
 
-RetCode peer_impl::nclass_create_persistent_schema(PersistenceAlteringMode mode,
-                                                   unsigned int nclass_id)
+RetCode broker_impl::nclass_create_persistent_schema(PersistenceAlteringMode mode,
+                                                     unsigned int nclass_id)
 {
     IFLOG(log_, trace(LS_OPN "[mode:{}, nclass_id:{}]", __func__, mode, nclass_id))
     if(!pers_enabled_) {
-        IFLOG(log_, error(LS_CLO NOT_PERS_ENBL_PEER, __func__))
+        IFLOG(log_, error(LS_CLO NOT_PERS_ENBL_BROKER, __func__))
         return RetCode_KO;
     }
     RetCode rcode = RetCode_OK;
@@ -110,13 +110,13 @@ RetCode peer_impl::nclass_create_persistent_schema(PersistenceAlteringMode mode,
     return rcode;
 }
 
-RetCode peer_impl::obj_load(unsigned short key,
-                            unsigned int &ts0_out,
-                            unsigned int &ts1_out,
-                            nclass &in_out)
+RetCode broker_impl::obj_load(unsigned short key,
+                              unsigned int &ts0_out,
+                              unsigned int &ts1_out,
+                              nclass &in_out)
 {
     if(!pers_enabled_) {
-        IFLOG(log_, error(LS_CLO NOT_PERS_ENBL_PEER, __func__))
+        IFLOG(log_, error(LS_CLO NOT_PERS_ENBL_BROKER, __func__))
         return RetCode_KO;
     }
     RetCode rcode = RetCode_OK;
@@ -148,10 +148,10 @@ RetCode peer_impl::obj_load(unsigned short key,
     return rcode;
 }
 
-RetCode peer_impl::obj_save(const nclass &in)
+RetCode broker_impl::obj_save(const nclass &in)
 {
     if(!pers_enabled_) {
-        IFLOG(log_, error(LS_CLO NOT_PERS_ENBL_PEER, __func__))
+        IFLOG(log_, error(LS_CLO NOT_PERS_ENBL_BROKER, __func__))
         return RetCode_KO;
     }
     RetCode rcode = RetCode_OK;
@@ -190,11 +190,11 @@ RetCode peer_impl::obj_save(const nclass &in)
     return rcode;
 }
 
-RetCode peer_impl::obj_update(unsigned short key,
-                              const nclass &in)
+RetCode broker_impl::obj_update(unsigned short key,
+                                const nclass &in)
 {
     if(!pers_enabled_) {
-        IFLOG(log_, error(LS_CLO NOT_PERS_ENBL_PEER, __func__))
+        IFLOG(log_, error(LS_CLO NOT_PERS_ENBL_BROKER, __func__))
         return RetCode_KO;
     }
     RetCode rcode = RetCode_OK;
@@ -233,11 +233,11 @@ RetCode peer_impl::obj_update(unsigned short key,
     return rcode;
 }
 
-RetCode peer_impl::obj_update_or_save(unsigned short key,
-                                      const nclass &in)
+RetCode broker_impl::obj_update_or_save(unsigned short key,
+                                        const nclass &in)
 {
     if(!pers_enabled_) {
-        IFLOG(log_, error(LS_CLO NOT_PERS_ENBL_PEER, __func__))
+        IFLOG(log_, error(LS_CLO NOT_PERS_ENBL_BROKER, __func__))
         return RetCode_KO;
     }
     RetCode rcode = RetCode_OK;
@@ -276,12 +276,12 @@ RetCode peer_impl::obj_update_or_save(unsigned short key,
     return rcode;
 }
 
-RetCode peer_impl::obj_remove(unsigned short key,
-                              PersistenceDeletionMode mode,
-                              const nclass &in)
+RetCode broker_impl::obj_remove(unsigned short key,
+                                PersistenceDeletionMode mode,
+                                const nclass &in)
 {
     if(!pers_enabled_) {
-        IFLOG(log_, error(LS_CLO NOT_PERS_ENBL_PEER, __func__))
+        IFLOG(log_, error(LS_CLO NOT_PERS_ENBL_BROKER, __func__))
         return RetCode_KO;
     }
     RetCode rcode = RetCode_OK;
@@ -322,10 +322,10 @@ RetCode peer_impl::obj_remove(unsigned short key,
 
 // DISTRIBUTION
 
-RetCode peer_impl::obj_distribute(SubscriptionEventType evt_type,
-                                  ProtocolCode proto_code,
-                                  Action act,
-                                  const nclass &in)
+RetCode broker_impl::obj_distribute(SubscriptionEventType evt_type,
+                                    ProtocolCode proto_code,
+                                    Action act,
+                                    const nclass &in)
 {
     RetCode rcode = RetCode_OK;
     per_nclass_id_conn_set *sdr = nullptr;
@@ -354,10 +354,10 @@ RetCode peer_impl::obj_distribute(SubscriptionEventType evt_type,
 
 // PERSISTENCE + DISTRIBUTION
 
-RetCode peer_impl::obj_save_and_distribute(const nclass &in)
+RetCode broker_impl::obj_save_and_distribute(const nclass &in)
 {
     if(!pers_enabled_) {
-        IFLOG(log_, error(LS_CLO NOT_PERS_ENBL_PEER, __func__))
+        IFLOG(log_, error(LS_CLO NOT_PERS_ENBL_BROKER, __func__))
         return RetCode_KO;
     }
     RetCode rcode = RetCode_OK;
@@ -412,11 +412,11 @@ RetCode peer_impl::obj_save_and_distribute(const nclass &in)
     return rcode;
 }
 
-RetCode peer_impl::obj_update_and_distribute(unsigned short key,
-                                             const nclass &in)
+RetCode broker_impl::obj_update_and_distribute(unsigned short key,
+                                               const nclass &in)
 {
     if(!pers_enabled_) {
-        IFLOG(log_, error(LS_CLO NOT_PERS_ENBL_PEER, __func__))
+        IFLOG(log_, error(LS_CLO NOT_PERS_ENBL_BROKER, __func__))
         return RetCode_KO;
     }
     RetCode rcode = RetCode_OK;
@@ -470,11 +470,11 @@ RetCode peer_impl::obj_update_and_distribute(unsigned short key,
     return rcode;
 }
 
-RetCode peer_impl::obj_update_or_save_and_distribute(unsigned short key,
-                                                     const nclass &in)
+RetCode broker_impl::obj_update_or_save_and_distribute(unsigned short key,
+                                                       const nclass &in)
 {
     if(!pers_enabled_) {
-        IFLOG(log_, error(LS_CLO NOT_PERS_ENBL_PEER, __func__))
+        IFLOG(log_, error(LS_CLO NOT_PERS_ENBL_BROKER, __func__))
         return RetCode_KO;
     }
     RetCode rcode = RetCode_OK;
@@ -528,12 +528,12 @@ RetCode peer_impl::obj_update_or_save_and_distribute(unsigned short key,
     return rcode;
 }
 
-RetCode peer_impl::obj_remove_and_distribute(unsigned short key,
-                                             PersistenceDeletionMode mode,
-                                             const nclass &in)
+RetCode broker_impl::obj_remove_and_distribute(unsigned short key,
+                                               PersistenceDeletionMode mode,
+                                               const nclass &in)
 {
     if(!pers_enabled_) {
-        IFLOG(log_, error(LS_CLO NOT_PERS_ENBL_PEER, __func__))
+        IFLOG(log_, error(LS_CLO NOT_PERS_ENBL_BROKER, __func__))
         return RetCode_KO;
     }
     RetCode rcode = RetCode_OK;

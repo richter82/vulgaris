@@ -20,9 +20,6 @@
     <ClInclude Include="..\public\c\vlg_c_model.h">
       <Filter>h</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\c\vlg_c_peer.h">
-      <Filter>h</Filter>
-    </ClInclude>
     <ClInclude Include="..\public\c\vlg_c_persistence.h">
       <Filter>h</Filter>
     </ClInclude>
@@ -32,11 +29,11 @@
     <ClInclude Include="..\public\vlg.h">
       <Filter>h</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\c\vlg_c_broker.h">
+      <Filter>h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\apic\c_peer.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\apic\c_persistence.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -50,6 +47,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\src\apic\c_model.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\apic\c_broker.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

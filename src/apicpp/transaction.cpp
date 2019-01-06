@@ -33,7 +33,7 @@ incoming_transaction::incoming_transaction(std::shared_ptr<incoming_connection> 
 
 incoming_transaction::~incoming_transaction()
 {
-    DTOR_TRC(impl_->conn_->peer_->log_)
+    DTOR_TRC(impl_->conn_->broker_->log_)
 }
 
 incoming_connection &incoming_transaction::get_connection()
@@ -189,7 +189,7 @@ outgoing_transaction::outgoing_transaction(outgoing_transaction_listener &listen
 
 outgoing_transaction::~outgoing_transaction()
 {
-    DTOR_TRC(impl_->conn_->peer_->log_)
+    DTOR_TRC(impl_->conn_->broker_->log_)
 }
 
 RetCode outgoing_transaction::bind(outgoing_connection &conn)

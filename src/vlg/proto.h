@@ -57,12 +57,12 @@ enum VLG_SELECTOR_Evt {
 };
 
 /*****************************************
-PEER TYPE
+BROKER TYPE
 ******************************************/
-enum VLG_PEER_Type {
-    VLG_PEER_Undef,
-    VLG_PEER_Client,
-    VLG_PEER_Server,
+enum VLG_BROKER_Type {
+    VLG_BROKER_Undef,
+    VLG_BROKER_Client,
+    VLG_BROKER_Server,
 };
 
 /*****************************************
