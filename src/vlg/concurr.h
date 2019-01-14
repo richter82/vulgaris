@@ -6,6 +6,7 @@
 
 #pragma once
 #include "structs.h"
+#include <thread>
 
 namespace spdlog {
 class logger;
