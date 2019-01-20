@@ -1,6 +1,6 @@
 /*
  * vulgaris
- * (C) 2018 - giuseppe.baccini@gmail.com
+ * (C) 2018 - giuseppe.baccini@live.com
  *
  */
 #ifndef vlg_swift_h

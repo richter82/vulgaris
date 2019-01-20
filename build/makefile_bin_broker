@@ -8,7 +8,7 @@ INCLUDES = 	-I../public\
 			-I../contrib\
 			-I../test/sample_vlg_model
 			
-CCFLAGS = -std=c++14 -Wall -fPIC -DSTA_L $(CC_DBG_REL_OPT)
+CCFLAGS = -std=c++17 -Wall -fPIC -DSTA_L $(CC_DBG_REL_OPT)
 CCC = g++
 LDLIBS= -L../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/lib -L../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/contrib/lib -lsmplmdl -ldrvsqlite -lsqlite -lapicpp -lvlg -lpthread $(LD_ARCH_LIB)
 

@@ -8,7 +8,7 @@ INCLUDES = 	-I../public\
 			-I../contrib\
 			-I../contrib/sqlite
 			
-CCFLAGS = -std=c++14 -Wall -fPIC $(CC_DBG_REL_OPT)
+CCFLAGS = -std=c++17 -Wall -fPIC $(CC_DBG_REL_OPT)
 CCC = g++
 
 .cpp.o:

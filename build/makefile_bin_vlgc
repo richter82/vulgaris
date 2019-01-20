@@ -12,7 +12,7 @@ INCLUDES = 	-I../public\
 			-I../contrib\
 			-I../src
 			
-CCFLAGS = -std=c++14 -Wall -fPIC $(CC_DBG_REL_OPT)
+CCFLAGS = -std=c++17 -Wall -fPIC $(CC_DBG_REL_OPT)
 CCC = g++
 LDLIBS= -L../bin/$(OUT_ARCH_DIR)/$(OUT_TRGT_DIR)/lib -lapicpp -lvlg -lpthread $(LD_ARCH_LIB)
 

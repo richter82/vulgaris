@@ -1,6 +1,6 @@
 /*
  *
- * (C) 2017 - giuseppe.baccini@gmail.com
+ * (C) 2017 - giuseppe.baccini@live.com
  *
  *
  * This program is free software; you can redistribute it and/or modify
