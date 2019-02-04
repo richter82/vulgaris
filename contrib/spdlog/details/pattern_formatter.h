@@ -712,7 +712,7 @@ public:
         const auto pid = static_cast<uint32_t>(details::os::pid());
         if (padinfo_.enabled())
         {
-            const size_t field_size = fmt::internal::count_digits(pid);
+            auto field_size = fmt_helper::count_digits(pid);
             scoped_pad p(field_size, padinfo_, dest);
             fmt_helper::append_int(pid, dest);
         }
@@ -885,7 +885,7 @@ public:
         }
         if (padinfo_.enabled())
         {
-            const size_t field_size = fmt::internal::count_digits(msg.source.line);
+            auto field_size = fmt_helper::count_digits(msg.source.line);
             scoped_pad p(field_size, padinfo_, dest);
             fmt_helper::append_int(msg.source.line, dest);
         }
@@ -893,6 +893,23 @@ public:
         {
             fmt_helper::append_int(msg.source.line, dest);
         }
+    }
+};
+// print source funcname
+class source_funcname_formatter final : public flag_formatter
+{
+public:
+    explicit source_funcname_formatter(padding_info padinfo)
+        : flag_formatter(padinfo){};
+
+    void format(const details::log_msg &msg, const std::tm &, fmt::memory_buffer &dest) override
+    {
+        if (msg.source.empty())
+        {
+            return;
+        }
+        scoped_pad p(msg.source.funcname, padinfo_, dest);
+        fmt_helper::append_string_view(msg.source.funcname, dest);
     }
 };
 
@@ -1214,6 +1231,10 @@ private:
 
         case ('#'): // source line number
             formatters_.push_back(details::make_unique<details::source_linenum_formatter>(padding));
+            break;
+
+        case ('!'): // source funcname
+            formatters_.push_back(details::make_unique<details::source_funcname_formatter>(padding));
             break;
 
         case ('%'): // % char

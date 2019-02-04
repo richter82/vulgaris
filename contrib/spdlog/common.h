@@ -46,14 +46,13 @@
 
 // disable thread local on msvc 2013
 #ifndef SPDLOG_NO_TLS
-#if (defined(_MSC_VER) && (_MSC_VER < 1900))
+#if (defined(_MSC_VER) && (_MSC_VER < 1900)) || defined(__cplusplus_winrt)
 #define SPDLOG_NO_TLS 1
 #endif
 #endif
 
-
-// Get the basename of __FILE__ (at compile time if possible) 
-#if FMT_HAS_FEATURE(__builtin_strrchr) 
+// Get the basename of __FILE__ (at compile time if possible)
+#if FMT_HAS_FEATURE(__builtin_strrchr)
 #define SPDLOG_STRRCHR(str, sep) __builtin_strrchr(str, sep)
 #else
 #define SPDLOG_STRRCHR(str, sep) strrchr(str, sep)
@@ -63,6 +62,10 @@
 #define SPDLOG_FILE_BASENAME(file) SPDLOG_STRRCHR("\\" file, '\\') + 1
 #else
 #define SPDLOG_FILE_BASENAME(file) SPDLOG_STRRCHR("/" file, '/') + 1
+#endif
+
+#ifndef SPDLOG_FUNCTION
+#define SPDLOG_FUNCTION __FUNCTION__
 #endif
 
 namespace spdlog {
@@ -204,11 +207,13 @@ struct source_loc
     SPDLOG_CONSTEXPR source_loc()
         : filename{""}
         , line{0}
+        , funcname{""}
     {
     }
-    SPDLOG_CONSTEXPR source_loc(const char *filename, int line)
+    SPDLOG_CONSTEXPR source_loc(const char *filename, int line, const char *funcname)
         : filename{filename}
         , line{static_cast<uint32_t>(line)}
+        , funcname{funcname}
     {
     }
 
@@ -218,6 +223,7 @@ struct source_loc
     }
     const char *filename;
     uint32_t line;
+    const char *funcname;
 };
 
 namespace details {
