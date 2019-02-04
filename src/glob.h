@@ -38,6 +38,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <algorithm>
+#include <functional>
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
